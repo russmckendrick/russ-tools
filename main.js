@@ -90,6 +90,33 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
       <li><b>CIDR Prefix:</b> /${subnet.prefix}</li>
     </ul>
   `;
-  // Visualization placeholder
-  visualization.innerHTML = '<em>Subnet visualization will appear here soon.</em>';
+  // Visualization: simple horizontal bar
+  const total = subnet.totalHosts;
+  const usable = subnet.usableHosts;
+  const unusable = total - usable;
+  // For /31 and /32, all addresses are usable
+  let leftLabel = 'Network';
+  let rightLabel = 'Broadcast';
+  let usableLabel = 'Usable Hosts';
+  let leftSize = 1, rightSize = 1, usableSize = usable;
+  if (subnet.prefix >= 31) {
+    leftLabel = 'Usable';
+    rightLabel = '';
+    usableLabel = '';
+    leftSize = total;
+    rightSize = 0;
+    usableSize = 0;
+  }
+  const width = 400;
+  const height = 32;
+  const scale = width / total;
+  let svg = `<svg width="${width}" height="${height}" style="border-radius:6px;border:1px solid #eee;background:#f8fafc;">
+    <rect x="0" y="0" width="${leftSize*scale}" height="${height}" fill="#c7d2fe" />
+    <rect x="${leftSize*scale}" y="0" width="${usableSize*scale}" height="${height}" fill="#60a5fa" />
+    <rect x="${(leftSize+usableSize)*scale}" y="0" width="${rightSize*scale}" height="${height}" fill="#c7d2fe" />
+    <text x="8" y="20" font-size="13" fill="#222">${leftLabel}</text>
+    <text x="${width/2}" y="20" font-size="13" fill="#fff" text-anchor="middle">${usableLabel}</text>
+    <text x="${width-8}" y="20" font-size="13" fill="#222" text-anchor="end">${rightLabel}</text>
+  </svg>`;
+  visualization.innerHTML = svg + '<div style="font-size:13px;margin-top:6px;color:#666;">Visual representation: left = network, blue = usable hosts, right = broadcast.</div>';
 });
