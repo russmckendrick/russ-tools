@@ -1,54 +1,76 @@
-import { useState } from 'react';
-import { TextInput, Button, Group, Paper } from '@mantine/core';
+import { useState, useMemo } from 'react';
+import { TextInput, Button, Group, Paper, Select, Text } from '@mantine/core';
 
 export function SubnetForm({ onAddSubnet, parentCidr }) {
   const [name, setName] = useState('');
   const [cidr, setCidr] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-    const cidrNum = parseInt(cidr.replace('/', ''), 10);
+  // Generate CIDR options for dropdown
+  // Only show CIDR values larger than parent CIDR (smaller networks)
+  const cidrOptions = useMemo(() => {
+    if (!parentCidr) return [];
+    
+    return Array.from({ length: 30 - parentCidr }, (_, i) => {
+      const value = String(parentCidr + i + 1); // Start from parent+1 to /30
+      return { value, label: `/${value}` };
+    });
+  }, [parentCidr]);
+
+  const handleSubmit = () => {
+    // Validate name
     if (!name.trim()) {
-      setError('Subnet name is required');
+      setError('Please enter a subnet name');
       return;
     }
-    if (isNaN(cidrNum) || cidrNum < parentCidr || cidrNum > 32) {
-      setError(`CIDR must be between ${parentCidr} and 32`);
+
+    // Validate CIDR
+    if (!cidr) {
+      setError('Please select a CIDR size');
       return;
     }
-    onAddSubnet({ name: name.trim(), cidr: cidrNum });
+
+    // Reset error
+    setError(null);
+
+    // Add subnet
+    onAddSubnet({
+      name: name.trim(),
+      cidr: parseInt(cidr, 10)
+    });
+
+    // Reset form
     setName('');
     setCidr('');
   };
 
   return (
     <Paper p="md" radius="md" withBorder mb="md">
-      <form onSubmit={handleSubmit}>
-        <Group grow>
-          <TextInput
-            label="Subnet Name"
-            placeholder="e.g., Web Tier"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            error={error && error.includes('name') ? error : null}
-          />
-          <TextInput
-            label="CIDR Size"
-            placeholder={`e.g., ${parentCidr + 1}`}
-            value={cidr}
-            onChange={(e) => setCidr(e.target.value.replace('/', ''))}
-            error={error && error.includes('CIDR') ? error : null}
-          />
-        </Group>
-        <Button type="submit" mt="md" fullWidth>
+      <Group position="apart" spacing="md" align="flex-end">
+        <TextInput
+          label="Subnet Name"
+          placeholder="e.g., Web Tier"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          error={error && error.includes('name') ? error : null}
+          style={{ flex: 1 }}
+        />
+        <Select
+          label="CIDR Size"
+          placeholder="Select size"
+          value={cidr}
+          onChange={setCidr}
+          data={cidrOptions}
+          error={error && error.includes('CIDR') ? error : null}
+          style={{ width: '120px' }}
+        />
+        <Button onClick={handleSubmit} style={{ marginBottom: '1px' }}>
           Add Subnet
         </Button>
-        {error && !error.includes('name') && !error.includes('CIDR') && (
-          <div style={{ color: 'red', marginTop: 8 }}>{error}</div>
-        )}
-      </form>
+      </Group>
+      {error && !error.includes('name') && !error.includes('CIDR') && (
+        <Text color="red" size="sm" mt="xs">{error}</Text>
+      )}
     </Paper>
   );
 } 

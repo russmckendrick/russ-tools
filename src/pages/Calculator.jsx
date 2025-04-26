@@ -7,15 +7,7 @@ import { ParentNetworkForm } from '../components/ParentNetworkForm';
 import { SubnetForm } from '../components/SubnetForm';
 import { DraggableSubnets } from '../components/DraggableSubnets';
 import { v4 as uuidv4 } from 'uuid';
-
-function isValidIPv4(ip) {
-  const pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
-  if (!pattern.test(ip)) return false;
-  return ip.split('.').every(num => {
-    const n = parseInt(num, 10);
-    return n >= 0 && n <= 255;
-  });
-}
+import { isValidIPv4, ipToLong, longToIp } from '../utils';
 
 function parseInput(ipAddress, maskInput) {
   // Clean input
@@ -39,14 +31,6 @@ function parseInput(ipAddress, maskInput) {
   }
   
   throw new Error('Invalid subnet mask or CIDR notation');
-}
-
-// Helper functions for IP math
-function ipToLong(ip) {
-  return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
-}
-function longToIp(long) {
-  return [24, 16, 8, 0].map(shift => (long >>> shift) & 255).join('.');
 }
 
 export function Calculator() {

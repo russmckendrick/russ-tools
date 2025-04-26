@@ -53,11 +53,12 @@
 - [x] Add/edit/delete subnets
 - [x] Save state to local storage
 - [x] Simplify visualization component (remove dragging)
+- [x] Convert CIDR inputs to dropdowns with valid options
 - [ ] Add subnet auto-allocation
 - [ ] Export/share configuration
 
 **UI Improvements:**
-- [ ] Add tooltips to explain CIDR notation
+- [~] Add tooltips to explain CIDR notation
 - [ ] Create help modal with basic subnetting concepts
 - [ ] Improve color scheme for better subnet differentiation
 - [ ] Add visual indicator for subnet overlap/errors

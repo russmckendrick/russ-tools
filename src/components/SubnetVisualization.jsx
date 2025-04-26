@@ -2,14 +2,7 @@ import { Box, Paper, Text, Tooltip, useMantineTheme } from '@mantine/core';
 import { IconNetwork, IconBroadcast } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { Netmask } from 'netmask';
-
-// Helper functions for IP math
-function ipToLong(ip) {
-  return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
-}
-function longToIp(long) {
-  return [24, 16, 8, 0].map(shift => (long >>> shift) & 255).join('.');
-}
+import { ipToLong, longToIp } from '../utils';
 
 // Tooltip content for subnet details
 function getSubnetTooltip(subnet) {
