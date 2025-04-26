@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Container, TextInput, Button, Paper, Title, Grid, Text, Select, Group, Modal, Stack } from '@mantine/core';
+import { Container, TextInput, Button, Paper, Title, Grid, Text, Select, Group, Modal, Stack, Space } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import { Netmask } from 'netmask';
-import { DraggableVisualization } from '../components/DraggableVisualization';
+import { SubnetVisualization } from '../components/SubnetVisualization';
 import { ParentNetworkForm } from '../components/ParentNetworkForm';
 import { SubnetForm } from '../components/SubnetForm';
 import { DraggableSubnets } from '../components/DraggableSubnets';
@@ -225,6 +225,83 @@ export function Calculator() {
   // State to force refresh of components
   const [animate, setAnimate] = useState(false);
 
+  // Handle subnet resize
+  const handleResizeSubnet = (subnetBase, newCidr) => {
+    if (!current?.parentNetwork) return;
+    
+    const parentBlock = new Netmask(current.parentNetwork.ip + '/' + current.parentNetwork.cidr);
+    const parentStart = ipToLong(parentBlock.base);
+    const parentEnd = ipToLong(parentBlock.broadcast);
+    
+    // Find the subnet to resize
+    const subnetIndex = current.subnets.findIndex(s => s.base === subnetBase);
+    if (subnetIndex === -1) return;
+    
+    const subnet = current.subnets[subnetIndex];
+    const oldCidr = subnet.cidr;
+    
+    // If CIDR hasn't changed, do nothing
+    if (oldCidr === newCidr) return;
+    
+    // Create a new array of subnets
+    const newSubnets = [...current.subnets];
+    
+    // If resizing to a smaller subnet (larger CIDR number), we can keep the same base
+    if (newCidr > oldCidr) {
+      // Just update the CIDR
+      newSubnets[subnetIndex] = {
+        ...subnet,
+        cidr: newCidr,
+        id: `${subnet.id || 'subnet'}-${Date.now()}`
+      };
+    } else {
+      // Resizing to a larger subnet - we need to check for overlaps
+      // Calculate new size
+      const newSize = Math.pow(2, 32 - newCidr);
+      const subnetStart = ipToLong(subnet.base);
+      
+      // Check if this would overlap with other subnets
+      const wouldOverlap = newSubnets.some((s, idx) => {
+        if (idx === subnetIndex) return false; // Skip the subnet being resized
+        
+        const otherStart = ipToLong(s.base);
+        const otherEnd = otherStart + Math.pow(2, 32 - s.cidr) - 1;
+        const newEnd = subnetStart + newSize - 1;
+        
+        return (subnetStart <= otherEnd && newEnd >= otherStart);
+      });
+      
+      if (wouldOverlap) {
+        alert('Cannot resize subnet - would overlap with other subnets');
+        return;
+      }
+      
+      // Check if it would exceed the parent network
+      const newEnd = subnetStart + newSize - 1;
+      if (subnetStart < parentStart || newEnd > parentEnd) {
+        alert('Cannot resize subnet - would exceed parent network boundaries');
+        return;
+      }
+      
+      // Update the subnet
+      newSubnets[subnetIndex] = {
+        ...subnet,
+        cidr: newCidr,
+        id: `${subnet.id || 'subnet'}-${Date.now()}`
+      };
+    }
+    
+    // Update networks
+    setNetworks(networks.map(n =>
+      n.id === selectedNetworkId
+        ? { ...n, subnets: newSubnets }
+        : n
+    ));
+    
+    // Force refresh
+    setAnimate(prev => !prev);
+  };
+
   return (
     <Container size="lg" py="xl">
       <Title order={2} mb="lg">IPv4 Subnet Calculator</Title>
@@ -256,12 +333,15 @@ export function Calculator() {
               <SubnetForm onAddSubnet={handleAddSubnet} parentCidr={current.parentNetwork.cidr} />
               {current.subnets?.length > 0 && (
                 <>
-                  <DraggableVisualization 
+                  <SubnetVisualization 
                     parentNetwork={current.parentNetwork} 
                     subnets={current.subnets} 
-                    onReorderSubnets={handleReorderSubnets}
+                    onResizeSubnet={handleResizeSubnet}
                     key={`viz-${animate}-${current.subnets.length}`}
                   />
+                  
+                  <Space h="xl" />
+                  
                   <Paper p="md" radius="md" withBorder mb="md">
                     <Text fw={500} mb="sm">Subnets (drag to reorder):</Text>
                     <DraggableSubnets 

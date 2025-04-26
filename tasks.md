@@ -1,10 +1,10 @@
 # Subnet.Fit Phase 4: Network Designer Expansion – Task Tracker
 
 ## Main Goals
-- [ ] Parent Network (Supernet) Setup
-- [ ] Subnets Management
-- [ ] Persistent State with Local Storage
-- [ ] Enhanced Visualization for Multiple Subnets
+- [x] Parent Network (Supernet) Setup
+- [x] Subnets Management
+- [x] Persistent State with Local Storage
+- [x] Enhanced Visualization for Multiple Subnets
 - [ ] Network Diagram View
 
 ---
@@ -31,9 +31,11 @@
 
 ### 4. Enhanced Visualization
 - [x] Update visualization to show all subnets as proportional segments
-- [x] Color blocks, labels, hover details for each subnet (in progress)
-- [x] Show unused space in parent network (in progress)
+- [x] Color blocks, labels, hover details for each subnet
+- [x] Show unused space in parent network
 - [x] Create a drag and drop reorder tool
+- [x] Add resize handles for adjusting subnet sizes
+- [x] Visual CIDR slider for subnet resizing
 
 ### 5. Network Diagram View
 - [ ] Add placeholder for network diagram
