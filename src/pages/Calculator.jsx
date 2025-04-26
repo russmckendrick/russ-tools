@@ -56,9 +56,15 @@ export function Calculator() {
   useEffect(() => {
     // Try to load new format
     const saved = localStorage.getItem('networks');
+    const lastSelected = localStorage.getItem('lastSelectedNetworkId');
     if (saved) {
-      setNetworks(JSON.parse(saved));
-      setSelectedNetworkId(JSON.parse(saved)[0]?.id || null);
+      const parsed = JSON.parse(saved);
+      setNetworks(parsed);
+      if (lastSelected && parsed.some(n => n.id === lastSelected)) {
+        setSelectedNetworkId(lastSelected);
+      } else {
+        setSelectedNetworkId(parsed[0]?.id || null);
+      }
       return;
     }
     // Migrate old format if present
@@ -75,6 +81,7 @@ export function Calculator() {
       setNetworks(migrated);
       setSelectedNetworkId(migrated[0].id);
       localStorage.setItem('networks', JSON.stringify(migrated));
+      localStorage.setItem('lastSelectedNetworkId', migrated[0].id);
       localStorage.removeItem('parentNetwork');
       localStorage.removeItem('subnets');
       return;
@@ -87,6 +94,13 @@ export function Calculator() {
   useEffect(() => {
     localStorage.setItem('networks', JSON.stringify(networks));
   }, [networks]);
+
+  // Persist last selected network ID
+  useEffect(() => {
+    if (selectedNetworkId) {
+      localStorage.setItem('lastSelectedNetworkId', selectedNetworkId);
+    }
+  }, [selectedNetworkId]);
 
   // Get current network
   const current = networks.find(n => n.id === selectedNetworkId);
