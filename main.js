@@ -602,7 +602,8 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
             </thead>
             <tbody>${rows}</tbody>
           </table>
-        </div>`;
+        </div>
+        <div class="text-sm mt-4 text-blue-800 font-medium">* Hover over allocations in the bar above to see subnet details</div>`;
       planTable.querySelectorAll('.close-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           const index = parseInt(this.dataset.index);
@@ -616,6 +617,10 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
       let left = subnet.totalHosts - used;
       let percentUsed = Math.min(100, Math.max(0, 100 * used / subnet.totalHosts));
       document.getElementById('plan-progress').innerHTML = `
+        <div class="mb-2 flex justify-between text-sm font-medium">
+          <span>Subnet Usage</span>
+          <span>${Math.round(percentUsed)}% used (${used} / ${subnet.totalHosts})</span>
+        </div>
         <div class="subnet-progress">
           <div class="subnet-progress-bar" style="width: ${percentUsed}%"></div>
         </div>
