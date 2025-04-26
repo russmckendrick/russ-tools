@@ -54,6 +54,55 @@ const addSubnetBtn = document.getElementById('add-subnet');
 const planTable = document.getElementById('plan-table');
 const planRemaining = document.getElementById('plan-remaining');
 
+// State persistence functions
+function saveState(ip, cidr, subnetPlan) {
+  try {
+    const state = {
+      ip: ip,
+      cidr: cidr,
+      plan: subnetPlan || [],
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('subnet-fit-state', JSON.stringify(state));
+    console.log('State saved');
+  } catch (e) {
+    console.error('Error saving state:', e);
+  }
+}
+
+function loadState() {
+  try {
+    const savedState = localStorage.getItem('subnet-fit-state');
+    if (savedState) {
+      return JSON.parse(savedState);
+    }
+  } catch (e) {
+    console.error('Error loading state:', e);
+  }
+  return null;
+}
+
+// Try to restore previous state
+const savedState = loadState();
+let savedPlan = null;
+
+if (savedState) {
+  ipInput.value = savedState.ip || '';
+  cidrInput.value = savedState.cidr || '';
+  savedPlan = savedState.plan || [];
+  
+  // If we have values, trigger calculation on page load
+  if (savedState.ip && savedState.cidr) {
+    // We'll trigger the calculation after the page loads
+    window.addEventListener('load', () => {
+      // Small delay to ensure everything is ready
+      setTimeout(() => {
+        document.getElementById('subnet-form').dispatchEvent(new Event('submit'));
+      }, 100);
+    });
+  }
+}
+
 function showValidation() {
   let ip = ipInput.value.trim();
   let cidr = cidrInput.value.trim();
@@ -92,6 +141,9 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
     cidrInput.focus();
     return;
   }
+  
+  // Save state when valid input is provided
+  saveState(ip, cidr, []);
   
   const subnet = calculateSubnet(ip, prefix);
   
@@ -139,7 +191,6 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
   const total = subnet.totalHosts;
   const usable = subnet.usableHosts;
   
-  // For /31 and /32, all addresses are usable
   let leftLabel = 'Network';
   let rightLabel = 'Broadcast';
   let usableLabel = 'Usable Hosts';
@@ -159,14 +210,66 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
   const usablePercent = (usableSize / total) * 100;
   const rightPercent = (rightSize / total) * 100;
   
+  // Format IP addresses for display
+  const networkAddress = subnet.network;
+  const broadcastAddress = subnet.broadcast;
+  const firstUsable = subnet.first;
+  const lastUsable = subnet.last;
+  
+  // Create a more detailed visualization
   visualization.innerHTML = `
     <h2 class="text-xl font-bold mb-3">Network Visualization</h2>
-    <div class="subnet-bar">
-      <div class="subnet-bar-network" style="width:${leftPercent}%">${leftLabel}</div>
-      <div class="subnet-bar-usable" style="width:${usablePercent}%">${usableLabel}</div>
-      <div class="subnet-bar-broadcast" style="width:${rightPercent}%">${rightLabel}</div>
+    <div class="card bg-base-100 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <div class="subnet-bar-container mb-3">
+          <div class="subnet-bar">
+            ${subnet.prefix >= 31 ? 
+              `<div class="subnet-bar-usable-all" style="width:100%" title="All addresses usable">
+                <span class="subnet-bar-label">All ${total} addresses usable</span>
+              </div>` : 
+              `<div class="subnet-bar-network" style="width:${leftPercent}%" title="Network Address: ${networkAddress}">
+                <span class="subnet-bar-label">${leftLabel}</span>
+              </div>
+              <div class="subnet-bar-usable" style="width:${usablePercent}%" title="Usable Range: ${firstUsable} - ${lastUsable}">
+                <span class="subnet-bar-label">${usableLabel} (${usable})</span>
+              </div>
+              <div class="subnet-bar-broadcast" style="width:${rightPercent}%" title="Broadcast Address: ${broadcastAddress}">
+                <span class="subnet-bar-label">${rightLabel}</span>
+              </div>`
+            }
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="flex items-center mb-2">
+              <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+              <span class="font-medium">Network Address:</span>
+              <span class="ml-2">${networkAddress}</span>
+            </div>
+            <div class="flex items-center mb-2">
+              <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="font-medium">First Usable:</span>
+              <span class="ml-2">${firstUsable}</span>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center mb-2">
+              <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+              <span class="font-medium">Broadcast Address:</span>
+              <span class="ml-2">${broadcastAddress}</span>
+            </div>
+            <div class="flex items-center mb-2">
+              <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="font-medium">Last Usable:</span>
+              <span class="ml-2">${lastUsable}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="text-xs text-gray-500 mt-3">Hover over sections for more details</div>
+      </div>
     </div>
-    <div class="text-sm text-gray-500 mt-2">Visual representation of your subnet allocation</div>
   `;
   // --- Custom Subnet Planner Logic ---
   // Only allow planning if prefix < 32
@@ -184,8 +287,63 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
     }
     // State: planned subnets as array of {prefix, networkInt}
     let plan = [];
+    
+    // Restore saved plan if available
+    if (savedPlan && savedPlan.length > 0) {
+      // Convert saved plan to current network if needed
+      let baseIpParts = subnet.network.split('.').map(Number);
+      let baseIpInt = baseIpParts.reduce((acc, p) => (acc << 8) | p, 0);
+      let endIpInt = baseIpInt + subnet.totalHosts - 1;
+      
+      // Only restore if the saved plan fits within the current network
+      let planFits = true;
+      for (let i = 0; i < savedPlan.length; i++) {
+        let size = 2 ** (32 - savedPlan[i].prefix);
+        let end = savedPlan[i].networkInt + size - 1;
+        if (savedPlan[i].networkInt < baseIpInt || end > endIpInt) {
+          planFits = false;
+          break;
+        }
+      }
+      
+      if (planFits) {
+        plan = savedPlan;
+        renderPlan();
+      }
+    }
     // Helper to convert int to IP
     const toIp = x => [24,16,8,0].map(s => (x >>> s) & 255).join('.');
+    addSubnetBtn.addEventListener('click', function() {
+      let p = parseInt(planPrefixSelect.value, 10);
+      if (p) {
+        let baseIpParts = subnet.network.split('.').map(Number);
+        let baseIpInt = baseIpParts.reduce((acc, p) => (acc << 8) | p, 0);
+        let endIpInt = baseIpInt + subnet.totalHosts - 1;
+        let nextInt = baseIpInt;
+        
+        // Find next available IP block
+        plan.sort((a, b) => a.networkInt - b.networkInt);
+        for (let i = 0; i < plan.length; ++i) {
+          let size = 2 ** (32 - plan[i].prefix);
+          if (nextInt + 2 ** (32 - p) <= plan[i].networkInt) {
+            break; // Found a gap
+          }
+          nextInt = plan[i].networkInt + size;
+        }
+        
+        // Check if it fits
+        if (nextInt + 2 ** (32 - p) - 1 <= endIpInt) {
+          plan.push({prefix: p, networkInt: nextInt});
+          plan.sort((a, b) => a.networkInt - b.networkInt);
+          renderPlan(true);
+          
+          // Save state when subnet is added
+          saveState(ip, cidr, plan);
+        } else {
+          alert('No more space for this subnet size!');
+        }
+      }
+    });
     // Helper to render plan
     function renderPlan(scrollToLast = false) {
       let baseIpParts = subnet.network.split('.').map(Number);
@@ -242,6 +400,9 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
           const index = parseInt(this.dataset.index);
           plan.splice(index, 1);
           renderPlan();
+          
+          // Save state when subnet is removed
+          saveState(ip, cidr, plan);
         });
       });
       let left = subnet.totalHosts - used;
