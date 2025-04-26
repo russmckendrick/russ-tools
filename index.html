@@ -1,32 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Subnet.Fit - IPv4 Subnet Calculator</title>
-    <link href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/style.css" />
   </head>
-  <body>
-    <main class="container">
-      <h1>Subnet.Fit</h1>
-      <form id="subnet-form">
-        <label for="ip">IPv4 Address</label>
-        <input type="text" id="ip" name="ip" placeholder="e.g. 192.168.1.10" required>
-        <label for="cidr">CIDR or Subnet Mask</label>
-        <input type="text" id="cidr" name="cidr" placeholder="e.g. /24 or 255.255.255.0" required>
-        <button type="submit">Calculate</button>
-      </form>
-      <section id="results" style="margin-top:2em;"></section>
-      <div id="visualization" style="margin-top:2em;"></div>
-      <section id="planner" style="margin-top:2em;display:none;">
-        <label for="plan-prefix"><b>Add a subnet to this network:</b></label>
-        <select id="plan-prefix"></select>
-        <button id="add-subnet" type="button">Add Subnet</button>
-        <div id="plan-table" style="margin-top:1em;"></div>
-        <div id="plan-remaining" style="margin-top:0.5em;color:#666;"></div>
+  <body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+      <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-primary mb-2">Subnet.Fit</h1>
+        <p class="text-gray-600">Modern IPv4 subnet calculator & network planner</p>
+      </header>
+
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <form id="subnet-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div class="form-control w-full">
+            <label class="label" for="ip">
+              <span class="label-text">IPv4 Address</span>
+            </label>
+            <input type="text" id="ip" name="ip" placeholder="e.g. 192.168.1.10" class="input input-bordered w-full" required>
+          </div>
+          <div class="form-control w-full">
+            <label class="label" for="cidr">
+              <span class="label-text">CIDR or Subnet Mask</span>
+            </label>
+            <input type="text" id="cidr" name="cidr" placeholder="e.g. /24 or 255.255.255.0" class="input input-bordered w-full" required>
+          </div>
+          <div>
+            <button type="submit" class="btn btn-primary w-full">Calculate</button>
+          </div>
+        </form>
+      </div>
+
+      <section id="results" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden"></section>
+      <div id="visualization" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden"></div>
+      
+      <section id="planner" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+        <div class="mb-4">
+          <div id="plan-progress" class="mb-2"></div>
+          <div class="flex flex-wrap items-end gap-2">
+            <div class="form-control">
+              <label class="label" for="plan-prefix">
+                <span class="label-text font-medium">Add a subnet to this network:</span>
+              </label>
+              <select id="plan-prefix" class="select select-bordered"></select>
+            </div>
+            <button id="add-subnet" type="button" class="btn btn-primary">Add Subnet</button>
+          </div>
+        </div>
+        <div id="plan-table" class="overflow-x-auto max-h-64 overflow-y-auto"></div>
+        <div id="plan-remaining" class="text-sm text-gray-600 mt-2"></div>
       </section>
-    </main>
+
+      <footer class="mt-8 text-center text-sm text-gray-500">
+        <p>Subnet.Fit &copy; 2025 &middot; <a href="https://github.com/russmckendrick/subnet-fit" class="link link-hover">GitHub</a></p>
+      </footer>
+    </div>
     <script type="module" src="/main.js"></script>
   </body>
 </html>
