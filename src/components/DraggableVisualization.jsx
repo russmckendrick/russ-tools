@@ -181,25 +181,31 @@ export function DraggableVisualization({ parentNetwork, subnets, onReorderSubnet
   function handleDragEnd(event) {
     const { active, over } = event;
     
-    if (active.id !== over?.id) {
-      // Find the subnets in the original array
-      const oldIndex = subnets.findIndex(s => 
-        s.id === active.data.current.segment.id || 
+    if (active.id !== over?.id && over) {
+      // Find the original subnet objects
+      const activeSubnet = subnets.find(s => 
+        (s.id && s.id === active.data.current.segment.id) || 
         s.base === active.data.current.segment.base
       );
-      const newIndex = subnets.findIndex(s => 
-        s.id === over.data.current.segment.id || 
+      
+      const overSubnet = subnets.find(s => 
+        (s.id && s.id === over.data.current.segment.id) || 
         s.base === over.data.current.segment.base
       );
       
-      if (oldIndex !== -1 && newIndex !== -1) {
-        // Create a new array with the item moved to the new position
-        const newOrder = [...subnets];
-        const [movedItem] = newOrder.splice(oldIndex, 1);
-        newOrder.splice(newIndex, 0, movedItem);
+      if (activeSubnet && overSubnet) {
+        const oldIndex = subnets.indexOf(activeSubnet);
+        const newIndex = subnets.indexOf(overSubnet);
         
-        // Call the parent handler with the new order
-        onReorderSubnets(newOrder);
+        if (oldIndex !== -1 && newIndex !== -1) {
+          // Create a new array with the item moved to the new position
+          const newOrder = [...subnets];
+          const [movedItem] = newOrder.splice(oldIndex, 1);
+          newOrder.splice(newIndex, 0, movedItem);
+          
+          // Call the parent handler with the new order
+          onReorderSubnets(newOrder);
+        }
       }
     }
   }

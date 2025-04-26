@@ -168,6 +168,7 @@ export function Calculator() {
     
     const parentBlock = new Netmask(current.parentNetwork.ip + '/' + current.parentNetwork.cidr);
     const parentStart = ipToLong(parentBlock.base);
+    const parentEnd = ipToLong(parentBlock.broadcast);
     
     // Sort by new order but reassign IPs sequentially
     let updatedSubnets = [...newOrder];
@@ -187,21 +188,42 @@ export function Calculator() {
         candidateStart = ((candidateStart >> (32 - subnet.cidr)) + 1) << (32 - subnet.cidr);
       }
       
+      // Check if this would exceed parent network
+      if (candidateStart + size - 1 > parentEnd) {
+        console.error("Not enough space to reorder subnets");
+        return;
+      }
+      
       // Assign the new base address
       const newBase = longToIp(candidateStart);
-      updatedSubnets[i] = { ...subnet, base: newBase };
+      
+      // Create a new subnet object with updated base
+      updatedSubnets[i] = { 
+        ...subnet, 
+        base: newBase,
+        // Regenerate ID to force component refresh
+        id: subnet.id ? `${subnet.id}-${Date.now()}` : `subnet-${i}-${Date.now()}`
+      };
       
       // Move past this subnet for the next one
       candidateStart += size;
     }
     
-    // Save the updated subnets
-    setNetworks(networks.map(n =>
+    // Update networks with a completely new reference to trigger UI updates
+    const updatedNetworks = networks.map(n =>
       n.id === selectedNetworkId
-        ? { ...n, subnets: updatedSubnets }
+        ? { ...n, subnets: [...updatedSubnets] }
         : n
-    ));
+    );
+    
+    setNetworks(updatedNetworks);
+    
+    // Force refresh component
+    setAnimate(prev => !prev);
   };
+  
+  // State to force refresh of components
+  const [animate, setAnimate] = useState(false);
 
   return (
     <Container size="lg" py="xl">
@@ -238,6 +260,7 @@ export function Calculator() {
                     parentNetwork={current.parentNetwork} 
                     subnets={current.subnets} 
                     onReorderSubnets={handleReorderSubnets}
+                    key={`viz-${animate}-${current.subnets.length}`}
                   />
                   <Paper p="md" radius="md" withBorder mb="md">
                     <Text fw={500} mb="sm">Subnets (drag to reorder):</Text>
@@ -245,6 +268,7 @@ export function Calculator() {
                       subnets={current.subnets}
                       onReorder={handleReorderSubnets}
                       onRemoveSubnet={handleRemoveSubnet}
+                      key={`drag-${animate}-${current.subnets.length}`}
                     />
                   </Paper>
                 </>

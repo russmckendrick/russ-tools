@@ -14,20 +14,24 @@ function SortableSubnet({ subnet, index, onRemove }) {
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id: subnet.id || index.toString() });
+    isDragging
+  } = useSortable({ id: subnet.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 10 : 1
   };
 
+  // Ensure we have a fresh Netmask calculation
   const block = new Netmask(subnet.base + '/' + subnet.cidr);
 
   return (
     <Grid.Col span={4} ref={setNodeRef} style={style} {...attributes}>
-      <Paper p="sm" radius="sm" withBorder mb="sm">
+      <Paper p="sm" radius="sm" withBorder mb="sm" shadow={isDragging ? "md" : "xs"}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-          <div {...listeners} style={{ cursor: 'grab', marginRight: 8 }}>
+          <div {...listeners} style={{ cursor: 'grab', marginRight: 8, padding: 4 }}>
             <IconGripVertical size={16} stroke={1.5} />
           </div>
           <Text fw={500}>{subnet.name} (/{subnet.cidr})</Text>
@@ -50,11 +54,15 @@ export function DraggableSubnets({ subnets, onReorder, onRemoveSubnet }) {
   // Ensure all subnets have IDs for stable drag and drop
   const subnetsWithIds = subnets.map((subnet, index) => ({
     ...subnet,
-    id: subnet.id || `subnet-${index}-${subnet.base}`
+    id: subnet.id || `subnet-card-${index}-${subnet.base}-${Date.now()}`
   }));
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Reduce the activation distance for more responsive dragging
+      }
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -63,16 +71,19 @@ export function DraggableSubnets({ subnets, onReorder, onRemoveSubnet }) {
   function handleDragEnd(event) {
     const { active, over } = event;
     
-    if (active.id !== over.id) {
-      const oldIndex = subnetsWithIds.findIndex(item => item.id === active.id);
-      const newIndex = subnetsWithIds.findIndex(item => item.id === over.id);
+    if (active.id !== over?.id && over) {
+      // Find the original subnet objects
+      const activeIndex = subnetsWithIds.findIndex(item => item.id === active.id);
+      const overIndex = subnetsWithIds.findIndex(item => item.id === over.id);
       
-      const newOrder = [...subnetsWithIds];
-      const [movedItem] = newOrder.splice(oldIndex, 1);
-      newOrder.splice(newIndex, 0, movedItem);
-      
-      // Call the parent component's reorder function
-      onReorder(newOrder);
+      if (activeIndex !== -1 && overIndex !== -1) {
+        const newOrder = [...subnetsWithIds];
+        const [movedItem] = newOrder.splice(activeIndex, 1);
+        newOrder.splice(overIndex, 0, movedItem);
+        
+        // Call the parent component's reorder function
+        onReorder(newOrder);
+      }
     }
   }
 
