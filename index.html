@@ -23,16 +23,16 @@
       </header>
 
       <div class="card">
-        <form id="subnet-form" class="grid grid-cols-1 md:grid-cols-7 gap-6 items-end">
-          <div class="form-control w-full md:col-span-3">
+        <form id="subnet-form" class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+          <div class="form-control w-full md:col-span-5">
             <label for="ip" class="block font-bold mb-2">IPv4 Address</label>
             <input type="text" id="ip" name="ip" placeholder="e.g. 192.168.1.10" class="input-field" required>
           </div>
-          <div class="form-control w-full md:col-span-3">
+          <div class="form-control w-full md:col-span-5">
             <label for="cidr" class="block font-bold mb-2">CIDR or Subnet Mask</label>
             <input type="text" id="cidr" name="cidr" placeholder="e.g. /24 or 255.255.255.0" class="input-field" required>
           </div>
-          <div class="md:col-span-1">
+          <div class="md:col-span-2">
             <button type="submit" class="btn-primary">Calculate</button>
           </div>
         </form>
@@ -70,15 +70,15 @@
         <h2 class="section-title">Subnet Planner</h2>
         <div id="plan-progress" class="mb-4"></div>
         
-        <div class="grid grid-cols-1 md:grid-cols-7 gap-4 items-end mb-6">
-          <div class="form-control md:col-span-3">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end mb-6">
+          <div class="form-control md:col-span-6">
             <label for="plan-prefix" class="block font-bold mb-2">Add a subnet to this network:</label>
             <select id="plan-prefix" class="input-field"></select>
           </div>
-          <div class="md:col-span-2">
+          <div class="md:col-span-3">
             <button id="add-subnet" type="button" class="btn-primary w-full">Add Subnet</button>
           </div>
-          <div class="md:col-span-2">
+          <div class="md:col-span-3">
             <button id="clear-subnets" type="button" class="btn-primary w-full" style="background-color: #ef4444;">Clear All</button>
           </div>
         </div>

@@ -41,7 +41,7 @@ body {
   padding: 2rem;
   margin-bottom: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 900px;
+  max-width: 95%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -128,7 +128,7 @@ body {
   border-radius: 0.75rem;
   overflow: hidden;
   display: flex;
-  height: 2.5rem;
+  height: 3.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin: 0.75rem 0;
   position: relative;
@@ -286,7 +286,7 @@ body {
 /* Subnet allocations visualization */
 .subnet-allocations-bar {
   display: flex;
-  height: 2.5rem;
+  height: 3.5rem;
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

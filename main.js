@@ -261,11 +261,11 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
       <table class="subnet-table">
         <thead>
           <tr>
-            <th>Network Address</th>
-            <th>Broadcast</th>
-            <th>Usable Range</th>
-            <th>Mask</th>
-            <th>Hosts</th>
+            <th width="20%">Network Address</th>
+            <th width="20%">Broadcast</th>
+            <th width="30%">Usable Range</th>
+            <th width="15%">Mask</th>
+            <th width="15%">Hosts</th>
           </tr>
         </thead>
         <tbody>
@@ -591,13 +591,13 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
           <table class="subnet-table w-full">
             <thead>
               <tr>
-                <th>Network</th>
-                <th>Broadcast</th>
-                <th>Usable Range</th>
-                <th>Mask</th>
-                <th>CIDR</th>
-                <th>Hosts</th>
-                <th>Action</th>
+                <th width="15%">Network</th>
+                <th width="15%">Broadcast</th>
+                <th width="30%">Usable Range</th>
+                <th width="15%">Mask</th>
+                <th width="10%">CIDR</th>
+                <th width="10%">Hosts</th>
+                <th width="5%">Action</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
