@@ -20,8 +20,8 @@
 ### 2. Subnets Management
 - [x] UI to add subnets (name, CIDR)
 - [x] Validate subnets fit within parent network
-- [x] Prevent overlapping subnets (in progress)
-- [ ] List all subnets with details
+- [x] Prevent overlapping subnets
+- [x] List all subnets with details (in progress)
 - [ ] Edit/remove subnets
 
 ### 3. Persistent State
