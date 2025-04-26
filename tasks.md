@@ -13,13 +13,13 @@
 
 ### 1. Parent Network (Supernet) Setup
 - [x] Add form for parent network (IPv4 address, CIDR, name)
-- [x] Validate parent network input (in progress)
-- [ ] Store parent network in React state
-- [ ] Persist parent network to local storage
+- [x] Validate parent network input
+- [x] Store parent network in React state
+- [x] Persist parent network to local storage
 
 ### 2. Subnets Management
-- [ ] UI to add subnets (name, CIDR)
-- [ ] Validate subnets fit within parent network
+- [x] UI to add subnets (name, CIDR)
+- [x] Validate subnets fit within parent network (in progress)
 - [ ] Prevent overlapping subnets
 - [ ] List all subnets with details
 - [ ] Edit/remove subnets

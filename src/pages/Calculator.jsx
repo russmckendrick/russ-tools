@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Container, TextInput, Button, Paper, Title, Grid, Text } from '@mantine/core';
 import { Netmask } from 'netmask';
 import { SubnetVisualization } from '../components/SubnetVisualization';
+import { ParentNetworkForm } from '../components/ParentNetworkForm';
+import { SubnetForm } from '../components/SubnetForm';
 
 function isValidIPv4(ip) {
   const pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
@@ -41,6 +43,25 @@ export function Calculator() {
   const [subnetMask, setSubnetMask] = useState('');
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
+  const [parentNetwork, setParentNetwork] = useState(null);
+  const [subnets, setSubnets] = useState([]);
+
+  // Restore parent network from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('parentNetwork');
+    if (saved) {
+      try {
+        setParentNetwork(JSON.parse(saved));
+      } catch {}
+    }
+  }, []);
+
+  // Persist parent network to localStorage when it changes
+  useEffect(() => {
+    if (parentNetwork) {
+      localStorage.setItem('parentNetwork', JSON.stringify(parentNetwork));
+    }
+  }, [parentNetwork]);
 
   const calculateSubnet = () => {
     try {
@@ -67,9 +88,32 @@ export function Calculator() {
     }
   };
 
+  const handleAddSubnet = (subnet) => {
+    setSubnets((prev) => [...prev, subnet]);
+  };
+
   return (
     <Container size="lg" py="xl">
       <Title order={2} mb="lg">IPv4 Subnet Calculator</Title>
+      <ParentNetworkForm onSubmit={setParentNetwork} />
+      {parentNetwork && (
+        <>
+          <Paper p="md" radius="md" withBorder mb="md">
+            <Text fw={500}>Parent Network:</Text>
+            <Text>IP: {parentNetwork.ip} /{parentNetwork.cidr}</Text>
+            <Text>Name: {parentNetwork.name}</Text>
+          </Paper>
+          <SubnetForm onAddSubnet={handleAddSubnet} parentCidr={parentNetwork.cidr} />
+          {subnets.length > 0 && (
+            <Paper p="md" radius="md" withBorder mb="md">
+              <Text fw={500} mb="sm">Subnets:</Text>
+              {subnets.map((subnet, idx) => (
+                <Text key={idx}>Name: {subnet.name}, CIDR: /{subnet.cidr}</Text>
+              ))}
+            </Paper>
+          )}
+        </>
+      )}
       <Paper p="md" radius="md" withBorder>
         <Grid>
           <Grid.Col span={6}>
