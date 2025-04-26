@@ -1,9 +1,5 @@
 import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal } from '@mantine/core';
-// Import Tabler icons initially, we might remove them later if SVGs work well
-import { IconDownload } from '@tabler/icons-react'; 
-// Import custom SVGs as React components
-import NetworkIcon from '../assets/network.svg?react';
-import SubnetIcon from '../assets/subnet.svg?react';
+import { IconDownload, IconNetwork, IconWifi } from '@tabler/icons-react';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
 import html2canvas from 'html2canvas';
@@ -104,8 +100,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     
     // SVG icons as path data FROM YOUR FILES
     const networkIconPath = "M3 12H21M12 8V12M6.5 12V16M17.5 12V16M10.1 8H13.9C14.4601 8 14.7401 8 14.954 7.89101C15.1422 7.79513 15.2951 7.64215 15.391 7.45399C15.5 7.24008 15.5 6.96005 15.5 6.4V4.6C15.5 4.03995 15.5 3.75992 15.391 3.54601C15.2951 3.35785 15.1422 3.20487 14.954 3.10899C14.7401 3 14.4601 3 13.9 3H10.1C9.53995 3 9.25992 3 9.04601 3.10899C8.85785 3.20487 8.70487 3.35785 8.60899 3.54601C8.5 3.75992 8.5 4.03995 8.5 4.6V6.4C8.5 6.96005 8.5 7.24008 8.60899 7.45399C8.70487 7.64215 8.85785 7.79513 9.04601 7.89101C9.25992 8 9.53995 8 10.1 8ZM15.6 21H19.4C19.9601 21 20.2401 21 20.454 20.891C20.6422 20.7951 20.7951 20.6422 20.891 20.454C21 20.2401 21 19.9601 21 19.4V17.6C21 17.0399 21 16.7599 20.891 16.546C20.7951 16.3578 20.6422 16.2049 20.454 16.109C20.2401 16 19.9601 16 19.4 16H15.6C15.0399 16 14.7599 16 14.546 16.109C14.3578 16.2049 14.2049 16.3578 14.109 16.546C14 16.7599 14 17.0399 14 17.6V19.4C14 19.9601 14 20.2401 14.109 20.454C14.2049 20.6422 14.3578 20.7951 14.546 20.891C14.7599 21 15.0399 21 15.6 21ZM4.6 21H8.4C8.96005 21 9.24008 21 9.45399 20.891C9.64215 20.7951 9.79513 20.6422 9.89101 20.454C10 20.2401 10 19.9601 10 19.4V17.6C10 17.0399 10 16.7599 9.89101 16.546C9.79513 16.3578 9.64215 16.2049 9.45399 16.109C9.24008 16 8.96005 16 8.4 16H4.6C4.03995 16 3.75992 16 3.54601 16.109C3.35785 16.2049 3.20487 16.3578 3.10899 16.546C3 16.7599 3 17.0399 3 17.6V19.4C3 19.9601 3 20.2401 3.10899 20.454C3.20487 20.6422 3.35785 20.7951 3.54601 20.891C3.75992 21 4.03995 21 4.6 21Z";
-    // Note: This path is complex and might require viewBox adjustments in the <g> tag if it doesn't render correctly
-    const subnetIconPath = "M173,3248 L181,3248 C181.552,3248 182,3248.448 182,3249 C182,3249.552 181.552,3250 181,3250 L173,3250 C172.448,3250 172,3249.552 172,3249 C172,3248.448 172.448,3248 173,3248 L173,3248 Z M173,3255 L181,3255 C181.552,3255 182,3255.448 182,3256 C182,3256.552 181.552,3257 181,3257 L173,3257 C172.448,3257 172,3256.552 172,3256 C172,3255.448 172.448,3255 173,3255 L173,3255 Z M173,3241 L181,3241 C181.552,3241 182,3241.448 182,3242 C182,3242.552 181.552,3243 181,3243 L173,3243 C172.448,3243 172,3242.552 172,3242 C172,3241.448 172.448,3241 173,3241 L173,3241 Z M170,3243 C170,3244.105 170.895,3245 172,3245 L182,3245 C183.105,3245 184,3244.105 184,3243 L184,3241 C184,3239.895 183.105,3239 182,3239 L172,3239 C170.895,3239 170,3239.895 170,3241 L166,3241 L166,3239 L164,3239 L164,3254.999 C164,3256.104 164.896,3257 166.001,3257 L166.219,3257 L170,3257 C170,3258.105 170.895,3259 172,3259 L182,3259 C183.105,3259 184,3258.105 184,3257 L184,3255 C184,3253.895 183.105,3253 182,3253 L172,3253 C170.895,3253 170,3253.895 170,3255 L166.996,3255 C166.446,3255 166,3254.554 166,3254.004 L166,3250 L170,3250 C170,3251.105 170.895,3252 172,3252 L182,3252 C183.105,3252 184,3251.105 184,3250 L184,3248 C184,3246.895 183.105,3246 182,3246 L172,3246 C170.895,3246 170,3246.895 170,3248 L166,3248 L166,3243 L170,3243 Z";
+    // Use simple wifi icon path for subnet
+    const subnetIconPath = "M8 12.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M2 9a6 6 0 0 1 12 0M4.5 12.5a3.5 3.5 0 0 1 7 0";
     
     // Create SVG manually
     let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -162,10 +158,9 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
               stroke="${color}" 
               x="${subnetX}" y="${subnetY}"></rect>
         
-        <!-- Subnet Icon (Using subnet.svg path) -->
-        <g transform="translate(${subnetX + 15}, ${subnetY + 25}) scale(0.05)" 
-           viewBox="164 3239 20 20">
-          <path d="${subnetIconPath}" stroke="${color}" class="iconPath" fill="${color}" />
+        <!-- Subnet Icon (Using wifi icon path) -->
+        <g transform="translate(${subnetX + 15}, ${subnetY + 25})">
+          <path d="${subnetIconPath}" stroke="${color}" class="iconPath" />
         </g>
               
         <!-- Subnet details -->
@@ -247,7 +242,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       </Group>
       
       <Box 
-        ref={diagramRef} // Ref needed for PNG export
+        ref={diagramRef}
         p="lg" 
         sx={{
           backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
@@ -268,19 +263,14 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           }}
         >
           <Group spacing="xs" mb="sm" noWrap>
-            {/* Use imported NetworkIcon */} 
-            <NetworkIcon 
-              width={18} 
-              height={18} 
-              style={{ stroke: theme.colors.blue[7], flexShrink: 0 }} 
-            /> 
+            <IconNetwork size={18} style={{ color: theme.colors.blue[7], flexShrink: 0 }} />
             <Text fw={700} size="sm">{parentNetwork.name || 'Parent Network'}</Text>
             <Text size="xs" fw={500} color="dimmed">({parentBlock.base}/{parentNetwork.cidr})</Text>
           </Group>
-          <Text size="xs" color="dimmed" pl={28}> {/* Indent details */}
+          <Text size="xs" color="dimmed" ml={28}>
             Range: {parentBlock.base} - {parentBlock.broadcast}
           </Text>
-          <Text size="xs" color="dimmed" pl={28}> {/* Indent details */}
+          <Text size="xs" color="dimmed" ml={28}>
             Total IPs: {parentBlock.size}
           </Text>
           
@@ -294,10 +284,9 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                 style={{
                   border: `1px solid ${subnet.color}`,
                   borderRadius: theme.radius.sm,
-                  // Determine fill color based on theme
                   backgroundColor: theme.colorScheme === 'dark' 
                     ? theme.fn.rgba(subnet.color, 0.2) 
-                    : (Object.values(theme.colors).flat().includes(subnet.color) 
+                    : (Object.keys(theme.colors).some(key => theme.colors[key].includes(subnet.color))
                         ? theme.colors[Object.keys(theme.colors).find(key => theme.colors[key].includes(subnet.color))][0]
                         : theme.colors.gray[0]), 
                   transition: 'all 0.3s ease',
@@ -307,19 +296,14 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                 }}
               >
                 <Group spacing="xs" noWrap>
-                  {/* Use imported SubnetIcon */} 
-                  <SubnetIcon 
-                    width={16} 
-                    height={16} 
-                    style={{ stroke: subnet.color, fill: subnet.color, flexShrink: 0 }}
-                  /> 
+                  <IconWifi size={16} style={{ color: subnet.color, flexShrink: 0 }} />
                   <Text fw={600} size="xs">{subnet.name}</Text>
                   <Text size="xs" fw={500} color="dimmed">({subnet.block.base}/{subnet.cidr})</Text>
                 </Group>
-                <Text size="xs" ml={26} color="dimmed"> {/* Indent details */}
+                <Text size="xs" ml={26} color="dimmed">
                   Range: {subnet.block.first} - {subnet.block.last}
                 </Text>
-                <Text size="xs" ml={26} color="dimmed"> {/* Indent details */}
+                <Text size="xs" ml={26} color="dimmed">
                   Usable IPs: {subnet.cidr >= 31 ? subnet.block.size : subnet.block.size - 2}
                 </Text>
               </Box>
