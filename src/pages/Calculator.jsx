@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Container, TextInput, Button, Paper, Title, Grid, Text } from '@mantine/core';
+import { Container, TextInput, Button, Paper, Title, Grid, Text, Select, Group } from '@mantine/core';
 import { Netmask } from 'netmask';
 import { SubnetVisualization } from '../components/SubnetVisualization';
 import { ParentNetworkForm } from '../components/ParentNetworkForm';
 import { SubnetForm } from '../components/SubnetForm';
+import { v4 as uuidv4 } from 'uuid';
 
 function isValidIPv4(ip) {
   const pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
@@ -47,6 +48,66 @@ function longToIp(long) {
 }
 
 export function Calculator() {
+  // Multiple network designs
+  const [networks, setNetworks] = useState([]); // [{id, name, parentNetwork, subnets, createdAt}]
+  const [selectedNetworkId, setSelectedNetworkId] = useState(null);
+
+  // Migration on load
+  useEffect(() => {
+    // Try to load new format
+    const saved = localStorage.getItem('networks');
+    if (saved) {
+      setNetworks(JSON.parse(saved));
+      setSelectedNetworkId(JSON.parse(saved)[0]?.id || null);
+      return;
+    }
+    // Migrate old format if present
+    const oldParent = localStorage.getItem('parentNetwork');
+    const oldSubnets = localStorage.getItem('subnets');
+    if (oldParent && oldSubnets) {
+      const migrated = [{
+        id: uuidv4(),
+        name: JSON.parse(oldParent).name || 'Migrated Network',
+        parentNetwork: JSON.parse(oldParent),
+        subnets: JSON.parse(oldSubnets),
+        createdAt: Date.now(),
+      }];
+      setNetworks(migrated);
+      setSelectedNetworkId(migrated[0].id);
+      localStorage.setItem('networks', JSON.stringify(migrated));
+      localStorage.removeItem('parentNetwork');
+      localStorage.removeItem('subnets');
+      return;
+    }
+    // No data
+    setNetworks([]);
+  }, []);
+
+  // Persist networks to localStorage
+  useEffect(() => {
+    localStorage.setItem('networks', JSON.stringify(networks));
+  }, [networks]);
+
+  // Get current network
+  const current = networks.find(n => n.id === selectedNetworkId);
+
+  // Dropdown options
+  const networkOptions = networks.map(n => ({ value: n.id, label: n.name }));
+
+  // Handlers
+  const handleSelectNetwork = (id) => setSelectedNetworkId(id);
+  const handleNewNetwork = () => {
+    const newNet = {
+      id: uuidv4(),
+      name: 'New Network',
+      parentNetwork: null,
+      subnets: [],
+      createdAt: Date.now(),
+    };
+    setNetworks(prev => [newNet, ...prev]);
+    setSelectedNetworkId(newNet.id);
+  };
+
   const [ipAddress, setIpAddress] = useState('');
   const [subnetMask, setSubnetMask] = useState('');
   const [results, setResults] = useState(null);
@@ -150,6 +211,16 @@ export function Calculator() {
   return (
     <Container size="lg" py="xl">
       <Title order={2} mb="lg">IPv4 Subnet Calculator</Title>
+      <Group mb="md">
+        <Select
+          data={networkOptions}
+          value={selectedNetworkId}
+          onChange={handleSelectNetwork}
+          placeholder="Select a network design"
+          style={{ minWidth: 220 }}
+        />
+        <Button onClick={handleNewNetwork}>New Network</Button>
+      </Group>
       <ParentNetworkForm onSubmit={setParentNetwork} />
       {parentNetwork && (
         <>
