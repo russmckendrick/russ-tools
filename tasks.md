@@ -44,4 +44,35 @@
 
 ---
 
-*Update this file as tasks are started, completed, or refined.* 
+*Update this file as tasks are started, completed, or refined.*
+
+## Current Sprint Tasks
+
+**Core Features:**
+- [x] Define parent network
+- [x] Add/edit/delete subnets
+- [x] Save state to local storage
+- [x] Simplify visualization component (remove dragging)
+- [ ] Add subnet auto-allocation
+- [ ] Export/share configuration
+
+**UI Improvements:**
+- [ ] Add tooltips to explain CIDR notation
+- [ ] Create help modal with basic subnetting concepts
+- [ ] Improve color scheme for better subnet differentiation
+- [ ] Add visual indicator for subnet overlap/errors
+- [ ] Add welcome screen for first-time users
+
+**Testing & Performance:**
+- [ ] Add unit tests for calculation functions
+- [ ] Add integration tests for core workflows
+- [ ] Optimize rendering for many subnets
+- [ ] Add error boundary for recovery from calculation errors
+
+## Backlog
+
+- [ ] Support IPv6 networks and subnets 
+- [ ] Add diagram view with connections
+- [ ] Support cloud provider export templates
+- [ ] Multi-layout visualization options
+- [ ] Custom subnet coloring/tagging 

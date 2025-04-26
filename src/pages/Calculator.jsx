@@ -336,8 +336,6 @@ export function Calculator() {
                   <SubnetVisualization 
                     parentNetwork={current.parentNetwork} 
                     subnets={current.subnets} 
-                    onResizeSubnet={handleResizeSubnet}
-                    key={`viz-${animate}-${current.subnets.length}`}
                   />
                   
                   <Space h="xl" />
