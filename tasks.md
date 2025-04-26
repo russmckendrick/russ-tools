@@ -41,7 +41,7 @@
 - [x] Add placeholder for network diagram
 - [x] Implement dynamic diagram generation
 - [x] Support export (SVG/PNG)
-- [x] Fix SVG export to use embedded PNG approach for reliability
+- [x] Implement proper vector-based SVG export using SVG.js
 
 ---
 

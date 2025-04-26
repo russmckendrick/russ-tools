@@ -3,6 +3,7 @@ import { IconDownload, IconNetwork, IconWifi } from '@tabler/icons-react';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
 import html2canvas from 'html2canvas';
+import { SVG } from 'svg.js';
 
 export function NetworkDiagram({ parentNetwork, subnets }) {
   const theme = useMantineTheme();
@@ -75,57 +76,145 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     });
   };
   
-  // Export diagram as SVG
+  // Export diagram as true SVG
   const exportSVG = () => {
-    if (!diagramRef.current) return;
-    
-    html2canvas(diagramRef.current, {
-      // Better quality settings
-      scale: 2,
-      useCORS: true,
-      allowTaint: true
-    }).then(canvas => {
-      try {
-        // Convert to PNG first (more reliable)
-        const pngData = canvas.toDataURL('image/png');
+    try {
+      // Create an in-memory div for SVG.js to work with
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      
+      // Get dimensions from the actual diagram
+      const boundingRect = diagramRef.current.getBoundingClientRect();
+      const width = boundingRect.width;
+      const height = boundingRect.height;
+      
+      // Initialize SVG.js
+      const draw = SVG(container).size(width, height);
+      
+      // Background
+      const bgColor = theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+      draw.rect(width, height).fill(bgColor);
+      
+      // Parent Network Container
+      const parentBoxY = 50;
+      const parentBoxHeight = height - 100;
+      const parentBoxWidth = width - 40;
+      const parentBoxX = 20;
+      
+      // Draw parent network container
+      const parentBox = draw.rect(parentBoxWidth, parentBoxHeight)
+        .radius(5)
+        .fill('white')
+        .stroke({ width: 2, color: theme.colors.blue[7] })
+        .move(parentBoxX, parentBoxY);
+      
+      // Add parent network title
+      draw.text(function(add) {
+        add.tspan(`${parentNetwork.name || 'Parent Network'} (${parentBlock.base}/${parentNetwork.cidr})`)
+          .font({
+            family: 'Arial',
+            size: 16,
+            weight: 'bold'
+          });
+      }).move(parentBoxX + 25, parentBoxY + 20);
+      
+      // Add parent network details
+      draw.text(function(add) {
+        add.tspan(`Range: ${parentBlock.base} - ${parentBlock.broadcast}`)
+          .font({
+            family: 'Arial',
+            size: 12
+          });
+      }).move(parentBoxX + 25, parentBoxY + 45);
+      
+      draw.text(function(add) {
+        add.tspan(`Total IPs: ${parentBlock.size}`)
+          .font({
+            family: 'Arial',
+            size: 12
+          });
+      }).move(parentBoxX + 25, parentBoxY + 65);
+      
+      // Draw subnets
+      const subnetStartY = parentBoxY + 100;
+      const subnetHeight = 80;
+      const subnetSpacing = 10;
+      const subnetWidth = parentBoxWidth - 60;
+      const subnetX = parentBoxX + 30;
+      
+      processedSubnets.forEach((subnet, index) => {
+        const y = subnetStartY + (subnetHeight + subnetSpacing) * index;
         
-        // Generate a simple SVG that embeds the PNG
-        const width = canvas.width;
-        const height = canvas.height;
+        // Create subnet box
+        const subnetBox = draw.rect(subnetWidth, subnetHeight)
+          .radius(4)
+          .fill(`${subnet.color}15`)
+          .stroke({ width: 1, color: subnet.color })
+          .move(subnetX, y);
         
-        const svgContent = `<?xml version="1.0" standalone="no"?>
-        <svg width="${width}" height="${height}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-          <image width="${width}" height="${height}" xlink:href="${pngData}"/>
-        </svg>`;
+        // Add subnet title
+        draw.text(function(add) {
+          add.tspan(`${subnet.name} (${subnet.block.base}/${subnet.cidr})`)
+            .font({
+              family: 'Arial',
+              size: 14,
+              weight: 'bold'
+            });
+        }).move(subnetX + 15, y + 20);
         
-        // Create downloadable link
-        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${parentNetwork.name || 'network'}-diagram.svg`;
-        link.click();
+        // Add subnet details
+        draw.text(function(add) {
+          add.tspan(`Range: ${subnet.block.first} - ${subnet.block.last}`)
+            .font({
+              family: 'Arial',
+              size: 12
+            });
+        }).move(subnetX + 15, y + 40);
         
-        // Clean up
-        setTimeout(() => {
-          URL.revokeObjectURL(url);
-        }, 100);
-      } catch (e) {
-        console.error('SVG export error:', e);
-        setErrorModal({
-          opened: true,
-          message: 'SVG export failed. Falling back to PNG...'
-        });
-        exportDiagram();
-      }
-    }).catch(err => {
-      console.error('Canvas conversion error:', err);
+        draw.text(function(add) {
+          add.tspan(`Usable IPs: ${subnet.cidr >= 31 ? subnet.block.size : subnet.block.size - 2}`)
+            .font({
+              family: 'Arial',
+              size: 12
+            });
+        }).move(subnetX + 15, y + 60);
+      });
+      
+      // Add footer with subnet count
+      draw.text(function(add) {
+        add.tspan(`Total subnets: ${subnets.length} • Total IPs: ${parentBlock.size}`)
+          .font({
+            family: 'Arial',
+            size: 12
+          });
+      }).move(width/2 - 100, height - 30);
+      
+      // Get the SVG as a string
+      const svgString = container.innerHTML;
+      
+      // Remove the temporary container
+      document.body.removeChild(container);
+      
+      // Create a blob and trigger download
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${parentNetwork.name || 'network'}-diagram.svg`;
+      link.click();
+      
+      // Clean up
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 100);
+    } catch (e) {
+      console.error('SVG export error:', e);
       setErrorModal({
         opened: true,
         message: 'SVG export failed. Falling back to PNG...'
       });
       exportDiagram();
-    });
+    }
   };
 
   return (
