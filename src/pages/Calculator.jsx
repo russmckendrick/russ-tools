@@ -63,6 +63,21 @@ export function Calculator() {
     }
   }, [parentNetwork]);
 
+  // Restore subnets from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('subnets');
+    if (saved) {
+      try {
+        setSubnets(JSON.parse(saved));
+      } catch {}
+    }
+  }, []);
+
+  // Persist subnets to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('subnets', JSON.stringify(subnets));
+  }, [subnets]);
+
   const calculateSubnet = () => {
     try {
       setError('');
@@ -115,6 +130,14 @@ export function Calculator() {
   return (
     <Container size="lg" py="xl">
       <Title order={2} mb="lg">IPv4 Subnet Calculator</Title>
+      <Button color="yellow" fullWidth mb="md" onClick={() => {
+        setParentNetwork(null);
+        setSubnets([]);
+        localStorage.removeItem('parentNetwork');
+        localStorage.removeItem('subnets');
+      }}>
+        Reset / Clear Design
+      </Button>
       <ParentNetworkForm onSubmit={setParentNetwork} />
       {parentNetwork && (
         <>
@@ -127,9 +150,23 @@ export function Calculator() {
           {subnets.length > 0 && (
             <Paper p="md" radius="md" withBorder mb="md">
               <Text fw={500} mb="sm">Subnets:</Text>
-              {subnets.map((subnet, idx) => (
-                <Text key={idx}>Name: {subnet.name}, CIDR: /{subnet.cidr}</Text>
-              ))}
+              {subnets.map((subnet, idx) => {
+                const block = new Netmask(parentNetwork.ip + '/' + subnet.cidr);
+                return (
+                  <Paper key={idx} p="sm" radius="sm" withBorder mb="sm">
+                    <Text fw={500}>{subnet.name} (/{subnet.cidr})</Text>
+                    <Text size="sm">Network Address: {block.base}</Text>
+                    <Text size="sm">Broadcast Address: {block.broadcast}</Text>
+                    <Text size="sm">First Usable Host: {block.first}</Text>
+                    <Text size="sm">Last Usable Host: {block.last}</Text>
+                    <Text size="sm">Number of Hosts: {block.size}</Text>
+                    <Text size="sm">Subnet Mask: {block.mask} (/{block.bitmask})</Text>
+                    <Button color="red" size="xs" mt="xs" onClick={() => setSubnets(subnets.filter((_, i) => i !== idx))}>
+                      Remove
+                    </Button>
+                  </Paper>
+                );
+              })}
             </Paper>
           )}
         </>

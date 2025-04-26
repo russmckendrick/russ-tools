@@ -21,13 +21,13 @@
 - [x] UI to add subnets (name, CIDR)
 - [x] Validate subnets fit within parent network
 - [x] Prevent overlapping subnets
-- [x] List all subnets with details (in progress)
-- [ ] Edit/remove subnets
+- [x] List all subnets with details
+- [x] Edit/remove subnets
 
 ### 3. Persistent State
-- [ ] Save all network/subnet data to local storage
-- [ ] Restore state on app load
-- [ ] Add Reset/Clear Design button
+- [x] Save all network/subnet data to local storage
+- [x] Restore state on app load
+- [x] Add Reset/Clear Design button (in progress)
 
 ### 4. Enhanced Visualization
 - [ ] Update visualization to show all subnets as proportional segments
