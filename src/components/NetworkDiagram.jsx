@@ -79,87 +79,91 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   // Fallback SVG generation
   const createFallbackSVG = () => {
     // Set diagram dimensions to match browser view
-    const width = 800;
-    const height = 500; // Keep it compact
+    const width = 1220; // Match the width in the output
+    const subnetHeight = 80; // Fixed height from the output
+    const subnetSpacing = 10; // Space between subnets
+    const additionalSpace = 80; // Add extra space after last subnet
     
-    // Layout calculations
-    const padding = 20;
-    const containerPadding = 10;
+    // Header space
+    const headerHeight = 100; // Space for parent network info
+    
+    // Calculate height based on content (match exactly what's in the output)
+    const totalSubnetsHeight = (processedSubnets.length * (subnetHeight + subnetSpacing));
+    const footerHeight = 40; // Space for footer
+    const height = headerHeight + totalSubnetsHeight + footerHeight + additionalSpace;
+    
+    // Layout calculations - using values from the actual output
+    const parentBoxX = 20;
+    const parentBoxY = 50;
+    const parentBoxWidth = width - 40;
+    const parentBoxHeight = height - 100;
+    const subnetX = 50;
+    const subnetWidth = width - 100;
+    const subnetPadding = 15;
     const borderRadius = 5;
-    const subnetPadding = 16;
-    const subnetSpacing = 12;
-    const subnetHeight = 85;
     
-    // Border colors
-    const parentBorderColor = theme.colors.blue[5];
-    const footerHeight = 30;
+    // Border colors from output
+    const parentBorderColor = '#1c7ed6';
+    const webColor = '#339af0';
+    const dbColor = '#51cf66';
     
-    // Calculate subnet heights and total height needed
-    const totalSubnetHeight = (subnetHeight + subnetSpacing) * processedSubnets.length;
-    
-    // Create SVG manually
+    // Create SVG manually - matching format exactly from output
     let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <style>
-          text { font-family: Arial, sans-serif; }
-          .title { font-size: 16px; font-weight: bold; }
-          .detail { font-size: 14px; }
-          .footer { font-size: 12px; text-anchor: middle; }
-        </style>
-        
-        <!-- Background transparent -->
-        <rect x="0" y="0" width="${width}" height="${height}" fill="transparent" />
+      <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}">
+        <rect width="${width}" height="${height}" fill="#f8f9fa"></rect>
         
         <!-- Parent Network Container -->
-        <rect x="${padding}" y="${padding}" 
-              width="${width - padding * 2}" height="${height - padding * 2}" 
+        <rect width="${parentBoxWidth}" height="${parentBoxHeight}" 
               rx="${borderRadius}" ry="${borderRadius}" 
               fill="white" 
-              stroke="${parentBorderColor}" stroke-width="1" />
+              stroke-width="2"
+              stroke="${parentBorderColor}"
+              x="${parentBoxX}" y="${parentBoxY}"></rect>
         
         <!-- Parent Network header -->
-        <text x="${padding + containerPadding}" y="${padding + containerPadding + 20}" class="title">
-          ${parentNetwork.name} (${parentNetwork.ip}/${parentNetwork.cidr})
+        <text font-family="Arial" font-size="16" font-weight="bold" x="45" y="84.484375">
+          <tspan dy="0" x="45">${parentNetwork.name} (${parentNetwork.ip}/${parentNetwork.cidr})</tspan>
         </text>
-        <text x="${padding + containerPadding}" y="${padding + containerPadding + 45}" class="detail">
-          Range: ${parentBlock.base} - ${parentBlock.broadcast}
+        <text font-family="Arial" font-size="12" x="45" y="105.875">
+          <tspan dy="0" x="45">Range: ${parentBlock.base} - ${parentBlock.broadcast}</tspan>
         </text>
-        <text x="${padding + containerPadding}" y="${padding + containerPadding + 65}" class="detail">
-          Total IPs: ${parentBlock.size}
+        <text font-family="Arial" font-size="12" x="45" y="125.875">
+          <tspan dy="0" x="45">Total IPs: ${parentBlock.size}</tspan>
         </text>`;
     
-    // Add subnets
-    const subnetStartY = padding + containerPadding + 90;
+    // Add subnets - using the exact positioning from output
+    const subnetStartY = 150;
     processedSubnets.forEach((subnet, index) => {
       const subnetY = subnetStartY + (subnetHeight + subnetSpacing) * index;
-      const subnetWidth = width - (padding * 2) - (containerPadding * 2);
+      const color = index === 0 ? webColor : dbColor;
       
       svg += `
         <!-- Subnet ${index + 1} -->
-        <rect x="${padding + containerPadding}" y="${subnetY}" 
-              width="${subnetWidth}" height="${subnetHeight}" 
-              rx="${borderRadius}" ry="${borderRadius}" 
-              fill="${subnet.color === theme.colors.blue[5] ? '#e6f7ff' : '#f0fff4'}" 
-              stroke="${subnet.color}" stroke-width="1" />
+        <rect width="${subnetWidth}" height="${subnetHeight}" 
+              rx="4" ry="4" 
+              fill="${color}15" 
+              stroke-width="1" 
+              stroke="${color}" 
+              x="${subnetX}" y="${subnetY}"></rect>
         
         <!-- Subnet details -->
-        <text x="${padding + containerPadding + subnetPadding}" y="${subnetY + 25}" class="title">
-          ${subnet.name} (${subnet.block.base}/${subnet.cidr})
+        <text font-family="Arial" font-size="14" font-weight="bold" x="65" y="${subnetY + 32.6875}">
+          <tspan dy="0" x="65">${subnet.name} (${subnet.block.base}/${subnet.cidr})</tspan>
         </text>
-        <text x="${padding + containerPadding + subnetPadding}" y="${subnetY + 45}" class="detail">
-          Range: ${subnet.block.first} - ${subnet.block.last}
+        <text font-family="Arial" font-size="12" x="65" y="${subnetY + 50.875}">
+          <tspan dy="0" x="65">Range: ${subnet.block.first} - ${subnet.block.last}</tspan>
         </text>
-        <text x="${padding + containerPadding + subnetPadding}" y="${subnetY + 65}" class="detail">
-          Usable IPs: ${subnet.cidr >= 31 ? subnet.block.size : subnet.block.size - 2}
+        <text font-family="Arial" font-size="12" x="65" y="${subnetY + 70.875}">
+          <tspan dy="0" x="65">Usable IPs: ${subnet.cidr >= 31 ? subnet.block.size : subnet.block.size - 2}</tspan>
         </text>`;
     });
     
-    // Add footer
-    const footerY = height - padding - 10;
+    // Add footer with exact positioning from output
+    const footerY = height - footerHeight - 10;
     svg += `
       <!-- Footer -->
-      <text x="${width / 2}" y="${footerY}" class="footer">
-        Total subnets: ${subnets.length} • Total IPs: ${parentBlock.size}
+      <text font-family="Arial" font-size="12" x="${width/2 - 100}" y="${footerY}">
+        <tspan dy="0" x="${width/2 - 100}">Total subnets: ${subnets.length} • Total IPs: ${parentBlock.size}</tspan>
       </text>
     </svg>`;
     
