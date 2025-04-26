@@ -208,6 +208,13 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
   const firstUsable = subnet.first;
   const lastUsable = subnet.last;
   
+  // Generate prefix options for dropdown
+  let prefixOptions = '';
+  for (let p = 0; p <= 32; p++) {
+    const selected = p === subnet.prefix ? 'selected' : '';
+    prefixOptions += `<option value="${p}" ${selected}>/${p}</option>`;
+  }
+
   // Create a more detailed visualization
   visualization.innerHTML = `
     <h2 class="section-title">Network Visualization</h2>
