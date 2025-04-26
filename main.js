@@ -150,41 +150,33 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
   // Show results section
   results.classList.remove('hidden');
   results.innerHTML = `
-    <h2 class="text-xl font-bold mb-3">Network Information</h2>
-    <div class="overflow-x-auto">
-      <table class="table table-zebra w-full">
-        <tbody>
-          <tr>
-            <td class="font-medium">Network Address</td>
-            <td>${subnet.network}</td>
-          </tr>
-          <tr>
-            <td class="font-medium">Broadcast Address</td>
-            <td>${subnet.broadcast}</td>
-          </tr>
-          <tr>
-            <td class="font-medium">Usable Host Range</td>
-            <td>${subnet.first} - ${subnet.last}</td>
-          </tr>
-          <tr>
-            <td class="font-medium">Total Hosts</td>
-            <td>${subnet.totalHosts}</td>
-          </tr>
-          <tr>
-            <td class="font-medium">Usable Hosts</td>
-            <td>${subnet.usableHosts}</td>
-          </tr>
-          <tr>
-            <td class="font-medium">Subnet Mask</td>
-            <td>${subnet.mask}</td>
-          </tr>
-          <tr>
-            <td class="font-medium">CIDR Prefix</td>
-            <td>/${subnet.prefix}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <h2 class="section-title">Network Information</h2>
+    <ul class="info-list">
+      <li>
+        <span class="info-label">Network Address</span>
+        <span class="info-value">${subnet.network}</span>
+      </li>
+      <li>
+        <span class="info-label">Broadcast Address</span>
+        <span class="info-value">${subnet.broadcast}</span>
+      </li>
+      <li>
+        <span class="info-label">Usable Host Range</span>
+        <span class="info-value">${subnet.first} - ${subnet.last}</span>
+      </li>
+      <li>
+        <span class="info-label">Total Hosts</span>
+        <span class="info-value">${subnet.totalHosts}</span>
+      </li>
+      <li>
+        <span class="info-label">Usable Hosts</span>
+        <span class="info-value">${subnet.usableHosts}</span>
+      </li>
+      <li>
+        <span class="info-label">CIDR Prefix</span>
+        <span class="info-value">/${subnet.prefix}</span>
+      </li>
+    </ul>
   `;
   // Visualization with DaisyUI styling
   visualization.classList.remove('hidden');
@@ -218,82 +210,80 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
   
   // Create a more detailed visualization
   visualization.innerHTML = `
-    <h2 class="text-xl font-bold mb-3">Network Visualization</h2>
-    <div class="card bg-base-100 shadow-sm mb-4">
-      <div class="card-body p-4">
-        <div class="subnet-bar-container mb-3">
-          <div class="subnet-bar">
-            ${subnet.prefix >= 31 ? 
-              `<div class="subnet-bar-usable-all" style="width:100%" title="All addresses usable">
-                <span class="subnet-bar-label">All ${total} addresses usable</span>
-              </div>` : 
-              `<div class="subnet-bar-network" style="width:${leftPercent}%" title="Network Address: ${networkAddress}">
-                <span class="subnet-bar-label">${leftLabel}</span>
-              </div>
-              <div class="subnet-bar-usable" style="width:${usablePercent}%" title="Usable Range: ${firstUsable} - ${lastUsable}">
-                <span class="subnet-bar-label">${usableLabel} (${usable})</span>
-              </div>
-              <div class="subnet-bar-broadcast" style="width:${rightPercent}%" title="Broadcast Address: ${broadcastAddress}">
-                <span class="subnet-bar-label">${rightLabel}</span>
-              </div>`
-            }
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <div class="flex items-center mb-2">
-              <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-              <span class="font-medium">Network Address:</span>
-              <span class="ml-2">${networkAddress}</span>
-            </div>
-            <div class="flex items-center mb-2">
-              <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-              <span class="font-medium">First Usable:</span>
-              <span class="ml-2">${firstUsable}</span>
-            </div>
-          </div>
-          <div>
-            <div class="flex items-center mb-2">
-              <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-              <span class="font-medium">Broadcast Address:</span>
-              <span class="ml-2">${broadcastAddress}</span>
-            </div>
-            <div class="flex items-center mb-2">
-              <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-              <span class="font-medium">Last Usable:</span>
-              <span class="ml-2">${lastUsable}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="text-xs text-gray-500 mt-3">Hover over sections for more details</div>
-        
-        <div id="subnets-visualization" class="mt-6">
-          <h3 class="text-lg font-bold mb-2">Subnet Allocations</h3>
-          <div class="subnet-allocations-bar"></div>
-          <div class="text-xs text-gray-500 mt-1">Hover over sections to see subnet details</div>
-        </div>
+    <h2 class="section-title">Network Visualization</h2>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color legend-network"></div>
+        <span>Network Address</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color legend-usable"></div>
+        <span>Usable Hosts</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color legend-broadcast"></div>
+        <span>Broadcast Address</span>
       </div>
     </div>
+    <div class="subnet-bar-container">
+      <div class="subnet-bar">
+        ${subnet.prefix >= 31 ? 
+          `<div class="subnet-bar-usable-all" style="width:100%" title="All addresses usable">
+            <span class="subnet-bar-label">All ${total} addresses usable</span>
+          </div>` : 
+          `<div class="subnet-bar-network" style="width:${leftPercent}%" title="Network Address: ${networkAddress}">
+            <span class="subnet-bar-label">${leftLabel}</span>
+          </div>
+          <div class="subnet-bar-usable" style="width:${usablePercent}%" title="Usable Range: ${firstUsable} - ${lastUsable}">
+            <span class="subnet-bar-label">${usableLabel} (${usable})</span>
+          </div>
+          <div class="subnet-bar-broadcast" style="width:${rightPercent}%" title="Broadcast Address: ${broadcastAddress}">
+            <span class="subnet-bar-label">${rightLabel}</span>
+          </div>`
+        }
+      </div>
+    </div>
+    
+    <div class="mt-4">
+      <select id="subnet-prefix" class="input-field">
+        ${prefixOptions}
+      </select>
+    </div>
+    
+    <table class="subnet-table mt-3">
+      <thead>
+        <tr>
+          <th>Network Address</th>
+          <th>Broadcast</th>
+          <th>Usable Range</th>
+          <th>Mask</th>
+          <th>Hosts</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>${subnet.network}</td>
+          <td>${subnet.broadcast}</td>
+          <td>${subnet.first} - ${subnet.last}</td>
+          <td>${subnet.mask}</td>
+          <td>${subnet.usableHosts}</td>
+        </tr>
+      </tbody>
+    </table>
   `;
   
-  // Remove any existing Subnet Allocations section first
-  const existingAllocations = document.getElementById('subnets-visualization');
-  if (existingAllocations) {
-    existingAllocations.remove();
+  // Add subnet allocations section to the visualization
+  if (!document.getElementById('subnets-visualization')) {
+    const subnetAllocationsSection = document.createElement('div');
+    subnetAllocationsSection.id = 'subnets-visualization';
+    subnetAllocationsSection.className = 'mt-6';
+    subnetAllocationsSection.innerHTML = `
+      <h3 class="section-title">Subnet Allocations</h3>
+      <div class="subnet-allocations-bar"></div>
+      <div class="text-sm mt-1">Hover over sections to see subnet details</div>
+    `;
+    visualization.appendChild(subnetAllocationsSection);
   }
-  
-  // Create a dedicated subnet visualization section
-  const subnetAllocationsSection = document.createElement('div');
-  subnetAllocationsSection.id = 'subnets-visualization';
-  subnetAllocationsSection.className = 'mt-6';
-  subnetAllocationsSection.innerHTML = `
-    <h3 class="text-lg font-bold mb-2">Subnet Allocations</h3>
-    <div class="subnet-allocations-bar"></div>
-    <div class="text-xs text-gray-500 mt-1">Hover over sections to see subnet details</div>
-  `;
-  visualization.querySelector('.card-body').appendChild(subnetAllocationsSection);
   
   // Function to update subnet allocations visualization
   window.updateSubnetVisualization = function(currentPlan, baseNetwork) {
@@ -581,7 +571,7 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
             <td>/${p}</td>
             <td>${usableHosts}</td>
             <td>
-              <button class="btn btn-xs btn-error" data-index="${i}">Remove</button>
+              <button class="close-btn" data-index="${i}">×</button>
             </td>
           </tr>`;
         nextInt = bcast + 1;
@@ -589,7 +579,7 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
       }
       planTable.innerHTML = `
         <div class="overflow-x-auto">
-          <table class="table table-zebra w-full">
+          <table class="subnet-table w-full">
             <thead>
               <tr>
                 <th>Network</th>
@@ -604,7 +594,7 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
             <tbody>${rows}</tbody>
           </table>
         </div>`;
-      planTable.querySelectorAll('.btn-error').forEach(btn => {
+      planTable.querySelectorAll('.close-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           const index = parseInt(this.dataset.index);
           plan.splice(index, 1);
