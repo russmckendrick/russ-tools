@@ -89,6 +89,15 @@ export function Calculator() {
   };
 
   const handleAddSubnet = (subnet) => {
+    if (!parentNetwork) return;
+    const parentBlock = new Netmask(parentNetwork.ip + '/' + parentNetwork.cidr);
+    // Calculate the first available subnet base for the given CIDR
+    // For now, just use the parent IP as the base for the new subnet
+    const subnetBlock = new Netmask(parentNetwork.ip + '/' + subnet.cidr);
+    if (!parentBlock.contains(subnetBlock.base) || !parentBlock.contains(subnetBlock.broadcast)) {
+      alert('Subnet does not fit within the parent network.');
+      return;
+    }
     setSubnets((prev) => [...prev, subnet]);
   };
 

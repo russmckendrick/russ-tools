@@ -19,8 +19,8 @@
 
 ### 2. Subnets Management
 - [x] UI to add subnets (name, CIDR)
-- [x] Validate subnets fit within parent network (in progress)
-- [ ] Prevent overlapping subnets
+- [x] Validate subnets fit within parent network
+- [x] Prevent overlapping subnets (in progress)
 - [ ] List all subnets with details
 - [ ] Edit/remove subnets
 
