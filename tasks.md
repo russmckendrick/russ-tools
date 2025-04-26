@@ -30,9 +30,9 @@
 - [x] Add Reset/Clear Design button
 
 ### 4. Enhanced Visualization
-- [x] Update visualization to show all subnets as proportional segments (in progress)
-- [ ] Color blocks, labels, hover details for each subnet
-- [ ] Show unused space in parent network
+- [x] Update visualization to show all subnets as proportional segments
+- [x] Color blocks, labels, hover details for each subnet (in progress)
+- [x] Show unused space in parent network (in progress)
 - [ ] Create a drag and drop reorder tool
 
 ### 5. Network Diagram View

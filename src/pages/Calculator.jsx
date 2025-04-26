@@ -38,6 +38,14 @@ function parseInput(ipAddress, maskInput) {
   throw new Error('Invalid subnet mask or CIDR notation');
 }
 
+// Helper functions for IP math
+function ipToLong(ip) {
+  return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+}
+function longToIp(long) {
+  return [24, 16, 8, 0].map(shift => (long >>> shift) & 255).join('.');
+}
+
 export function Calculator() {
   const [ipAddress, setIpAddress] = useState('');
   const [subnetMask, setSubnetMask] = useState('');
@@ -106,38 +114,47 @@ export function Calculator() {
   const handleAddSubnet = (subnet) => {
     if (!parentNetwork) return;
     const parentBlock = new Netmask(parentNetwork.ip + '/' + parentNetwork.cidr);
-    const subnetBlock = new Netmask(parentNetwork.ip + '/' + subnet.cidr);
-    if (!parentBlock.contains(subnetBlock.base) || !parentBlock.contains(subnetBlock.broadcast)) {
-      alert('Subnet does not fit within the parent network.');
-      return;
-    }
-    // Prevent overlapping subnets
-    for (const existing of subnets) {
-      const existingBlock = new Netmask(parentNetwork.ip + '/' + existing.cidr);
-      if (
-        existingBlock.contains(subnetBlock.base) ||
-        existingBlock.contains(subnetBlock.broadcast) ||
-        subnetBlock.contains(existingBlock.base) ||
-        subnetBlock.contains(existingBlock.broadcast)
-      ) {
-        alert('Subnet overlaps with an existing subnet.');
-        return;
+    const parentStart = ipToLong(parentBlock.base);
+    const parentEnd = ipToLong(parentBlock.broadcast);
+    const size = Math.pow(2, 32 - subnet.cidr);
+
+    // Build a sorted list of used ranges
+    const used = subnets
+      .map(s => {
+        const block = new Netmask(parentNetwork.ip + '/' + s.cidr);
+        return [ipToLong(block.base), ipToLong(block.broadcast)];
+      })
+      .sort((a, b) => a[0] - b[0]);
+
+    // Scan for the first available gap
+    let candidateStart = parentStart;
+    for (let i = 0; i <= used.length; i++) {
+      const nextUsedStart = used[i]?.[0] ?? (parentEnd + 1);
+      const gap = nextUsedStart - candidateStart;
+      if (gap >= size) {
+        // Found a gap big enough
+        const candidateBlock = new Netmask(longToIp(candidateStart) + '/' + subnet.cidr);
+        // Check that the block fits entirely in the parent
+        if (
+          parentBlock.contains(candidateBlock.base) &&
+          parentBlock.contains(candidateBlock.broadcast)
+        ) {
+          setSubnets((prev) => [
+            ...prev,
+            { ...subnet, base: candidateBlock.base },
+          ]);
+          return;
+        }
       }
+      // Move to the end of this used block + 1
+      if (used[i]) candidateStart = used[i][1] + 1;
     }
-    setSubnets((prev) => [...prev, subnet]);
+    alert('No available space for this subnet size.');
   };
 
   return (
     <Container size="lg" py="xl">
       <Title order={2} mb="lg">IPv4 Subnet Calculator</Title>
-      <Button color="yellow" fullWidth mb="md" onClick={() => {
-        setParentNetwork(null);
-        setSubnets([]);
-        localStorage.removeItem('parentNetwork');
-        localStorage.removeItem('subnets');
-      }}>
-        Reset / Clear Design
-      </Button>
       <ParentNetworkForm onSubmit={setParentNetwork} />
       {parentNetwork && (
         <>
@@ -148,95 +165,44 @@ export function Calculator() {
           </Paper>
           <SubnetForm onAddSubnet={handleAddSubnet} parentCidr={parentNetwork.cidr} />
           {subnets.length > 0 && (
-            <Paper p="md" radius="md" withBorder mb="md">
-              <Text fw={500} mb="sm">Subnets:</Text>
-              {subnets.map((subnet, idx) => {
-                const block = new Netmask(parentNetwork.ip + '/' + subnet.cidr);
-                return (
-                  <Paper key={idx} p="sm" radius="sm" withBorder mb="sm">
-                    <Text fw={500}>{subnet.name} (/{subnet.cidr})</Text>
-                    <Text size="sm">Network Address: {block.base}</Text>
-                    <Text size="sm">Broadcast Address: {block.broadcast}</Text>
-                    <Text size="sm">First Usable Host: {block.first}</Text>
-                    <Text size="sm">Last Usable Host: {block.last}</Text>
-                    <Text size="sm">Number of Hosts: {block.size}</Text>
-                    <Text size="sm">Subnet Mask: {block.mask} (/{block.bitmask})</Text>
-                    <Button color="red" size="xs" mt="xs" onClick={() => setSubnets(subnets.filter((_, i) => i !== idx))}>
-                      Remove
-                    </Button>
-                  </Paper>
-                );
-              })}
-            </Paper>
+            <>
+              <SubnetVisualization parentNetwork={parentNetwork} subnets={subnets} />
+              <Paper p="md" radius="md" withBorder mb="md">
+                <Text fw={500} mb="sm">Subnets:</Text>
+                <Grid gutter="md">
+                  {subnets.map((subnet, idx) => {
+                    const block = new Netmask(parentNetwork.ip + '/' + subnet.cidr);
+                    return (
+                      <Grid.Col span={4} key={idx}>
+                        <Paper p="sm" radius="sm" withBorder mb="sm">
+                          <Text fw={500}>{subnet.name} (/{subnet.cidr})</Text>
+                          <Text size="sm">Network Address: {block.base}</Text>
+                          <Text size="sm">Broadcast Address: {block.broadcast}</Text>
+                          <Text size="sm">First Usable Host: {block.first}</Text>
+                          <Text size="sm">Last Usable Host: {block.last}</Text>
+                          <Text size="sm">Number of Hosts: {block.size}</Text>
+                          <Text size="sm">Subnet Mask: {block.mask} (/{block.bitmask})</Text>
+                          <Button color="red" size="xs" mt="xs" onClick={() => setSubnets(subnets.filter((_, i) => i !== idx))}>
+                            Remove
+                          </Button>
+                        </Paper>
+                      </Grid.Col>
+                    );
+                  })}
+                </Grid>
+              </Paper>
+            </>
           )}
         </>
       )}
-      <Paper p="md" radius="md" withBorder>
-        <Grid>
-          <Grid.Col span={6}>
-            <TextInput
-              label="IP Address"
-              placeholder="e.g., 192.168.1.0"
-              value={ipAddress}
-              onChange={(e) => setIpAddress(e.target.value)}
-              error={error && error.includes('IP address') ? error : null}
-            />
-          </Grid.Col>
-          <Grid.Col span={6}>
-            <TextInput
-              label="Subnet Mask or CIDR"
-              placeholder="e.g., 255.255.255.0 or /24 or 24"
-              value={subnetMask}
-              onChange={(e) => setSubnetMask(e.target.value)}
-              error={error && !error.includes('IP address') ? error : null}
-            />
-          </Grid.Col>
-          <Grid.Col span={12}>
-            <Button onClick={calculateSubnet} fullWidth>
-              Calculate
-            </Button>
-          </Grid.Col>
-        </Grid>
-
-        {results && (
-          <>
-            <Grid mt="lg">
-              <Grid.Col span={6}>
-                <Text fw={500}>Network Address:</Text>
-                <Text>{results.networkAddress}</Text>
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Text fw={500}>Broadcast Address:</Text>
-                <Text>{results.broadcastAddress}</Text>
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Text fw={500}>First Usable Host:</Text>
-                <Text>{results.firstHost}</Text>
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Text fw={500}>Last Usable Host:</Text>
-                <Text>{results.lastHost}</Text>
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Text fw={500}>Number of Hosts:</Text>
-                <Text>{results.numHosts}</Text>
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Text fw={500}>Subnet Mask:</Text>
-                <Text>{results.subnetMask} (/{results.bitmask})</Text>
-              </Grid.Col>
-            </Grid>
-
-            <SubnetVisualization subnet={results} />
-          </>
-        )}
-
-        {error && (
-          <Text color="red" mt="md">
-            {error}
-          </Text>
-        )}
-      </Paper>
+      <Button color="yellow" fullWidth mt="xl" onClick={() => {
+        setParentNetwork(null);
+        setSubnets([]);
+        localStorage.removeItem('parentNetwork');
+        localStorage.removeItem('subnets');
+      }}>
+        Reset / Clear Design
+      </Button>
     </Container>
   );
 } 
