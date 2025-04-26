@@ -314,7 +314,12 @@ export function Calculator() {
                 <Text>IP: {current.parentNetwork.ip} /{current.parentNetwork.cidr}</Text>
                 <Text>Name: {current.parentNetwork.name}</Text>
               </Paper>
-              <SubnetForm onAddSubnet={handleAddSubnet} parentCidr={current.parentNetwork.cidr} />
+              <SubnetForm 
+                onAddSubnet={handleAddSubnet} 
+                parentCidr={current.parentNetwork.cidr} 
+                parentNetwork={current.parentNetwork}
+                subnets={current.subnets || []}
+              />
               {current.subnets?.length > 0 && (
                 <>
                   <SubnetVisualization 
@@ -322,9 +327,7 @@ export function Calculator() {
                     subnets={current.subnets} 
                   />
                   
-                  <Space h="xl" />
-                  
-                  <Paper p="md" radius="md" withBorder mb="md">
+                  <Paper p="md" radius="md" withBorder mt="md">
                     <Text fw={500} mb="sm">Subnets (drag to reorder):</Text>
                     <DraggableSubnets 
                       subnets={current.subnets}

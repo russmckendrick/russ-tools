@@ -88,7 +88,7 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
   const widthPct = (start, end) => ((end - start + 1) / parentSize) * 100;
 
   return (
-    <Paper p="md" radius="md" withBorder mt="lg" mb="xl">
+    <Paper p="md" radius="md" withBorder mt="lg">
       <Text fw={500} mb="md">Subnet Visualization</Text>
       <Text size="sm" mb="xs" c="dimmed">{percentFree}% of the parent network is free</Text>
       

@@ -9,8 +9,8 @@ export function ParentNetworkForm({ onSubmit }) {
   const [error, setError] = useState(null);
 
   // Generate CIDR options for dropdown
-  const cidrOptions = Array.from({ length: 23 }, (_, i) => {
-    const value = String(i + 8); // Start from /8 to /30
+  const cidrOptions = Array.from({ length: 24 }, (_, i) => {
+    const value = String(i + 8); // Start from /8 to /31
     return { value, label: `/${value}` };
   });
 
