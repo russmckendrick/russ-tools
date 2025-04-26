@@ -79,33 +79,33 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   // Fallback SVG generation
   const createFallbackSVG = () => {
     // Set diagram dimensions to match browser view
-    const width = 1220; // Match the width in the output
-    const subnetHeight = 80; // Fixed height from the output
-    const subnetSpacing = 10; // Space between subnets
-    const additionalSpace = 80; // Add extra space after last subnet
+    const width = 1220;
+    const subnetHeight = 80; 
+    const subnetSpacing = 10;
     
-    // Header space
-    const headerHeight = 100; // Space for parent network info
+    // DRAMATICALLY increase the extra space to ensure there's a gap
+    const extraPadding = 200;
     
-    // Calculate height based on content (match exactly what's in the output)
+    // Calculate height - make it much bigger to ensure there's space
+    const baseHeight = 450; // Set a larger base height
     const totalSubnetsHeight = (processedSubnets.length * (subnetHeight + subnetSpacing));
-    const footerHeight = 40; // Space for footer
-    const height = headerHeight + totalSubnetsHeight + footerHeight + additionalSpace;
+    const height = baseHeight + totalSubnetsHeight + extraPadding;
     
-    // Layout calculations - using values from the actual output
+    // Layout calculations
     const parentBoxX = 20;
     const parentBoxY = 50;
     const parentBoxWidth = width - 40;
     const parentBoxHeight = height - 100;
     const subnetX = 50;
     const subnetWidth = width - 100;
-    const subnetPadding = 15;
     const borderRadius = 5;
     
-    // Border colors from output
-    const parentBorderColor = '#1c7ed6';
-    const webColor = '#339af0';
-    const dbColor = '#51cf66';
+    // Colors for subnets
+    const colors = [
+      '#339af0', // Blue
+      '#51cf66', // Green
+      '#cc5de8'  // Purple
+    ];
     
     // Create SVG manually - matching format exactly from output
     let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -116,8 +116,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         <rect width="${parentBoxWidth}" height="${parentBoxHeight}" 
               rx="${borderRadius}" ry="${borderRadius}" 
               fill="white" 
-              stroke-width="2"
-              stroke="${parentBorderColor}"
+              stroke-width="1"
+              stroke="#1c7ed6"
               x="${parentBoxX}" y="${parentBoxY}"></rect>
         
         <!-- Parent Network header -->
@@ -135,7 +135,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const subnetStartY = 150;
     processedSubnets.forEach((subnet, index) => {
       const subnetY = subnetStartY + (subnetHeight + subnetSpacing) * index;
-      const color = index === 0 ? webColor : dbColor;
+      const color = colors[index % colors.length];
       
       svg += `
         <!-- Subnet ${index + 1} -->
@@ -158,8 +158,11 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         </text>`;
     });
     
-    // Add footer with exact positioning from output
-    const footerY = height - footerHeight - 10;
+    // Calculate footer position - make sure it's far enough from the last subnet
+    const lastSubnetBottom = subnetStartY + (processedSubnets.length * (subnetHeight + subnetSpacing));
+    const footerGap = 50; // Ensure at least 50px between last subnet and footer
+    const footerY = lastSubnetBottom + footerGap;
+    
     svg += `
       <!-- Footer -->
       <text font-family="Arial" font-size="12" x="${width/2 - 100}" y="${footerY}">
