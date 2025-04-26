@@ -53,6 +53,13 @@ const planPrefixSelect = document.getElementById('plan-prefix');
 const addSubnetBtn = document.getElementById('add-subnet');
 const planTable = document.getElementById('plan-table');
 const planRemaining = document.getElementById('plan-remaining');
+const networkAddress = document.getElementById('network-address');
+const broadcastAddress = document.getElementById('broadcast-address');
+const hostRange = document.getElementById('host-range');
+const totalHosts = document.getElementById('total-hosts');
+const usableHosts = document.getElementById('usable-hosts');
+const cidrPrefix = document.getElementById('cidr-prefix');
+const exportPlanBtn = document.getElementById('export-plan');
 
 // State persistence functions
 function saveState(ip, cidr, subnetPlan) {
@@ -721,3 +728,149 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
     planRemaining.innerHTML = '';
   }
 });
+
+// Add export functionality
+exportPlanBtn.addEventListener('click', () => {
+  const plan = getCurrentPlan();
+  if (!plan || plan.length === 0) {
+    showNotification('No subnet plan to export', 'error');
+    return;
+  }
+
+  const exportData = {
+    network: {
+      address: ipInput.value,
+      cidr: cidrInput.value
+    },
+    subnets: plan.map(subnet => ({
+      name: subnet.name,
+      network: subnet.network,
+      cidr: subnet.cidr,
+      hosts: subnet.hosts
+    })),
+    timestamp: new Date().toISOString()
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `subnet-plan-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// Update the showResults function
+function showResults(subnet) {
+  results.classList.remove('hidden');
+  
+  networkAddress.textContent = subnet.network;
+  broadcastAddress.textContent = subnet.broadcast;
+  hostRange.textContent = `${subnet.first} - ${subnet.last}`;
+  totalHosts.textContent = subnet.totalHosts;
+  usableHosts.textContent = subnet.usableHosts;
+  cidrPrefix.textContent = `/${subnet.prefix}`;
+  
+  // Add fade-in animation
+  results.classList.add('fade-in');
+}
+
+// Update the showVisualization function
+function showVisualization(subnet) {
+  visualization.classList.remove('hidden');
+  
+  const total = subnet.totalHosts;
+  const usable = subnet.usableHosts;
+  
+  let leftLabel = 'Network';
+  let rightLabel = 'Broadcast';
+  let usableLabel = 'Usable Hosts';
+  let leftSize = 1, rightSize = 1, usableSize = usable;
+  
+  if (subnet.prefix >= 31) {
+    leftLabel = 'Usable';
+    rightLabel = '';
+    usableLabel = '';
+    leftSize = total;
+    rightSize = 0;
+    usableSize = 0;
+  }
+  
+  const leftPercent = (leftSize / total) * 100;
+  const usablePercent = (usableSize / total) * 100;
+  const rightPercent = (rightSize / total) * 100;
+  
+  const visualizationHTML = subnet.prefix >= 31 ? 
+    `<div class="subnet-bar-usable-all" style="width:100%" title="All ${total} addresses usable">
+      <span class="subnet-bar-label">All ${total} addresses usable</span>
+    </div>` : 
+    `<div class="subnet-bar-network" style="width:${leftPercent}%" title="Network Address: ${subnet.network}">
+      <span class="subnet-bar-label">${leftLabel}</span>
+    </div>
+    <div class="subnet-bar-usable" style="width:${usablePercent}%" title="Usable Range: ${subnet.first} - ${subnet.last}">
+      <span class="subnet-bar-label">${usableLabel} (${usable})</span>
+    </div>
+    <div class="subnet-bar-broadcast" style="width:${rightPercent}%" title="Broadcast Address: ${subnet.broadcast}">
+      <span class="subnet-bar-label">${rightLabel}</span>
+    </div>`;
+  
+  document.getElementById('subnet-visualization').innerHTML = visualizationHTML;
+  
+  // Add fade-in animation
+  visualization.classList.add('fade-in');
+}
+
+// Update the renderPlan function
+function renderPlan(scrollToLast = false) {
+  const plan = getCurrentPlan();
+  const tableBody = document.querySelector('#plan-table tbody');
+  tableBody.innerHTML = '';
+  
+  plan.forEach((subnet, index) => {
+    const row = document.createElement('tr');
+    row.className = 'fade-in';
+    row.innerHTML = `
+      <td>
+        <input type="text" class="input input-xs w-full" value="${subnet.name}" 
+               onchange="updateSubnetName(${index}, this.value)">
+      </td>
+      <td>${subnet.network}</td>
+      <td>/${subnet.cidr}</td>
+      <td>${subnet.hosts}</td>
+      <td>
+        <button class="btn btn-error btn-xs" onclick="removeSubnet(${index})">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </button>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+  
+  updatePlanProgress();
+  
+  if (scrollToLast && plan.length > 0) {
+    const lastRow = tableBody.lastElementChild;
+    lastRow.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+}
+
+// Add notification function
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white ${
+    type === 'error' ? 'bg-error' : 
+    type === 'success' ? 'bg-success' : 
+    'bg-info'
+  }`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}

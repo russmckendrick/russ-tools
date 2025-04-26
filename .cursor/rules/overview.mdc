@@ -1,0 +1,140 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Subnet.Fit: Updated Implementation Plan (React SPA, Mantine, Netmask)
+
+## I. Introduction
+
+### A. Project Overview
+
+Subnet.Fit is now implemented as a modern, single-page React application (SPA) using Vite for build tooling and Mantine for UI components. The app provides an intuitive, accurate, and visually enhanced tool for IPv4 subnetting calculations, supporting both subnet mask and CIDR notation input. All calculations are performed client-side using the browser-friendly and secure `netmask` library.
+
+### B. Key Objectives (Updated)
+
+1. **Functionality:**
+   - Accepts IPv4 address and either subnet mask (e.g., 255.255.255.0) or CIDR (e.g., /24 or 24).
+   - Calculates and displays:
+     * Network Address
+     * Broadcast Address
+     * Usable Host IP Range (First and Last Usable IP)
+     * Total Number of Hosts
+     * Subnet Mask (dot-decimal and slash notation)
+   - Robust input validation and error feedback.
+2. **User Experience (UX):**
+   - Modern, responsive SPA layout using Mantine components.
+   - Clean, accessible forms and results display.
+   - Immediate feedback for invalid input.
+3. **Visual Appeal:**
+   - Uses Mantine for a professional, modern look.
+   - Responsive design for all devices.
+4. **Security & Compatibility:**
+   - Uses only browser-compatible libraries (no Node.js core dependencies).
+   - No known high-severity vulnerabilities in calculation logic.
+5. **Deployment:**
+   - Built with Vite for fast development and optimized static builds.
+   - Ready for deployment to Cloudflare Pages or any static host.
+
+## II. Architecture (Updated)
+
+### A. SPA with React, Vite, and Mantine
+- **React**: Component-based SPA for maintainability and scalability.
+- **Vite**: Fast dev server, optimized static builds.
+- **Mantine**: Modern, accessible UI components and theming.
+- **netmask**: Secure, browser-friendly IPv4 subnet calculation library.
+
+### B. Data Flow
+1. User enters IPv4 address and subnet mask or CIDR.
+2. Input is validated and parsed.
+3. Calculation is performed using `netmask`.
+4. Results are displayed in a responsive grid.
+5. Errors are shown inline with the relevant field.
+
+### C. Security & Dependency Management
+- No use of the vulnerable `ip` or `ip-subnet-calculator` packages.
+- All dependencies are browser-compatible and actively maintained.
+- No Node.js core module polyfills required.
+
+## III. Technology Stack (Updated)
+- **React** (SPA framework)
+- **Vite** (build tool)
+- **Mantine** (UI framework)
+- **netmask** (subnet calculation)
+- **Cloudflare Pages** (recommended deployment)
+
+## IV. Implementation Notes
+- The calculator accepts both subnet masks and CIDR notation (with or without leading slash).
+- All calculations and validation are performed client-side.
+- The UI is fully responsive and accessible.
+- No server-side code is required.
+
+## V. Security & Maintenance
+- All known-vulnerable packages have been removed.
+- The codebase is modular and easy to extend (e.g., for IPv6 in the future).
+- The app is ready for static hosting and CDN deployment.
+
+## Visualization Enhancements (Phase 3)
+
+- The subnet visualization now features:
+  - Distinct color segments for the network address, usable host range, and broadcast address.
+  - Proportional widths for each segment, visually representing the size of the usable range relative to the total subnet.
+  - Icons/markers for the network and broadcast addresses using Tabler icons.
+  - Tooltips on hover for each segment, providing contextual information (e.g., address values, usable host range).
+  - Subtle animation when the visualization updates, enhancing user experience.
+  - Full support for dark and light modes, adapting colors using Mantine's theme system.
+- The visualization is implemented in the `SubnetVisualization` component, leveraging Mantine UI and Tabler icons for a modern, accessible, and visually engaging result.
+- The UI is now more informative and visually appealing, making subnet structure and address ranges easier to understand at a glance.
+
+## VI. Network Designer Expansion (Planned Phase 4)
+
+Subnet.Fit will evolve from a single-subnet calculator into a full-featured network designer for cloud and enterprise environments. The following features will be added:
+
+### A. Set Network Size
+- Users can define a parent network (supernet) by specifying an IPv4 address and a network size (CIDR, e.g., /16, /20, etc.).
+- The app will validate that all subnets fit within this parent network.
+- The parent network can be named (e.g., "Production VPC", "Corp WAN").
+
+### B. Add and Manage Subnets
+- Users can add multiple subnets within the defined parent network.
+- For each subnet, users can:
+  - Specify the subnet size (CIDR, e.g., /24, /26, etc.).
+  - Provide a custom name/label (e.g., "Web Tier", "DB Subnet").
+- The UI will prevent overlapping subnets and ensure all subnets fit within the parent network.
+- Subnet details (network address, range, mask, etc.) are calculated and displayed for each entry.
+- Users can edit or remove subnets as needed.
+
+### C. Persistent State with Local Storage
+- The entire network design (parent network, subnets, names, etc.) is saved to browser local storage.
+- Users can navigate away or refresh the page without losing their work.
+- On app load, the previous state is restored automatically.
+- Optionally, provide a "Reset" or "Clear Design" button to start over.
+
+### D. Enhanced Visualization for Multiple Subnets
+- The visualization component will be updated to display the parent network and all defined subnets as proportional segments within the overall address space.
+- Each subnet is shown as a colored block, labeled with its name and size.
+- Hovering over a subnet reveals details (address range, mask, host count, etc.).
+- The visualization dynamically updates as subnets are added, removed, or resized.
+- The parent network's unused space (if any) is also shown, helping users optimize allocation.
+
+### E. Network Diagram Generation
+- A new diagram view will visually represent the network hierarchy:
+  - The parent network as a container.
+  - Subnets as nested or adjacent blocks, each labeled and color-coded.
+  - Optionally, show relationships (e.g., lines/arrows) if subnets are grouped by function or tier.
+- The diagram is generated dynamically from the current state and updates in real time.
+- The diagram is designed for clarity and export (e.g., as SVG or PNG for documentation).
+
+### F. Future-Proofing
+- The architecture will support future enhancements, such as:
+  - IPv6 network design.
+  - Export/import of network designs (JSON, YAML).
+  - Integration with cloud provider templates (e.g., AWS VPC, Azure VNets).
+
+---
+
+**This section outlines the next major evolution of Subnet.Fit, transforming it into a powerful, user-friendly network design tool for modern cloud and enterprise environments.**
+
+---
+
+**This document supersedes previous plans that referenced Node.js-only or vulnerable libraries.**

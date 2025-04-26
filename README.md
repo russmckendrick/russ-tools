@@ -1,23 +1,12 @@
-# Subnet.Fit
+# React + Vite
 
-A modern, web-based IPv4 subnet calculator. Built as a static site with NodeJS tooling and ready for Cloudflare Pages.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Usage
+Currently, two official plugins are available:
 
-1. Enter an IPv4 address (e.g. `192.168.1.10`).
-2. Enter a CIDR prefix (e.g. `/24`) or subnet mask (e.g. `255.255.255.0`).
-3. Click "Calculate" to see the results.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Development
+## Expanding the ESLint configuration
 
-- Install dependencies: `npm install`
-- Run locally: `npm run dev` and open the provided URL in your browser.
-- Build for production: `npm run build`
-
-## Roadmap
-- Graphical subnet visualization (bar chart/block diagram)
-- Enhanced input validation and UX
-- Mobile-first responsive design
-- Accessibility improvements
-
----
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
