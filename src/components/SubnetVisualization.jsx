@@ -23,7 +23,7 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
 
   // Sort subnets by base address
   const subnetBlocks = subnets.map(s => {
-    const block = new Netmask(parentNetwork.ip + '/' + s.cidr);
+    const block = new Netmask(s.base + '/' + s.cidr);
     return {
       ...s,
       block,

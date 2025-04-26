@@ -120,10 +120,7 @@ export function Calculator() {
 
     // Build a sorted list of used ranges
     const used = subnets
-      .map(s => {
-        const block = new Netmask(parentNetwork.ip + '/' + s.cidr);
-        return [ipToLong(block.base), ipToLong(block.broadcast)];
-      })
+      .map(s => [ipToLong(s.base), ipToLong(new Netmask(s.base + '/' + s.cidr).broadcast)])
       .sort((a, b) => a[0] - b[0]);
 
     // Scan for the first available gap
@@ -134,7 +131,6 @@ export function Calculator() {
       if (gap >= size) {
         // Found a gap big enough
         const candidateBlock = new Netmask(longToIp(candidateStart) + '/' + subnet.cidr);
-        // Check that the block fits entirely in the parent
         if (
           parentBlock.contains(candidateBlock.base) &&
           parentBlock.contains(candidateBlock.broadcast)
@@ -146,7 +142,6 @@ export function Calculator() {
           return;
         }
       }
-      // Move to the end of this used block + 1
       if (used[i]) candidateStart = used[i][1] + 1;
     }
     alert('No available space for this subnet size.');
@@ -171,7 +166,7 @@ export function Calculator() {
                 <Text fw={500} mb="sm">Subnets:</Text>
                 <Grid gutter="md">
                   {subnets.map((subnet, idx) => {
-                    const block = new Netmask(parentNetwork.ip + '/' + subnet.cidr);
+                    const block = new Netmask(subnet.base + '/' + subnet.cidr);
                     return (
                       <Grid.Col span={4} key={idx}>
                         <Paper p="sm" radius="sm" withBorder mb="sm">
