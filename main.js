@@ -336,7 +336,7 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
     // Generate HTML for each subnet and any unallocated spaces
     let html = '';
     let currentPos = baseIpInt;
-    const colors = ['bg-blue-400', 'bg-purple-400', 'bg-green-400', 'bg-yellow-400', 'bg-pink-400', 'bg-indigo-400'];
+    const colors = ['#3498db', '#9b59b6', '#2ecc71', '#f1c40f', '#e74c3c', '#1abc9c'];
     
     for (let i = 0; i < sortedPlan.length; i++) {
       const subnetItem = sortedPlan[i];
@@ -357,7 +357,7 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
       // Show the subnet
       const subnetPercent = (size / networkInfo.totalHosts) * 100;
       html += `
-        <div class="subnet-bar-allocation ${colors[colorIndex]}" style="width:${subnetPercent}%" 
+        <div class="subnet-bar-allocation" style="width:${subnetPercent}%; background-color:${colors[colorIndex]}" 
              title="/${subnetItem.prefix}: ${intToIp(subnetItem.networkInt)} - ${intToIp(subnetItem.networkInt + size - 1)}">
           <span class="subnet-bar-label">/${subnetItem.prefix}</span>
         </div>
