@@ -34,6 +34,9 @@ function SortableSegment({ segment, index, parentSize, colors, unusedColor, bord
     );
   }
   
+  // Generate a stable ID for the subnet segment
+  const segmentId = segment.id || `subnet-viz-${segment.base}`;
+  
   // For subnet segments, make them draggable
   const {
     attributes,
@@ -43,8 +46,7 @@ function SortableSegment({ segment, index, parentSize, colors, unusedColor, bord
     transition,
     isDragging,
   } = useSortable({
-    id: segment.id || `subnet-viz-${index}`,
-    data: { segment }
+    id: segmentId,
   });
 
   const style = {
@@ -106,8 +108,11 @@ export function DraggableVisualization({ parentNetwork, subnets, onReorderSubnet
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
+      // Make dragging more responsive by reducing activation constraints
       activationConstraint: {
-        distance: 8, // Wait until the pointer has moved 8px to start dragging
+        distance: 2, // Reduce the activation distance for more responsive dragging
+        tolerance: 5, // Add tolerance for slight movements
+        delay: 0 // No delay in activation
       }
     })
   );
@@ -166,6 +171,9 @@ export function DraggableVisualization({ parentNetwork, subnets, onReorderSubnet
 
   // Only the subnet segments (not unused space) are draggable
   const draggableSegments = segments.filter(s => s.type === 'subnet');
+  
+  // Create stable IDs for sortable context
+  const itemIds = draggableSegments.map(s => s.id || `subnet-viz-${s.base}`);
 
   // Colors
   const colors = [theme.colors.blue[5], theme.colors.green[5], theme.colors.cyan[5], theme.colors.violet[5], theme.colors.orange[5], theme.colors.teal[5], theme.colors.grape[5], theme.colors.lime[5]];
@@ -182,29 +190,34 @@ export function DraggableVisualization({ parentNetwork, subnets, onReorderSubnet
     const { active, over } = event;
     
     if (active.id !== over?.id && over) {
-      // Find the original subnet objects
-      const activeSubnet = subnets.find(s => 
-        (s.id && s.id === active.data.current.segment.id) || 
-        s.base === active.data.current.segment.base
+      // Extract subnet data directly from the segments
+      const activeSegment = segments.find(s => 
+        s.type === 'subnet' && 
+        (s.id === active.id || `subnet-viz-${s.base}` === active.id)
       );
       
-      const overSubnet = subnets.find(s => 
-        (s.id && s.id === over.data.current.segment.id) || 
-        s.base === over.data.current.segment.base
+      const overSegment = segments.find(s => 
+        s.type === 'subnet' && 
+        (s.id === over.id || `subnet-viz-${s.base}` === over.id)
       );
       
-      if (activeSubnet && overSubnet) {
-        const oldIndex = subnets.indexOf(activeSubnet);
-        const newIndex = subnets.indexOf(overSubnet);
+      if (activeSegment && overSegment) {
+        // Find the corresponding subnet objects in the original subnets array
+        const subnetsArray = [...subnets];
         
-        if (oldIndex !== -1 && newIndex !== -1) {
+        // Get indices in the original array by matching base addresses
+        const activeIndex = subnetsArray.findIndex(s => s.base === activeSegment.base);
+        const overIndex = subnetsArray.findIndex(s => s.base === overSegment.base);
+        
+        if (activeIndex !== -1 && overIndex !== -1) {
           // Create a new array with the item moved to the new position
-          const newOrder = [...subnets];
-          const [movedItem] = newOrder.splice(oldIndex, 1);
-          newOrder.splice(newIndex, 0, movedItem);
+          const [movedItem] = subnetsArray.splice(activeIndex, 1);
+          subnetsArray.splice(overIndex, 0, movedItem);
+          
+          console.log(`Moving subnet from index ${activeIndex} to ${overIndex}`);
           
           // Call the parent handler with the new order
-          onReorderSubnets(newOrder);
+          onReorderSubnets(subnetsArray);
         }
       }
     }
@@ -234,12 +247,12 @@ export function DraggableVisualization({ parentNetwork, subnets, onReorderSubnet
           }}
         >
           <SortableContext
-            items={draggableSegments.map(s => s.id)}
+            items={itemIds}
             strategy={horizontalListSortingStrategy}
           >
             {segments.map((segment, idx) => (
               <SortableSegment
-                key={segment.type === 'subnet' ? segment.id : `unused-${idx}`}
+                key={segment.type === 'subnet' ? (segment.id || `subnet-viz-${segment.base}`) : `unused-${idx}`}
                 segment={segment}
                 index={idx}
                 parentSize={parentSize}
