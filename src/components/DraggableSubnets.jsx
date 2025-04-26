@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Button, Grid, Paper, Text } from '@mantine/core';
+import { Button, Grid, Paper, Text, Title } from '@mantine/core';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Netmask } from 'netmask';
 import { IconGripVertical } from '@tabler/icons-react';
+import { ipToLong } from '../utils';
 
 // Sortable subnet item
-function SortableSubnet({ subnet, index, onRemove }) {
+function SortableSubnet({ subnet, index, onRemoveSubnet }) {
   const {
     attributes,
     listeners,
@@ -24,7 +25,7 @@ function SortableSubnet({ subnet, index, onRemove }) {
     zIndex: isDragging ? 10 : 1
   };
 
-  // Ensure we have a fresh Netmask calculation
+  // Ensure we have a fresh Netmask calculation with proper base address
   const block = new Netmask(subnet.base + '/' + subnet.cidr);
 
   return (
@@ -42,7 +43,7 @@ function SortableSubnet({ subnet, index, onRemove }) {
         <Text size="sm">Last Usable Host: {block.last}</Text>
         <Text size="sm">Number of Hosts: {block.size}</Text>
         <Text size="sm">Subnet Mask: {block.mask} (/{block.bitmask})</Text>
-        <Button color="red" size="xs" mt="xs" onClick={() => onRemove(index)}>
+        <Button color="red" size="xs" mt="xs" onClick={() => onRemoveSubnet(index)}>
           Remove
         </Button>
       </Paper>
@@ -50,12 +51,32 @@ function SortableSubnet({ subnet, index, onRemove }) {
   );
 }
 
-export function DraggableSubnets({ subnets, onReorder, onRemoveSubnet }) {
-  // Ensure all subnets have IDs for stable drag and drop
-  const subnetsWithIds = subnets.map((subnet, index) => ({
-    ...subnet,
-    id: subnet.id || `subnet-card-${index}-${subnet.base}-${Date.now()}`
-  }));
+export function DraggableSubnets({ subnets, onReorder, onRemoveSubnet, parentNetwork }) {
+  // Process subnets with proper Netmask calculations
+  const processedSubnets = subnets.map((subnet, index) => {
+    // Ensure subnet has a base address
+    if (!subnet.base && parentNetwork) {
+      // If no base is provided, calculate it (should not happen but just in case)
+      const parentBlock = new Netmask(parentNetwork.ip + '/' + parentNetwork.cidr);
+      subnet.base = parentBlock.base;
+    }
+    
+    // Create a proper Netmask instance
+    const block = new Netmask(subnet.base + '/' + subnet.cidr);
+    
+    return {
+      ...subnet,
+      base: block.base, // Make sure we use the canonical form
+      id: subnet.id || `subnet-${index}-${block.base}-${Date.now()}`
+    };
+  });
+  
+  // Sort by network address
+  const sortedSubnets = [...processedSubnets].sort((a, b) => {
+    const aLong = ipToLong(a.base);
+    const bLong = ipToLong(b.base);
+    return aLong - bLong;
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -73,11 +94,11 @@ export function DraggableSubnets({ subnets, onReorder, onRemoveSubnet }) {
     
     if (active.id !== over?.id && over) {
       // Find the original subnet objects
-      const activeIndex = subnetsWithIds.findIndex(item => item.id === active.id);
-      const overIndex = subnetsWithIds.findIndex(item => item.id === over.id);
+      const activeIndex = sortedSubnets.findIndex(item => item.id === active.id);
+      const overIndex = sortedSubnets.findIndex(item => item.id === over.id);
       
       if (activeIndex !== -1 && overIndex !== -1) {
-        const newOrder = [...subnetsWithIds];
+        const newOrder = [...sortedSubnets];
         const [movedItem] = newOrder.splice(activeIndex, 1);
         newOrder.splice(overIndex, 0, movedItem);
         
@@ -87,27 +108,39 @@ export function DraggableSubnets({ subnets, onReorder, onRemoveSubnet }) {
     }
   }
 
+  if (!sortedSubnets || sortedSubnets.length === 0) {
+    return (
+      <Paper p="md" radius="md" withBorder mt="lg">
+        <Title order={4} mb="sm">Subnet List</Title>
+        <Text color="dimmed" size="sm">No subnets have been added yet.</Text>
+      </Paper>
+    );
+  }
+
   return (
-    <DndContext 
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={subnetsWithIds.map(s => s.id)}
-        strategy={verticalListSortingStrategy}
+    <Paper p="md" radius="md" withBorder mt="lg">
+      <Title order={3} mb="md">Subnet List</Title>
+      <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        <Grid gutter="md">
-          {subnetsWithIds.map((subnet, idx) => (
-            <SortableSubnet 
-              key={subnet.id}
-              subnet={subnet}
-              index={idx}
-              onRemove={onRemoveSubnet}
-            />
-          ))}
-        </Grid>
-      </SortableContext>
-    </DndContext>
+        <SortableContext
+          items={sortedSubnets.map(s => s.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <Grid gutter="md">
+            {sortedSubnets.map((subnet, idx) => (
+              <SortableSubnet 
+                key={subnet.id}
+                subnet={subnet}
+                index={idx}
+                onRemoveSubnet={onRemoveSubnet}
+              />
+            ))}
+          </Grid>
+        </SortableContext>
+      </DndContext>
+    </Paper>
   );
 } 

@@ -5,7 +5,7 @@
 - [x] Subnets Management
 - [x] Persistent State with Local Storage
 - [x] Enhanced Visualization for Multiple Subnets
-- [ ] Network Diagram View
+- [x] Network Diagram View
 
 ---
 
@@ -38,9 +38,10 @@
 - [x] Visual CIDR slider for subnet resizing
 
 ### 5. Network Diagram View
-- [ ] Add placeholder for network diagram
-- [ ] Implement dynamic diagram generation
-- [ ] Support export (SVG/PNG)
+- [x] Add placeholder for network diagram
+- [x] Implement dynamic diagram generation
+- [x] Support export (SVG/PNG)
+- [x] Fix SVG export to use embedded PNG approach for reliability
 
 ---
 
@@ -55,7 +56,7 @@
 - [x] Simplify visualization component (remove dragging)
 - [x] Convert CIDR inputs to dropdowns with valid options
 - [ ] Add subnet auto-allocation
-- [ ] Export/share configuration
+- [x] Export/share configuration
 
 **UI Improvements:**
 - [~] Add tooltips to explain CIDR notation
