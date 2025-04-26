@@ -122,104 +122,64 @@ export function Calculator() {
     setSelectedNetworkId(newNet.id);
   };
 
-  const [ipAddress, setIpAddress] = useState('');
-  const [subnetMask, setSubnetMask] = useState('');
-  const [results, setResults] = useState(null);
-  const [error, setError] = useState('');
-  const [parentNetwork, setParentNetwork] = useState(null);
-  const [subnets, setSubnets] = useState([]);
-
-  // Restore parent network from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('parentNetwork');
-    if (saved) {
-      try {
-        setParentNetwork(JSON.parse(saved));
-      } catch {}
-    }
-  }, []);
-
-  // Persist parent network to localStorage when it changes
-  useEffect(() => {
-    if (parentNetwork) {
-      localStorage.setItem('parentNetwork', JSON.stringify(parentNetwork));
-    }
-  }, [parentNetwork]);
-
-  // Restore subnets from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('subnets');
-    if (saved) {
-      try {
-        setSubnets(JSON.parse(saved));
-      } catch {}
-    }
-  }, []);
-
-  // Persist subnets to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('subnets', JSON.stringify(subnets));
-  }, [subnets]);
-
-  const calculateSubnet = () => {
-    try {
-      setError('');
-      setResults(null);
-
-      if (!isValidIPv4(ipAddress)) {
-        throw new Error('Invalid IP address format');
-      }
-
-      const subnet = parseInput(ipAddress, subnetMask);
-      setResults({
-        networkAddress: subnet.base,
-        broadcastAddress: subnet.broadcast,
-        firstHost: subnet.first,
-        lastHost: subnet.last,
-        numHosts: subnet.size,
-        subnetMask: subnet.mask,
-        bitmask: subnet.bitmask,
-      });
-    } catch (err) {
-      setError(err.message);
-      setResults(null);
-    }
+  // Set parent network for current
+  const handleSetParentNetwork = (parentNet) => {
+    setNetworks(prev => prev.map(n =>
+      n.id === selectedNetworkId ? { ...n, parentNetwork: parentNet, name: parentNet.name } : n
+    ));
   };
 
+  // Add subnet to current
   const handleAddSubnet = (subnet) => {
-    if (!parentNetwork) return;
-    const parentBlock = new Netmask(parentNetwork.ip + '/' + parentNetwork.cidr);
+    if (!current?.parentNetwork) return;
+    const parentBlock = new Netmask(current.parentNetwork.ip + '/' + current.parentNetwork.cidr);
     const parentStart = ipToLong(parentBlock.base);
     const parentEnd = ipToLong(parentBlock.broadcast);
     const size = Math.pow(2, 32 - subnet.cidr);
-
     // Build a sorted list of used ranges
-    const used = subnets
+    const used = (current.subnets || [])
       .map(s => [ipToLong(s.base), ipToLong(new Netmask(s.base + '/' + s.cidr).broadcast)])
       .sort((a, b) => a[0] - b[0]);
-
     // Scan for the first available gap
     let candidateStart = parentStart;
     for (let i = 0; i <= used.length; i++) {
       const nextUsedStart = used[i]?.[0] ?? (parentEnd + 1);
       const gap = nextUsedStart - candidateStart;
       if (gap >= size) {
-        // Found a gap big enough
         const candidateBlock = new Netmask(longToIp(candidateStart) + '/' + subnet.cidr);
         if (
           parentBlock.contains(candidateBlock.base) &&
           parentBlock.contains(candidateBlock.broadcast)
         ) {
-          setSubnets((prev) => [
-            ...prev,
-            { ...subnet, base: candidateBlock.base },
-          ]);
+          setNetworks(prev => prev.map(n =>
+            n.id === selectedNetworkId
+              ? { ...n, subnets: [...(n.subnets || []), { ...subnet, base: candidateBlock.base }] }
+              : n
+          ));
           return;
         }
       }
       if (used[i]) candidateStart = used[i][1] + 1;
     }
     alert('No available space for this subnet size.');
+  };
+
+  // Remove subnet from current
+  const handleRemoveSubnet = (idx) => {
+    setNetworks(prev => prev.map(n =>
+      n.id === selectedNetworkId
+        ? { ...n, subnets: n.subnets.filter((_, i) => i !== idx) }
+        : n
+    ));
+  };
+
+  // Reset/clear current network
+  const handleReset = () => {
+    setNetworks(prev => prev.map(n =>
+      n.id === selectedNetworkId
+        ? { ...n, parentNetwork: null, subnets: [] }
+        : n
+    ));
   };
 
   return (
@@ -235,54 +195,58 @@ export function Calculator() {
         />
         <Button onClick={handleNewNetwork}>New Network</Button>
       </Group>
-      <ParentNetworkForm onSubmit={setParentNetwork} />
-      {parentNetwork && (
+      {!current && (
+        <Paper p="md" radius="md" withBorder mt="xl">
+          <Text>Select or create a network design to begin.</Text>
+        </Paper>
+      )}
+      {current && (
         <>
-          <Paper p="md" radius="md" withBorder mb="md">
-            <Text fw={500}>Parent Network:</Text>
-            <Text>IP: {parentNetwork.ip} /{parentNetwork.cidr}</Text>
-            <Text>Name: {parentNetwork.name}</Text>
-          </Paper>
-          <SubnetForm onAddSubnet={handleAddSubnet} parentCidr={parentNetwork.cidr} />
-          {subnets.length > 0 && (
+          <ParentNetworkForm onSubmit={handleSetParentNetwork} />
+          {current.parentNetwork && (
             <>
-              <SubnetVisualization parentNetwork={parentNetwork} subnets={subnets} />
               <Paper p="md" radius="md" withBorder mb="md">
-                <Text fw={500} mb="sm">Subnets:</Text>
-                <Grid gutter="md">
-                  {subnets.map((subnet, idx) => {
-                    const block = new Netmask(subnet.base + '/' + subnet.cidr);
-                    return (
-                      <Grid.Col span={4} key={idx}>
-                        <Paper p="sm" radius="sm" withBorder mb="sm">
-                          <Text fw={500}>{subnet.name} (/{subnet.cidr})</Text>
-                          <Text size="sm">Network Address: {block.base}</Text>
-                          <Text size="sm">Broadcast Address: {block.broadcast}</Text>
-                          <Text size="sm">First Usable Host: {block.first}</Text>
-                          <Text size="sm">Last Usable Host: {block.last}</Text>
-                          <Text size="sm">Number of Hosts: {block.size}</Text>
-                          <Text size="sm">Subnet Mask: {block.mask} (/{block.bitmask})</Text>
-                          <Button color="red" size="xs" mt="xs" onClick={() => setSubnets(subnets.filter((_, i) => i !== idx))}>
-                            Remove
-                          </Button>
-                        </Paper>
-                      </Grid.Col>
-                    );
-                  })}
-                </Grid>
+                <Text fw={500}>Parent Network:</Text>
+                <Text>IP: {current.parentNetwork.ip} /{current.parentNetwork.cidr}</Text>
+                <Text>Name: {current.parentNetwork.name}</Text>
               </Paper>
+              <SubnetForm onAddSubnet={handleAddSubnet} parentCidr={current.parentNetwork.cidr} />
+              {current.subnets.length > 0 && (
+                <>
+                  <SubnetVisualization parentNetwork={current.parentNetwork} subnets={current.subnets} />
+                  <Paper p="md" radius="md" withBorder mb="md">
+                    <Text fw={500} mb="sm">Subnets:</Text>
+                    <Grid gutter="md">
+                      {current.subnets.map((subnet, idx) => {
+                        const block = new Netmask(subnet.base + '/' + subnet.cidr);
+                        return (
+                          <Grid.Col span={4} key={idx}>
+                            <Paper p="sm" radius="sm" withBorder mb="sm">
+                              <Text fw={500}>{subnet.name} (/{subnet.cidr})</Text>
+                              <Text size="sm">Network Address: {block.base}</Text>
+                              <Text size="sm">Broadcast Address: {block.broadcast}</Text>
+                              <Text size="sm">First Usable Host: {block.first}</Text>
+                              <Text size="sm">Last Usable Host: {block.last}</Text>
+                              <Text size="sm">Number of Hosts: {block.size}</Text>
+                              <Text size="sm">Subnet Mask: {block.mask} (/{block.bitmask})</Text>
+                              <Button color="red" size="xs" mt="xs" onClick={() => handleRemoveSubnet(idx)}>
+                                Remove
+                              </Button>
+                            </Paper>
+                          </Grid.Col>
+                        );
+                      })}
+                    </Grid>
+                  </Paper>
+                </>
+              )}
             </>
           )}
+          <Button color="yellow" fullWidth mt="xl" onClick={handleReset}>
+            Reset / Clear Design
+          </Button>
         </>
       )}
-      <Button color="yellow" fullWidth mt="xl" onClick={() => {
-        setParentNetwork(null);
-        setSubnets([]);
-        localStorage.removeItem('parentNetwork');
-        localStorage.removeItem('subnets');
-      }}>
-        Reset / Clear Design
-      </Button>
     </Container>
   );
 } 
