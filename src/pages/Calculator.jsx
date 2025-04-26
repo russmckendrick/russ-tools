@@ -54,16 +54,20 @@ export function Calculator() {
 
   // Migration on load
   useEffect(() => {
-    // Try to load new format
     const saved = localStorage.getItem('networks');
     const lastSelected = localStorage.getItem('lastSelectedNetworkId');
+    console.log('Loading from localStorage:', { saved, lastSelected });
     if (saved) {
       const parsed = JSON.parse(saved);
       setNetworks(parsed);
-      if (lastSelected && parsed.some(n => n.id === lastSelected)) {
-        setSelectedNetworkId(lastSelected);
+      if (parsed.length > 0) {
+        if (lastSelected && parsed.some(n => n.id === lastSelected)) {
+          setSelectedNetworkId(lastSelected);
+        } else {
+          setSelectedNetworkId(parsed[0].id);
+        }
       } else {
-        setSelectedNetworkId(parsed[0]?.id || null);
+        setSelectedNetworkId(null);
       }
       return;
     }
@@ -84,21 +88,26 @@ export function Calculator() {
       localStorage.setItem('lastSelectedNetworkId', migrated[0].id);
       localStorage.removeItem('parentNetwork');
       localStorage.removeItem('subnets');
+      console.log('Migrated old data to new format:', migrated);
       return;
     }
     // No data
     setNetworks([]);
+    setSelectedNetworkId(null);
+    console.log('No networks found in localStorage.');
   }, []);
 
-  // Persist networks to localStorage
+  // Persist networks to localStorage on every change
   useEffect(() => {
     localStorage.setItem('networks', JSON.stringify(networks));
+    console.log('Saved to localStorage:', networks);
   }, [networks]);
 
   // Persist last selected network ID
   useEffect(() => {
     if (selectedNetworkId) {
       localStorage.setItem('lastSelectedNetworkId', selectedNetworkId);
+      console.log('Saved lastSelectedNetworkId:', selectedNetworkId);
     }
   }, [selectedNetworkId]);
 
@@ -122,7 +131,7 @@ export function Calculator() {
     setSelectedNetworkId(newNet.id);
   };
 
-  // Set parent network for current
+  // Set parent network for current (do not clear subnets)
   const handleSetParentNetwork = (parentNet) => {
     setNetworks(prev => prev.map(n =>
       n.id === selectedNetworkId ? { ...n, parentNetwork: parentNet, name: parentNet.name } : n
