@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subnet.Fit - IPv4 Subnet Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Subnet.Fit</h1>
+      <form id="subnet-form">
+        <label for="ip">IPv4 Address</label>
+        <input type="text" id="ip" name="ip" placeholder="e.g. 192.168.1.10" required>
+        <label for="cidr">CIDR or Subnet Mask</label>
+        <input type="text" id="cidr" name="cidr" placeholder="e.g. /24 or 255.255.255.0" required>
+        <button type="submit">Calculate</button>
+      </form>
+      <section id="results" style="margin-top:2em;"></section>
+    </main>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

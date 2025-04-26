@@ -1,0 +1,10 @@
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+}
+#results {
+  background: #fff;
+  border-radius: 0.5em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 1.5em;
+}

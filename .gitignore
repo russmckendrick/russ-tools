@@ -1,3 +1,7 @@
+# General
+.windsurfrules
+package-lock.json
+
 # Logs
 logs
 *.log
