@@ -43,19 +43,38 @@ function calculateSubnet(ip, prefix) {
   };
 }
 
+const ipInput = document.getElementById('ip');
+const cidrInput = document.getElementById('cidr');
+const results = document.getElementById('results');
+const visualization = document.getElementById('visualization');
+
+function showValidation() {
+  let ip = ipInput.value.trim();
+  let cidr = cidrInput.value.trim();
+  let ipValid = isValidIPv4(ip);
+  let cidrValid = parseCIDRorMask(cidr) !== null;
+  ipInput.style.borderColor = ipValid ? '' : 'red';
+  cidrInput.style.borderColor = cidrValid ? '' : 'red';
+}
+
+ipInput.addEventListener('input', showValidation);
+cidrInput.addEventListener('input', showValidation);
+
 document.getElementById('subnet-form').addEventListener('submit', function(e) {
   e.preventDefault();
-  const ip = document.getElementById('ip').value.trim();
-  const cidr = document.getElementById('cidr').value.trim();
-  const results = document.getElementById('results');
+  const ip = ipInput.value.trim();
+  const cidr = cidrInput.value.trim();
   results.innerHTML = '';
+  visualization.innerHTML = '';
   if (!isValidIPv4(ip)) {
     results.innerHTML = '<b>Invalid IPv4 address.</b>';
+    ipInput.focus();
     return;
   }
   const prefix = parseCIDRorMask(cidr);
   if (prefix === null) {
     results.innerHTML = '<b>Invalid CIDR or subnet mask.</b>';
+    cidrInput.focus();
     return;
   }
   const subnet = calculateSubnet(ip, prefix);
@@ -71,4 +90,6 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
       <li><b>CIDR Prefix:</b> /${subnet.prefix}</li>
     </ul>
   `;
+  // Visualization placeholder
+  visualization.innerHTML = '<em>Subnet visualization will appear here soon.</em>';
 });
