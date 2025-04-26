@@ -278,8 +278,15 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
     </div>
   `;
   
+  // Remove any existing Subnet Allocations section first
+  const existingAllocations = document.getElementById('subnets-visualization');
+  if (existingAllocations) {
+    existingAllocations.remove();
+  }
+  
   // Create a dedicated subnet visualization section
   const subnetAllocationsSection = document.createElement('div');
+  subnetAllocationsSection.id = 'subnets-visualization';
   subnetAllocationsSection.className = 'mt-6';
   subnetAllocationsSection.innerHTML = `
     <h3 class="text-lg font-bold mb-2">Subnet Allocations</h3>

@@ -127,7 +127,7 @@
 /* Subnet allocations visualization */
 .subnet-allocations-bar {
   display: flex;
-  height: 2rem;
+  height: 2.5rem;
   border-radius: 0.375rem;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -144,6 +144,7 @@
   transition: all 0.2s;
   min-width: 2rem;
   position: relative;
+  cursor: pointer;
 }
 
 .subnet-bar-allocation:hover {
@@ -155,6 +156,14 @@
 .subnet-bar-unallocated {
   background-color: #f3f4f6;
   min-width: 0.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.subnet-bar-unallocated:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-2px);
+  z-index: 5;
 }
 
 .subnet-bar-empty {
@@ -166,4 +175,26 @@
   color: #9ca3af;
   font-size: 0.875rem;
   height: 100%;
+}
+
+/* Tooltip styles */
+[title] {
+  position: relative;
+}
+
+[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  margin-bottom: 5px;
 }
