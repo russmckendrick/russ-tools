@@ -78,119 +78,90 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   
   // Fallback SVG generation
   const createFallbackSVG = () => {
-    // Set diagram dimensions
+    // Set diagram dimensions to match browser view
     const width = 800;
-    // Add extra padding at the bottom
-    const padding = 40;
-    const subnetHeight = 100;
-    const height = 600 + (processedSubnets.length * subnetHeight) + padding;
+    const height = 500; // Keep it compact
     
     // Layout calculations
-    const parentBoxX = 20;
-    const parentBoxY = 50;
-    const parentBoxWidth = width - 40;
-    const parentBoxHeight = height - 90;
-    const subnetStartY = 160;
-    const subnetX = 50;
-    const subnetWidth = width - 100;
+    const padding = 20;
+    const containerPadding = 10;
+    const borderRadius = 5;
+    const subnetPadding = 16;
+    const subnetSpacing = 12;
+    const subnetHeight = 85;
     
-    // Create color with transparency for background fills
-    const createColorWithAlpha = (hexColor, alpha = 0.1) => {
-      // Convert hex to rgb
-      const r = parseInt(hexColor.slice(1, 3), 16);
-      const g = parseInt(hexColor.slice(3, 5), 16);
-      const b = parseInt(hexColor.slice(5, 7), 16);
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    };
+    // Border colors
+    const parentBorderColor = theme.colors.blue[5];
+    const footerHeight = 30;
     
-    // SVG icons as path data
-    const networkIcon = "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6m3-3h6v6m-3-3l-7 7";
-    const wifiIcon = "M1 1 l2 2 M5 5 C9 1, 15 1, 19 5 M8 8 C10 6, 14 6, 16 8 M11 11 C11.5 10.5, 12.5 10.5, 13 11 M12 14 L12 14";
+    // Calculate subnet heights and total height needed
+    const totalSubnetHeight = (subnetHeight + subnetSpacing) * processedSubnets.length;
     
     // Create SVG manually
     let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
-              markerWidth="6" markerHeight="6"
-              orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="${theme.colors.gray[6]}"/>
-          </marker>
-        </defs>
         <style>
           text { font-family: Arial, sans-serif; }
           .title { font-size: 16px; font-weight: bold; }
-          .subtitle { font-size: 12px; }
-          .subnetTitle { font-size: 14px; font-weight: bold; }
-          .subnetDetails { font-size: 12px; }
-          .footer { font-size: 12px; }
-          .iconPath { stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+          .detail { font-size: 14px; }
+          .footer { font-size: 12px; text-anchor: middle; }
         </style>
         
-        <!-- Background -->
-        <rect x="0" y="0" width="${width}" height="${height}" fill="${theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0]}" />
+        <!-- Background transparent -->
+        <rect x="0" y="0" width="${width}" height="${height}" fill="transparent" />
         
         <!-- Parent Network Container -->
-        <rect x="${parentBoxX}" y="${parentBoxY}" width="${parentBoxWidth}" height="${parentBoxHeight}" rx="5" ry="5" fill="white" stroke="${theme.colors.blue[7]}" stroke-width="2" />
+        <rect x="${padding}" y="${padding}" 
+              width="${width - padding * 2}" height="${height - padding * 2}" 
+              rx="${borderRadius}" ry="${borderRadius}" 
+              fill="white" 
+              stroke="${parentBorderColor}" stroke-width="1" />
         
-        <!-- Network Icon -->
-        <g transform="translate(35, 73) scale(0.8)">
-          <path d="${networkIcon}" stroke="${theme.colors.blue[7]}" class="iconPath" />
-        </g>
-        
-        <!-- Parent Network Title -->
-        <text x="60" y="80" class="title">${parentNetwork.name || 'Parent Network'} (${parentBlock.base}/${parentNetwork.cidr})</text>
-        
-        <!-- Parent Network Details -->
-        <text x="60" y="105" class="subtitle">Range: ${parentBlock.base} - ${parentBlock.broadcast}</text>
-        <text x="60" y="125" class="subtitle">Total IPs: ${parentBlock.size}</text>
-        
-        <!-- Vertical line connecting parent and subnets -->
-        <line x1="${width/2}" y1="140" x2="${width/2}" y2="${subnetStartY - 20}" 
-              stroke="${theme.colors.gray[6]}" stroke-width="1.5" stroke-dasharray="4" />`;
-    
-    // Add connecting horizontal line if there are subnets
-    if (processedSubnets.length > 0) {
-      svg += `
-        <!-- Horizontal connector line -->
-        <line x1="${width/2 - 100}" y1="${subnetStartY - 20}" x2="${width/2 + 100}" y2="${subnetStartY - 20}" 
-              stroke="${theme.colors.gray[6]}" stroke-width="1.5" stroke-dasharray="4" />`;
-    }
+        <!-- Parent Network header -->
+        <text x="${padding + containerPadding}" y="${padding + containerPadding + 20}" class="title">
+          ${parentNetwork.name} (${parentNetwork.ip}/${parentNetwork.cidr})
+        </text>
+        <text x="${padding + containerPadding}" y="${padding + containerPadding + 45}" class="detail">
+          Range: ${parentBlock.base} - ${parentBlock.broadcast}
+        </text>
+        <text x="${padding + containerPadding}" y="${padding + containerPadding + 65}" class="detail">
+          Total IPs: ${parentBlock.size}
+        </text>`;
     
     // Add subnets
+    const subnetStartY = padding + containerPadding + 90;
     processedSubnets.forEach((subnet, index) => {
-      const y = subnetStartY + (index * subnetHeight);
-      const color = subnet.color || '#999999';
-      // Use a light version of the color for fills
-      const fillColor = color.replace('15', ''); // Remove existing alpha if present
-      const lightColor = createColorWithAlpha(fillColor, 0.15);
+      const subnetY = subnetStartY + (subnetHeight + subnetSpacing) * index;
+      const subnetWidth = width - (padding * 2) - (containerPadding * 2);
       
-      // Add vertical connector to this subnet
       svg += `
-        <!-- Connector line to subnet ${index + 1} -->
-        <line x1="${width/2}" y1="${subnetStartY - 20}" x2="${width/2}" y2="${y - 10}" 
-              stroke="${theme.colors.gray[6]}" stroke-width="1.5" stroke-dasharray="4" />
-        <line x1="${width/2}" y1="${y - 10}" x2="${subnetX + 20}" y2="${y + 40}" 
-              stroke="${theme.colors.gray[6]}" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrow)" />
-              
         <!-- Subnet ${index + 1} -->
-        <rect x="${subnetX}" y="${y}" width="${subnetWidth}" height="80" rx="4" ry="4" fill="${lightColor}" stroke="${color}" stroke-width="1" />
+        <rect x="${padding + containerPadding}" y="${subnetY}" 
+              width="${subnetWidth}" height="${subnetHeight}" 
+              rx="${borderRadius}" ry="${borderRadius}" 
+              fill="${subnet.color === theme.colors.blue[5] ? '#e6f7ff' : '#f0fff4'}" 
+              stroke="${subnet.color}" stroke-width="1" />
         
-        <!-- WiFi Icon -->
-        <g transform="translate(65, ${y + 25}) scale(0.7)">
-          <path d="${wifiIcon}" stroke="${color}" class="iconPath" />
-        </g>
-        
-        <text x="85" y="${y + 25}" class="subnetTitle">${subnet.name} (${subnet.block.base}/${subnet.cidr})</text>
-        <text x="85" y="${y + 45}" class="subnetDetails">Range: ${subnet.block.first} - ${subnet.block.last}</text>
-        <text x="85" y="${y + 65}" class="subnetDetails">Usable IPs: ${subnet.cidr >= 31 ? subnet.block.size : subnet.block.size - 2}</text>`;
+        <!-- Subnet details -->
+        <text x="${padding + containerPadding + subnetPadding}" y="${subnetY + 25}" class="title">
+          ${subnet.name} (${subnet.block.base}/${subnet.cidr})
+        </text>
+        <text x="${padding + containerPadding + subnetPadding}" y="${subnetY + 45}" class="detail">
+          Range: ${subnet.block.first} - ${subnet.block.last}
+        </text>
+        <text x="${padding + containerPadding + subnetPadding}" y="${subnetY + 65}" class="detail">
+          Usable IPs: ${subnet.cidr >= 31 ? subnet.block.size : subnet.block.size - 2}
+        </text>`;
     });
     
     // Add footer
+    const footerY = height - padding - 10;
     svg += `
-        <!-- Footer -->
-        <text x="${width/2 - 100}" y="${height - 30}" class="footer">Total subnets: ${subnets.length} • Total IPs: ${parentBlock.size}</text>
-      </svg>`;
+      <!-- Footer -->
+      <text x="${width / 2}" y="${footerY}" class="footer">
+        Total subnets: ${subnets.length} • Total IPs: ${parentBlock.size}
+      </text>
+    </svg>`;
     
     return svg;
   };
