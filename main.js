@@ -313,6 +313,35 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
     }
     // Helper to convert int to IP
     const toIp = x => [24,16,8,0].map(s => (x >>> s) & 255).join('.');
+    
+    // Add Clear All button functionality
+    document.getElementById('clear-subnets').addEventListener('click', function() {
+      // Create confirmation dialog
+      const dialog = document.createElement('dialog');
+      dialog.classList.add('modal', 'modal-open');
+      dialog.innerHTML = `
+        <div class="modal-box">
+          <h3 class="font-bold text-lg">Clear All Subnets</h3>
+          <p class="py-4">Are you sure you want to remove all subnets?</p>
+          <div class="modal-action">
+            <button class="btn btn-outline" id="cancel-clear">Cancel</button>
+            <button class="btn btn-error" id="confirm-clear">Clear All</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(dialog);
+      
+      document.getElementById('cancel-clear').addEventListener('click', () => {
+        dialog.remove();
+      });
+      
+      document.getElementById('confirm-clear').addEventListener('click', () => {
+        plan = [];
+        renderPlan();
+        saveState(ip, cidr, plan);
+        dialog.remove();
+      });
+    });
     addSubnetBtn.addEventListener('click', function() {
       let p = parseInt(planPrefixSelect.value, 10);
       if (p) {
@@ -340,7 +369,22 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
           // Save state when subnet is added
           saveState(ip, cidr, plan);
         } else {
-          alert('No more space for this subnet size!');
+          // Create a modal dialog instead of using alert
+          const dialog = document.createElement('dialog');
+          dialog.classList.add('modal', 'modal-open');
+          dialog.innerHTML = `
+            <div class="modal-box">
+              <h3 class="font-bold text-lg">No more space!</h3>
+              <p class="py-4">No more space for this subnet size!</p>
+              <div class="modal-action">
+                <button class="btn" id="close-modal">Close</button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(dialog);
+          document.getElementById('close-modal').addEventListener('click', () => {
+            dialog.remove();
+          });
         }
       }
     });
