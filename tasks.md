@@ -27,12 +27,13 @@
 ### 3. Persistent State
 - [x] Save all network/subnet data to local storage
 - [x] Restore state on app load
-- [x] Add Reset/Clear Design button (in progress)
+- [x] Add Reset/Clear Design button
 
 ### 4. Enhanced Visualization
-- [ ] Update visualization to show all subnets as proportional segments
+- [x] Update visualization to show all subnets as proportional segments (in progress)
 - [ ] Color blocks, labels, hover details for each subnet
 - [ ] Show unused space in parent network
+- [ ] Create a drag and drop reorder tool
 
 ### 5. Network Diagram View
 - [ ] Add placeholder for network diagram
