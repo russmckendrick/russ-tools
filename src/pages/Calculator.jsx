@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { Container, TextInput, Button, Paper, Title, Grid, Text, Select, Group, Modal, Stack } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import { Netmask } from 'netmask';
-import { SubnetVisualization } from '../components/SubnetVisualization';
+import { DraggableVisualization } from '../components/DraggableVisualization';
 import { ParentNetworkForm } from '../components/ParentNetworkForm';
 import { SubnetForm } from '../components/SubnetForm';
+import { DraggableSubnets } from '../components/DraggableSubnets';
 import { v4 as uuidv4 } from 'uuid';
 
 function isValidIPv4(ip) {
@@ -161,6 +162,47 @@ export function Calculator() {
     setDeleteModalOpen(false);
   };
 
+  // Reorder subnets
+  const handleReorderSubnets = (newOrder) => {
+    if (!current?.parentNetwork) return;
+    
+    const parentBlock = new Netmask(current.parentNetwork.ip + '/' + current.parentNetwork.cidr);
+    const parentStart = ipToLong(parentBlock.base);
+    
+    // Sort by new order but reassign IPs sequentially
+    let updatedSubnets = [...newOrder];
+    let candidateStart = parentStart;
+    
+    // Process each subnet in the new order
+    for (let i = 0; i < updatedSubnets.length; i++) {
+      const subnet = updatedSubnets[i];
+      const size = Math.pow(2, 32 - subnet.cidr);
+      
+      // Align to proper network boundary based on CIDR
+      const mask = 0xffffffff << (32 - subnet.cidr);
+      candidateStart = (candidateStart & mask) >>> 0;
+      
+      // If we're not at a valid boundary for this subnet size, move to the next one
+      if ((candidateStart & mask) !== candidateStart) {
+        candidateStart = ((candidateStart >> (32 - subnet.cidr)) + 1) << (32 - subnet.cidr);
+      }
+      
+      // Assign the new base address
+      const newBase = longToIp(candidateStart);
+      updatedSubnets[i] = { ...subnet, base: newBase };
+      
+      // Move past this subnet for the next one
+      candidateStart += size;
+    }
+    
+    // Save the updated subnets
+    setNetworks(networks.map(n =>
+      n.id === selectedNetworkId
+        ? { ...n, subnets: updatedSubnets }
+        : n
+    ));
+  };
+
   return (
     <Container size="lg" py="xl">
       <Title order={2} mb="lg">IPv4 Subnet Calculator</Title>
@@ -192,30 +234,18 @@ export function Calculator() {
               <SubnetForm onAddSubnet={handleAddSubnet} parentCidr={current.parentNetwork.cidr} />
               {current.subnets?.length > 0 && (
                 <>
-                  <SubnetVisualization parentNetwork={current.parentNetwork} subnets={current.subnets} />
+                  <DraggableVisualization 
+                    parentNetwork={current.parentNetwork} 
+                    subnets={current.subnets} 
+                    onReorderSubnets={handleReorderSubnets}
+                  />
                   <Paper p="md" radius="md" withBorder mb="md">
-                    <Text fw={500} mb="sm">Subnets:</Text>
-                    <Grid gutter="md">
-                      {current.subnets.map((subnet, idx) => {
-                        const block = new Netmask(subnet.base + '/' + subnet.cidr);
-                        return (
-                          <Grid.Col span={4} key={idx}>
-                            <Paper p="sm" radius="sm" withBorder mb="sm">
-                              <Text fw={500}>{subnet.name} (/{subnet.cidr})</Text>
-                              <Text size="sm">Network Address: {block.base}</Text>
-                              <Text size="sm">Broadcast Address: {block.broadcast}</Text>
-                              <Text size="sm">First Usable Host: {block.first}</Text>
-                              <Text size="sm">Last Usable Host: {block.last}</Text>
-                              <Text size="sm">Number of Hosts: {block.size}</Text>
-                              <Text size="sm">Subnet Mask: {block.mask} (/{block.bitmask})</Text>
-                              <Button color="red" size="xs" mt="xs" onClick={() => handleRemoveSubnet(idx)}>
-                                Remove
-                              </Button>
-                            </Paper>
-                          </Grid.Col>
-                        );
-                      })}
-                    </Grid>
+                    <Text fw={500} mb="sm">Subnets (drag to reorder):</Text>
+                    <DraggableSubnets 
+                      subnets={current.subnets}
+                      onReorder={handleReorderSubnets}
+                      onRemoveSubnet={handleRemoveSubnet}
+                    />
                   </Paper>
                 </>
               )}

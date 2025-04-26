@@ -33,7 +33,7 @@
 - [x] Update visualization to show all subnets as proportional segments
 - [x] Color blocks, labels, hover details for each subnet (in progress)
 - [x] Show unused space in parent network (in progress)
-- [ ] Create a drag and drop reorder tool
+- [x] Create a drag and drop reorder tool
 
 ### 5. Network Diagram View
 - [ ] Add placeholder for network diagram
