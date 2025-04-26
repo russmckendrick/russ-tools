@@ -268,9 +268,124 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
         </div>
         
         <div class="text-xs text-gray-500 mt-3">Hover over sections for more details</div>
+        
+        <div id="subnets-visualization" class="mt-6">
+          <h3 class="text-lg font-bold mb-2">Subnet Allocations</h3>
+          <div class="subnet-allocations-bar"></div>
+          <div class="text-xs text-gray-500 mt-1">Hover over sections to see subnet details</div>
+        </div>
       </div>
     </div>
   `;
+  
+  // Create a dedicated subnet visualization section
+  const subnetAllocationsSection = document.createElement('div');
+  subnetAllocationsSection.className = 'mt-6';
+  subnetAllocationsSection.innerHTML = `
+    <h3 class="text-lg font-bold mb-2">Subnet Allocations</h3>
+    <div class="subnet-allocations-bar"></div>
+    <div class="text-xs text-gray-500 mt-1">Hover over sections to see subnet details</div>
+  `;
+  visualization.querySelector('.card-body').appendChild(subnetAllocationsSection);
+  
+  // Function to update subnet allocations visualization
+  window.updateSubnetVisualization = function(currentPlan, baseNetwork) {
+    // Get the visualization bar
+    const subnetsVisualizationBar = document.querySelector('.subnet-allocations-bar');
+    if (!subnetsVisualizationBar) return;
+    
+    // If no network info is provided, use the current subnet
+    const networkInfo = baseNetwork || subnet;
+    
+    // If no plan exists yet, show a placeholder
+    if (!currentPlan || currentPlan.length === 0) {
+      subnetsVisualizationBar.innerHTML = `
+        <div class="subnet-bar-empty">
+          <span class="subnet-bar-label">No subnets allocated yet</span>
+        </div>
+      `;
+      return;
+    }
+    
+    // Convert IP to integer for calculations
+    function ipToInt(ipStr) {
+      return ipStr.split('.').reduce((acc, octet) => (acc << 8) | parseInt(octet, 10), 0) >>> 0;
+    }
+    
+    // Convert integer to IP string
+    function intToIp(ipInt) {
+      return [(ipInt >>> 24) & 255, (ipInt >>> 16) & 255, (ipInt >>> 8) & 255, ipInt & 255].join('.');
+    }
+    
+    // Get base network info
+    const baseIpInt = ipToInt(networkInfo.network);
+    const endIpInt = baseIpInt + networkInfo.totalHosts - 1;
+    
+    // Process the plan to ensure all subnets have networkInt
+    const processedPlan = currentPlan.map(item => {
+      if (item.networkInt !== undefined) {
+        return item;
+      }
+      // If networkInt is missing, calculate it (this shouldn't happen in normal operation)
+      return {
+        ...item,
+        networkInt: baseIpInt
+      };
+    });
+    
+    // Sort plan by network address
+    const sortedPlan = [...processedPlan].sort((a, b) => a.networkInt - b.networkInt);
+    
+    // Generate HTML for each subnet and any unallocated spaces
+    let html = '';
+    let currentPos = baseIpInt;
+    const colors = ['bg-blue-400', 'bg-purple-400', 'bg-green-400', 'bg-yellow-400', 'bg-pink-400', 'bg-indigo-400'];
+    
+    for (let i = 0; i < sortedPlan.length; i++) {
+      const subnetItem = sortedPlan[i];
+      const size = 2 ** (32 - subnetItem.prefix);
+      const colorIndex = i % colors.length;
+      
+      // If there's a gap before this subnet, show it as unallocated
+      if (subnetItem.networkInt > currentPos) {
+        const gapSize = subnetItem.networkInt - currentPos;
+        const gapPercent = (gapSize / networkInfo.totalHosts) * 100;
+        html += `
+          <div class="subnet-bar-unallocated" style="width:${gapPercent}%" 
+               title="Unallocated: ${intToIp(currentPos)} - ${intToIp(subnetItem.networkInt - 1)} (${gapSize} IPs)">
+          </div>
+        `;
+      }
+      
+      // Show the subnet
+      const subnetPercent = (size / networkInfo.totalHosts) * 100;
+      html += `
+        <div class="subnet-bar-allocation ${colors[colorIndex]}" style="width:${subnetPercent}%" 
+             title="/${subnetItem.prefix}: ${intToIp(subnetItem.networkInt)} - ${intToIp(subnetItem.networkInt + size - 1)}">
+          <span class="subnet-bar-label">/${subnetItem.prefix}</span>
+        </div>
+      `;
+      
+      currentPos = subnetItem.networkInt + size;
+    }
+    
+    // If there's space after the last subnet, show it as unallocated
+    if (currentPos <= endIpInt) {
+      const remainingSize = endIpInt - currentPos + 1;
+      const remainingPercent = (remainingSize / networkInfo.totalHosts) * 100;
+      html += `
+        <div class="subnet-bar-unallocated" style="width:${remainingPercent}%" 
+             title="Unallocated: ${intToIp(currentPos)} - ${intToIp(endIpInt)} (${remainingSize} IPs)">
+        </div>
+      `;
+    }
+    
+    subnetsVisualizationBar.innerHTML = html;
+  }
+  
+  // Initial update of subnet visualization
+  // We'll initialize with an empty plan since the planner hasn't been set up yet
+  updateSubnetVisualization([]);
   // --- Custom Subnet Planner Logic ---
   // Only allow planning if prefix < 32
   if (subnet.prefix < 32) {
@@ -314,35 +429,62 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
     // Helper to convert int to IP
     const toIp = x => [24,16,8,0].map(s => (x >>> s) & 255).join('.');
     
-    // Add Clear All button functionality
+    // Remove existing event listeners by cloning and replacing elements
+    const clearSubnetsBtn = document.getElementById('clear-subnets');
+    const newClearSubnetsBtn = clearSubnetsBtn.cloneNode(true);
+    clearSubnetsBtn.parentNode.replaceChild(newClearSubnetsBtn, clearSubnetsBtn);
+    
+    const addSubnetBtnOld = document.getElementById('add-subnet');
+    const newAddSubnetBtn = addSubnetBtnOld.cloneNode(true);
+    addSubnetBtnOld.parentNode.replaceChild(newAddSubnetBtn, addSubnetBtnOld);
+    
+    // Add Clear All button functionality (to the new button)
     document.getElementById('clear-subnets').addEventListener('click', function() {
-      // Create confirmation dialog
-      const dialog = document.createElement('dialog');
-      dialog.classList.add('modal', 'modal-open');
-      dialog.innerHTML = `
-        <div class="modal-box">
-          <h3 class="font-bold text-lg">Clear All Subnets</h3>
-          <p class="py-4">Are you sure you want to remove all subnets?</p>
-          <div class="modal-action">
-            <button class="btn btn-outline" id="cancel-clear">Cancel</button>
-            <button class="btn btn-error" id="confirm-clear">Clear All</button>
+      // Create a proper DaisyUI modal for confirmation
+      const modalId = 'clear-all-modal';
+      
+      // Remove any existing modal with this ID
+      const existingModal = document.getElementById(modalId);
+      if (existingModal) {
+        existingModal.remove();
+      }
+      
+      // Create the modal HTML
+      const modalHTML = `
+        <dialog id="${modalId}" class="modal modal-bottom sm:modal-middle">
+          <div class="modal-box">
+            <h3 class="font-bold text-lg">Clear All Subnets</h3>
+            <p class="py-4">Are you sure you want to remove all subnets?</p>
+            <div class="modal-action">
+              <form method="dialog">
+                <button class="btn btn-outline mr-2">Cancel</button>
+              </form>
+              <button class="btn btn-error" id="confirm-clear">Clear All</button>
+            </div>
           </div>
-        </div>
+        </dialog>
       `;
-      document.body.appendChild(dialog);
       
-      document.getElementById('cancel-clear').addEventListener('click', () => {
-        dialog.remove();
-      });
+      // Add the modal to the document
+      const modalContainer = document.createElement('div');
+      modalContainer.innerHTML = modalHTML;
+      document.body.appendChild(modalContainer.firstElementChild);
       
+      // Show the modal
+      const modal = document.getElementById(modalId);
+      modal.showModal();
+      
+      // Handle confirm action
       document.getElementById('confirm-clear').addEventListener('click', () => {
         plan = [];
         renderPlan();
         saveState(ip, cidr, plan);
-        dialog.remove();
+        modal.close();
       });
     });
-    addSubnetBtn.addEventListener('click', function() {
+    
+    // Add subnet button functionality (to the new button)
+    document.getElementById('add-subnet').addEventListener('click', function() {
       let p = parseInt(planPrefixSelect.value, 10);
       if (p) {
         let baseIpParts = subnet.network.split('.').map(Number);
@@ -369,22 +511,38 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
           // Save state when subnet is added
           saveState(ip, cidr, plan);
         } else {
-          // Create a modal dialog instead of using alert
-          const dialog = document.createElement('dialog');
-          dialog.classList.add('modal', 'modal-open');
-          dialog.innerHTML = `
-            <div class="modal-box">
-              <h3 class="font-bold text-lg">No more space!</h3>
-              <p class="py-4">No more space for this subnet size!</p>
-              <div class="modal-action">
-                <button class="btn" id="close-modal">Close</button>
+          // Create a proper DaisyUI modal for the warning
+          const modalId = 'no-space-modal';
+          
+          // Remove any existing modal with this ID
+          const existingModal = document.getElementById(modalId);
+          if (existingModal) {
+            existingModal.remove();
+          }
+          
+          // Create the modal HTML
+          const modalHTML = `
+            <dialog id="${modalId}" class="modal modal-bottom sm:modal-middle">
+              <div class="modal-box">
+                <h3 class="font-bold text-lg text-error">No more space!</h3>
+                <p class="py-4">There is no more space available for a subnet of this size.</p>
+                <div class="modal-action">
+                  <form method="dialog">
+                    <button class="btn">Close</button>
+                  </form>
+                </div>
               </div>
-            </div>
+            </dialog>
           `;
-          document.body.appendChild(dialog);
-          document.getElementById('close-modal').addEventListener('click', () => {
-            dialog.remove();
-          });
+          
+          // Add the modal to the document
+          const modalContainer = document.createElement('div');
+          modalContainer.innerHTML = modalHTML;
+          document.body.appendChild(modalContainer.firstElementChild);
+          
+          // Show the modal
+          const modal = document.getElementById(modalId);
+          modal.showModal();
         }
       }
     });
@@ -466,11 +624,71 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
       } else {
         planRemaining.innerHTML = `<div class="text-error font-medium">Over-allocated! Remove a subnet.</div>`;
       }
+      
+      // Update the subnet visualization in the network section
+      updateSubnetVisualization(plan);
     }
     addSubnetBtn.onclick = () => {
       let prefix = Number(planPrefixSelect.value);
-      plan.push({prefix});
-      renderPlan(true);
+      if (!prefix) return;
+      
+      let baseIpParts = subnet.network.split('.').map(Number);
+      let baseIpInt = baseIpParts.reduce((acc, p) => (acc << 8) | p, 0);
+      let endIpInt = baseIpInt + subnet.totalHosts - 1;
+      let nextInt = baseIpInt;
+      
+      // Find next available IP block
+      plan.sort((a, b) => a.networkInt - b.networkInt);
+      for (let i = 0; i < plan.length; ++i) {
+        let size = 2 ** (32 - plan[i].prefix);
+        if (nextInt + 2 ** (32 - prefix) <= plan[i].networkInt) {
+          break; // Found a gap
+        }
+        nextInt = plan[i].networkInt + size;
+      }
+      
+      // Check if it fits
+      if (nextInt + 2 ** (32 - prefix) - 1 <= endIpInt) {
+        plan.push({prefix, networkInt: nextInt});
+        plan.sort((a, b) => a.networkInt - b.networkInt);
+        renderPlan(true);
+        
+        // Save state when subnet is added
+        saveState(ip, cidr, plan);
+      } else {
+        // Create a proper DaisyUI modal for the warning
+        const modalId = 'no-space-modal';
+        
+        // Remove any existing modal with this ID
+        const existingModal = document.getElementById(modalId);
+        if (existingModal) {
+          existingModal.remove();
+        }
+        
+        // Create the modal HTML
+        const modalHTML = `
+          <dialog id="${modalId}" class="modal modal-bottom sm:modal-middle">
+            <div class="modal-box">
+              <h3 class="font-bold text-lg text-error">No more space!</h3>
+              <p class="py-4">There is no more space available for a subnet of this size.</p>
+              <div class="modal-action">
+                <form method="dialog">
+                  <button class="btn">Close</button>
+                </form>
+              </div>
+            </div>
+          </dialog>
+        `;
+        
+        // Add the modal to the document
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer.firstElementChild);
+        
+        // Show the modal
+        const modal = document.getElementById(modalId);
+        modal.showModal();
+      }
       
       // Highlight the new row with animation
       setTimeout(() => {
