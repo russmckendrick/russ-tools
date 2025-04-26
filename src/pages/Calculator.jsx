@@ -6,6 +6,7 @@ import { SubnetVisualization } from '../components/SubnetVisualization';
 import { ParentNetworkForm } from '../components/ParentNetworkForm';
 import { SubnetForm } from '../components/SubnetForm';
 import { DraggableSubnets } from '../components/DraggableSubnets';
+import { NetworkDiagram } from '../components/NetworkDiagram';
 import { v4 as uuidv4 } from 'uuid';
 import { isValidIPv4, ipToLong, longToIp } from '../utils';
 
@@ -287,84 +288,112 @@ export function Calculator() {
   };
 
   return (
-    <Container size="lg" py="xl">
-      <Title order={2} mb="lg">IPv4 Subnet Calculator</Title>
-      <Group mb="md">
-        <Select
-          data={networkOptions}
-          value={selectedNetworkId}
-          onChange={setSelectedNetworkId}
-          placeholder="Select a network design"
-          style={{ minWidth: 220 }}
-        />
-        <Button onClick={handleNewNetwork}>New Network</Button>
-      </Group>
-      {!current && (
-        <Paper p="md" radius="md" withBorder mt="xl">
-          <Text>Select or create a network design to begin.</Text>
-        </Paper>
-      )}
-      {current && (
-        <>
-          <ParentNetworkForm onSubmit={handleSetParentNetwork} />
-          {current.parentNetwork && (
-            <>
-              <Paper p="md" radius="md" withBorder mb="md">
-                <Text fw={500}>Parent Network:</Text>
-                <Text>IP: {current.parentNetwork.ip} /{current.parentNetwork.cidr}</Text>
-                <Text>Name: {current.parentNetwork.name}</Text>
-              </Paper>
-              <SubnetForm 
-                onAddSubnet={handleAddSubnet} 
-                parentCidr={current.parentNetwork.cidr} 
-                parentNetwork={current.parentNetwork}
-                subnets={current.subnets || []}
-              />
-              {current.subnets?.length > 0 && (
-                <>
-                  <SubnetVisualization 
-                    parentNetwork={current.parentNetwork} 
-                    subnets={current.subnets} 
-                  />
-                  
-                  <Paper p="md" radius="md" withBorder mt="md">
-                    <Text fw={500} mb="sm">Subnets (drag to reorder):</Text>
-                    <DraggableSubnets 
-                      subnets={current.subnets}
-                      onReorder={handleReorderSubnets}
-                      onRemoveSubnet={handleRemoveSubnet}
-                      key={`drag-${animate}-${current.subnets.length}`}
-                    />
-                  </Paper>
-                </>
-              )}
-            </>
-          )}
-          <Stack spacing="md" mt="xl">
-            <Button color="yellow" fullWidth onClick={handleReset}>
-              Reset / Clear Design
+    <Container size="xl" py="md">
+      <Paper p="md" radius="md" withBorder>
+        <Group position="apart" mb="lg">
+          <Title order={2}>Network Designer</Title>
+          <Select
+            placeholder="Select Network"
+            data={networkOptions}
+            value={selectedNetworkId}
+            onChange={setSelectedNetworkId}
+            mr="md"
+            style={{ width: '200px' }}
+            disabled={networks.length === 0}
+          />
+          <Group>
+            <Button size="xs" color="gray" onClick={handleNewNetwork}>
+              New Network
             </Button>
-            <Button color="red" fullWidth onClick={() => setDeleteModalOpen(true)}>
-              Remove Network
-            </Button>
-          </Stack>
-        </>
-      )}
-
-      {/* Confirmation Modal */}
-      <Modal
-        opened={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        title="Delete Network Design"
-        centered
-      >
-        <Text mb="md">Are you sure you want to delete this network design?</Text>
-        <Text mb="xl" c="red" fw="bold">This action cannot be undone and all network data will be lost.</Text>
-        <Group position="right">
-          <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
-          <Button color="red" onClick={handleDeleteNetwork}>Delete</Button>
+            {selectedNetworkId && (
+              <>
+                <Button size="xs" color="red" variant="outline" onClick={() => setDeleteModalOpen(true)}>
+                  Delete
+                </Button>
+                <Button size="xs" variant="outline" onClick={handleReset}>
+                  Reset
+                </Button>
+              </>
+            )}
+          </Group>
         </Group>
-      </Modal>
+
+        {current ? (
+          <>
+            {!current.parentNetwork ? (
+              <ParentNetworkForm onSubmit={handleSetParentNetwork} />
+            ) : (
+              <>
+                <Grid>
+                  <Grid.Col md={6}>
+                    <Paper p="md" radius="md" withBorder>
+                      <Title order={3} mb="md">Parent Network</Title>
+                      <Text>
+                        Network Name: <strong>{current.parentNetwork.name}</strong>
+                      </Text>
+                      <Text>
+                        IP Address: <strong>{current.parentNetwork.ip}</strong>
+                      </Text>
+                      <Text>
+                        CIDR Notation: <strong>/{current.parentNetwork.cidr}</strong>
+                      </Text>
+                      <Text>
+                        Subnet Mask: <strong>{new Netmask(current.parentNetwork.ip + '/' + current.parentNetwork.cidr).mask}</strong>
+                      </Text>
+                    </Paper>
+                  </Grid.Col>
+                  <Grid.Col md={6}>
+                    <SubnetForm 
+                      onAddSubnet={handleAddSubnet} 
+                      parentCidr={current.parentNetwork.cidr} 
+                      parentNetwork={current.parentNetwork}
+                      subnets={current.subnets || []}
+                    />
+                  </Grid.Col>
+                </Grid>
+
+                <DraggableSubnets
+                  subnets={current.subnets || []}
+                  onRemoveSubnet={handleRemoveSubnet}
+                  onReorder={handleReorderSubnets}
+                  parentNetwork={current.parentNetwork}
+                />
+
+                <SubnetVisualization
+                  parentNetwork={current.parentNetwork}
+                  subnets={current.subnets || []}
+                />
+                
+                <NetworkDiagram
+                  parentNetwork={current.parentNetwork}
+                  subnets={current.subnets || []}
+                />
+              </>
+            )}
+          </>
+        ) : (
+          <Paper p="md" radius="md" withBorder>
+            <Title order={3} mb="md">Get Started</Title>
+            <Text>Click "New Network" to begin designing your network.</Text>
+          </Paper>
+        )}
+
+        <Modal
+          opened={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          title="Delete Network"
+        >
+          <Text>Are you sure you want to delete this network?</Text>
+          <Group position="right" mt="md">
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button color="red" onClick={handleDeleteNetwork}>
+              Delete
+            </Button>
+          </Group>
+        </Modal>
+      </Paper>
     </Container>
   );
 } 
