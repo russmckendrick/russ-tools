@@ -19,10 +19,12 @@
       </form>
       <section id="results" style="margin-top:2em;"></section>
       <div id="visualization" style="margin-top:2em;"></div>
-      <section id="splitter" style="margin-top:2em;display:none;">
-        <label for="split-prefix"><b>Split this network into subnets of size:</b></label>
-        <select id="split-prefix"></select>
-        <div id="subnets-table" style="margin-top:1em;"></div>
+      <section id="planner" style="margin-top:2em;display:none;">
+        <label for="plan-prefix"><b>Add a subnet to this network:</b></label>
+        <select id="plan-prefix"></select>
+        <button id="add-subnet" type="button">Add Subnet</button>
+        <div id="plan-table" style="margin-top:1em;"></div>
+        <div id="plan-remaining" style="margin-top:0.5em;color:#666;"></div>
       </section>
     </main>
     <script type="module" src="/main.js"></script>

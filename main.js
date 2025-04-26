@@ -119,4 +119,76 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
     <text x="${width-8}" y="20" font-size="13" fill="#222" text-anchor="end">${rightLabel}</text>
   </svg>`;
   visualization.innerHTML = svg + '<div style="font-size:13px;margin-top:6px;color:#666;">Visual representation: left = network, blue = usable hosts, right = broadcast.</div>';
+  // --- Custom Subnet Planner Logic ---
+  const planner = document.getElementById('planner');
+  const planPrefixSelect = document.getElementById('plan-prefix');
+  const addSubnetBtn = document.getElementById('add-subnet');
+  const planTable = document.getElementById('plan-table');
+  const planRemaining = document.getElementById('plan-remaining');
+  // Only allow planning if prefix < 32
+  if (subnet.prefix < 32) {
+    planner.style.display = '';
+    // Populate dropdown with valid smaller prefixes
+    planPrefixSelect.innerHTML = '';
+    for (let p = subnet.prefix + 1; p <= 32; ++p) {
+      let hosts = Math.max(2 ** (32 - p) - (p < 31 ? 2 : 0), 1);
+      let label = `/${p} (${hosts} hosts)`;
+      let opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = label;
+      planPrefixSelect.appendChild(opt);
+    }
+    // State: planned subnets as array of {prefix, networkInt}
+    let plan = [];
+    // Helper to convert int to IP
+    const toIp = x => [24,16,8,0].map(s => (x >>> s) & 255).join('.');
+    // Helper to render plan
+    function renderPlan() {
+      let baseIpParts = subnet.network.split('.').map(Number);
+      let baseIpInt = baseIpParts.reduce((acc, p) => (acc << 8) | p, 0);
+      let endIpInt = baseIpInt + subnet.totalHosts - 1;
+      let rows = '', nextInt = baseIpInt;
+      let used = 0;
+      for (let i = 0; i < plan.length; ++i) {
+        let p = plan[i].prefix;
+        let size = 2 ** (32 - p);
+        let net = nextInt;
+        let bcast = net + size - 1;
+        if (bcast > endIpInt) break; // Over-alloc
+        let mask = (~0 << (32 - p)) >>> 0;
+        let maskStr = [24,16,8,0].map(s => (mask >>> s) & 255).join('.');
+        let totalHosts = 2 ** (32 - p);
+        let usableHosts = p < 31 ? totalHosts - 2 : totalHosts;
+        let first = p < 31 ? net + 1 : net;
+        let last = p < 31 ? bcast - 1 : bcast;
+        rows += `<tr><td>${toIp(net)}</td><td>${toIp(bcast)}</td><td>${toIp(first)} - ${toIp(last)}</td><td>${maskStr}</td><td>/${p}</td><td>${usableHosts}</td></tr>`;
+        nextInt = bcast + 1;
+        used += size;
+      }
+      planTable.innerHTML = `<table style=\"width:100%;font-size:14px;border-collapse:collapse;\"><thead><tr style=\"background:#f1f5f9;\"><th>Network</th><th>Broadcast</th><th>Usable Range</th><th>Mask</th><th>CIDR</th><th>Usable Hosts</th></tr></thead><tbody>${rows}</tbody></table>`;
+      let left = subnet.totalHosts - used;
+      if (left > 0) {
+        let leftNet = nextInt;
+        let leftLast = endIpInt;
+        planRemaining.innerHTML = `Unallocated: ${toIp(leftNet)} - ${toIp(leftLast)} (${left} IPs)`;
+      } else if (left === 0) {
+        planRemaining.innerHTML = `<b>All space allocated</b>`;
+      } else {
+        planRemaining.innerHTML = `<b style=\"color:red;\">Over-allocated! Remove a subnet.</b>`;
+      }
+    }
+    // Add subnet
+    addSubnetBtn.onclick = () => {
+      let prefix = Number(planPrefixSelect.value);
+      plan.push({prefix});
+      renderPlan();
+    };
+    // Reset plan on new calculation
+    plan = [];
+    renderPlan();
+  } else {
+    planner.style.display = 'none';
+    planTable.innerHTML = '';
+    planRemaining.innerHTML = '';
+  }
 });
