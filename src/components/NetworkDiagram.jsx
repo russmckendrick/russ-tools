@@ -2,6 +2,7 @@ import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme } from '
 import { IconDownload, IconNetwork, IconWifi } from '@tabler/icons-react';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
+import html2canvas from 'html2canvas';
 
 export function NetworkDiagram({ parentNetwork, subnets }) {
   const theme = useMantineTheme();
@@ -53,21 +54,13 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   const exportDiagram = () => {
     if (!diagramRef.current) return;
     
-    // Use html2canvas to export diagram (this would require installing the library)
-    alert('To enable this feature, install html2canvas: npm install html2canvas');
-    
-    // The code below would work after installing html2canvas
-    /*
-    import('html2canvas').then(html2canvas => {
-      html2canvas.default(diagramRef.current).then(canvas => {
-        const image = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = image;
-        link.download = `${parentNetwork.name || 'network'}-diagram.png`;
-        link.click();
-      });
+    html2canvas(diagramRef.current).then(canvas => {
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = image;
+      link.download = `${parentNetwork.name || 'network'}-diagram.png`;
+      link.click();
     });
-    */
   };
 
   return (
