@@ -18,12 +18,13 @@ body {
   font-family: 'Arial', sans-serif;
   color: var(--text-color);
   line-height: 1.6;
+  padding: 2rem 0;
 }
 
 /* Logo styles */
 .logo-container {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 .logo {
@@ -37,9 +38,12 @@ body {
   background-color: var(--card-background);
   border-radius: 1rem;
   border: 2px solid var(--border-color);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Form styles */
@@ -87,7 +91,7 @@ body {
 .info-list li {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -107,15 +111,17 @@ body {
 
 /* Section titles */
 .section-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   color: var(--text-color);
+  border-bottom: 2px solid rgba(30, 87, 153, 0.2);
+  padding-bottom: 0.5rem;
 }
 
 /* Subnet visualization bar */
 .subnet-bar-container {
-  padding: 0.5rem 0;
+  padding: 1rem 0;
 }
 
 .subnet-bar {
@@ -357,19 +363,19 @@ body {
 .subnet-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
 .subnet-table th {
   background-color: rgba(52, 152, 219, 0.1);
-  padding: 0.5rem;
+  padding: 0.75rem;
   text-align: left;
   font-weight: bold;
   color: var(--text-color);
 }
 
 .subnet-table td {
-  padding: 0.5rem;
+  padding: 0.75rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 

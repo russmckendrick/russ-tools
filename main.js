@@ -257,37 +257,39 @@ document.getElementById('subnet-form').addEventListener('submit', function(e) {
       </select>
     </div>
     
-    <table class="subnet-table mt-3">
-      <thead>
-        <tr>
-          <th>Network Address</th>
-          <th>Broadcast</th>
-          <th>Usable Range</th>
-          <th>Mask</th>
-          <th>Hosts</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>${subnet.network}</td>
-          <td>${subnet.broadcast}</td>
-          <td>${subnet.first} - ${subnet.last}</td>
-          <td>${subnet.mask}</td>
-          <td>${subnet.usableHosts}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="mt-6">
+      <table class="subnet-table">
+        <thead>
+          <tr>
+            <th>Network Address</th>
+            <th>Broadcast</th>
+            <th>Usable Range</th>
+            <th>Mask</th>
+            <th>Hosts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>${subnet.network}</td>
+            <td>${subnet.broadcast}</td>
+            <td>${subnet.first} - ${subnet.last}</td>
+            <td>${subnet.mask}</td>
+            <td>${subnet.usableHosts}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   `;
   
   // Add subnet allocations section to the visualization
   if (!document.getElementById('subnets-visualization')) {
     const subnetAllocationsSection = document.createElement('div');
     subnetAllocationsSection.id = 'subnets-visualization';
-    subnetAllocationsSection.className = 'mt-6';
+    subnetAllocationsSection.className = 'mt-8 pt-4 border-t-2 border-blue-100';
     subnetAllocationsSection.innerHTML = `
       <h3 class="section-title">Subnet Allocations</h3>
       <div class="subnet-allocations-bar"></div>
-      <div class="text-sm mt-1">Hover over sections to see subnet details</div>
+      <div class="text-sm mt-3 mb-2 font-medium">Hover over sections to see subnet details</div>
     `;
     visualization.appendChild(subnetAllocationsSection);
   }

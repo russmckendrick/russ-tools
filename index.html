@@ -23,16 +23,16 @@
       </header>
 
       <div class="card">
-        <form id="subnet-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          <div class="form-control w-full">
+        <form id="subnet-form" class="grid grid-cols-1 md:grid-cols-7 gap-6 items-end">
+          <div class="form-control w-full md:col-span-3">
             <label for="ip" class="block font-bold mb-2">IPv4 Address</label>
             <input type="text" id="ip" name="ip" placeholder="e.g. 192.168.1.10" class="input-field" required>
           </div>
-          <div class="form-control w-full">
+          <div class="form-control w-full md:col-span-3">
             <label for="cidr" class="block font-bold mb-2">CIDR or Subnet Mask</label>
             <input type="text" id="cidr" name="cidr" placeholder="e.g. /24 or 255.255.255.0" class="input-field" required>
           </div>
-          <div>
+          <div class="md:col-span-1">
             <button type="submit" class="btn-primary">Calculate</button>
           </div>
         </form>
@@ -47,7 +47,7 @@
 
       <div id="visualization" class="card hidden">
         <h2 class="section-title">Network Visualization</h2>
-        <div class="legend">
+        <div class="legend mb-4">
           <div class="legend-item">
             <div class="legend-color legend-network"></div>
             <span>Network Address</span>
@@ -61,26 +61,30 @@
             <span>Broadcast Address</span>
           </div>
         </div>
-        <div id="subnet-visualization">
+        <div id="subnet-visualization" class="mt-4">
           <!-- Subnet visualization will be inserted here by JavaScript -->
         </div>
       </div>
       
       <section id="planner" class="card hidden">
         <h2 class="section-title">Subnet Planner</h2>
-        <div class="mb-4">
-          <div id="plan-progress" class="mb-2"></div>
-          <div class="flex flex-wrap items-end gap-2">
-            <div class="form-control">
-              <label for="plan-prefix" class="block font-bold mb-2">Add a subnet to this network:</label>
-              <select id="plan-prefix" class="input-field"></select>
-            </div>
-            <button id="add-subnet" type="button" class="btn-primary">Add Subnet</button>
-            <button id="clear-subnets" type="button" class="btn-primary" style="background-color: #ef4444;">Clear All</button>
+        <div id="plan-progress" class="mb-4"></div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-7 gap-4 items-end mb-6">
+          <div class="form-control md:col-span-3">
+            <label for="plan-prefix" class="block font-bold mb-2">Add a subnet to this network:</label>
+            <select id="plan-prefix" class="input-field"></select>
+          </div>
+          <div class="md:col-span-2">
+            <button id="add-subnet" type="button" class="btn-primary w-full">Add Subnet</button>
+          </div>
+          <div class="md:col-span-2">
+            <button id="clear-subnets" type="button" class="btn-primary w-full" style="background-color: #ef4444;">Clear All</button>
           </div>
         </div>
-        <div id="plan-table" class="overflow-x-auto max-h-64 overflow-y-auto"></div>
-        <div id="plan-remaining" class="text-sm mt-2"></div>
+        
+        <div id="plan-table" class="overflow-x-auto max-h-80 overflow-y-auto"></div>
+        <div id="plan-remaining" class="text-sm mt-4 font-medium"></div>
       </section>
 
       <footer>
