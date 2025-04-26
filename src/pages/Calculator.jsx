@@ -57,7 +57,7 @@ export function Calculator() {
     const saved = localStorage.getItem('networks');
     const lastSelected = localStorage.getItem('lastSelectedNetworkId');
     console.log('Loading from localStorage:', { saved, lastSelected });
-    if (saved) {
+    if (saved !== null) {
       const parsed = JSON.parse(saved);
       setNetworks(parsed);
       if (parsed.length > 0) {
@@ -91,7 +91,7 @@ export function Calculator() {
       console.log('Migrated old data to new format:', migrated);
       return;
     }
-    // No data
+    // Only set to empty if there is truly no data
     setNetworks([]);
     setSelectedNetworkId(null);
     console.log('No networks found in localStorage.');
@@ -110,6 +110,9 @@ export function Calculator() {
       console.log('Saved lastSelectedNetworkId:', selectedNetworkId);
     }
   }, [selectedNetworkId]);
+
+  // Debug: log state on every render
+  console.log('Render state:', { networks, selectedNetworkId });
 
   // Get current network
   const current = networks.find(n => n.id === selectedNetworkId);
