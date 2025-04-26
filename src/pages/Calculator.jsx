@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Container, TextInput, Button, Paper, Title, Grid, Text, Select, Group } from '@mantine/core';
+import { Container, TextInput, Button, Paper, Title, Grid, Text, Select, Group, Modal, Stack } from '@mantine/core';
+import { useLocalStorage } from '@mantine/hooks';
 import { Netmask } from 'netmask';
 import { SubnetVisualization } from '../components/SubnetVisualization';
 import { ParentNetworkForm } from '../components/ParentNetworkForm';
@@ -48,80 +49,26 @@ function longToIp(long) {
 }
 
 export function Calculator() {
-  // Multiple network designs
-  const [networks, setNetworks] = useState([]); // [{id, name, parentNetwork, subnets, createdAt}]
-  const [selectedNetworkId, setSelectedNetworkId] = useState(null);
-
-  // Migration on load
-  useEffect(() => {
-    const saved = localStorage.getItem('networks');
-    const lastSelected = localStorage.getItem('lastSelectedNetworkId');
-    console.log('Loading from localStorage:', { saved, lastSelected });
-    if (saved !== null) {
-      const parsed = JSON.parse(saved);
-      setNetworks(parsed);
-      if (parsed.length > 0) {
-        if (lastSelected && parsed.some(n => n.id === lastSelected)) {
-          setSelectedNetworkId(lastSelected);
-        } else {
-          setSelectedNetworkId(parsed[0].id);
-        }
-      } else {
-        setSelectedNetworkId(null);
-      }
-      return;
-    }
-    // Migrate old format if present
-    const oldParent = localStorage.getItem('parentNetwork');
-    const oldSubnets = localStorage.getItem('subnets');
-    if (oldParent && oldSubnets) {
-      const migrated = [{
-        id: uuidv4(),
-        name: JSON.parse(oldParent).name || 'Migrated Network',
-        parentNetwork: JSON.parse(oldParent),
-        subnets: JSON.parse(oldSubnets),
-        createdAt: Date.now(),
-      }];
-      setNetworks(migrated);
-      setSelectedNetworkId(migrated[0].id);
-      localStorage.setItem('networks', JSON.stringify(migrated));
-      localStorage.setItem('lastSelectedNetworkId', migrated[0].id);
-      localStorage.removeItem('parentNetwork');
-      localStorage.removeItem('subnets');
-      console.log('Migrated old data to new format:', migrated);
-      return;
-    }
-    // Only set to empty if there is truly no data
-    setNetworks([]);
-    setSelectedNetworkId(null);
-    console.log('No networks found in localStorage.');
-  }, []);
-
-  // Persist networks to localStorage on every change
-  useEffect(() => {
-    localStorage.setItem('networks', JSON.stringify(networks));
-    console.log('Saved to localStorage:', networks);
-  }, [networks]);
-
-  // Persist last selected network ID
-  useEffect(() => {
-    if (selectedNetworkId) {
-      localStorage.setItem('lastSelectedNetworkId', selectedNetworkId);
-      console.log('Saved lastSelectedNetworkId:', selectedNetworkId);
-    }
-  }, [selectedNetworkId]);
-
-  // Debug: log state on every render
-  console.log('Render state:', { networks, selectedNetworkId });
+  // Use Mantine's useLocalStorage hook for automatic persistence
+  const [networks, setNetworks] = useLocalStorage({
+    key: 'networks',
+    defaultValue: []
+  });
+  
+  const [selectedNetworkId, setSelectedNetworkId] = useLocalStorage({
+    key: 'selectedNetworkId',
+    defaultValue: null
+  });
 
   // Get current network
   const current = networks.find(n => n.id === selectedNetworkId);
 
   // Dropdown options
-  const networkOptions = networks.map(n => ({ value: n.id, label: n.name }));
+  const networkOptions = networks.length > 0
+    ? networks.map(n => ({ value: n.id, label: n.name }))
+    : [{ value: '', label: 'No networks found' }];
 
-  // Handlers
-  const handleSelectNetwork = (id) => setSelectedNetworkId(id);
+  // Create a new network
   const handleNewNetwork = () => {
     const newNet = {
       id: uuidv4(),
@@ -130,13 +77,13 @@ export function Calculator() {
       subnets: [],
       createdAt: Date.now(),
     };
-    setNetworks(prev => [newNet, ...prev]);
+    setNetworks([newNet, ...networks]);
     setSelectedNetworkId(newNet.id);
   };
 
-  // Set parent network for current (do not clear subnets)
+  // Set parent network for current
   const handleSetParentNetwork = (parentNet) => {
-    setNetworks(prev => prev.map(n =>
+    setNetworks(networks.map(n =>
       n.id === selectedNetworkId ? { ...n, parentNetwork: parentNet, name: parentNet.name } : n
     ));
   };
@@ -144,14 +91,17 @@ export function Calculator() {
   // Add subnet to current
   const handleAddSubnet = (subnet) => {
     if (!current?.parentNetwork) return;
+    
     const parentBlock = new Netmask(current.parentNetwork.ip + '/' + current.parentNetwork.cidr);
     const parentStart = ipToLong(parentBlock.base);
     const parentEnd = ipToLong(parentBlock.broadcast);
     const size = Math.pow(2, 32 - subnet.cidr);
+    
     // Build a sorted list of used ranges
     const used = (current.subnets || [])
       .map(s => [ipToLong(s.base), ipToLong(new Netmask(s.base + '/' + s.cidr).broadcast)])
       .sort((a, b) => a[0] - b[0]);
+    
     // Scan for the first available gap
     let candidateStart = parentStart;
     for (let i = 0; i <= used.length; i++) {
@@ -163,7 +113,7 @@ export function Calculator() {
           parentBlock.contains(candidateBlock.base) &&
           parentBlock.contains(candidateBlock.broadcast)
         ) {
-          setNetworks(prev => prev.map(n =>
+          setNetworks(networks.map(n =>
             n.id === selectedNetworkId
               ? { ...n, subnets: [...(n.subnets || []), { ...subnet, base: candidateBlock.base }] }
               : n
@@ -178,7 +128,7 @@ export function Calculator() {
 
   // Remove subnet from current
   const handleRemoveSubnet = (idx) => {
-    setNetworks(prev => prev.map(n =>
+    setNetworks(networks.map(n =>
       n.id === selectedNetworkId
         ? { ...n, subnets: n.subnets.filter((_, i) => i !== idx) }
         : n
@@ -187,11 +137,28 @@ export function Calculator() {
 
   // Reset/clear current network
   const handleReset = () => {
-    setNetworks(prev => prev.map(n =>
+    setNetworks(networks.map(n =>
       n.id === selectedNetworkId
         ? { ...n, parentNetwork: null, subnets: [] }
         : n
     ));
+  };
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  // Delete current network
+  const handleDeleteNetwork = () => {
+    const newNetworks = networks.filter(n => n.id !== selectedNetworkId);
+    setNetworks(newNetworks);
+    
+    // Select another network if available, otherwise set to null
+    if (newNetworks.length > 0) {
+      setSelectedNetworkId(newNetworks[0].id);
+    } else {
+      setSelectedNetworkId(null);
+    }
+    
+    setDeleteModalOpen(false);
   };
 
   return (
@@ -201,7 +168,7 @@ export function Calculator() {
         <Select
           data={networkOptions}
           value={selectedNetworkId}
-          onChange={handleSelectNetwork}
+          onChange={setSelectedNetworkId}
           placeholder="Select a network design"
           style={{ minWidth: 220 }}
         />
@@ -223,7 +190,7 @@ export function Calculator() {
                 <Text>Name: {current.parentNetwork.name}</Text>
               </Paper>
               <SubnetForm onAddSubnet={handleAddSubnet} parentCidr={current.parentNetwork.cidr} />
-              {current.subnets.length > 0 && (
+              {current.subnets?.length > 0 && (
                 <>
                   <SubnetVisualization parentNetwork={current.parentNetwork} subnets={current.subnets} />
                   <Paper p="md" radius="md" withBorder mb="md">
@@ -254,11 +221,31 @@ export function Calculator() {
               )}
             </>
           )}
-          <Button color="yellow" fullWidth mt="xl" onClick={handleReset}>
-            Reset / Clear Design
-          </Button>
+          <Stack spacing="md" mt="xl">
+            <Button color="yellow" fullWidth onClick={handleReset}>
+              Reset / Clear Design
+            </Button>
+            <Button color="red" fullWidth onClick={() => setDeleteModalOpen(true)}>
+              Remove Network
+            </Button>
+          </Stack>
         </>
       )}
+
+      {/* Confirmation Modal */}
+      <Modal
+        opened={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Delete Network Design"
+        centered
+      >
+        <Text mb="md">Are you sure you want to delete this network design?</Text>
+        <Text mb="xl" c="red" fw="bold">This action cannot be undone and all network data will be lost.</Text>
+        <Group position="right">
+          <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+          <Button color="red" onClick={handleDeleteNetwork}>Delete</Button>
+        </Group>
+      </Modal>
     </Container>
   );
 } 
