@@ -8,6 +8,7 @@ import { useComputedColorScheme } from '@mantine/core';
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform, IconServer } from '@tabler/icons-react';
 import { generateAwsTerraform, generateAzureTerraform } from '../utils/terraformExport';
 import { loadAzureRegions } from './AzureRegions';
+import { loadAwsRegions } from './AwsRegions';
 
 export function TerraformExportSection({ network, subnets }) {
   const colorScheme = useComputedColorScheme('light');
@@ -21,26 +22,13 @@ export function TerraformExportSection({ network, subnets }) {
   const [loadingRegions, setLoadingRegions] = useState(true);
   const [regionError, setRegionError] = useState(null);
 
-  // AWS region selection with persistence and static list
+  // AWS region selection with persistence and dynamic loading
   const defaultAwsRegion = 'us-east-1';
   const savedAwsRegion = typeof window !== 'undefined' ? window.localStorage.getItem('awsRegion') : null;
   const [awsRegion, setAwsRegion] = useState(savedAwsRegion || defaultAwsRegion);
-  const regionListAws = [
-    { label: 'US East (N. Virginia)', value: 'us-east-1' },
-    { label: 'US West (Oregon)', value: 'us-west-2' },
-    { label: 'EU (Ireland)', value: 'eu-west-1' },
-    { label: 'EU (London)', value: 'eu-west-2' },
-    { label: 'Asia Pacific (Sydney)', value: 'ap-southeast-2' },
-    // Add more as needed
-  ];
-  const [loadingRegionsAws] = useState(false);
-  const [regionErrorAws] = useState(null);
-  const handleAwsRegionChange = (value) => {
-    setAwsRegion(value);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('awsRegion', value);
-    }
-  };
+  const [regionListAws, setRegionListAws] = useState([]);
+  const [loadingRegionsAws, setLoadingRegionsAws] = useState(true);
+  const [regionErrorAws, setRegionErrorAws] = useState(null);
 
   React.useEffect(() => {
     let mounted = true;
