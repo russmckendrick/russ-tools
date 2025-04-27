@@ -40,6 +40,7 @@ const getContrastColor = (hexColor, theme) => {
 
 export function SubnetVisualization({ parentNetwork, subnets }) {
   const theme = useMantineTheme();
+  const { colorScheme } = useMantineTheme();
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
@@ -129,6 +130,17 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
         }}
       >
         {segments.map((seg, idx) => {
+          if (seg.end < seg.start) return null;
+
+          // Derive the base HEX color for *this* segment
+          const colorObj = seg.color; // Use seg.color
+          let segmentColorHex = theme.colors.gray[6]; // Default fallback
+          if (colorObj && typeof colorObj === 'object' && colorObj.name && colorObj.index !== undefined) {
+            segmentColorHex = theme.colors[colorObj.name]?.[colorObj.index] || theme.colors.gray[6];
+          } else if (seg.type === 'subnet') { // Only warn for subnets, not free space
+            // console.warn('Invalid color object for subnet segment in SubnetVisualization, falling back to gray:', seg.color); // Keep warning commented for now
+          }
+
           if (seg.type === 'unused') {
             return (
               <Tooltip key={idx} label={`Unused: ${longToIp(seg.start)} - ${longToIp(seg.end)}`} withArrow>
@@ -144,8 +156,10 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
               </Tooltip>
             );
           }
+
           // Subnet segment - use the subnet's color if available, or fall back to a default
-          const color = seg.color || defaultColors[idx % defaultColors.length];
+          const color = segmentColorHex;
+
           return (
             <Tooltip
               key={idx}
@@ -158,7 +172,7 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
                 style={{
                   width: `${widthPct(seg.start, seg.end)}%`,
                   height: '100%',
-                  background: color,
+                  background: color, // Use color derived for this segment
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

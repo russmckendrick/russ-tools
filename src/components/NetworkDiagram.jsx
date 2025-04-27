@@ -49,19 +49,62 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   // Process subnets with consistent color assignment based on subnet name
   const processedSubnets = subnets.map((subnet) => {
     const block = new Netmask(subnet.base + '/' + subnet.cidr);
-    // Assign color based on subnet name (hash) for consistency
-    const nameHash = subnet.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const colorIndexInPalette = nameHash % colorPalette.length;
-    const assignedColorValue = colorPalette[colorIndexInPalette]; // e.g., theme.colors.blue[5]
 
     return {
-      ...subnet,
+      ...subnet, // Keep the original subnet properties, including the color object
       block,
       networkLong: ipToLong(block.base),
-      broadcastLong: ipToLong(block.broadcast),
-      color: assignedColorValue, // Keep the original color value (e.g., shades[5]) for border/icon
+      broadcastLong: ipToLong(block.broadcast)
+      // The original subnet.color object is preserved by the spread operator
     };
-  }).sort((a, b) => a.networkLong - b.networkLong); // Sort by network address
+  }).sort((a, b) => a.networkLong - b.networkLong); // Sort by starting IP
+
+  // Derive the base HEX color from the theme using stored name and index
+  const getBaseColorHex = (colorObj) => {
+    if (!colorObj || typeof colorObj !== 'object') {
+      // Allow fallback without warning if colorObj is simply missing (e.g., old data)
+      if (colorObj) console.warn('Invalid color object type in NetworkDiagram, falling back to gray:', colorObj);
+      return theme.colors.gray[6]; // Fallback for invalid/missing color object
+    }
+    if (!colorObj.name) {
+      console.warn('Color object missing name in NetworkDiagram, falling back to gray:', colorObj);
+      return theme.colors.gray[6];
+    }
+    if (colorObj.index === undefined || colorObj.index === null) {
+      console.warn('Color object missing index in NetworkDiagram, falling back to gray:', colorObj);
+      return theme.colors.gray[6];
+    }
+
+    const colorHex = theme.colors[colorObj.name]?.[colorObj.index];
+    if (!colorHex) {
+      console.warn(`Theme color lookup failed for ${colorObj.name}[${colorObj.index}] in NetworkDiagram getBaseColorHex, falling back to gray.`);
+      return theme.colors.gray[6];
+    }
+    return colorHex;
+  };
+
+  // Function to get theme-aware background color based on stored color name
+  const getSubnetBgColorHex = (colorObj) => {
+    if (!colorObj || typeof colorObj !== 'object' || !colorObj.name) {
+      // Fallback to standard gray if color object is invalid or missing name
+      if (colorObj && typeof colorObj === 'object' && !colorObj.name) {
+        console.warn('Color object missing name for background in NetworkDiagram, falling back to gray bg:', colorObj);
+      }
+      return colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1];
+    }
+    // Use index 1 for light mode background, index 7 for dark mode background
+    const lightBgIndex = 1;
+    const darkBgIndex = 7;
+    const bgIndex = colorScheme === 'dark' ? darkBgIndex : lightBgIndex;
+
+    const bgHex = theme.colors[colorObj.name]?.[bgIndex];
+
+    if (!bgHex) {
+      console.warn(`Theme background color lookup failed for ${colorObj.name}[${bgIndex}] in NetworkDiagram getSubnetBgColorHex (${colorScheme} mode), falling back to default gray bg.`);
+      return colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1];
+    }
+    return bgHex;
+  };
 
   // Export diagram as PNG
   const exportDiagram = () => {
@@ -231,10 +274,9 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         const subnet = item.data;
         const subnetY = currentY;
 
-        // Use the exact HEX color from subnet.color for the border/icon
-        const subnetIconBorderColorHex = subnet.color || theme.colors.gray[6]; // Fallback to gray
-        // Use theme-aware gray for background
-        const subnetBgColorHex = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1];
+        // Calculate colors based on the color object
+        const subnetIconBorderColorHex = getBaseColorHex(subnet.color);
+        const subnetBgColorHex = getSubnetBgColorHex(subnet.color);
         const subnetNameColorHex = colorScheme === 'dark' ? theme.white : theme.black;
         const subnetDetailColorHex = colorScheme === 'dark' ? theme.colors.gray[3] : theme.colors.gray[7];
         const subnetCidrColorHex = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
@@ -391,10 +433,9 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                 if (item.type === 'subnet') {
                   const subnet = item.data;
 
-                  // Use the exact HEX color from subnet.color for the border/icon
-                  const subnetIconBorderColor = subnet.color || theme.colors.gray[6]; // Fallback to gray
-                  // Use theme-aware gray for background
-                  const subnetBgColor = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1];
+                  // Calculate colors based on the color object
+                  const subnetIconBorderColor = getBaseColorHex(subnet.color);
+                  const subnetBgColor = getSubnetBgColorHex(subnet.color);
 
                   return (
                     <Box
