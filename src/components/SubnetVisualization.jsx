@@ -1,5 +1,4 @@
-import { Box, Paper, Text, Tooltip, useMantineTheme } from '@mantine/core';
-import { useMantineColorScheme } from '@mantine/core';
+import { Box, Paper, Text, Tooltip, useMantineTheme, useComputedColorScheme } from '@mantine/core';
 import { getSubnetBgColorHex } from '../utils';
 import { IconNetwork, IconBroadcast } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
@@ -42,7 +41,7 @@ const getContrastColor = (hexColor, theme) => {
 
 export function SubnetVisualization({ parentNetwork, subnets }) {
   const theme = useMantineTheme();
-  const { colorScheme } = useMantineColorScheme();
+  const colorScheme = useComputedColorScheme('light');
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
@@ -102,8 +101,8 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
     theme.colors.violet[5], theme.colors.orange[5], theme.colors.teal[5], 
     theme.colors.grape[5], theme.colors.lime[5]
   ];
-  const unusedColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[4];
-  const borderColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
+  const unusedColor = colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[4];
+  const borderColor = colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
 
   // Calculate percent free
   const usedAddresses = subnetBlocks.reduce((acc, s) => acc + (s.end - s.start + 1), 0);
