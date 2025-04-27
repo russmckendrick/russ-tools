@@ -23,7 +23,7 @@ export function TerraformExportSection({ network, subnets }) {
   const [regionError, setRegionError] = useState(null);
 
   // AWS region selection with persistence and dynamic loading
-  const defaultAwsRegion = 'us-east-1';
+  const defaultAwsRegion = 'eu-west-2';
   const savedAwsRegion = typeof window !== 'undefined' ? window.localStorage.getItem('awsRegion') : null;
   const [awsRegion, setAwsRegion] = useState(savedAwsRegion || defaultAwsRegion);
   const [regionListAws, setRegionListAws] = useState([]);
