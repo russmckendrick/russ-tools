@@ -90,13 +90,11 @@ export function Calculator() {
         return {
           start: ipToLong(block.base),
           end: ipToLong(block.broadcast),
-          cidr: s.cidr
+          cidr: s.cidr,
+          name: s.name
         };
       })
       .sort((a, b) => a.start - b.start);
-    
-    // Start from the beginning of the parent network
-    let candidateStart = parentStart;
     
     // Calculate the subnet mask for proper boundary alignment
     const subnetMask = 0xffffffff << (32 - subnet.cidr);
@@ -105,44 +103,55 @@ export function Calculator() {
     let safetyCounter = 0;
     const maxIterations = 1000; // Reasonable limit to prevent browser freezing
     
-    // Scan for the first available gap that can fit this subnet
-    while (candidateStart <= parentEnd - subnetSize + 1 && safetyCounter < maxIterations) {
+    // Create an array of all possible candidate positions within the parent network
+    const candidates = [];
+    
+    // Start from the beginning of the parent network
+    let currentPos = parentStart;
+    
+    // Find all valid subnet boundaries within the parent network
+    while (currentPos + subnetSize - 1 <= parentEnd && safetyCounter < maxIterations) {
       safetyCounter++;
       
-      // Align to proper network boundary based on CIDR
-      // This ensures the address starts at a valid boundary for this subnet size
-      candidateStart = (candidateStart & subnetMask) >>> 0;
-      
-      // If we're not at a valid boundary for this subnet size, move to the next one
-      if ((candidateStart & subnetMask) !== candidateStart) {
-        candidateStart = ((candidateStart >> (32 - subnet.cidr)) + 1) << (32 - subnet.cidr);
-        continue;
+      // Align to proper network boundary for this subnet size
+      const alignedPos = (currentPos & subnetMask) >>> 0;
+      if (alignedPos < currentPos) {
+        // If alignment moved us backward, we need to move to the next boundary
+        currentPos = ((currentPos >> (32 - subnet.cidr)) + 1) << (32 - subnet.cidr);
+      } else {
+        currentPos = alignedPos;
       }
       
+      // Check if this position is still within the parent network
+      if (currentPos + subnetSize - 1 <= parentEnd) {
+        candidates.push(currentPos);
+      }
+      
+      // Move to the next possible position
+      currentPos += subnetSize;
+    }
+    
+    // If we have no candidates, there's no space
+    if (candidates.length === 0) {
+      alert('No available space for this subnet size. Please try a smaller subnet.');
+      return;
+    }
+    
+    // Check each candidate position against existing subnets
+    for (const candidateStart of candidates) {
       const candidateEnd = candidateStart + subnetSize - 1;
-      
-      // Check if this candidate subnet would exceed parent network
-      if (candidateEnd > parentEnd) {
-        alert('No available space for this subnet size.');
-        return;
-      }
-      
-      // Check if this candidate subnet overlaps with any existing subnet
       let overlaps = false;
+      
+      // Check if this candidate overlaps with any existing subnet
       for (const usedRange of used) {
-        // Check for overlap
         if (candidateStart <= usedRange.end && candidateEnd >= usedRange.start) {
           overlaps = true;
-          // Move past this used range for the next candidate
-          // Important: Make sure we jump to the next valid boundary
-          candidateStart = usedRange.end + 1;
           break;
         }
       }
       
       // If no overlap, we found a valid position
       if (!overlaps) {
-        // Convert back to IP address format
         const candidateIp = longToIp(candidateStart);
         
         // Final validation that it's within the parent network
@@ -161,12 +170,8 @@ export function Calculator() {
       }
     }
     
-    // If we reached the safety limit or ran out of space
-    if (safetyCounter >= maxIterations) {
-      alert('Error: Could not allocate subnet. Please try a different size.');
-    } else {
-      alert('No available space for this subnet size.');
-    }
+    // If we got here, we couldn't find a suitable position
+    alert('No available space for this subnet size. Please try a smaller subnet.');
   };
 
   // Remove subnet from current
@@ -212,53 +217,122 @@ export function Calculator() {
     const parentStart = ipToLong(parentBlock.base);
     const parentEnd = ipToLong(parentBlock.broadcast);
     
-    // Sort by new order but reassign IPs sequentially
-    let updatedSubnets = [...newOrder];
-    let candidateStart = parentStart;
+    // Create a fresh copy of the subnets in the new order, preserving their properties
+    // but we'll recalculate their base addresses
+    const subnetsToBePlaced = newOrder.map(subnet => ({
+      ...subnet,
+      cidr: subnet.cidr,
+      name: subnet.name,
+      color: subnet.color
+    }));
     
-    // Process each subnet in the new order
-    for (let i = 0; i < updatedSubnets.length; i++) {
-      const subnet = updatedSubnets[i];
+    // Start with an empty array for the result
+    const updatedSubnets = [];
+    
+    // Safety counter to prevent infinite loops
+    let safetyCounter = 0;
+    const maxIterations = 1000;
+    
+    // Place each subnet one by one using the same algorithm as handleAddSubnet
+    for (let i = 0; i < subnetsToBePlaced.length && safetyCounter < maxIterations; i++) {
+      safetyCounter++;
+      
+      const subnet = subnetsToBePlaced[i];
       const subnetSize = Math.pow(2, 32 - subnet.cidr);
       
       // Calculate the subnet mask for proper boundary alignment
       const subnetMask = 0xffffffff << (32 - subnet.cidr);
       
-      // Align to proper network boundary based on CIDR
-      candidateStart = (candidateStart & subnetMask) >>> 0;
+      // Create an array of all possible candidate positions within the parent network
+      const candidates = [];
       
-      // If we're not at a valid boundary for this subnet size, move to the next one
-      if ((candidateStart & subnetMask) !== candidateStart) {
-        candidateStart = ((candidateStart >> (32 - subnet.cidr)) + 1) << (32 - subnet.cidr);
+      // Start from the beginning of the parent network
+      let currentPos = parentStart;
+      let innerSafetyCounter = 0;
+      const innerMaxIterations = 1000;
+      
+      // Find all valid subnet boundaries within the parent network
+      while (currentPos + subnetSize - 1 <= parentEnd && innerSafetyCounter < innerMaxIterations) {
+        innerSafetyCounter++;
+        
+        // Align to proper network boundary for this subnet size
+        const alignedPos = (currentPos & subnetMask) >>> 0;
+        if (alignedPos < currentPos) {
+          // If alignment moved us backward, we need to move to the next boundary
+          currentPos = ((currentPos >> (32 - subnet.cidr)) + 1) << (32 - subnet.cidr);
+        } else {
+          currentPos = alignedPos;
+        }
+        
+        // Check if this position is still within the parent network
+        if (currentPos + subnetSize - 1 <= parentEnd) {
+          candidates.push(currentPos);
+        }
+        
+        // Move to the next possible position
+        currentPos += subnetSize;
       }
       
-      const candidateEnd = candidateStart + subnetSize - 1;
-      
-      // Check if this would exceed parent network
-      if (candidateEnd > parentEnd) {
+      // If we have no candidates, there's no space
+      if (candidates.length === 0) {
         console.error("Not enough space to reorder subnets");
+        alert("Error: Not enough space to reorder subnets. Please try a different arrangement.");
         return;
       }
       
-      // Assign the new base address
-      const newBase = longToIp(candidateStart);
+      // Check each candidate position against already placed subnets
+      let placed = false;
+      for (const candidateStart of candidates) {
+        const candidateEnd = candidateStart + subnetSize - 1;
+        let overlaps = false;
+        
+        // Check if this candidate overlaps with any already placed subnet
+        for (const placedSubnet of updatedSubnets) {
+          const placedBlock = new Netmask(placedSubnet.base + '/' + placedSubnet.cidr);
+          const placedStart = ipToLong(placedBlock.base);
+          const placedEnd = ipToLong(placedBlock.broadcast);
+          
+          if (candidateStart <= placedEnd && candidateEnd >= placedStart) {
+            overlaps = true;
+            break;
+          }
+        }
+        
+        // If no overlap, we found a valid position
+        if (!overlaps) {
+          const candidateIp = longToIp(candidateStart);
+          
+          // Add the subnet with its properly calculated base address
+          updatedSubnets.push({
+            ...subnet,
+            base: candidateIp,
+            // Generate a stable ID that doesn't depend on the base address
+            id: `subnet-${subnet.name}-${subnet.cidr}-${i}-${Date.now()}`
+          });
+          
+          placed = true;
+          break;
+        }
+      }
       
-      // Create a new subnet object with updated base
-      updatedSubnets[i] = { 
-        ...subnet, 
-        base: newBase,
-        // Generate a stable ID based on the subnet name and CIDR
-        id: `subnet-${subnet.name}-${subnet.cidr}-${i}`
-      };
-      
-      // Move past this subnet for the next one
-      candidateStart = candidateEnd + 1;
+      // If we couldn't place this subnet, abort the reordering
+      if (!placed) {
+        console.error("Could not place subnet during reordering");
+        alert("Error: Could not reorder subnets. Please try a different arrangement.");
+        return;
+      }
+    }
+    
+    if (safetyCounter >= maxIterations) {
+      console.error("Reached safety limit while reordering subnets");
+      alert("Error: Could not reorder subnets. Please try again.");
+      return;
     }
     
     // Update networks with a completely new reference to trigger UI updates
     const updatedNetworks = networks.map(n =>
       n.id === selectedNetworkId
-        ? { ...n, subnets: [...updatedSubnets] }
+        ? { ...n, subnets: updatedSubnets }
         : n
     );
     
