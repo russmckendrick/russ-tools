@@ -388,7 +388,13 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         >
           <Group spacing="xs" mb="sm" wrap="nowrap">
             {/* Let Mantine handle icon color based on theme */}
-            <IconNetwork size={18} style={{ flexShrink: 0 }} /> 
+            <IconNetwork
+  size={18}
+  style={{
+    color: colorScheme === 'dark' ? theme.colors.blue[3] : theme.colors.blue[7],
+    flexShrink: 0
+  }}
+/> 
             {/* Use Title component for better theme consistency */}
             <Title order={5} >{parentNetwork.name || 'Parent Network'}</Title> 
             <Text size="xs" fw={500} color={colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.gray[7]}>({parentBlock.base}/{parentNetwork.cidr})</Text>
@@ -432,7 +438,13 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                     >
                       <Group position="apart" align="center" wrap="nowrap">
                         <Group spacing="xs" wrap="nowrap">
-                          <IconSubtask size={18} style={{ color: subnetIconBorderColor, flexShrink: 0 }} />
+                          <IconSubtask
+  size={18}
+  style={{
+    color: colorScheme === 'dark' ? theme.colors.gray[2] : theme.colors.gray[8],
+    flexShrink: 0
+  }}
+/>
                           <Stack spacing={0}>
                             <Text fw={700} size="sm" style={{ color: colorScheme === 'dark' ? theme.white : theme.black }}>{subnet.name}</Text>
                             <Text size="xs" style={{ color: colorScheme === 'dark' ? theme.colors.gray[3] : theme.colors.gray[7] }}>
@@ -471,7 +483,13 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                       }}
                     >
                       <Group spacing="xs" wrap="nowrap">
-                        <IconSpace size={18} style={{ color: freeSpaceIconColor, flexShrink: 0 }} />
+                        <IconSpace
+  size={18}
+  style={{
+    color: colorScheme === 'dark' ? theme.colors.gray[4] : theme.colors.gray[6],
+    flexShrink: 0
+  }}
+/>
                         <Stack spacing={0}>
                           <Text fw={600} size="sm" style={{ color: freeSpaceTextColor }}>Free Space</Text>
                           <Text size="xs" style={{ color: freeSpaceTextColor, opacity: 0.9 }}>
