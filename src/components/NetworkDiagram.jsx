@@ -102,8 +102,19 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   
   // Calculate free space between subnets
   const calculateFreeSpace = () => {
-    const parentStartLong = parentBlock.base.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
-    const parentEndLong = parentBlock.broadcast.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+    // If there are no subnets, the entire parent network is free
+    if (processedSubnets.length === 0) {
+      return [{
+        start: ipToLong(parentBlock.base),
+        end: ipToLong(parentBlock.broadcast),
+        size: parentBlock.size,
+        startIp: parentBlock.base,
+        endIp: parentBlock.broadcast
+      }];
+    }
+
+    const parentStartLong = ipToLong(parentBlock.base);
+    const parentEndLong = ipToLong(parentBlock.broadcast);
     
     const freeSpaces = [];
     
@@ -113,14 +124,13 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       if (size > 0) {
         // Calculate the IP before the first subnet's base
         const endLongIp = processedSubnets[0].startLong - 1;
-        const endIp = longToIp(endLongIp);
         
         freeSpaces.push({
           start: parentStartLong,
-          end: processedSubnets[0].startLong - 1,
+          end: endLongIp,
           size: size,
           startIp: parentBlock.base,
-          endIp: endIp
+          endIp: longToIp(endLongIp)
         });
       }
     }
@@ -135,18 +145,14 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         
         // Calculate the IP after the current subnet's broadcast
         const startLongIp = currentEnd + 1;
-        const startIp = longToIp(startLongIp);
-        
-        // Calculate the IP before the next subnet's base
         const endLongIp = nextStart - 1;
-        const endIp = longToIp(endLongIp);
         
         freeSpaces.push({
           start: startLongIp,
           end: endLongIp,
           size: size,
-          startIp: startIp,
-          endIp: endIp
+          startIp: longToIp(startLongIp),
+          endIp: longToIp(endLongIp)
         });
       }
     }
@@ -158,13 +164,12 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       if (size > 0) {
         // Calculate the IP after the last subnet's broadcast
         const startLongIp = lastSubnet.endLong + 1;
-        const startIp = longToIp(startLongIp);
         
         freeSpaces.push({
           start: startLongIp,
           end: parentEndLong,
           size: size,
-          startIp: startIp,
+          startIp: longToIp(startLongIp),
           endIp: parentBlock.broadcast
         });
       }
