@@ -4,10 +4,6 @@
 
 Russ Tools is a modern, responsive web application for IPv4 subnet calculation and network planning. It helps network engineers, students, and IT professionals design and visualize subnets, plan address allocations, and export professional diagrams.
 
-You can find an example of an SVG export below:
-
-![Example Diagram](example.svg)
-
 ---
 
 ## ✨ Features
@@ -44,6 +40,14 @@ You can find an example of an SVG export below:
 - 🖥️ **Modern UI:**
   - 🪄 Built with [Mantine](https://mantine.dev/) for a clean, professional look
   - 📱 Fully responsive and accessible
+
+---
+
+## 👨‍💻 Example
+
+You can find an example of an SVG export below:
+
+![Example Diagram](example.svg)
 
 ---
 
