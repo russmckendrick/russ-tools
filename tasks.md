@@ -1,5 +1,32 @@
 # Subnet.Fit Phase 4: Network Designer Expansion – Task Tracker
 
+## IMPORTANT: Subnet Allocation Logic
+
+The subnet allocation logic MUST follow these principles:
+
+1. **Unique Network Addresses**: Each subnet MUST have a unique network address
+2. **No Overlapping Ranges**: Subnets CANNOT overlap in their address ranges
+3. **Proper Address Boundaries**: Each subnet's network address MUST align with its size boundaries
+
+### Implementation Requirements:
+
+- When adding a new subnet to a parent network, calculate the next available network address based on previously allocated subnets
+- Ensure each new subnet starts at an address boundary appropriate for its size (aligned to its netmask)
+- Track allocated address space and calculate the next available address for each new subnet
+- Validate that new subnets fit within remaining space
+- Prevent overlapping allocations by checking against existing subnets
+
+### Example (with parent network 10.0.0.0/23):
+- First subnet (/27): Should start at 10.0.0.0
+- Second subnet (/24): Should start at 10.0.0.32 (after the first /27)
+- Third subnet (/26): Should start at 10.0.1.0 (after the /24)
+
+This ensures each subnet has its own unique address range and that the visualization accurately represents how IP address space is divided in a real network environment.
+
+---
+
+# Subnet.Fit Phase 4: Network Designer Expansion – Task Tracker
+
 ## Main Goals
 - [x] Parent Network (Supernet) Setup
 - [x] Subnets Management
