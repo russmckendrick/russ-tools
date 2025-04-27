@@ -7,6 +7,7 @@ import { ParentNetworkForm } from '../components/ParentNetworkForm';
 import { SubnetForm } from '../components/SubnetForm';
 import { DraggableSubnets } from '../components/DraggableSubnets';
 import { NetworkDiagram } from '../components/NetworkDiagram';
+import { NetworkDiagramSVGExport } from '../components/NetworkDiagramSVGExport';
 import { v4 as uuidv4 } from 'uuid';
 import { isValidIPv4, ipToLong, longToIp } from '../utils';
 
@@ -500,6 +501,10 @@ export function NetworkDesign() {
                 />
                 
                 <NetworkDiagram
+                  parentNetwork={current.parentNetwork}
+                  subnets={current.subnets || []}
+                />
+                <NetworkDiagramSVGExport
                   parentNetwork={current.parentNetwork}
                   subnets={current.subnets || []}
                 />

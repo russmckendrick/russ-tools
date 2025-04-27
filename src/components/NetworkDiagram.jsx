@@ -1,5 +1,6 @@
 import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal, useMantineColorScheme } from '@mantine/core';
 import { getSubnetBgColorHex } from '../utils';
+import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../utils/networkDiagramUtils';
 import { IconDownload, IconNetwork, IconSubtask, IconSpace } from '@tabler/icons-react';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
@@ -47,46 +48,12 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     theme.colors.lime[5]
   ];
 
-  // Process subnets with consistent color assignment based on subnet name
-  const processedSubnets = subnets.map((subnet) => {
-    const block = new Netmask(subnet.base + '/' + subnet.cidr);
-
-    return {
-      ...subnet, // Keep the original subnet properties, including the color object
-      block,
-      networkLong: ipToLong(block.base),
-      broadcastLong: ipToLong(block.broadcast)
-      // The original subnet.color object is preserved by the spread operator
-    };
-  }).sort((a, b) => a.networkLong - b.networkLong); // Sort by starting IP
-
-  // Derive the base HEX color from the theme using stored name and index
-  const getBaseColorHex = (colorObj) => {
-    if (!colorObj || typeof colorObj !== 'object') {
-      // Allow fallback without warning if colorObj is simply missing (e.g., old data)
-      if (colorObj) console.warn('Invalid color object type in NetworkDiagram, falling back to gray:', colorObj);
-      return theme.colors.gray[6]; // Fallback for invalid/missing color object
-    }
-    if (!colorObj.name) {
-      console.warn('Color object missing name in NetworkDiagram, falling back to gray:', colorObj);
-      return theme.colors.gray[6];
-    }
-    if (colorObj.index === undefined || colorObj.index === null) {
-      console.warn('Color object missing index in NetworkDiagram, falling back to gray:', colorObj);
-      return theme.colors.gray[6];
-    }
-
-    const colorHex = theme.colors[colorObj.name]?.[colorObj.index];
-    if (!colorHex) {
-      console.warn(`Theme color lookup failed for ${colorObj.name}[${colorObj.index}] in NetworkDiagram getBaseColorHex, falling back to gray.`);
-      return theme.colors.gray[6];
-    }
-    return colorHex;
-  };
+  // Process subnets and calculate free space using shared utils
+  const processedSubnets = processSubnets(subnets);
 
 
 
-  // Export diagram as PNG
+  // Export diagram as PNG (SVG export moved to NetworkDiagramSVGExport.jsx)
   const exportDiagram = () => {
     if (!diagramRef.current) return;
     
@@ -109,6 +76,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       });
     });
   };
+
+  // For SVG export, use the NetworkDiagramSVGExport component.
   
   // Calculate free space between subnets
   const calculateFreeSpace = () => {
@@ -199,173 +168,15 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   const freeSize = totalParentSize - usedSize;
   const freePercentage = ((freeSize / totalParentSize) * 100).toFixed(1);
 
-  // Generates the SVG markup directly
-  const generateSVGMarkup = () => { 
-    // Force light mode colors for SVG export
-    const width = 1220;
-    const subnetHeight = 80; 
-    const freeSpaceHeight = 60; // Slightly smaller than subnet boxes
-    const subnetSpacing = 10;
-    const iconSize = 18;
-    const iconPadding = 10;
-    const textStartX = 45 + iconSize + iconPadding; // Start text after icon + padding
-
-    // LIGHT MODE COLORS ONLY
-    const bgColor = theme.colors.gray[0]; // SVG background
-    const parentBorderColor = theme.colors.blue[6];
-    const parentHeaderBg = theme.white;
-    const defaultTextColor = theme.colors.gray[7];
-    const dimmedTextColor = theme.colors.gray[6];
-    const parentIconColor = theme.colors.blue[7];
-    // FREE SPACE BOX: GREY
-    const freeSpaceBgColor = theme.colors.gray[1];
-    const freeSpaceBorderColor = theme.colors.gray[6];
-    const freeSpaceTextColor = theme.colors.gray[7];
-    const freeSpaceIconColor = theme.colors.gray[6];
-    const footerTextColor = theme.colors.gray[6];
-
-    // Combine subnets and free spaces, then sort by starting IP
-    const allItems = [
-      ...processedSubnets.map(s => ({ type: 'subnet', data: s, startLong: s.networkLong })),
-      ...freeSpaces.map(fs => ({ type: 'freeSpace', data: fs, startLong: fs.start }))
-    ].sort((a, b) => a.startLong - b.startLong);
-
-    const headerHeight = 80;
-    const footerHeight = 40;
-    const totalItemsHeight = allItems.reduce((acc, item) => acc + (item.type === 'subnet' ? subnetHeight : freeSpaceHeight), 0);
-    const parentBoxHeight = headerHeight + totalItemsHeight + footerHeight + (subnetSpacing * (allItems.length + 2));
-    const parentBoxX = 10;
-    const parentBoxY = 20;
-    const parentBoxWidth = width - 20;
-
-    let currentY = parentBoxY + headerHeight + subnetSpacing; // Initial Y padding inside parent box
-    let svgContent = '';
-
-    // 1. Parent Network Box
-    svgContent += `
-      <rect x="${parentBoxX}" y="${parentBoxY}" width="${parentBoxWidth}" height="${parentBoxHeight}" rx="8" ry="8" fill="${parentHeaderBg}" stroke="${parentBorderColor}" stroke-width="1" />
-    `;
-
-    // 2. Parent Network Header
-    svgContent += `
-      <image href="${networkSvg}" x="${parentBoxX + 25}" y="${parentBoxY + 20}" height="${iconSize}" width="${iconSize}" />
-      <text x="${parentBoxX + textStartX}" y="${parentBoxY + 35}" font-family="${theme.fontFamily}" font-size="14px" font-weight="700" fill="${defaultTextColor}">${parentNetwork.name || 'Parent Network'}</text>
-      <text x="${parentBoxX + textStartX}" y="${parentBoxY + 55}" font-family="${theme.fontFamily}" font-size="12px" fill="${dimmedTextColor}">
-        Range: ${parentBlock.first} - ${parentBlock.last} (${parentBlock.size} IPs)
-      </text>
-      <text x="${parentBoxX + parentBoxWidth - 35}" y="${parentBoxY + 35}" font-family="${theme.fontFamily}" text-anchor="end" font-size="12px" font-weight="500" fill="${dimmedTextColor}">
-        (${parentBlock.base}/${parentNetwork.cidr})
-      </text>
-    `;
-
-    // 3. Subnets and Free Spaces
-    const subnetX = parentBoxX + 20;
-    const subnetWidth = parentBoxWidth - 40;
-    allItems.forEach((item) => {
-      if (item.type === 'subnet') {
-        const subnet = item.data;
-
-        // Calculate colors based on the color object
-        const subnetIconBorderColorHex = getBaseColorHex(subnet.color);
-        const subnetBgColorHex = getSubnetBgColorHex(subnet.color, theme, colorScheme);
-        const subnetNameColorHex = colorScheme === 'dark' ? theme.white : theme.black;
-        const subnetDetailColorHex = colorScheme === 'dark' ? theme.colors.gray[3] : theme.colors.gray[7];
-        const subnetCidrColorHex = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
-
-        svgContent += `
-          <rect x="${subnetX}" y="${currentY}" width="${subnetWidth}" height="${subnetHeight}" rx="8" ry="8" fill="${subnetBgColorHex}" stroke="${subnetIconBorderColorHex}" stroke-width="1" />
-          <image href="${subnetSvg}" x="${subnetX + 25}" y="${currentY + 25}" height="${iconSize}" width="${iconSize}" />
-          <text x="${subnetX + 55}" y="${currentY + 28}" font-family="${theme.fontFamily}" font-size="14" font-weight="700" fill="${subnetNameColorHex}">
-            ${subnet.name}
-          </text>
-          <text x="${subnetX + 55}" y="${currentY + 46}" font-family="${theme.fontFamily}" font-size="12" fill="${subnetDetailColorHex}">
-            Range: ${subnet.block.base} - ${subnet.block.broadcast} (${subnet.block.mask})
-          </text>
-          <text x="${subnetX + 55}" y="${currentY + 62}" font-family="${theme.fontFamily}" font-size="12" fill="${subnetDetailColorHex}">
-            Usable IPs: ${subnet.block.size - 2}
-          </text>
-          <text x="${subnetX + subnetWidth - 30}" y="${currentY + 28}" font-family="${theme.fontFamily}" font-size="12" font-weight="500" text-anchor="end" fill="${subnetCidrColorHex}">
-            (${subnet.block.base}/${subnet.cidr})
-          </text>
-        `;
-        currentY += subnetHeight + subnetSpacing;
-      } else if (item.type === 'freeSpace') {
-        const space = item.data;
-        // Use Gray color scheme for Free Space
-        const freeSpaceBg = colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0];
-        const freeSpaceBorder = colorScheme === 'dark' ? theme.colors.gray[7] : theme.colors.gray[4];
-        const freeSpaceTextColor = colorScheme === 'dark' ? theme.colors.gray[4] : theme.colors.gray[7]; 
-        const freeSpaceIconColor = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
-
-        svgContent += `
-          <rect x="${subnetX}" y="${currentY}" width="${subnetWidth}" height="${freeSpaceHeight}" rx="8" ry="8" fill="${freeSpaceBg}" stroke="${freeSpaceBorder}" stroke-width="1" stroke-dasharray="4 2" />
-          <image href="${spaceSvg}" x="${subnetX + 25}" y="${currentY + (freeSpaceHeight / 2) - (iconSize / 2)}" height="${iconSize}" width="${iconSize}" />
-          <text x="${subnetX + textStartX}" y="${currentY + 25}" font-family="${theme.fontFamily}" font-size="13px" font-weight="600" fill="${freeSpaceTextColor}">Free Space</text>
-          <text x="${subnetX + textStartX}" y="${currentY + 45}" font-family="${theme.fontFamily}" font-size="12px" fill="${freeSpaceTextColor}" opacity="0.8">
-            Range: ${space.startIp} - ${space.endIp} (${space.size} IPs)
-          </text>
-        `;
-        currentY += freeSpaceHeight + subnetSpacing;
-      }
-    });
-
-    // 4. Footer Information
-    const footerY = currentY;
-    svgContent += `
-      <rect x="${subnetX}" y="${footerY}" width="${subnetWidth}" height="${footerHeight}" rx="8" ry="8" fill="${parentHeaderBg}" stroke="${parentBorderColor}" stroke-width="1" />
-      <text x="${subnetX + 15}" y="${footerY + 20}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">Total subnets: ${processedSubnets.length}</text>
-      <text x="${subnetX + subnetWidth / 2}" text-anchor="middle" y="${footerY + 20}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">Total IPs: ${totalParentSize}</text>
-      <text x="${subnetX + subnetWidth - 15}" text-anchor="end" y="${footerY + 20}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">Free IPs: ${freeSize} (${freePercentage}%)</text>
-    `;
-
-    const totalHeight = footerY + footerHeight + 30; // Ensure footer and bounding box are fully visible
-
-    return `<svg width="${width}" height="${totalHeight}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background-color: ${bgColor}; font-family: ${theme.fontFamily}, sans-serif;">
-      ${svgContent}
-    </svg>`;
-  };
-  
-  // Export diagram as true SVG
-  const exportSVG = () => {
-    try {
-      const svgData = generateSVGMarkup();
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const svgUrl = URL.createObjectURL(svgBlob);
-      const downloadLink = document.createElement('a');
-      downloadLink.href = svgUrl;
-      downloadLink.download = `${parentNetwork.name || 'network'}-diagram.svg`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      URL.revokeObjectURL(svgUrl);
-    } catch (err) {
-      console.error('SVG export error:', err);
-      setErrorModal({
-        opened: true,
-        message: 'SVG export failed. Could not generate diagram markup.',
-      });
-    }
-  };
+  // SVG export logic has been moved to NetworkDiagramSVGExport.jsx
+  // Please use that component for SVG export functionality.
 
   return (
     <Paper p="md" radius="md" withBorder mt="lg">
       <Group position="apart" mb="md">
         <Title order={3}>Network Diagram</Title>
-        <Group spacing="xs">
-          <Button 
-            size="xs" 
-            variant="outline"
-            onClick={exportSVG}
-            leftSection={<IconDownload size={16} />}
-          >
-            Export SVG
-          </Button>
-          <Button 
-            size="xs" 
-            variant="outline"
-            onClick={exportDiagram}
-            leftSection={<IconDownload size={16} />}
-          >
+        <Group spacing="sm" mt="md">
+          <Button leftIcon={<IconDownload size={16} />} variant="outline" onClick={exportDiagram}>
             Export PNG
           </Button>
         </Group>
