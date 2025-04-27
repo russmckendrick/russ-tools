@@ -107,19 +107,7 @@ export function TerraformExportSection({ network, subnets }) {
 
         </Tabs.Panel>
         <Tabs.Panel value="azure" pt="md">
-          <Box mb="xs">
-            <Text size="sm" weight={500}>Azure Terraform HCL</Text>
-          </Box>
-          <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
-            <pre style={{ margin: 0, padding: 0, background: 'none' }}>
-              <code
-                className="language-hcl"
-                style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
-                dangerouslySetInnerHTML={{ __html: highlightedAzure }}
-              />
-            </pre>
-          </div>
-          <Box mb="sm" style={{ maxWidth: 340 }}>
+          <Box mb="xs" style={{ maxWidth: 340 }}>
             <Select
               label="Azure Region"
               data={regionList}
@@ -134,6 +122,15 @@ export function TerraformExportSection({ network, subnets }) {
               maxDropdownHeight={350}
             />
           </Box>
+          <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
+            <pre style={{ margin: 0, padding: 0, background: 'none' }}>
+              <code
+                className="language-hcl"
+                style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
+                dangerouslySetInnerHTML={{ __html: highlightedAzure }}
+              />
+            </pre>
+          </div>
 
         </Tabs.Panel>
       </Tabs>
