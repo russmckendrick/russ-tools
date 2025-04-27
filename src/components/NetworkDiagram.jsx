@@ -188,7 +188,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   const freePercentage = ((freeSize / totalParentSize) * 100).toFixed(1);
   
   // Generates the SVG markup directly
-  const generateSVGMarkup = () => {
+  const generateSVGMarkup = () => { 
     // Set diagram dimensions
     const width = 1220;
     const subnetHeight = 80; 
@@ -198,8 +198,34 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const iconPadding = 10;
     const textStartX = 45 + iconSize + iconPadding; // Start text after icon + padding
     
+    // Combine subnets and free spaces for visualization in SVG
+    const allItems = [];
+    
+    // Add subnets to the items array
+    processedSubnets.forEach(subnet => {
+      allItems.push({
+        type: 'subnet',
+        start: subnet.startLong,
+        end: subnet.endLong,
+        data: subnet
+      });
+    });
+    
+    // Add free spaces to the items array
+    freeSpaces.forEach(space => {
+      allItems.push({
+        type: 'free',
+        start: space.start,
+        end: space.end,
+        data: space
+      });
+    });
+    
+    // Sort all items by start address
+    allItems.sort((a, b) => a.start - b.start);
+    
     // Calculate combined items (subnets + free spaces)
-    const totalItems = processedSubnets.length + freeSpaces.length;
+    const totalItems = allItems.length;
     
     // Calculate required height
     const headerHeight = 100; // Space for parent network info
@@ -259,8 +285,11 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
               stroke="${theme.colors.blue[6]}" 
               x="${parentBoxX}" y="${parentBoxY}"></rect>
         
-        <!-- Parent Network Icon (Using network.svg) -->
-        <image x="40" y="70" width="${iconSize}" height="${iconSize}" href="${networkSvg}" />
+        <!-- Parent Network Icon (Network icon) -->
+        <svg x="40" y="70" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 9C13.1046 9 14 8.10457 14 7C14 5.89543 13.1046 5 12 5C10.8954 5 10 5.89543 10 7C10 8.10457 10.8954 9 12 9Z" stroke="${theme.colors.blue[7]}" class="iconPath" />
+          <path d="M12 9V13M18 16C18 17.1046 17.1046 18 16 18C14.8954 18 14 17.1046 14 16C14 14.8954 14.8954 14 16 14C17.1046 14 18 14.8954 18 16ZM8 16C8 17.1046 7.10457 18 6 18C4.89543 18 4 17.1046 4 16C4 14.8954 4.89543 14 6 14C7.10457 14 8 14.8954 8 16ZM6 14V8C6 5.79086 8.79086 3 12 3C15.2091 3 18 5.79086 18 8V14M6 18V21M18 18V21M12 13V21" stroke="${theme.colors.blue[7]}" class="iconPath" />
+        </svg>
         
         <!-- Parent Network header -->
         <text font-family="Arial" font-size="16" font-weight="bold" x="${textStartX}" y="84.484375">
@@ -273,31 +302,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           <tspan dy="0" x="${textStartX}">Total IPs: ${parentBlock.size} (${freePercentage}% free)</tspan>
         </text>`;
     
-    // Combine subnets and free spaces for visualization in SVG
-    const allItems = [];
-    
-    // Add subnets to the items array
-    processedSubnets.forEach(subnet => {
-      allItems.push({
-        type: 'subnet',
-        start: subnet.startLong,
-        end: subnet.endLong,
-        data: subnet
-      });
-    });
-    
-    // Add free spaces to the items array
-    freeSpaces.forEach(space => {
-      allItems.push({
-        type: 'free',
-        start: space.start,
-        end: space.end,
-        data: space
-      });
-    });
-    
-    // Sort all items by start address
-    allItems.sort((a, b) => a.start - b.start);
+    // Already defined allItems above
     
     // Add all items to the SVG
     const itemStartY = 150;
@@ -322,8 +327,10 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                 stroke="${color}" 
                 x="${subnetX}" y="${subnetY}"></rect>
           
-          <!-- Subnet Icon (Using subnet.svg) -->
-          <image x="${subnetX + 15}" y="${subnetY + 20}" width="${iconSize}" height="${iconSize}" href="${subnetSvg}" />
+          <!-- Subnet Icon -->
+          <svg x="${subnetX + 15}" y="${subnetY + 20}" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8.5 9H15.5M8.5 15H12M7 3.5H17C18.3807 3.5 19.5 4.61929 19.5 6V18C19.5 19.3807 18.3807 20.5 17 20.5H7C5.61929 20.5 4.5 19.3807 4.5 18V6C4.5 4.61929 5.61929 3.5 7 3.5Z" stroke="${color}" class="iconPath" />
+          </svg>
                 
           <!-- Subnet details -->
           <text class="title" x="${subnetTextStartX}" y="${subnetY + 30}">
