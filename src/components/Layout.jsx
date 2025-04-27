@@ -1,7 +1,10 @@
-import { AppShell, Container, Group, Text, Button, Paper } from '@mantine/core';
+import { AppShell, Container, Group, Text, Button, Paper, ActionIcon, useMantineColorScheme } from '@mantine/core';
+import { IconBrandGithub, IconSun, IconMoonStars } from '@tabler/icons-react';
 import { Link, Outlet } from 'react-router-dom';
 
-export function Layout() {
+export function Layout({ colorScheme, toggleColorScheme }) {
+  const dark = colorScheme === 'dark';
+
   return (
     <AppShell
       padding="md"
@@ -10,17 +13,29 @@ export function Layout() {
       header={
         <Paper shadow="xs" p="md" withBorder>
           <Container size="lg">
-            <Group position="apart">
-              <Text component={Link} to="/" size="xl" weight={700}>
-                Subnet.Fit
+            <Group justify="space-between">
+              <Text component={Link} to="/" size="xl" fw={700}>
+                russ.tools
               </Text>
               <Group>
-                <Button component={Link} to="/" variant="subtle">
-                  Home
-                </Button>
-                <Button component={Link} to="/calculator" variant="subtle">
-                  Calculator
-                </Button>
+                <ActionIcon
+                  component="a"
+                  href="https://github.com/russmckendrick/russ-tools"
+                  target="_blank"
+                  variant="outline"
+                  color={dark ? 'yellow' : 'blue'}
+                  title="GitHub Repository"
+                >
+                  <IconBrandGithub size="1.1rem" />
+                </ActionIcon>
+                <ActionIcon
+                  variant="outline"
+                  color={dark ? 'yellow' : 'blue'}
+                  onClick={() => toggleColorScheme()}
+                  title="Toggle color scheme"
+                >
+                  {dark ? <IconSun size="1.1rem" /> : <IconMoonStars size="1.1rem" />}
+                </ActionIcon>
               </Group>
             </Group>
           </Container>
@@ -29,8 +44,8 @@ export function Layout() {
       footer={
         <Paper shadow="xs" p="md" withBorder>
           <Container size="lg">
-            <Text align="center" size="sm" color="dimmed">
-              © 2024 Subnet.Fit - A modern subnet calculator
+            <Text ta="center" size="sm" c="dimmed">
+              {new Date().getFullYear()} russ.tools
             </Text>
           </Container>
         </Paper>
@@ -39,4 +54,4 @@ export function Layout() {
       <Outlet />
     </AppShell>
   );
-} 
+}

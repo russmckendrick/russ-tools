@@ -1,16 +1,20 @@
 import { MantineProvider } from '@mantine/core';
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Home } from './pages/Home';
-import { Calculator } from './pages/Calculator';
+import { NetworkDesign } from './pages/NetworkDesign';
 
 export default function App() {
+  const [colorScheme, setColorScheme] = useState('light');
+  const toggleColorScheme = (value) =>
+    setColorScheme(value || (colorScheme === 'dark' ? 'light' : 'dark'));
+
   return (
     <MantineProvider
       withGlobalStyles
       withNormalizeCSS
       theme={{
-        colorScheme: 'light',
+        colorScheme: colorScheme,
         primaryColor: 'blue',
         globalStyles: (theme) => ({
           body: {
@@ -21,9 +25,8 @@ export default function App() {
     >
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="calculator" element={<Calculator />} />
+          <Route path="/" element={<Layout colorScheme={colorScheme} toggleColorScheme={toggleColorScheme} />}>
+            <Route index element={<NetworkDesign />} />
           </Route>
         </Routes>
       </BrowserRouter>

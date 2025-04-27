@@ -34,7 +34,7 @@ function parseInput(ipAddress, maskInput) {
   throw new Error('Invalid subnet mask or CIDR notation');
 }
 
-export function Calculator() {
+export function NetworkDesign() {
   // Use Mantine's useLocalStorage hook for automatic persistence
   const [networks, setNetworks] = useLocalStorage({
     key: 'networks',
