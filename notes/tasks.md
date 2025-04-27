@@ -104,3 +104,61 @@ This ensures each subnet has its own unique address range and that the visualiza
 - [ ] Support cloud provider export templates
 - [ ] Multi-layout visualization options
 - [ ] Custom subnet coloring/tagging 
+
+---
+
+## 🚀 Feature Idea: Export Network Design as Terraform Code (AWS & Azure)
+
+**Goal:**
+Allow users to export their network/subnet design as ready-to-use Terraform code for AWS (VPC, Subnets) and Azure (VNet, Subnets), enabling copy-paste deployment to the cloud.
+
+### Implementation Plan
+
+#### 1. UI/UX Integration
+- Add an "Export as Terraform (AWS/Azure)" button or section in the UI
+- Modal or tabbed interface to select AWS or Azure code
+- Display syntax-highlighted, copyable Terraform code (code block with copy-to-clipboard)
+
+#### 2. Terraform Code Generation Logic
+- **Inputs:** Parent network CIDR, name, region, subnets (name, CIDR)
+- **Outputs:**
+  - AWS: `aws_vpc`, `aws_subnet` resources
+  - Azure: `azurerm_virtual_network`, `azurerm_subnet` resources
+- **Approach:**
+  - Utility functions to generate HCL for each provider
+  - Map internal data structure to Terraform resource blocks
+  - Allow user to specify (or default) required fields (region, resource group, tags)
+
+#### 3. Provider-Specific Details
+- **AWS:**
+  - `aws_vpc` with parent CIDR
+  - `aws_subnet` for each subnet (with CIDR, map_public_ip, etc.)
+  - Optionally generate `aws_internet_gateway`, `aws_route_table`
+- **Azure:**
+  - `azurerm_virtual_network` with parent CIDR
+  - `azurerm_subnet` for each subnet
+  - Optionally generate `azurerm_resource_group`
+
+#### 4. Validation & Error Handling
+- Ensure all subnet CIDRs are within the parent network
+- Validate required fields (names, CIDRs, regions)
+
+#### 5. Testing
+- Unit tests for code generation (output matches expected HCL)
+- Manual validation with `terraform plan`
+
+#### 6. Documentation
+- Add README section describing the feature
+- Provide example output for AWS and Azure
+
+#### 7. Future Enhancements
+- Support for GCP and other providers
+- Allow customization of more fields (tags, NACLs, route tables, etc.)
+- Export as `.tf` file directly
+
+**Why This Is Great:**
+- Bridges the gap between planning and deployment
+- Saves time and reduces manual errors
+- Makes Subnet.Fit a unique tool for both design and implementation
+
+---
