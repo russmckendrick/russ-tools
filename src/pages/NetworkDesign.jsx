@@ -8,6 +8,7 @@ import { SubnetForm } from '../components/SubnetForm';
 import { DraggableSubnets } from '../components/DraggableSubnets';
 import { NetworkDiagram } from '../components/NetworkDiagram';
 import { NetworkDiagramSVGExport } from '../components/NetworkDiagramSVGExport';
+import { TerraformExportSection } from '../components/TerraformExportSection';
 import { v4 as uuidv4 } from 'uuid';
 import { isValidIPv4, ipToLong, longToIp } from '../utils';
 
@@ -508,6 +509,12 @@ export function NetworkDesign() {
                   parentNetwork={current.parentNetwork}
                   subnets={current.subnets || []}
                 />
+                {current.parentNetwork && (
+                  <TerraformExportSection
+                    network={current.parentNetwork}
+                    subnets={current.subnets || []}
+                  />
+                )}
               </>
             )}
           </>

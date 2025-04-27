@@ -1,0 +1,105 @@
+/* PrismJS CSS from https://github.com/PrismJS/prism/issues/2254 (with improvements for Mantine) */
+
+:root {
+  --prism-bg: #f5f2f0;
+  --prism-color: #393a34;
+  --prism-comment: #a0ada0;
+  --prism-keyword: #8959a8;
+  --prism-string: #718c00;
+  --prism-number: #f5871f;
+  --prism-function: #4271ae;
+  --prism-variable: #c82829;
+  --prism-attr: #eab700;
+  --prism-selector: #c82829;
+  --prism-punctuation: #4d4d4c;
+}
+
+.prism-dark {
+  --prism-bg: #282c34;
+  --prism-color: #f8f8f2;
+  --prism-comment: #75715e;
+  --prism-keyword: #cc99cd;
+  --prism-string: #b5bd68;
+  --prism-number: #f99157;
+  --prism-function: #6699cc;
+  --prism-variable: #f2777a;
+  --prism-attr: #ffcc66;
+  --prism-selector: #f2777a;
+  --prism-punctuation: #cccccc;
+}
+
+pre[class*="language-"] {
+  background: var(--prism-bg) !important;
+  color: var(--prism-color);
+  border-radius: 8px;
+  font-size: 13px;
+  padding: 1.1em 1.3em;
+  overflow-x: auto;
+  margin-bottom: 0;
+}
+
+code[class*="language-"] {
+  background: none;
+  color: inherit;
+  font-family: 'Fira Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+  font-size: inherit;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--prism-comment);
+}
+.token.punctuation {
+  color: var(--prism-punctuation);
+}
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: var(--prism-number);
+}
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: var(--prism-string);
+}
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: var(--prism-attr);
+}
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: var(--prism-keyword);
+}
+.token.function {
+  color: var(--prism-function);
+}
+.token.variable {
+  color: var(--prism-variable);
+}
+
+/* Selection highlight */
+pre[class*="language-"] ::selection,
+pre[class*="language-"]::selection,
+code[class*="language-"] ::selection,
+code[class*="language-"]::selection {
+  background: #e0d7f4;
+}
+.prism-dark pre[class*="language-"] ::selection,
+.prism-dark pre[class*="language-"]::selection,
+.prism-dark code[class*="language-"] ::selection,
+.prism-dark code[class*="language-"]::selection {
+  background: #44475a;
+}
