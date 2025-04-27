@@ -19,6 +19,25 @@ function getSubnetTooltip(subnet) {
   );
 }
 
+// Helper function to get contrasting text color (white or black)
+const getContrastColor = (hexColor, theme) => {
+  if (!hexColor) return theme.black; // Default
+
+  // Remove # if present
+  hexColor = hexColor.replace('#', '');
+
+  // Convert hex to RGB
+  const r = parseInt(hexColor.substring(0, 2), 16);
+  const g = parseInt(hexColor.substring(2, 4), 16);
+  const b = parseInt(hexColor.substring(4, 6), 16);
+
+  // Calculate relative luminance (using standard formula)
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+  // Return white for dark backgrounds, black for light backgrounds
+  return luminance < 0.5 ? theme.white : theme.black;
+};
+
 export function SubnetVisualization({ parentNetwork, subnets }) {
   const theme = useMantineTheme();
   const [animate, setAnimate] = useState(false);
@@ -152,8 +171,8 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
                 <Text
                   size="xs"
                   style={{
-                    color: theme.white,
-                    textShadow: '0 0 2px rgba(0,0,0,0.5)',
+                    // Use the helper function for contrast
+                    color: getContrastColor(color, theme),
                     fontWeight: 600,
                     userSelect: 'none',
                     zIndex: 2,

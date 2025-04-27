@@ -265,15 +265,20 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       theme.colors.dark[4] : 
       theme.colors.gray[1];
     
+    // Text colors based on theme for SVG
+    const titleColor = theme.colorScheme === 'dark' ? theme.white : theme.black;
+    const detailColor = theme.colorScheme === 'dark' ? theme.colors.dark[1] : theme.colors.gray[7];
+    const footerColor = detailColor; // Use same as detail color
+
     // Create SVG manually
     let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
       <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" 
            width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
         <style>
           text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'; }
-          .title { font-size: 14px; font-weight: 600; }
-          .detail { font-size: 12px; fill: #495057; }
-          .footer { font-size: 12px; text-anchor: middle; fill: #495057; }
+          .title { font-size: 14px; font-weight: 600; fill: ${titleColor}; }
+          .detail { font-size: 12px; fill: ${detailColor}; }
+          .footer { font-size: 12px; text-anchor: middle; fill: ${footerColor}; }
         </style>
         <rect width="${width}" height="${height}" fill="${svgBackground}"></rect>
         
@@ -289,13 +294,13 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         <image x="40" y="70" width="${iconSize}" height="${iconSize}" href="${networkSvg}" />
         
         <!-- Parent Network header -->
-        <text font-family="Arial" font-size="16" font-weight="bold" x="${textStartX}" y="84.484375">
+        <text class="title" x="${textStartX}" y="84.484375">
           <tspan dy="0" x="${textStartX}">${parentNetwork.name || 'Parent Network'} (${parentNetwork.ip}/${parentNetwork.cidr})</tspan>
         </text>
-        <text font-family="Arial" font-size="12" x="${textStartX}" y="105.875">
+        <text class="detail" x="${textStartX}" y="105.875">
           <tspan dy="0" x="${textStartX}">Range: ${parentBlock.base} - ${parentBlock.broadcast}</tspan>
         </text>
-        <text font-family="Arial" font-size="12" x="${textStartX}" y="125.875">
+        <text class="detail" x="${textStartX}" y="125.875">
           <tspan dy="0" x="${textStartX}">Total IPs: ${parentBlock.size} (${freePercentage}% free)</tspan>
         </text>`;
     

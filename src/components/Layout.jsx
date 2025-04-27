@@ -1,10 +1,11 @@
-import { AppShell, Container, Group, Text, Paper, ActionIcon, useMantineTheme } from '@mantine/core';
+import { AppShell, Container, Group, Text, Paper, ActionIcon, useMantineTheme, useMantineColorScheme, useComputedColorScheme } from '@mantine/core';
 import { IconBrandGithub, IconSun, IconMoonStars } from '@tabler/icons-react';
 import { Link, Outlet } from 'react-router-dom';
 
-export function Layout({ colorScheme, toggleColorScheme }) {
-  const theme = useMantineTheme(); // Get theme object
-  const dark = colorScheme === 'dark';
+export function Layout() {
+  const theme = useMantineTheme(); 
+  const { setColorScheme } = useMantineColorScheme(); 
+  const computedColorScheme = useComputedColorScheme('light'); 
 
   return (
     <AppShell
@@ -18,8 +19,7 @@ export function Layout({ colorScheme, toggleColorScheme }) {
           p="md" 
           withBorder 
           style={{ height: '100%' }}
-          // Add theme-aware background
-          bg={dark ? theme.colors.dark[6] : theme.colors.gray[0]}
+          bg={computedColorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0]}
         >
           <Container size="lg" style={{ height: '100%', display: 'flex', alignItems: 'center' }}>
             <Group justify="space-between" style={{ width: '100%' }}>
@@ -32,18 +32,16 @@ export function Layout({ colorScheme, toggleColorScheme }) {
                   href="https://github.com/russmckendrick/russ-tools"
                   target="_blank"
                   variant="outline"
-                  // Remove hardcoded color
                   title="GitHub Repository"
                 >
                   <IconBrandGithub size={18} />
                 </ActionIcon>
                 <ActionIcon
                   variant="outline"
-                  // Remove hardcoded color
-                  onClick={() => toggleColorScheme()}
+                  onClick={() => setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark')}
                   title="Toggle color scheme"
                 >
-                  {dark ? <IconSun size={18} /> : <IconMoonStars size={18} />}
+                  {computedColorScheme === 'dark' ? <IconSun size={18} /> : <IconMoonStars size={18} />}
                 </ActionIcon>
               </Group>
             </Group>
@@ -61,8 +59,7 @@ export function Layout({ colorScheme, toggleColorScheme }) {
           p="md" 
           withBorder 
           style={{ height: '100%' }}
-          // Add theme-aware background
-          bg={dark ? theme.colors.dark[6] : theme.colors.gray[0]}
+          bg={computedColorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0]}
         >
           <Container size="lg" style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Text ta="center" size="sm" c="dimmed">
