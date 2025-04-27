@@ -159,6 +159,6 @@ Allow users to export their network/subnet design as ready-to-use Terraform code
 **Why This Is Great:**
 - Bridges the gap between planning and deployment
 - Saves time and reduces manual errors
-- Makes Subnet.Fit a unique tool for both design and implementation
+- Makes russ.tools a unique tool for both design and implementation
 
 ---
