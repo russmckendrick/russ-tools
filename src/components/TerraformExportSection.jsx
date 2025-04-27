@@ -11,7 +11,7 @@ import { loadAzureRegions } from './AzureRegions';
 
 export function TerraformExportSection({ network, subnets }) {
   const colorScheme = useComputedColorScheme('light');
-  const [activeTab, setActiveTab] = useState('azure');
+  const [activeTab, setActiveTab] = useState('aws');
   const [copied, setCopied] = useState(false);
   // Azure region selection with persistence and dynamic loading
   const defaultRegion = 'uksouth';
@@ -20,6 +20,27 @@ export function TerraformExportSection({ network, subnets }) {
   const [regionList, setRegionList] = useState([]);
   const [loadingRegions, setLoadingRegions] = useState(true);
   const [regionError, setRegionError] = useState(null);
+
+  // AWS region selection with persistence and static list
+  const defaultAwsRegion = 'us-east-1';
+  const savedAwsRegion = typeof window !== 'undefined' ? window.localStorage.getItem('awsRegion') : null;
+  const [awsRegion, setAwsRegion] = useState(savedAwsRegion || defaultAwsRegion);
+  const regionListAws = [
+    { label: 'US East (N. Virginia)', value: 'us-east-1' },
+    { label: 'US West (Oregon)', value: 'us-west-2' },
+    { label: 'EU (Ireland)', value: 'eu-west-1' },
+    { label: 'EU (London)', value: 'eu-west-2' },
+    { label: 'Asia Pacific (Sydney)', value: 'ap-southeast-2' },
+    // Add more as needed
+  ];
+  const [loadingRegionsAws] = useState(false);
+  const [regionErrorAws] = useState(null);
+  const handleAwsRegionChange = (value) => {
+    setAwsRegion(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('awsRegion', value);
+    }
+  };
 
   React.useEffect(() => {
     let mounted = true;
@@ -40,11 +61,10 @@ export function TerraformExportSection({ network, subnets }) {
     }
   };
 
-
   const awsCode = generateAwsTerraform({
     vpcName: network?.name || 'main_vpc',
     vpcCidr: `${network?.ip}/${network?.cidr}`,
-    region: 'us-east-1', // TODO: let user pick
+    region: awsRegion,
     subnets: subnets || [],
   });
   const azureCode = generateAzureTerraform({
@@ -76,7 +96,7 @@ export function TerraformExportSection({ network, subnets }) {
           {copied ? 'Copied!' : 'Copy Code'}
         </Button>
       </Group>
-      <Tabs value={activeTab} onTabChange={setActiveTab} mt="md">
+      <Tabs value={activeTab} onChange={setActiveTab} mt="md">
         <Tabs.List>
           <Tabs.Tab value="aws">
             <Group spacing={6} align="center">
@@ -92,8 +112,20 @@ export function TerraformExportSection({ network, subnets }) {
           </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="aws" pt="md">
-          <Box mb="xs">
-            <Text size="sm" weight={500}>AWS Terraform HCL</Text>
+          <Box mb="xs" style={{ maxWidth: 340 }}>
+            <Select
+              label="AWS Region"
+              data={regionListAws}
+              value={awsRegion}
+              onChange={handleAwsRegionChange}
+              searchable
+              nothingFound={loadingRegionsAws ? 'Loading...' : 'No region found'}
+              withinPortal
+              disabled={loadingRegionsAws}
+              error={regionErrorAws}
+              placeholder={loadingRegionsAws ? 'Loading regions...' : undefined}
+              maxDropdownHeight={350}
+            />
           </Box>
           <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
             <pre style={{ margin: 0, padding: 0, background: 'none' }}>

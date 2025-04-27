@@ -2,9 +2,31 @@
 // To be implemented: generateAwsTerraform, generateAzureTerraform
 
 export function generateAwsTerraform({ vpcName, vpcCidr, region, subnets }) {
-  // TODO: Implement AWS Terraform HCL generation
-  return `# AWS Terraform code will appear here`;
+  // Helper to sanitize Terraform resource names
+  const safeName = (name) => name.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+  const vpcResourceName = safeName(vpcName || 'main_vpc');
+
+  // Provider block
+  let tf = `provider \"aws\" {\n  region = \"${region || 'us-east-1'}\"\n}\n\n`;
+
+  // VPC block
+  tf += `resource \"aws_vpc\" \"${vpcResourceName}\" {\n  cidr_block = \"${vpcCidr}\"\n  enable_dns_support   = true\n  enable_dns_hostnames = true\n  tags = {\n    Name = \"${vpcName}\"\n  }\n}\n\n`;
+
+  // Subnets
+  subnets.forEach((subnet, idx) => {
+    const subnetName = safeName(subnet.name || `subnet_${idx+1}`);
+    tf += `resource \"aws_subnet\" \"${subnetName}\" {\n` +
+      `  vpc_id            = aws_vpc.${vpcResourceName}.id\n` +
+      `  cidr_block        = \"${subnet.cidr}\"\n` +
+      (subnet.az ? `  availability_zone = \"${subnet.az}\"\n` : '') +
+      `  map_public_ip_on_launch = ${subnet.public ? 'true' : 'false'}\n` +
+      `  tags = {\n    Name = \"${subnet.name || `Subnet ${idx+1}`}\"\n  }\n` +
+      `}\n\n`;
+  });
+
+  return tf.trim();
 }
+
 
 export function generateAzureTerraform({ vnetName, vnetCidr, location, subnets }) {
   // CAF-compliant: hyphens for Azure resource names, underscores for Terraform variables
