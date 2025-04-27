@@ -391,7 +391,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                 if (item.type === 'subnet') {
                   const subnet = item.data;
 
-                  // Use the exact HEX color for border/icon
+                  // Use the exact HEX color from subnet.color for the border/icon
                   const subnetIconBorderColor = subnet.color || theme.colors.gray[6]; // Fallback to gray
                   // Use theme-aware gray for background
                   const subnetBgColor = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1];
