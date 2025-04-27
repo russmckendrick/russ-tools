@@ -501,12 +501,43 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
               allItems.sort((a, b) => a.start - b.start);
               
               // Render all items
-                      <Text size="xs" ml={26} color="dimmed">
-                        Range: {subnet.block.first} - {subnet.block.last}
-                      </Text>
-                      <Text size="xs" ml={26} color="dimmed">
-                        Usable IPs: {subnet.cidr >= 31 ? subnet.block.size : subnet.block.size - 2}
-                      </Text>
+              return allItems.map((item, index) => {
+                if (item.type === 'subnet') {
+                  const subnet = item.data;
+                  // Using consistent color based on subnet name
+                  const color = subnet.color;
+                  
+                  return (
+                    <Box
+                      key={`subnet-${subnet.startLong}-${index}`}
+                      p="sm"
+                      ml="md"
+                      style={{
+                        border: `1px solid ${color}`,
+                        borderRadius: theme.radius.sm,
+                        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
+                        transition: 'all 0.3s ease',
+                        opacity: animate ? 1 : 0,
+                        transform: animate ? 'translateY(0)' : 'translateY(5px)',
+                        transitionDelay: `${index * 0.1}s`,
+                      }}
+                    >
+                      <Group spacing="xs" wrap="nowrap">
+                        <IconSubtask size={16} stroke={2} style={{ color: color, flexShrink: 0 }} />
+                        <Text fw={600} size="xs">{subnet.name}</Text>
+                        <Text size="xs" fw={500} color="dimmed">({subnet.block.base}/{subnet.cidr})</Text>
+                      </Group>
+                      <Stack spacing={2} ml={26}>
+                        <Text size="xs" color="dimmed">
+                          Network: {subnet.block.base}
+                        </Text>
+                        <Text size="xs" color="dimmed">
+                          Range: {subnet.block.first} - {subnet.block.last}
+                        </Text>
+                        <Text size="xs" color="dimmed">
+                          Usable IPs: {subnet.cidr >= 31 ? subnet.block.size : subnet.block.size - 2}
+                        </Text>
+                      </Stack>
                     </Box>
                   );
                 } else if (item.type === 'free') {
@@ -522,9 +553,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                       style={{
                         border: `1px solid ${freeSpaceColor}`,
                         borderRadius: theme.radius.sm,
-                        backgroundColor: theme.colorScheme === 'dark' ? 
-                            theme.fn.rgba(theme.colors.gray[9], 0.25) : 
-                            theme.fn.rgba(theme.colors.gray[0], 0.7),
+                        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
                         transition: 'all 0.3s ease',
                         opacity: animate ? 1 : 0,
                         transform: animate ? 'translateY(0)' : 'translateY(5px)',
@@ -536,9 +565,17 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                         <Text fw={600} size="xs">Free Space</Text>
                         <Text size="xs" fw={500} color="dimmed">({space.size} IPs)</Text>
                       </Group>
-                      <Text size="xs" ml={26} color="dimmed">
-                        Range: {space.startIp} - {space.endIp}
-                      </Text>
+                      <Stack spacing={2} ml={26}>
+                        <Text size="xs" color="dimmed">
+                          Start: {longToIp(space.start)}
+                        </Text>
+                        <Text size="xs" color="dimmed">
+                          End: {longToIp(space.end)}
+                        </Text>
+                        <Text size="xs" color="dimmed">
+                          Size: {space.size} IPs
+                        </Text>
+                      </Stack>
                     </Box>
                   );
                 }

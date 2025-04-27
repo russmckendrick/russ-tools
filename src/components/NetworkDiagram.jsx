@@ -82,12 +82,12 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     return {
       ...subnet,
       block,
-      startLong: block.firstLong,
-      endLong: block.lastLong,
+      networkLong: ipToLong(block.base),
+      broadcastLong: ipToLong(block.broadcast),
       color: assignedColorValue, // Keep the original color value (e.g., shades[5]) for border/icon
       colorName: colorName, // Add color name ('blue')
     };
-  }).sort((a, b) => a.startLong - b.startLong); // Sort by numeric IP for accurate gap calculation
+  }).sort((a, b) => a.networkLong - b.networkLong); // Sort by network address
 
   // Export diagram as PNG
   const exportDiagram = () => {
@@ -129,14 +129,15 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const parentStartLong = ipToLong(parentBlock.base);
     const parentEndLong = ipToLong(parentBlock.broadcast);
     
-    const freeSpaces = [];
+    let freeSpaces = [];
     
     // Check if there's space before the first subnet
-    if (processedSubnets.length > 0 && processedSubnets[0].startLong > parentStartLong) {
-      const size = processedSubnets[0].startLong - parentStartLong;
+    if (processedSubnets.length > 0 && processedSubnets[0].networkLong > parentStartLong) {
+      const firstSubnetStart = processedSubnets[0].networkLong;
+      const size = firstSubnetStart - parentStartLong;
       if (size > 0) {
         // Calculate the IP before the first subnet's base
-        const endLongIp = processedSubnets[0].startLong - 1;
+        const endLongIp = firstSubnetStart - 1;
         
         freeSpaces.push({
           start: parentStartLong,
@@ -150,15 +151,15 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     
     // Check for gaps between subnets
     for (let i = 0; i < processedSubnets.length - 1; i++) {
-      const currentEnd = processedSubnets[i].endLong;
-      const nextStart = processedSubnets[i + 1].startLong;
+      // Use broadcast address of current and network address of next
+      const currentBroadcast = processedSubnets[i].broadcastLong;
+      const nextNetwork = processedSubnets[i + 1].networkLong;
       
-      if (nextStart > currentEnd + 1) { // +1 because IPs are inclusive
-        const size = nextStart - (currentEnd + 1);
-        
-        // Calculate the IP after the current subnet's broadcast
-        const startLongIp = currentEnd + 1;
-        const endLongIp = nextStart - 1;
+      // Check if there's a gap (next network starts after current broadcast + 1)
+      if (nextNetwork > currentBroadcast + 1) { 
+        const startLongIp = currentBroadcast + 1;
+        const endLongIp = nextNetwork - 1;
+        const size = endLongIp - startLongIp + 1; // Size is inclusive
         
         freeSpaces.push({
           start: startLongIp,
@@ -171,13 +172,14 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     }
     
     // Check if there's space after the last subnet
-    if (processedSubnets.length > 0 && processedSubnets[processedSubnets.length - 1].endLong < parentEndLong) {
+    if (processedSubnets.length > 0) {
       const lastSubnet = processedSubnets[processedSubnets.length - 1];
-      const size = parentEndLong - lastSubnet.endLong;
-      if (size > 0) {
-        // Calculate the IP after the last subnet's broadcast
-        const startLongIp = lastSubnet.endLong + 1;
-        
+      const lastSubnetBroadcast = lastSubnet.broadcastLong;
+
+      if (lastSubnetBroadcast < parentEndLong) {
+        const startLongIp = lastSubnetBroadcast + 1;
+        const size = parentEndLong - startLongIp + 1; // Size is inclusive
+
         freeSpaces.push({
           start: startLongIp,
           end: parentEndLong,
@@ -199,7 +201,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   const usedSize = processedSubnets.reduce((acc, subnet) => acc + subnet.block.size, 0);
   const freeSize = totalParentSize - usedSize;
   const freePercentage = ((freeSize / totalParentSize) * 100).toFixed(1);
-  
+
   // Generates the SVG markup directly
   const generateSVGMarkup = () => { 
     // Set diagram dimensions
@@ -210,217 +212,128 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const iconSize = 18;
     const iconPadding = 10;
     const textStartX = 45 + iconSize + iconPadding; // Start text after icon + padding
-    
-    // Combine subnets and free spaces for visualization in SVG
-    const allItems = [];
-    
-    // Add subnets to the items array
-    processedSubnets.forEach(subnet => {
-      allItems.push({
-        type: 'subnet',
-        start: subnet.startLong,
-        end: subnet.endLong,
-        data: subnet
-      });
-    });
-    
-    // Add free spaces to the items array
-    freeSpaces.forEach(space => {
-      allItems.push({
-        type: 'free',
-        start: space.start,
-        end: space.end,
-        data: space
-      });
-    });
-    
-    // Sort all items by start address
-    allItems.sort((a, b) => a.start - b.start);
-    
-    // Calculate combined items (subnets + free spaces)
-    const totalItems = allItems.length;
-    
-    // Calculate required height
-    const headerHeight = 100; // Space for parent network info
-    // Calculate height based on number of items and their types
-    let totalItemsHeight = 0;
-    allItems.forEach(item => {
-      if (item.type === 'subnet') {
-        totalItemsHeight += subnetHeight + subnetSpacing;
-      } else if (item.type === 'free') {
-        totalItemsHeight += freeSpaceHeight + subnetSpacing;
-      }
-    });
-    const footerHeight = 50; // Space for footer
-    const bottomPadding = 40; // Extra space at the very bottom
-    const height = headerHeight + totalItemsHeight + footerHeight + bottomPadding;
-    
-    // Layout calculations
-    const parentBoxX = 20;
-    const parentBoxY = 50;
-    const parentBoxWidth = width - 40;
-    const parentBoxHeight = height - 70; // Adjusted height for parent box
-    const subnetX = 50;
-    const subnetWidth = width - 100;
-    const borderRadius = 5;
-    
-    // --- Force Light Mode Colors for SVG Export ---
-    const svgBackground = theme.colors.gray[0];
-    const parentBoxBackground = theme.white;
-    const parentBorderColor = theme.colors.blue[6]; // Keep parent border blue
-    const freeSpaceFillColor = theme.colors.gray[0]; // Use light gray for fill too
-    const freeSpaceBorderColor = theme.colors.gray[3];
-    const freeSpaceIconColor = theme.colors.gray[6];
-    const titleColor = theme.black; 
-    const detailColor = theme.colors.gray[7];
-    const footerColor = detailColor;
-    // -----------------------------------------------
 
-    // Create SVG manually - Using template literal
-    let svgContent = ''; // Initialize empty string for content
+    // Theme-aware colors
+    const isDark = colorScheme === 'dark';
+    const bgColor = isDark ? theme.colors.dark[7] : theme.colors.gray[0];
+    const parentBorderColor = isDark ? theme.colors.dark[5] : theme.colors.gray[3];
+    const parentHeaderBg = isDark ? theme.colors.dark[6] : theme.white;
+    const defaultTextColor = isDark ? theme.colors.dark[0] : theme.colors.gray[7];
+    const dimmedTextColor = theme.colors.gray[6];
+    const parentIconColor = theme.colors.blue[isDark ? 4 : 7];
+    const freeSpaceBgColor = isDark ? theme.colors.lime[9] : theme.colors.lime[1];
+    const freeSpaceBorderColor = isDark ? theme.colors.lime[7] : theme.colors.lime[4];
+    const freeSpaceTextColor = isDark ? theme.colors.lime[2] : theme.colors.lime[8];
+    const freeSpaceIconColor = isDark ? theme.colors.lime[3] : theme.colors.lime[6];
+    const footerTextColor = isDark ? theme.colors.dark[2] : theme.colors.gray[6];
 
-    // Already defined allItems above
-    let currentY = parentBoxY + headerHeight; // Start below parent header
+    // Combine subnets and free spaces, then sort by starting IP
+    const allItems = [
+      ...processedSubnets.map(s => ({ type: 'subnet', data: s, startLong: s.networkLong })),
+      ...freeSpaces.map(fs => ({ type: 'freeSpace', data: fs, startLong: fs.start }))
+    ].sort((a, b) => a.startLong - b.startLong);
 
-    allItems.forEach((item, index) => {
+    let currentY = 20; // Initial Y padding
+    let svgContent = '';
+
+    // 1. Parent Network Box
+    const parentBoxHeight = 80;
+    svgContent += `
+      <rect x="10" y="${currentY}" width="${width - 20}" height="${parentBoxHeight}" rx="8" ry="8" fill="${parentHeaderBg}" stroke="${parentBorderColor}" stroke-width="1" />
+      <image href="${networkSvg}" x="25" y="${currentY + 20}" height="${iconSize}" width="${iconSize}" />
+      <text x="${textStartX}" y="${currentY + 35}" font-family="${theme.fontFamily}" font-size="14px" font-weight="700" fill="${defaultTextColor}">${parentNetwork.name || 'Parent Network'}</text>
+      <text x="${textStartX}" y="${currentY + 55}" font-family="${theme.fontFamily}" font-size="12px" fill="${dimmedTextColor}">
+        Range: ${parentBlock.first} - ${parentBlock.last} (${parentBlock.size} IPs)
+      </text>
+      <text x="${width - 35}" y="${currentY + 35}" font-family="${theme.fontFamily}" text-anchor="end" font-size="12px" font-weight="500" fill="${dimmedTextColor}">
+        (${parentBlock.base}/${parentNetwork.cidr})
+      </text>
+    `;
+    currentY += parentBoxHeight + subnetSpacing * 2; // Move down for the next items
+
+    // 2. Subnets and Free Spaces
+    allItems.forEach((item) => {
       if (item.type === 'subnet') {
         const subnet = item.data;
-        const colorValue = subnet.color; // The actual hex/rgb color (e.g., shades[5])
-        const colorName = subnet.colorName; // The name like 'blue'
-        const bgColor = getThemeAwareSubnetBackground(colorName, 'light'); // Use hardcoded 'light' for scheme
-
         const subnetY = currentY;
-        const subnetTextStartX = subnetX + 15 + iconSize + iconPadding;
-        const subnetHeight = 75; // Fixed height for subnet representation
+        const colorValue = subnet.color; // e.g., theme.colors.blue[5]
+        const colorName = subnet.colorName; // e.g., 'blue'
+        
+        // Determine background based on dark/light mode using the color name
+        const subnetBgColor = getThemeAwareSubnetBackground(colorName, colorScheme);
+        // Use the original strong color for the icon/border
+        const subnetIconBorderColor = colorValue;
 
         svgContent += `
-          <!-- Subnet ${index + 1}: ${subnet.name} -->
-          <rect width="${subnetWidth}" height="${subnetHeight}" 
-                x="${subnetX}" y="${subnetY}"
-                rx="${borderRadius}" ry="${borderRadius}" 
-                fill="${bgColor}" 
-                stroke-width="1.5" 
-                stroke="${colorValue}" /> 
-
-          <!-- Subnet Icon -->
-          <image x="${subnetX + 15}" y="${subnetY + 15}" width="${iconSize}" height="${iconSize}" href="${subnetSvg}" />
-                
-          <!-- Subnet details -->
-          <text class="title" x="${subnetTextStartX}" y="${subnetY + 30}">
-            <tspan dy="0" x="${subnetTextStartX}">${subnet.name} (${subnet.base}/${subnet.cidr})</tspan>
+          <rect x="10" y="${subnetY}" width="${width - 20}" height="${subnetHeight}" rx="8" ry="8" fill="${subnetBgColor}" stroke="${subnetIconBorderColor}" stroke-width="1" />
+          <image href="${subnetSvg}" x="25" y="${subnetY + (subnetHeight / 2) - (iconSize / 2)}" height="${iconSize}" width="${iconSize}" />
+          <text x="${textStartX}" y="${subnetY + 25}" font-family="${theme.fontFamily}" font-size="14px" font-weight="700" fill="${defaultTextColor}">${subnet.name}</text>
+          <text x="${textStartX}" y="${subnetY + 45}" font-family="${theme.fontFamily}" font-size="12px" fill="${dimmedTextColor}">
+            Range: ${subnet.block.base} - ${subnet.block.broadcast} (${subnet.block.mask})
           </text>
-          <text class="detail" x="${subnetTextStartX}" y="${subnetY + 50}">
-            <tspan dy="0" x="${subnetTextStartX}">Range: ${subnet.block.first} - ${subnet.block.last}</tspan>
+          <text x="${textStartX}" y="${subnetY + 65}" font-family="${theme.fontFamily}" font-size="12px" fill="${dimmedTextColor}">
+            Usable IPs: ${subnet.block.size - 2}
           </text>
-          <text class="detail" x="${subnetTextStartX}" y="${subnetY + 68}">
-            <tspan dy="0" x="${subnetTextStartX}">Usable IPs: ${subnet.block.size - 2}</tspan>
-          </text>`;
-
+          <text x="${width - 35}" y="${subnetY + 25}" font-family="${theme.fontFamily}" text-anchor="end" font-size="12px" font-weight="500" fill="${dimmedTextColor}">
+            (${subnet.block.base}/${subnet.cidr})
+          </text>
+        `;
         currentY += subnetHeight + subnetSpacing;
-
-      } else if (item.type === 'free') {
+      } else if (item.type === 'freeSpace') {
         const space = item.data;
-        const freeY = currentY;
-        const freeSpaceHeight = space.height; // Use calculated height
-        const freeTextStartX = subnetX + 15 + iconSize + iconPadding;
-
+        const spaceY = currentY;
         svgContent += `
-          <!-- Free Space ${index + 1} -->
-          <rect width="${subnetWidth}" height="${freeSpaceHeight}" 
-                x="${subnetX}" y="${freeY}" 
-                rx="${borderRadius}" ry="${borderRadius}" 
-                fill="${freeSpaceFillColor}" 
-                stroke-width="1.5" 
-                stroke="${freeSpaceBorderColor}" />
-          
-          <!-- Free Space Icon -->
-          <image x="${subnetX + 15}" y="${freeY + 15}" width="${iconSize}" height="${iconSize}" href="${spaceSvg}" />
-
-          <!-- Free Space details -->
-          <text class="title" x="${freeTextStartX}" y="${freeY + 30}">
-            <tspan dy="0" x="${freeTextStartX}">Free Space (${space.size} IPs)</tspan>
+          <rect x="10" y="${spaceY}" width="${width - 20}" height="${freeSpaceHeight}" rx="8" ry="8" fill="${freeSpaceBgColor}" stroke="${freeSpaceBorderColor}" stroke-width="1" stroke-dasharray="4 2" />
+          <image href="${spaceSvg}" x="25" y="${spaceY + (freeSpaceHeight / 2) - (iconSize / 2)}" height="${iconSize}" width="${iconSize}" />
+          <text x="${textStartX}" y="${spaceY + 25}" font-family="${theme.fontFamily}" font-size="13px" font-weight="600" fill="${freeSpaceTextColor}">Free Space</text>
+          <text x="${textStartX}" y="${spaceY + 45}" font-family="${theme.fontFamily}" font-size="12px" fill="${freeSpaceTextColor}" opacity="0.8">
+            Range: ${space.startIp} - ${space.endIp} (${space.size} IPs)
           </text>
-           <text class="detail" x="${freeTextStartX}" y="${freeY + 50}">
-             <tspan dy="0" x="${freeTextStartX}">Range: ${space.startIp} - ${space.endIp}</tspan>
-           </text>`;
-           
+        `;
         currentY += freeSpaceHeight + subnetSpacing;
       }
     });
 
-    // Construct the final SVG string
-    const svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-      <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" 
-           width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-        <style>
-          text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'; }
-          .title { font-size: 14px; font-weight: 600; fill: ${titleColor}; }
-          .detail { font-size: 12px; fill: ${detailColor}; }
-          .footer { font-size: 12px; text-anchor: middle; fill: ${footerColor}; }
-        </style>
-        <rect width="${width}" height="${height}" fill="${svgBackground}"></rect>
-        
-        <!-- Parent Network Container -->
-        <rect width="${parentBoxWidth}" height="${parentBoxHeight}" 
-              rx="${borderRadius}" ry="${borderRadius}" 
-              fill="${parentBoxBackground}" 
-              stroke-width="1.5"
-              stroke="${parentBorderColor}" 
-              x="${parentBoxX}" y="${parentBoxY}"></rect>
-        
-        <!-- Parent Network Icon -->
-        <image x="${parentBoxX + 15}" y="${parentBoxY + 15}" width="${iconSize}" height="${iconSize}" href="${networkSvg}" />
-        
-        <!-- Parent Network header -->
-        <text class="title" x="${textStartX}" y="${parentBoxY + 30}">
-          <tspan dy="0" x="${textStartX}">${parentNetwork.name || 'Parent Network'} (${parentNetwork.ip}/${parentNetwork.cidr})</tspan>
-        </text>
-        <text class="detail" x="${textStartX}" y="${parentBoxY + 50}">
-           <tspan dy="0" x="${textStartX}">Range: ${parentBlock.first} - ${parentBlock.last}</tspan>
-        </text>
-        <text class="detail" x="${textStartX}" y="${parentBoxY + 68}">
-           <tspan dy="0" x="${textStartX}">Total IPs: ${totalParentSize} (${freePercentage}% free)</tspan>
-        </text>
+    // 3. Footer Information
+    const footerY = currentY + 15; // Add some padding before the footer
+    svgContent += `
+      <text x="15" y="${footerY}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">
+        Total subnets: ${processedSubnets.length}
+      </text>
+      <text x="${width / 2}" text-anchor="middle" y="${footerY}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">
+        Total IPs: ${totalParentSize}
+      </text>
+      <text x="${width - 15}" text-anchor="end" y="${footerY}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">
+        Free IPs: ${freeSize} (${freePercentage}%)
+      </text>
+    `;
 
-        <!-- Subnet/Free Space Content -->
-        ${svgContent}
+    const totalHeight = footerY + 20; // Add padding below footer
 
-        <!-- Footer -->
-        <text x="${width/2}" y="${height - 20}" class="footer">
-          <tspan dy="0" x="${width/2}">Total subnets: ${subnets.length} • Total IPs: ${parentBlock.size} • Free: ${freeSize} IPs (${freePercentage}%)</tspan>
-        </text>
-      </svg>`;
-
-    // Create a Blob from the SVG string
-    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-
-    // Create a URL for the blob
-    const url = URL.createObjectURL(blob);
-
-    // Create a link to download the SVG
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${parentNetwork.name || 'network'}-diagram.svg`;
-    link.click();
-
-    // Clean up
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 100);
+    return `<svg width="${width}" height="${totalHeight}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background-color: ${bgColor}; font-family: ${theme.fontFamily}, sans-serif;">
+      ${svgContent}
+    </svg>`;
   };
   
-  // Export diagram as true SVG - now only uses the manual generation
+  // Export diagram as true SVG
   const exportSVG = () => {
     try {
-      // Generate the SVG markup directly
-      generateSVGMarkup();
-    } catch (e) {
-      console.error('SVG export error:', e);
+      const svgData = generateSVGMarkup();
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = svgUrl;
+      downloadLink.download = `${parentNetwork.name || 'network'}-diagram.svg`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(svgUrl);
+    } catch (err) {
+      console.error('SVG export error:', err);
       setErrorModal({
         opened: true,
-        message: `SVG export failed: ${e.message || 'Unknown error'}. Falling back to PNG...`
+        message: 'SVG export failed. Could not generate diagram markup.',
       });
-      exportDiagram(); // Fallback to PNG on error
     }
   };
 
@@ -487,92 +400,93 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           
           {/* Combine subnets and free spaces for visualization - styled as per .bak */}
           <Stack mt="lg" spacing="sm">
-            {/* Create a combined array of subnets and free spaces */}
-            {[...processedSubnets.map(subnet => ({ ...subnet, type: 'subnet' })), ...freeSpaces.map(space => ({ ...space, type: 'space' }))]
-              .sort((a, b) => (a.type === 'subnet' ? a.startLong : a.start) - (b.type === 'subnet' ? b.startLong : b.start))
-              .map((item, index) => {
+            {(() => {
+              // Combine subnets and free spaces, then sort by starting IP
+              const allItems = [
+                ...processedSubnets.map(s => ({ type: 'subnet', data: s, startLong: s.networkLong })),
+                ...freeSpaces.map(fs => ({ type: 'freeSpace', data: fs, startLong: fs.start }))
+              ].sort((a, b) => a.startLong - b.startLong);
+
+              return allItems.map((item, index) => {
                 if (item.type === 'subnet') {
-                  const subnet = item;
-                  const colorValue = subnet.color; // The actual hex/rgb color (e.g., shades[5])
-                  const colorName = subnet.colorName; // The name like 'blue'
-                  const bgColor = getThemeAwareSubnetBackground(colorName, colorScheme); // Pass colorScheme
+                  const subnet = item.data;
+                  // Use the strong color for border/icon
+                  const subnetIconBorderColor = subnet.color;
+                  // Use the theme-aware background
+                  const subnetBgColor = getThemeAwareSubnetBackground(subnet.colorName, colorScheme);
 
                   return (
                     <Box
-                      key={`subnet-${subnet.name}-${index}`} 
+                      key={`subnet-${subnet.id || index}`}
                       p="sm"
-                      ml="md"
+                      radius="sm"
                       style={{
-                        // Use original color value for border
-                        border: `1px solid ${colorValue}`,
-                        borderRadius: theme.radius.sm,
-                        // Use calculated background color
-                        backgroundColor: bgColor,
-                        transition: 'all 0.3s ease',
+                        border: `1px solid ${subnetIconBorderColor}`,
+                        backgroundColor: subnetBgColor,
+                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                        animation: animate ? 'fadeInUp 0.5s ease forwards' : 'none',
                         opacity: animate ? 1 : 0,
-                        transform: animate ? 'translateY(0)' : 'translateY(5px)',
-                        transitionDelay: `${index * 0.1}s`,
                       }}
                     >
-                      <Group spacing="xs" wrap="nowrap">
-                        {/* Use original color value for icon */}
-                        <IconSubtask size={16} stroke={2} style={{ color: colorValue, flexShrink: 0 }} />
-                        {/* Title: default color, fw={600} */}
-                        <Text fw={600} size="xs">{subnet.name}</Text> 
-                        <Text size="xs" fw={500} color={colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.gray[7]}>({subnet.base}/{subnet.cidr})</Text>
+                      <Group position="apart" align="center" wrap="nowrap">
+                        <Group spacing="xs" wrap="nowrap">
+                          <IconSubtask size={18} style={{ color: subnetIconBorderColor, flexShrink: 0 }} />
+                          <Stack spacing={0}>
+                            <Text fw={700} size="sm" style={{ color: colorScheme === 'dark' ? theme.white : theme.black }}>{subnet.name}</Text>
+                            <Text size="xs" style={{ color: colorScheme === 'dark' ? theme.colors.gray[3] : theme.colors.gray[7] }}>
+                              Range: {subnet.block.base} - {subnet.block.broadcast} ({subnet.block.mask})
+                            </Text>
+                            <Text size="xs" style={{ color: colorScheme === 'dark' ? theme.colors.gray[3] : theme.colors.gray[7] }}>
+                              Usable IPs: {subnet.block.size - 2}
+                            </Text>
+                          </Stack>
+                        </Group>
+                        <Text size="xs" fw={500} style={{ color: colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6] }}>
+                          ({subnet.block.base}/{subnet.cidr})
+                        </Text>
                       </Group>
-                      <Stack spacing={2} ml={26}>
-                        {/* Details: Use new detailColor logic */}
-                        <Text size="xs" color={colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.gray[7]}>
-                          Range: {subnet.block.first} - {subnet.block.last} {/* Use calculated first/last */}
-                        </Text>
-                        <Text size="xs" color={colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.gray[7]}>
-                          Usable IPs: {subnet.block.size - 2}
-                        </Text>
-                      </Stack>
                     </Box>
                   );
-                } else {
-                  const space = item;
-                  const freeSpaceColor = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
+                } else if (item.type === 'freeSpace') {
+                  const space = item.data;
+                  // Use Gray color scheme for Free Space
                   const freeSpaceBg = colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0];
+                  const freeSpaceBorder = colorScheme === 'dark' ? theme.colors.gray[7] : theme.colors.gray[4];
+                  const freeSpaceTextColor = colorScheme === 'dark' ? theme.colors.gray[4] : theme.colors.gray[7]; 
+                  const freeSpaceIconColor = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
 
                   return (
                     <Box
-                      key={`space-${index}`}
+                      key={`free-${index}`}
                       p="sm"
-                      ml="md"
+                      radius="sm"
                       style={{
-                        border: `1px solid ${freeSpaceColor}`,
-                        borderRadius: theme.radius.sm,
-                        // Use calculated background for free space
+                        border: `1px dashed ${freeSpaceBorder}`,
                         backgroundColor: freeSpaceBg,
-                        transition: 'all 0.3s ease',
-                        opacity: animate ? 1 : 0,
-                        transform: animate ? 'translateY(0)' : 'translateY(5px)',
-                        transitionDelay: `${index * 0.1}s`,
+                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                        animation: animate ? 'fadeInUp 0.5s ease forwards' : 'none',
+                        opacity: animate ? 0.8 : 0, // Slightly transparent
                       }}
                     >
                       <Group spacing="xs" wrap="nowrap">
-                        <IconSpace size={16} stroke={2} style={{ color: freeSpaceColor, flexShrink: 0 }} />
-                        <Text fw={600} size="xs">Free Space</Text>
-                        {/* Free Space IPs: Use new detailColor logic */}
-                        <Text size="xs" fw={500} color={colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.gray[7]}>({space.size} IPs)</Text>
+                        <IconSpace size={18} style={{ color: freeSpaceIconColor, flexShrink: 0 }} />
+                        <Stack spacing={0}>
+                          <Text fw={600} size="sm" style={{ color: freeSpaceTextColor }}>Free Space</Text>
+                          <Text size="xs" style={{ color: freeSpaceTextColor, opacity: 0.9 }}>
+                            Range: {space.startIp} - {space.endIp} ({space.size} IPs)
+                          </Text>
+                        </Stack>
                       </Group>
-                      <Stack spacing={2} ml={26}>
-                         {/* Free Space Range: Use new detailColor logic */}
-                        <Text size="xs" color={colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.gray[7]}>
-                          Range: {space.startIp} - {space.endIp}
-                        </Text>
-                      </Stack>
                     </Box>
                   );
                 }
-              })}
+                return null;
+              });
+            })()}
           </Stack>
         </Box>
       </Box>
-
+      
       {/* Summary Footer */}
       <Group spacing="xs" mt="xl" position="center">
         <Text size="xs" color={colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.gray[7]}>Total subnets: {subnets.length}</Text>
