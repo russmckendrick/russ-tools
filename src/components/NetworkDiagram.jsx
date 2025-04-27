@@ -1,11 +1,12 @@
 import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal } from '@mantine/core';
-import { IconDownload, IconNetwork, IconSubtask } from '@tabler/icons-react';
+import { IconDownload, IconNetwork, IconSubtask, IconSpace } from '@tabler/icons-react';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
 import { longToIp, ipToLong } from '../utils';
 import html2canvas from 'html2canvas';
 import networkSvg from '../assets/network.svg';
 import subnetSvg from '../assets/subnet.svg';
+import spaceSvg from '../assets/space.svg';
 
 export function NetworkDiagram({ parentNetwork, subnets }) {
   const theme = useMantineTheme();
@@ -273,7 +274,6 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           .title { font-size: 14px; font-weight: 600; }
           .detail { font-size: 12px; fill: #495057; }
           .footer { font-size: 12px; text-anchor: middle; fill: #495057; }
-          .iconPath { stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         </style>
         <rect width="${width}" height="${height}" fill="${svgBackground}"></rect>
         
@@ -285,11 +285,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
               stroke="${theme.colors.blue[6]}" 
               x="${parentBoxX}" y="${parentBoxY}"></rect>
         
-        <!-- Parent Network Icon (Network icon) -->
-        <svg x="40" y="70" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 9C13.1046 9 14 8.10457 14 7C14 5.89543 13.1046 5 12 5C10.8954 5 10 5.89543 10 7C10 8.10457 10.8954 9 12 9Z" stroke="${theme.colors.blue[7]}" class="iconPath" />
-          <path d="M12 9V13M18 16C18 17.1046 17.1046 18 16 18C14.8954 18 14 17.1046 14 16C14 14.8954 14.8954 14 16 14C17.1046 14 18 14.8954 18 16ZM8 16C8 17.1046 7.10457 18 6 18C4.89543 18 4 17.1046 4 16C4 14.8954 4.89543 14 6 14C7.10457 14 8 14.8954 8 16ZM6 14V8C6 5.79086 8.79086 3 12 3C15.2091 3 18 5.79086 18 8V14M6 18V21M18 18V21M12 13V21" stroke="${theme.colors.blue[7]}" class="iconPath" />
-        </svg>
+        <!-- Parent Network Icon -->
+        <image x="40" y="70" width="${iconSize}" height="${iconSize}" href="${networkSvg}" />
         
         <!-- Parent Network header -->
         <text font-family="Arial" font-size="16" font-weight="bold" x="${textStartX}" y="84.484375">
@@ -328,9 +325,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                 x="${subnetX}" y="${subnetY}"></rect>
           
           <!-- Subnet Icon -->
-          <svg x="${subnetX + 15}" y="${subnetY + 20}" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.5 9H15.5M8.5 15H12M7 3.5H17C18.3807 3.5 19.5 4.61929 19.5 6V18C19.5 19.3807 18.3807 20.5 17 20.5H7C5.61929 20.5 4.5 19.3807 4.5 18V6C4.5 4.61929 5.61929 3.5 7 3.5Z" stroke="${color}" class="iconPath" />
-          </svg>
+          <image x="${subnetX + 15}" y="${subnetY + 20}" width="${iconSize}" height="${iconSize}" href="${subnetSvg}" />
                 
           <!-- Subnet details -->
           <text class="title" x="${subnetTextStartX}" y="${subnetY + 30}">
@@ -358,9 +353,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                 stroke="${freeSpaceColor}" 
                 x="${subnetX}" y="${freeY}"></rect>
           
-          <!-- Free Space Icon (Plus sign) -->
-          <line x1="${subnetX + 15}" y1="${freeY + 20 + iconSize/2}" x2="${subnetX + 15 + iconSize}" y2="${freeY + 20 + iconSize/2}" stroke="${freeSpaceColor}" stroke-width="2" />
-          <line x1="${subnetX + 15 + iconSize/2}" y1="${freeY + 20}" x2="${subnetX + 15 + iconSize/2}" y2="${freeY + 20 + iconSize}" stroke="${freeSpaceColor}" stroke-width="2" />
+          <!-- Free Space Icon -->
+          <image x="${subnetX + 15}" y="${freeY + 20}" width="${iconSize}" height="${iconSize}" href="${spaceSvg}" />
                 
           <!-- Free Space details -->
           <text class="title" x="${freeTextStartX}" y="${freeY + 30}">
@@ -562,10 +556,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                       }}
                     >
                       <Group spacing="xs" wrap="nowrap">
-                        <Box style={{ color: freeSpaceColor, flexShrink: 0, width: 16, height: 16, position: 'relative' }}>
-                          <div style={{ position: 'absolute', width: '100%', height: 2, backgroundColor: freeSpaceColor, top: '50%', transform: 'translateY(-50%)' }} />
-                          <div style={{ position: 'absolute', width: 2, height: '100%', backgroundColor: freeSpaceColor, left: '50%', transform: 'translateX(-50%)' }} />
-                        </Box>
+                        <IconSpace size={16} stroke={2} style={{ color: freeSpaceColor, flexShrink: 0 }} />
                         <Text fw={600} size="xs">Free Space</Text>
                         <Text size="xs" fw={500} color="dimmed">({space.size} IPs)</Text>
                       </Group>
