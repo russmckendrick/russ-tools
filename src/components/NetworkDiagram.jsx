@@ -1,7 +1,8 @@
 import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal, useMantineColorScheme } from '@mantine/core';
 import { getSubnetBgColorHex } from '../utils';
 import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../utils/networkDiagramUtils';
-import { IconDownload, IconNetwork, IconSubtask, IconSpace } from '@tabler/icons-react';
+import { IconDownload, IconNetwork, IconSubtask, IconSpace, IconFileTypeSvg, IconFileTypePng } from '@tabler/icons-react';
+import { NetworkDiagramSVGExport } from './NetworkDiagramSVGExport';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
 import { longToIp, ipToLong } from '../utils';
@@ -173,12 +174,21 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
 
   return (
     <Paper p="md" radius="md" withBorder mt="lg">
-      <Group position="apart" mb="md">
+      <Group position="apart" align="center" mb="md" noWrap>
         <Title order={3}>Network Diagram</Title>
-        <Group spacing="sm" mt="md">
-          <Button leftIcon={<IconDownload size={16} />} variant="outline" onClick={exportDiagram}>
+        <Group spacing="xs" align="center" noWrap>
+          <Button
+            rightSection={<IconFileTypePng stroke={2} size={18} />}
+            variant="outline"
+            onClick={exportDiagram}
+          >
             Export PNG
           </Button>
+          <NetworkDiagramSVGExport parentNetwork={parentNetwork} subnets={subnets} buttonProps={{
+            rightSection: <IconFileTypeSvg stroke={2} size={18} />,
+            variant: 'outline',
+            style: { marginLeft: 0 }
+          }} />
         </Group>
       </Group>
       

@@ -19,7 +19,7 @@ const getContrastColor = (hexColor, theme) => {
 };
 
 // This component receives all props needed for SVG export
-export function NetworkDiagramSVGExport({ parentNetwork, subnets }) {
+export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = {} }) {
   const theme = useMantineTheme();
   const { colorScheme } = useMantineColorScheme();
   const [errorModal, setErrorModal] = useState({ opened: false, message: '' });
@@ -160,9 +160,11 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets }) {
 
   return (
     <>
-      <Button onClick={exportSVG} mt="md" variant="outline">
-        Export SVG
-      </Button>
+      {buttonProps && Object.keys(buttonProps).length > 0 && (
+        <Button onClick={exportSVG} {...buttonProps}>
+          Export SVG
+        </Button>
+      )}
       <Modal opened={errorModal.opened} onClose={() => setErrorModal({ opened: false, message: '' })} title="SVG Export Error">
         {errorModal.message}
       </Modal>
