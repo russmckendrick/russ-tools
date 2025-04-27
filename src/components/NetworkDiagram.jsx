@@ -201,7 +201,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
 
   // Generates the SVG markup directly
   const generateSVGMarkup = () => { 
-    // Set diagram dimensions
+    // Force light mode colors for SVG export
     const width = 1220;
     const subnetHeight = 80; 
     const freeSpaceHeight = 60; // Slightly smaller than subnet boxes
@@ -210,19 +210,19 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const iconPadding = 10;
     const textStartX = 45 + iconSize + iconPadding; // Start text after icon + padding
 
-    // Theme-aware colors
-    const isDark = colorScheme === 'dark';
-    const bgColor = isDark ? theme.colors.dark[7] : theme.colors.gray[0];
-    const parentBorderColor = isDark ? theme.colors.dark[5] : theme.colors.gray[3];
-    const parentHeaderBg = isDark ? theme.colors.dark[6] : theme.white;
-    const defaultTextColor = isDark ? theme.colors.dark[0] : theme.colors.gray[7];
+    // LIGHT MODE COLORS ONLY
+    const bgColor = theme.colors.gray[0]; // SVG background
+    const parentBorderColor = theme.colors.gray[3];
+    const parentHeaderBg = theme.white;
+    const defaultTextColor = theme.colors.gray[7];
     const dimmedTextColor = theme.colors.gray[6];
-    const parentIconColor = theme.colors.blue[isDark ? 4 : 7];
-    const freeSpaceBgColor = isDark ? theme.colors.lime[9] : theme.colors.lime[1];
-    const freeSpaceBorderColor = isDark ? theme.colors.lime[7] : theme.colors.lime[4];
-    const freeSpaceTextColor = isDark ? theme.colors.lime[2] : theme.colors.lime[8];
-    const freeSpaceIconColor = isDark ? theme.colors.lime[3] : theme.colors.lime[6];
-    const footerTextColor = isDark ? theme.colors.dark[2] : theme.colors.gray[6];
+    const parentIconColor = theme.colors.blue[7];
+    // FREE SPACE BOX: GREY
+    const freeSpaceBgColor = theme.colors.gray[1];
+    const freeSpaceBorderColor = theme.colors.gray[6];
+    const freeSpaceTextColor = theme.colors.gray[7];
+    const freeSpaceIconColor = theme.colors.gray[6];
+    const footerTextColor = theme.colors.gray[6];
 
     // Combine subnets and free spaces, then sort by starting IP
     const allItems = [
