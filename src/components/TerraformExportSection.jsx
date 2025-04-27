@@ -49,6 +49,25 @@ export function TerraformExportSection({ network, subnets }) {
     }
   };
 
+  const handleAwsRegionChange = (value) => {
+    setAwsRegion(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('awsRegion', value);
+    }
+  };
+
+  React.useEffect(() => {
+    let mounted = true;
+    loadAwsRegions()
+      .then(list => { if (mounted) { setRegionListAws(list); setLoadingRegionsAws(false); } })
+      .catch(err => {
+        setRegionErrorAws('Failed to load AWS regions list');
+        setRegionListAws([{ label: 'US East (N. Virginia)', value: 'us-east-1' }]);
+        setLoadingRegionsAws(false);
+      });
+    return () => { mounted = false; };
+  }, []);
+
   const awsCode = generateAwsTerraform({
     vpcName: network?.name || 'main_vpc',
     vpcCidr: `${network?.ip}/${network?.cidr}`,
