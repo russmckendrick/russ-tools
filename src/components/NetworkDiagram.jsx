@@ -212,7 +212,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
 
     // LIGHT MODE COLORS ONLY
     const bgColor = theme.colors.gray[0]; // SVG background
-    const parentBorderColor = theme.colors.gray[3];
+    const parentBorderColor = theme.colors.blue[6];
     const parentHeaderBg = theme.white;
     const defaultTextColor = theme.colors.gray[7];
     const dimmedTextColor = theme.colors.gray[6];
@@ -230,29 +230,40 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       ...freeSpaces.map(fs => ({ type: 'freeSpace', data: fs, startLong: fs.start }))
     ].sort((a, b) => a.startLong - b.startLong);
 
-    let currentY = 20; // Initial Y padding
+    const headerHeight = 80;
+    const footerHeight = 40;
+    const totalItemsHeight = allItems.reduce((acc, item) => acc + (item.type === 'subnet' ? subnetHeight : freeSpaceHeight), 0);
+    const parentBoxHeight = headerHeight + totalItemsHeight + footerHeight + (subnetSpacing * (allItems.length + 2));
+    const parentBoxX = 10;
+    const parentBoxY = 20;
+    const parentBoxWidth = width - 20;
+
+    let currentY = parentBoxY + headerHeight + subnetSpacing; // Initial Y padding inside parent box
     let svgContent = '';
 
     // 1. Parent Network Box
-    const parentBoxHeight = 80;
     svgContent += `
-      <rect x="10" y="${currentY}" width="${width - 20}" height="${parentBoxHeight}" rx="8" ry="8" fill="${parentHeaderBg}" stroke="${parentBorderColor}" stroke-width="1" />
-      <image href="${networkSvg}" x="25" y="${currentY + 20}" height="${iconSize}" width="${iconSize}" />
-      <text x="${textStartX}" y="${currentY + 35}" font-family="${theme.fontFamily}" font-size="14px" font-weight="700" fill="${defaultTextColor}">${parentNetwork.name || 'Parent Network'}</text>
-      <text x="${textStartX}" y="${currentY + 55}" font-family="${theme.fontFamily}" font-size="12px" fill="${dimmedTextColor}">
+      <rect x="${parentBoxX}" y="${parentBoxY}" width="${parentBoxWidth}" height="${parentBoxHeight}" rx="8" ry="8" fill="${parentHeaderBg}" stroke="${parentBorderColor}" stroke-width="1" />
+    `;
+
+    // 2. Parent Network Header
+    svgContent += `
+      <image href="${networkSvg}" x="${parentBoxX + 25}" y="${parentBoxY + 20}" height="${iconSize}" width="${iconSize}" />
+      <text x="${parentBoxX + textStartX}" y="${parentBoxY + 35}" font-family="${theme.fontFamily}" font-size="14px" font-weight="700" fill="${defaultTextColor}">${parentNetwork.name || 'Parent Network'}</text>
+      <text x="${parentBoxX + textStartX}" y="${parentBoxY + 55}" font-family="${theme.fontFamily}" font-size="12px" fill="${dimmedTextColor}">
         Range: ${parentBlock.first} - ${parentBlock.last} (${parentBlock.size} IPs)
       </text>
-      <text x="${width - 35}" y="${currentY + 35}" font-family="${theme.fontFamily}" text-anchor="end" font-size="12px" font-weight="500" fill="${dimmedTextColor}">
+      <text x="${parentBoxX + parentBoxWidth - 35}" y="${parentBoxY + 35}" font-family="${theme.fontFamily}" text-anchor="end" font-size="12px" font-weight="500" fill="${dimmedTextColor}">
         (${parentBlock.base}/${parentNetwork.cidr})
       </text>
     `;
-    currentY += parentBoxHeight + subnetSpacing * 2; // Move down for the next items
 
-    // 2. Subnets and Free Spaces
+    // 3. Subnets and Free Spaces
+    const subnetX = parentBoxX + 20;
+    const subnetWidth = parentBoxWidth - 40;
     allItems.forEach((item) => {
       if (item.type === 'subnet') {
         const subnet = item.data;
-        const subnetY = currentY;
 
         // Calculate colors based on the color object
         const subnetIconBorderColorHex = getBaseColorHex(subnet.color);
@@ -262,31 +273,35 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         const subnetCidrColorHex = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
 
         svgContent += `
-          <rect x="10" y="${subnetY}" width="${width - 20}" height="${subnetHeight}" rx="8" ry="8" fill="${subnetBgColorHex}" stroke="${subnetIconBorderColorHex}" stroke-width="1" />
-          <image href="${subnetSvg}" x="25" y="${subnetY + 25}" height="${iconSize}" width="${iconSize}" />
-          <text x="55" y="${subnetY + 28}" font-family="${theme.fontFamily}" font-size="14" font-weight="700" fill="${subnetNameColorHex}">
+          <rect x="${subnetX}" y="${currentY}" width="${subnetWidth}" height="${subnetHeight}" rx="8" ry="8" fill="${subnetBgColorHex}" stroke="${subnetIconBorderColorHex}" stroke-width="1" />
+          <image href="${subnetSvg}" x="${subnetX + 25}" y="${currentY + 25}" height="${iconSize}" width="${iconSize}" />
+          <text x="${subnetX + 55}" y="${currentY + 28}" font-family="${theme.fontFamily}" font-size="14" font-weight="700" fill="${subnetNameColorHex}">
             ${subnet.name}
           </text>
-          <text x="55" y="${subnetY + 46}" font-family="${theme.fontFamily}" font-size="12" fill="${subnetDetailColorHex}">
+          <text x="${subnetX + 55}" y="${currentY + 46}" font-family="${theme.fontFamily}" font-size="12" fill="${subnetDetailColorHex}">
             Range: ${subnet.block.base} - ${subnet.block.broadcast} (${subnet.block.mask})
           </text>
-          <text x="55" y="${subnetY + 62}" font-family="${theme.fontFamily}" font-size="12" fill="${subnetDetailColorHex}">
+          <text x="${subnetX + 55}" y="${currentY + 62}" font-family="${theme.fontFamily}" font-size="12" fill="${subnetDetailColorHex}">
             Usable IPs: ${subnet.block.size - 2}
           </text>
-          <text x="${width - 30}" y="${subnetY + 28}" font-family="${theme.fontFamily}" font-size="12" font-weight="500" text-anchor="end" fill="${subnetCidrColorHex}">
+          <text x="${subnetX + subnetWidth - 30}" y="${currentY + 28}" font-family="${theme.fontFamily}" font-size="12" font-weight="500" text-anchor="end" fill="${subnetCidrColorHex}">
             (${subnet.block.base}/${subnet.cidr})
           </text>
         `;
         currentY += subnetHeight + subnetSpacing;
       } else if (item.type === 'freeSpace') {
         const space = item.data;
-        const spaceY = currentY;
+        // Use Gray color scheme for Free Space
+        const freeSpaceBg = colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0];
+        const freeSpaceBorder = colorScheme === 'dark' ? theme.colors.gray[7] : theme.colors.gray[4];
+        const freeSpaceTextColor = colorScheme === 'dark' ? theme.colors.gray[4] : theme.colors.gray[7]; 
+        const freeSpaceIconColor = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
 
         svgContent += `
-          <rect x="10" y="${spaceY}" width="${width - 20}" height="${freeSpaceHeight}" rx="8" ry="8" fill="${freeSpaceBgColor}" stroke="${freeSpaceBorderColor}" stroke-width="1" stroke-dasharray="4 2" />
-          <image href="${spaceSvg}" x="25" y="${spaceY + (freeSpaceHeight / 2) - (iconSize / 2)}" height="${iconSize}" width="${iconSize}" />
-          <text x="${textStartX}" y="${spaceY + 25}" font-family="${theme.fontFamily}" font-size="13px" font-weight="600" fill="${freeSpaceTextColor}">Free Space</text>
-          <text x="${textStartX}" y="${spaceY + 45}" font-family="${theme.fontFamily}" font-size="12px" fill="${freeSpaceTextColor}" opacity="0.8">
+          <rect x="${subnetX}" y="${currentY}" width="${subnetWidth}" height="${freeSpaceHeight}" rx="8" ry="8" fill="${freeSpaceBg}" stroke="${freeSpaceBorder}" stroke-width="1" stroke-dasharray="4 2" />
+          <image href="${spaceSvg}" x="${subnetX + 25}" y="${currentY + (freeSpaceHeight / 2) - (iconSize / 2)}" height="${iconSize}" width="${iconSize}" />
+          <text x="${subnetX + textStartX}" y="${currentY + 25}" font-family="${theme.fontFamily}" font-size="13px" font-weight="600" fill="${freeSpaceTextColor}">Free Space</text>
+          <text x="${subnetX + textStartX}" y="${currentY + 45}" font-family="${theme.fontFamily}" font-size="12px" fill="${freeSpaceTextColor}" opacity="0.8">
             Range: ${space.startIp} - ${space.endIp} (${space.size} IPs)
           </text>
         `;
@@ -294,21 +309,16 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       }
     });
 
-    // 3. Footer Information
-    const footerY = currentY + 15; // Add some padding before the footer
+    // 4. Footer Information
+    const footerY = currentY;
     svgContent += `
-      <text x="15" y="${footerY}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">
-        Total subnets: ${processedSubnets.length}
-      </text>
-      <text x="${width / 2}" text-anchor="middle" y="${footerY}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">
-        Total IPs: ${totalParentSize}
-      </text>
-      <text x="${width - 15}" text-anchor="end" y="${footerY}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">
-        Free IPs: ${freeSize} (${freePercentage}%)
-      </text>
+      <rect x="${subnetX}" y="${footerY}" width="${subnetWidth}" height="${footerHeight}" rx="8" ry="8" fill="${parentHeaderBg}" stroke="${parentBorderColor}" stroke-width="1" />
+      <text x="${subnetX + 15}" y="${footerY + 20}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">Total subnets: ${processedSubnets.length}</text>
+      <text x="${subnetX + subnetWidth / 2}" text-anchor="middle" y="${footerY + 20}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">Total IPs: ${totalParentSize}</text>
+      <text x="${subnetX + subnetWidth - 15}" text-anchor="end" y="${footerY + 20}" font-family="${theme.fontFamily}" font-size="12px" fill="${footerTextColor}">Free IPs: ${freeSize} (${freePercentage}%)</text>
     `;
 
-    const totalHeight = footerY + 20; // Add padding below footer
+    const totalHeight = footerY + footerHeight + 30; // Ensure footer and bounding box are fully visible
 
     return `<svg width="${width}" height="${totalHeight}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background-color: ${bgColor}; font-family: ${theme.fontFamily}, sans-serif;">
       ${svgContent}
