@@ -263,9 +263,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
 
         svgContent += `
           <rect x="10" y="${subnetY}" width="${width - 20}" height="${subnetHeight}" rx="8" ry="8" fill="${subnetBgColorHex}" stroke="${subnetIconBorderColorHex}" stroke-width="1" />
-          <g transform="translate(25, ${subnetY + 25})">
-            <path d="${iconPaths.subnet}" fill="${subnetIconBorderColorHex}" />
-          </g>
+          <image href="${subnetSvg}" x="25" y="${subnetY + 25}" height="${iconSize}" width="${iconSize}" />
           <text x="55" y="${subnetY + 28}" font-family="${theme.fontFamily}" font-size="14" font-weight="700" fill="${subnetNameColorHex}">
             ${subnet.name}
           </text>
