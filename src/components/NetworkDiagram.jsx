@@ -1,4 +1,4 @@
-import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal } from '@mantine/core';
+import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal, useMantineColorScheme } from '@mantine/core';
 import { IconDownload, IconNetwork, IconSubtask, IconSpace } from '@tabler/icons-react';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
@@ -10,6 +10,7 @@ import spaceSvg from '../assets/space.svg';
 
 export function NetworkDiagram({ parentNetwork, subnets }) {
   const theme = useMantineTheme();
+  const { colorScheme } = useMantineColorScheme();
   const diagramRef = useRef(null);
   const [animate, setAnimate] = useState(false);
   const [errorModal, setErrorModal] = useState({ opened: false, message: '' });
@@ -30,18 +31,19 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     );
   }
 
-  // Helper function to get light variant of a color (ensure lightest shade)
-  const getLightVariant = (color) => {
-    // Extract the color name and index from the color value
-    for (const [colorName, shades] of Object.entries(theme.colors)) {
-      const index = shades.indexOf(color);
-      if (index !== -1) {
-        // Always return the lightest shade (index 0) for background consistency
-        return shades[0]; 
-      }
+  // Simplified helper function - accepts color name and current scheme
+  const getThemeAwareSubnetBackground = (colorName, currentScheme) => {
+    // Default to gray if colorName is invalid or not found
+    const shades = theme.colors[colorName] || theme.colors.gray; 
+    
+    if (currentScheme === 'dark') { 
+      // Use index 7 for dark mode background
+      const darkIndex = shades.length > 7 ? 7 : shades.length - 1; // Ensure index exists
+      return shades[darkIndex];
+    } else {
+      // Use index 0 for light mode background
+      return shades[0];
     }
-    // Fallback to a very light gray
-    return theme.colors.gray[0]; 
   };
 
   // Process parent network
@@ -64,16 +66,26 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const block = new Netmask(subnet.base + '/' + subnet.cidr);
     // Assign color based on subnet name (hash) for consistency
     const nameHash = subnet.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const colorIndex = nameHash % colorPalette.length;
-    
+    const colorIndexInPalette = nameHash % colorPalette.length;
+    const assignedColorValue = colorPalette[colorIndexInPalette]; // e.g., theme.colors.blue[5]
+
+    // Find the color name (e.g., 'blue') corresponding to the assignedColorValue
+    let colorName = 'gray'; // default
+    for (const [name, shades] of Object.entries(theme.colors)) {
+        const index = shades.indexOf(assignedColorValue);
+        if (index !== -1) {
+            colorName = name;
+            break;
+        }
+    }
+
     return {
       ...subnet,
       block,
-      // Use consistent color based on subnet name
-      color: subnet.color || colorPalette[colorIndex],
-      // Add numeric representation for calculations
-      startLong: block.base.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0,
-      endLong: block.broadcast.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0
+      startLong: block.firstLong,
+      endLong: block.lastLong,
+      color: assignedColorValue, // Keep the original color value (e.g., shades[5]) for border/icon
+      colorName: colorName, // Add color name ('blue')
     };
   }).sort((a, b) => a.startLong - b.startLong); // Sort by numeric IP for accurate gap calculation
 
@@ -85,7 +97,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0]
+      backgroundColor: colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0]
     }).then(canvas => {
       const image = canvas.toDataURL('image/png');
       const link = document.createElement('a');
@@ -253,21 +265,21 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const borderRadius = 5;
     
     // Background color for the SVG
-    const svgBackground = theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+    const svgBackground = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
     // Parent network container background
-    const parentBoxBackground = theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white;
+    const parentBoxBackground = colorScheme === 'dark' ? theme.colors.dark[6] : theme.white;
     // Border color
-    const borderColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
+    const borderColor = colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
     // Free space color - using light grey
-    const freeSpaceColor = theme.colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
+    const freeSpaceColor = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
     // Use hex colors for SVG compatibility
-    const freeSpaceLightColor = theme.colorScheme === 'dark' ? 
+    const freeSpaceLightColor = colorScheme === 'dark' ? 
       theme.colors.dark[4] : 
       theme.colors.gray[1];
     
     // Text colors based on theme for SVG
-    const titleColor = theme.colorScheme === 'dark' ? theme.white : theme.black;
-    const detailColor = theme.colorScheme === 'dark' ? theme.colors.dark[1] : theme.colors.gray[7];
+    const titleColor = colorScheme === 'dark' ? theme.white : theme.black;
+    const detailColor = colorScheme === 'dark' ? theme.colors.dark[1] : theme.colors.gray[7];
     const footerColor = detailColor; // Use same as detail color
 
     // Create SVG manually
@@ -314,8 +326,11 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     allItems.forEach((item, index) => {
       if (item.type === 'subnet') {
         const subnet = item.data;
+        const colorValue = subnet.color; // The actual hex/rgb color (e.g., shades[5])
+        const colorName = subnet.colorName; // The name like 'blue'
+        const bgColor = getThemeAwareSubnetBackground(colorName, colorScheme); // Pass colorScheme
+
         const subnetY = currentY;
-        const color = subnet.color;
         const subnetTextStartX = subnetX + 15 + iconSize + iconPadding;
         // Move current Y position down by subnet height + spacing
         currentY += subnetHeight + subnetSpacing; 
@@ -324,9 +339,11 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           <!-- Subnet ${index + 1} -->
           <rect width="${subnetWidth}" height="${subnetHeight}" 
                 rx="4" ry="4" 
-                fill="${getLightVariant(color)}" 
+                // Use calculated background color
+                fill="${bgColor}" 
                 stroke-width="1.5" 
-                stroke="${color}" 
+                // Use original color value for border
+                stroke="${colorValue}" 
                 x="${subnetX}" y="${subnetY}"></rect>
           
           <!-- Subnet Icon -->
@@ -446,7 +463,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         p="lg" 
         sx={{
           // Use theme-aware background for the outer container
-          backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
+          backgroundColor: colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
           borderRadius: theme.radius.md,
           boxShadow: theme.shadows.sm,
         }}
@@ -458,15 +475,17 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           style={{
             border: `2px solid ${theme.colors.blue[7]}`,
             borderRadius: theme.radius.md,
-            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white,
+            backgroundColor: colorScheme === 'dark' ? theme.colors.dark[6] : theme.white,
             transition: 'all 0.3s ease',
             opacity: animate ? 1 : 0,
             transform: animate ? 'translateY(0)' : 'translateY(10px)',
           }}
         >
           <Group spacing="xs" mb="sm" wrap="nowrap">
-            <IconNetwork size={18} style={{ color: theme.colors.blue[7], flexShrink: 0 }} />
-            <Text fw={700} size="sm">{parentNetwork.name || 'Parent Network'}</Text>
+            {/* Let Mantine handle icon color based on theme */}
+            <IconNetwork size={18} style={{ flexShrink: 0 }} /> 
+            {/* Use Title component for better theme consistency */}
+            <Title order={5} >{parentNetwork.name || 'Parent Network'}</Title> 
             <Text size="xs" fw={500} color="dimmed">({parentBlock.base}/{parentNetwork.cidr})</Text>
           </Group>
           <Text size="xs" color="dimmed" ml={28}>
@@ -484,16 +503,21 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
               .map((item, index) => {
                 if (item.type === 'subnet') {
                   const subnet = item;
-                  const color = subnet.color;
+                  const colorValue = subnet.color; // The actual hex/rgb color (e.g., shades[5])
+                  const colorName = subnet.colorName; // The name like 'blue'
+                  const bgColor = getThemeAwareSubnetBackground(colorName, colorScheme); // Pass colorScheme
+
                   return (
                     <Box
                       key={`subnet-${subnet.name}-${index}`} 
                       p="sm"
                       ml="md"
                       style={{
-                        border: `1px solid ${color}`,
+                        // Use original color value for border
+                        border: `1px solid ${colorValue}`,
                         borderRadius: theme.radius.sm,
-                        backgroundColor: getLightVariant(color),
+                        // Use calculated background color
+                        backgroundColor: bgColor,
                         transition: 'all 0.3s ease',
                         opacity: animate ? 1 : 0,
                         transform: animate ? 'translateY(0)' : 'translateY(5px)',
@@ -501,7 +525,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                       }}
                     >
                       <Group spacing="xs" wrap="nowrap">
-                        <IconSubtask size={16} stroke={2} style={{ color: color, flexShrink: 0 }} />
+                        {/* Use original color value for icon */}
+                        <IconSubtask size={16} stroke={2} style={{ color: colorValue, flexShrink: 0 }} />
                         {/* Title: default color, fw={600} */}
                         <Text fw={600} size="xs">{subnet.name}</Text> 
                         <Text size="xs" fw={500} color="dimmed">({subnet.base}/{subnet.cidr})</Text>
@@ -519,17 +544,19 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                   );
                 } else {
                   const space = item;
-                  const freeSpaceColor = theme.colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
+                  const freeSpaceColor = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
+                  const freeSpaceBg = colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0];
+
                   return (
-                    <Box 
+                    <Box
                       key={`space-${index}`}
                       p="sm"
                       ml="md"
                       style={{
                         border: `1px solid ${freeSpaceColor}`,
                         borderRadius: theme.radius.sm,
-                        // Use safe solid background colors instead of rgba
-                        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],
+                        // Use calculated background for free space
+                        backgroundColor: freeSpaceBg,
                         transition: 'all 0.3s ease',
                         opacity: animate ? 1 : 0,
                         transform: animate ? 'translateY(0)' : 'translateY(5px)',
