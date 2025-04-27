@@ -84,4 +84,4 @@ npm run dev
 
 ---
 
-© {year} russ.tools. Built with ❤️ by Russ McKendrick and bunch of AI and other libraries.
+russ.tools. Built with ❤️ by Russ McKendrick and bunch of AI and other libraries.
