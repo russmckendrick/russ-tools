@@ -64,10 +64,14 @@ export function DraggableSubnets({ subnets, onReorder, onRemoveSubnet, parentNet
     // Create a proper Netmask instance
     const block = new Netmask(subnet.base + '/' + subnet.cidr);
     
+    // Generate a unique, stable ID based on the subnet's properties
+    // Avoid using Date.now() which can cause React key issues
+    const uniqueId = subnet.id || `subnet-${subnet.name}-${subnet.cidr}-${block.base}-${index}`;
+    
     return {
       ...subnet,
       base: block.base, // Make sure we use the canonical form
-      id: subnet.id || `subnet-${index}-${block.base}-${Date.now()}`
+      id: uniqueId
     };
   });
   

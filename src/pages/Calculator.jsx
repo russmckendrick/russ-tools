@@ -101,9 +101,16 @@ export function Calculator() {
     // Calculate the subnet mask for proper boundary alignment
     const subnetMask = 0xffffffff << (32 - subnet.cidr);
     
+    // Safety counter to prevent infinite loops
+    let safetyCounter = 0;
+    const maxIterations = 1000; // Reasonable limit to prevent browser freezing
+    
     // Scan for the first available gap that can fit this subnet
-    while (candidateStart <= parentEnd - subnetSize + 1) {
+    while (candidateStart <= parentEnd - subnetSize + 1 && safetyCounter < maxIterations) {
+      safetyCounter++;
+      
       // Align to proper network boundary based on CIDR
+      // This ensures the address starts at a valid boundary for this subnet size
       candidateStart = (candidateStart & subnetMask) >>> 0;
       
       // If we're not at a valid boundary for this subnet size, move to the next one
@@ -127,6 +134,7 @@ export function Calculator() {
         if (candidateStart <= usedRange.end && candidateEnd >= usedRange.start) {
           overlaps = true;
           // Move past this used range for the next candidate
+          // Important: Make sure we jump to the next valid boundary
           candidateStart = usedRange.end + 1;
           break;
         }
@@ -134,17 +142,18 @@ export function Calculator() {
       
       // If no overlap, we found a valid position
       if (!overlaps) {
-        const candidateBlock = new Netmask(longToIp(candidateStart) + '/' + subnet.cidr);
+        // Convert back to IP address format
+        const candidateIp = longToIp(candidateStart);
         
         // Final validation that it's within the parent network
         if (
-          parentBlock.contains(candidateBlock.base) &&
-          parentBlock.contains(candidateBlock.broadcast)
+          parentBlock.contains(candidateIp) &&
+          parentBlock.contains(longToIp(candidateEnd))
         ) {
           // Add the subnet with its properly calculated base address
           setNetworks(networks.map(n =>
             n.id === selectedNetworkId
-              ? { ...n, subnets: [...(n.subnets || []), { ...subnet, base: candidateBlock.base }] }
+              ? { ...n, subnets: [...(n.subnets || []), { ...subnet, base: candidateIp }] }
               : n
           ));
           return;
@@ -152,7 +161,12 @@ export function Calculator() {
       }
     }
     
-    alert('No available space for this subnet size.');
+    // If we reached the safety limit or ran out of space
+    if (safetyCounter >= maxIterations) {
+      alert('Error: Could not allocate subnet. Please try a different size.');
+    } else {
+      alert('No available space for this subnet size.');
+    }
   };
 
   // Remove subnet from current
@@ -205,19 +219,23 @@ export function Calculator() {
     // Process each subnet in the new order
     for (let i = 0; i < updatedSubnets.length; i++) {
       const subnet = updatedSubnets[i];
-      const size = Math.pow(2, 32 - subnet.cidr);
+      const subnetSize = Math.pow(2, 32 - subnet.cidr);
+      
+      // Calculate the subnet mask for proper boundary alignment
+      const subnetMask = 0xffffffff << (32 - subnet.cidr);
       
       // Align to proper network boundary based on CIDR
-      const mask = 0xffffffff << (32 - subnet.cidr);
-      candidateStart = (candidateStart & mask) >>> 0;
+      candidateStart = (candidateStart & subnetMask) >>> 0;
       
       // If we're not at a valid boundary for this subnet size, move to the next one
-      if ((candidateStart & mask) !== candidateStart) {
+      if ((candidateStart & subnetMask) !== candidateStart) {
         candidateStart = ((candidateStart >> (32 - subnet.cidr)) + 1) << (32 - subnet.cidr);
       }
       
+      const candidateEnd = candidateStart + subnetSize - 1;
+      
       // Check if this would exceed parent network
-      if (candidateStart + size - 1 > parentEnd) {
+      if (candidateEnd > parentEnd) {
         console.error("Not enough space to reorder subnets");
         return;
       }
@@ -229,12 +247,12 @@ export function Calculator() {
       updatedSubnets[i] = { 
         ...subnet, 
         base: newBase,
-        // Regenerate ID to force component refresh
-        id: subnet.id ? `${subnet.id}-${Date.now()}` : `subnet-${i}-${Date.now()}`
+        // Generate a stable ID based on the subnet name and CIDR
+        id: `subnet-${subnet.name}-${subnet.cidr}-${i}`
       };
       
       // Move past this subnet for the next one
-      candidateStart += size;
+      candidateStart = candidateEnd + 1;
     }
     
     // Update networks with a completely new reference to trigger UI updates
