@@ -1,4 +1,4 @@
-# Subnet.Fit Phase 4: Network Designer Expansion – Task Tracker
+# Russ Tools Phase 4: Network Designer Expansion – Task Tracker
 
 ## IMPORTANT: Subnet Allocation Logic
 
@@ -25,7 +25,7 @@ This ensures each subnet has its own unique address range and that the visualiza
 
 ---
 
-# Subnet.Fit Phase 4: Network Designer Expansion – Task Tracker
+# Russ Tools Phase 4: Network Designer Expansion – Task Tracker
 
 ## Main Goals
 - [x] Parent Network (Supernet) Setup
@@ -82,15 +82,14 @@ This ensures each subnet has its own unique address range and that the visualiza
 - [x] Save state to local storage
 - [x] Simplify visualization component (remove dragging)
 - [x] Convert CIDR inputs to dropdowns with valid options
-- [ ] Add subnet auto-allocation
 - [x] Export/share configuration
+- [ ] Add subnet auto-allocation
 
 **UI Improvements:**
-- [~] Add tooltips to explain CIDR notation
+- [x] Add tooltips to explain CIDR notation
 - [ ] Create help modal with basic subnetting concepts
-- [ ] Improve color scheme for better subnet differentiation
+- [x] Improve color scheme for better subnet differentiation
 - [ ] Add visual indicator for subnet overlap/errors
-- [ ] Add welcome screen for first-time users
 
 **Testing & Performance:**
 - [ ] Add unit tests for calculation functions
