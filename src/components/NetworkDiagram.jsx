@@ -28,17 +28,47 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     );
   }
 
+  // Helper function to get light variant of a color
+  const getLightVariant = (color) => {
+    // Extract the color name and index from the color value
+    for (const [colorName, shades] of Object.entries(theme.colors)) {
+      const index = shades.indexOf(color);
+      if (index !== -1) {
+        // Return a lighter shade (0 or 1 depending on theme)
+        return theme.colorScheme === 'dark' ? shades[2] : shades[0];
+      }
+    }
+    // Fallback
+    return theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[0];
+  };
+
   // Process parent network
   const parentBlock = new Netmask(parentNetwork.ip + '/' + parentNetwork.cidr);
   
-  // Process subnets with color assignment
-  const processedSubnets = subnets.map((subnet, index) => {
+  // Define a consistent color palette (same as SubnetVisualization)
+  const colorPalette = [
+    theme.colors.blue[5], 
+    theme.colors.green[5], 
+    theme.colors.cyan[5], 
+    theme.colors.violet[5], 
+    theme.colors.orange[5], 
+    theme.colors.teal[5], 
+    theme.colors.grape[5], 
+    theme.colors.lime[5]
+  ];
+
+  // Process subnets with consistent color assignment based on subnet name
+  const processedSubnets = subnets.map((subnet) => {
     const block = new Netmask(subnet.base + '/' + subnet.cidr);
+    // Assign color based on subnet name (hash) for consistency
+    const nameHash = subnet.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colorIndex = nameHash % colorPalette.length;
+    
     return {
       ...subnet,
       block,
-      // Ensure color property exists for consistency
-      color: subnet.color || theme.colors.gray[5]
+      // Use consistent color based on subnet name
+      color: subnet.color || colorPalette[colorIndex]
     };
   }).sort((a, b) => a.block.base.localeCompare(b.block.base));
 
@@ -92,13 +122,12 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const subnetWidth = width - 100;
     const borderRadius = 5;
     
-    // Get light theme colors for fills
-    const lightColors = {
-      blue: theme.colors.blue[0],
-      green: theme.colors.green[0],
-      violet: theme.colors.violet[0],
-      gray: theme.colors.gray[0] // Fallback
-    };
+    // Background color for the SVG
+    const svgBackground = theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+    // Parent network container background
+    const parentBoxBackground = theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white;
+    // Border color
+    const borderColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
     
     // Use the imported SVG files for icons
     // We'll embed them directly in the SVG output
@@ -114,14 +143,14 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           .footer { font-size: 12px; text-anchor: middle; fill: #495057; }
           .iconPath { stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         </style>
-        <rect width="${width}" height="${height}" fill="${theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0]}"></rect>
+        <rect width="${width}" height="${height}" fill="${svgBackground}"></rect>
         
         <!-- Parent Network Container -->
         <rect width="${parentBoxWidth}" height="${parentBoxHeight}" 
               rx="${borderRadius}" ry="${borderRadius}" 
-              fill="white" 
-              stroke-width="1"
-              stroke="${theme.colors.blue[7]}" 
+              fill="${parentBoxBackground}" 
+              stroke-width="1.5"
+              stroke="${theme.colors.blue[6]}" 
               x="${parentBoxX}" y="${parentBoxY}"></rect>
         
         <!-- Parent Network Icon (Using network.svg as embedded image) -->
@@ -143,16 +172,14 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     processedSubnets.forEach((subnet, index) => {
       const subnetY = subnetStartY + (subnetHeight + subnetSpacing) * index;
       const color = subnet.color;
-      const colorName = Object.keys(theme.colors).find(key => theme.colors[key].includes(color)) || 'gray';
-      const fillColor = lightColors[colorName];
       const subnetTextStartX = subnetX + 15 + iconSize + iconPadding; 
       
       svg += `
         <!-- Subnet ${index + 1} -->
         <rect width="${subnetWidth}" height="${subnetHeight}" 
               rx="4" ry="4" 
-              fill="${fillColor}" 
-              stroke-width="1" 
+              fill="${getLightVariant(color)}" 
+              stroke-width="1.5" 
               stroke="${color}" 
               x="${subnetX}" y="${subnetY}"></rect>
         
@@ -243,6 +270,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         sx={{
           backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
           borderRadius: theme.radius.md,
+          boxShadow: theme.shadows.sm,
         }}
       >
         {/* Parent Network Container */}
@@ -281,10 +309,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                   border: `1px solid ${subnet.color}`,
                   borderRadius: theme.radius.sm,
                   backgroundColor: theme.colorScheme === 'dark' 
-                    ? theme.fn.rgba(subnet.color, 0.2) 
-                    : (Object.keys(theme.colors).some(key => theme.colors[key].includes(subnet.color))
-                        ? theme.colors[Object.keys(theme.colors).find(key => theme.colors[key].includes(subnet.color))][0]
-                        : theme.colors.gray[0]), 
+                    ? theme.fn.rgba(subnet.color, 0.25) 
+                    : getLightVariant(subnet.color), 
                   transition: 'all 0.3s ease',
                   opacity: animate ? 1 : 0,
                   transform: animate ? 'translateY(0)' : 'translateY(5px)',
