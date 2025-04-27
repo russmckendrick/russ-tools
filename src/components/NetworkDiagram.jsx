@@ -31,21 +31,6 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     );
   }
 
-  // Simplified helper function - accepts color name and current scheme
-  const getThemeAwareSubnetBackground = (colorName, currentScheme) => {
-    // Default to gray if colorName is invalid or not found
-    const shades = theme.colors[colorName] || theme.colors.gray; 
-    
-    if (currentScheme === 'dark') { 
-      // Use index 7 for dark mode background
-      const darkIndex = shades.length > 7 ? 7 : shades.length - 1; // Ensure index exists
-      return shades[darkIndex];
-    } else {
-      // Use index 0 for light mode background
-      return shades[0];
-    }
-  };
-
   // Process parent network
   const parentBlock = new Netmask(parentNetwork.ip + '/' + parentNetwork.cidr);
   
@@ -69,23 +54,12 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const colorIndexInPalette = nameHash % colorPalette.length;
     const assignedColorValue = colorPalette[colorIndexInPalette]; // e.g., theme.colors.blue[5]
 
-    // Find the color name (e.g., 'blue') corresponding to the assignedColorValue
-    let colorName = 'gray'; // default
-    for (const [name, shades] of Object.entries(theme.colors)) {
-        const index = shades.indexOf(assignedColorValue);
-        if (index !== -1) {
-            colorName = name;
-            break;
-        }
-    }
-
     return {
       ...subnet,
       block,
       networkLong: ipToLong(block.base),
       broadcastLong: ipToLong(block.broadcast),
       color: assignedColorValue, // Keep the original color value (e.g., shades[5]) for border/icon
-      colorName: colorName, // Add color name ('blue')
     };
   }).sort((a, b) => a.networkLong - b.networkLong); // Sort by network address
 
@@ -256,25 +230,30 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       if (item.type === 'subnet') {
         const subnet = item.data;
         const subnetY = currentY;
-        const colorValue = subnet.color; // e.g., theme.colors.blue[5]
-        const colorName = subnet.colorName; // e.g., 'blue'
-        
-        // Determine background based on dark/light mode using the color name
-        const subnetBgColor = getThemeAwareSubnetBackground(colorName, colorScheme);
-        // Use the original strong color for the icon/border
-        const subnetIconBorderColor = colorValue;
+
+        // Use the exact HEX color from subnet.color for the border/icon
+        const subnetIconBorderColorHex = subnet.color || theme.colors.gray[6]; // Fallback to gray
+        // Use theme-aware gray for background
+        const subnetBgColorHex = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1];
+        const subnetNameColorHex = colorScheme === 'dark' ? theme.white : theme.black;
+        const subnetDetailColorHex = colorScheme === 'dark' ? theme.colors.gray[3] : theme.colors.gray[7];
+        const subnetCidrColorHex = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
 
         svgContent += `
-          <rect x="10" y="${subnetY}" width="${width - 20}" height="${subnetHeight}" rx="8" ry="8" fill="${subnetBgColor}" stroke="${subnetIconBorderColor}" stroke-width="1" />
-          <image href="${subnetSvg}" x="25" y="${subnetY + (subnetHeight / 2) - (iconSize / 2)}" height="${iconSize}" width="${iconSize}" />
-          <text x="${textStartX}" y="${subnetY + 25}" font-family="${theme.fontFamily}" font-size="14px" font-weight="700" fill="${defaultTextColor}">${subnet.name}</text>
-          <text x="${textStartX}" y="${subnetY + 45}" font-family="${theme.fontFamily}" font-size="12px" fill="${dimmedTextColor}">
+          <rect x="10" y="${subnetY}" width="${width - 20}" height="${subnetHeight}" rx="8" ry="8" fill="${subnetBgColorHex}" stroke="${subnetIconBorderColorHex}" stroke-width="1" />
+          <g transform="translate(25, ${subnetY + 25})">
+            <path d="${iconPaths.subnet}" fill="${subnetIconBorderColorHex}" />
+          </g>
+          <text x="55" y="${subnetY + 28}" font-family="${theme.fontFamily}" font-size="14" font-weight="700" fill="${subnetNameColorHex}">
+            ${subnet.name}
+          </text>
+          <text x="55" y="${subnetY + 46}" font-family="${theme.fontFamily}" font-size="12" fill="${subnetDetailColorHex}">
             Range: ${subnet.block.base} - ${subnet.block.broadcast} (${subnet.block.mask})
           </text>
-          <text x="${textStartX}" y="${subnetY + 65}" font-family="${theme.fontFamily}" font-size="12px" fill="${dimmedTextColor}">
+          <text x="55" y="${subnetY + 62}" font-family="${theme.fontFamily}" font-size="12" fill="${subnetDetailColorHex}">
             Usable IPs: ${subnet.block.size - 2}
           </text>
-          <text x="${width - 35}" y="${subnetY + 25}" font-family="${theme.fontFamily}" text-anchor="end" font-size="12px" font-weight="500" fill="${dimmedTextColor}">
+          <text x="${width - 30}" y="${subnetY + 28}" font-family="${theme.fontFamily}" font-size="12" font-weight="500" text-anchor="end" fill="${subnetCidrColorHex}">
             (${subnet.block.base}/${subnet.cidr})
           </text>
         `;
@@ -282,6 +261,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       } else if (item.type === 'freeSpace') {
         const space = item.data;
         const spaceY = currentY;
+
         svgContent += `
           <rect x="10" y="${spaceY}" width="${width - 20}" height="${freeSpaceHeight}" rx="8" ry="8" fill="${freeSpaceBgColor}" stroke="${freeSpaceBorderColor}" stroke-width="1" stroke-dasharray="4 2" />
           <image href="${spaceSvg}" x="25" y="${spaceY + (freeSpaceHeight / 2) - (iconSize / 2)}" height="${iconSize}" width="${iconSize}" />
@@ -410,10 +390,11 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
               return allItems.map((item, index) => {
                 if (item.type === 'subnet') {
                   const subnet = item.data;
-                  // Use the strong color for border/icon
-                  const subnetIconBorderColor = subnet.color;
-                  // Use the theme-aware background
-                  const subnetBgColor = getThemeAwareSubnetBackground(subnet.colorName, colorScheme);
+
+                  // Use the exact HEX color for border/icon
+                  const subnetIconBorderColor = subnet.color || theme.colors.gray[6]; // Fallback to gray
+                  // Use theme-aware gray for background
+                  const subnetBgColor = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1];
 
                   return (
                     <Box
