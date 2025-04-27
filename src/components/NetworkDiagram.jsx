@@ -187,7 +187,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
   const freeSize = totalParentSize - usedSize;
   const freePercentage = ((freeSize / totalParentSize) * 100).toFixed(1);
   
-  // Renamed function: Generates the SVG markup directly
+  // Generates the SVG markup directly
   const generateSVGMarkup = () => {
     // Set diagram dimensions
     const width = 1220;
@@ -198,13 +198,15 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const iconPadding = 10;
     const textStartX = 45 + iconSize + iconPadding; // Start text after icon + padding
     
+    // Calculate combined items (subnets + free spaces)
+    const totalItems = processedSubnets.length + freeSpaces.length;
+    
     // Calculate required height
     const headerHeight = 100; // Space for parent network info
-    const totalSubnetsHeight = (processedSubnets.length * (subnetHeight + subnetSpacing));
-    const totalFreeSpacesHeight = (freeSpaces.length * (freeSpaceHeight + subnetSpacing));
+    const totalItemsHeight = (totalItems * (subnetHeight + subnetSpacing));
     const footerHeight = 50; // Space for footer
     const bottomPadding = 40; // Extra space at the very bottom
-    const height = headerHeight + totalSubnetsHeight + totalFreeSpacesHeight + footerHeight + bottomPadding;
+    const height = headerHeight + totalItemsHeight + footerHeight + bottomPadding;
     
     // Layout calculations
     const parentBoxX = 20;
@@ -223,9 +225,10 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     const borderColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
     // Free space color
     const freeSpaceColor = theme.colors.green[5];
+    // Use hex colors for SVG compatibility
     const freeSpaceLightColor = theme.colorScheme === 'dark' ? 
-      `rgba(${theme.colors.green[9]}, 0.2)` : 
-      `rgba(${theme.colors.green[0]}, 0.7)`;
+      '#1a2f23' : 
+      '#e6ffee';
     
     // Create SVG manually
     let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -262,7 +265,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           <tspan dy="0" x="${textStartX}">Total IPs: ${parentBlock.size} (${freePercentage}% free)</tspan>
         </text>`;
     
-    // Combine subnets and free spaces for visualization
+    // Combine subnets and free spaces for visualization in SVG
     const allItems = [];
     
     // Add subnets to the items array
@@ -290,12 +293,16 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     
     // Add all items to the SVG
     const itemStartY = 150;
+    // Track actual item count for spacing
+    let itemCount = 0;
+    
     allItems.forEach((item, index) => {
       if (item.type === 'subnet') {
         const subnet = item.data;
-        const subnetY = itemStartY + ((subnetHeight + subnetSpacing) * index);
+        const subnetY = itemStartY + ((subnetHeight + subnetSpacing) * itemCount);
         const color = subnet.color;
-        const subnetTextStartX = subnetX + 15 + iconSize + iconPadding; 
+        const subnetTextStartX = subnetX + 15 + iconSize + iconPadding;
+        itemCount++; 
         
         svg += `
           <!-- Subnet ${index + 1} -->
@@ -321,8 +328,9 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           </text>`;
       } else if (item.type === 'free') {
         const space = item.data;
-        const freeY = itemStartY + ((subnetHeight + subnetSpacing) * index);
+        const freeY = itemStartY + ((freeSpaceHeight + subnetSpacing) * itemCount);
         const freeTextStartX = subnetX + 15 + iconSize + iconPadding;
+        itemCount++;
         
         svg += `
           <!-- Free Space -->
@@ -333,11 +341,9 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                 stroke="${freeSpaceColor}" 
                 x="${subnetX}" y="${freeY}"></rect>
           
-          <!-- Free Space Icon -->
-          <svg x="${subnetX + 15}" y="${freeY + 20}" width="${iconSize}" height="${iconSize}">
-            <rect width="${iconSize}" height="${iconSize}" fill="none" />
-            <path d="M2,9 L16,9 M9,2 L9,16" stroke="${freeSpaceColor}" stroke-width="2" />
-          </svg>
+          <!-- Free Space Icon (Plus sign) -->
+          <line x1="${subnetX + 15}" y1="${freeY + 20 + iconSize/2}" x2="${subnetX + 15 + iconSize}" y2="${freeY + 20 + iconSize/2}" stroke="${freeSpaceColor}" stroke-width="2" />
+          <line x1="${subnetX + 15 + iconSize/2}" y1="${freeY + 20}" x2="${subnetX + 15 + iconSize/2}" y2="${freeY + 20 + iconSize}" stroke="${freeSpaceColor}" stroke-width="2" />
                 
           <!-- Free Space details -->
           <text class="title" x="${freeTextStartX}" y="${freeY + 30}">
@@ -345,13 +351,12 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           </text>
           <text class="detail" x="${freeTextStartX}" y="${freeY + 50}">
             <tspan dy="0" x="${freeTextStartX}">Range: ${space.startIp} - ${space.endIp}</tspan>
-          </text>
-        `;
+          </text>`;
       }
     });
     
     // Calculate footer position - ensure it's below the last item + padding
-    const lastElementBottom = itemStartY + ((subnetHeight + subnetSpacing) * allItems.length);
+    const lastElementBottom = itemStartY + ((subnetHeight + subnetSpacing) * itemCount);
     const footerY = lastElementBottom + footerHeight; // Position footer well below last element
     
     svg += `
@@ -527,8 +532,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                         border: `1px solid ${freeSpaceColor}`,
                         borderRadius: theme.radius.sm,
                         backgroundColor: theme.colorScheme === 'dark' 
-                          ? `rgba(${theme.colors.green[9]}, 0.2)` 
-                          : `rgba(${theme.colors.green[0]}, 0.7)`,
+                          ? '#1a2f23' 
+                          : '#e6ffee',
                         transition: 'all 0.3s ease',
                         opacity: animate ? 1 : 0,
                         transform: animate ? 'translateY(0)' : 'translateY(5px)',
