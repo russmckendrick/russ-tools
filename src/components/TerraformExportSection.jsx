@@ -5,13 +5,13 @@ import 'prismjs/components/prism-hcl';
 import '../styles/prism-theme.css';
 import { useComputedColorScheme } from '@mantine/core';
 
-import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform } from '@tabler/icons-react';
+import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform, IconServer } from '@tabler/icons-react';
 import { generateAwsTerraform, generateAzureTerraform } from '../utils/terraformExport';
 import { loadAzureRegions } from './AzureRegions';
 
 export function TerraformExportSection({ network, subnets }) {
   const colorScheme = useComputedColorScheme('light');
-  const [activeTab, setActiveTab] = useState('aws');
+  const [activeTab, setActiveTab] = useState('azure');
   const [copied, setCopied] = useState(false);
   // Azure region selection with persistence and dynamic loading
   const defaultRegion = 'uksouth';
@@ -74,11 +74,15 @@ export function TerraformExportSection({ network, subnets }) {
     subnets: subnets || [],
   });
 
-  const code = activeTab === 'aws' ? awsCode : azureCode;
+  let code;
+  if (activeTab === 'aws') code = awsCode;
+  else if (activeTab === 'azure') code = azureCode;
+  else code = `# VMware Cloud Director Terraform export is coming soon!\n# See the provider docs: https://registry.terraform.io/providers/vmware/vcd/latest/docs`;
 
   // PrismJS highlighting
   const highlightedAws = Prism.highlight(awsCode, Prism.languages.hcl, 'hcl');
   const highlightedAzure = Prism.highlight(azureCode, Prism.languages.hcl, 'hcl');
+  const highlightedVcd = Prism.highlight(`# VMware Cloud Director Terraform export is coming soon!\n# See the provider docs: https://registry.terraform.io/providers/vmware/vcd/latest/docs`, Prism.languages.hcl, 'hcl');
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
@@ -98,16 +102,22 @@ export function TerraformExportSection({ network, subnets }) {
       </Group>
       <Tabs value={activeTab} onChange={setActiveTab} mt="md">
         <Tabs.List>
+          <Tabs.Tab value="azure">
+            <Group spacing={6} align="center">
+              <IconBrandAzure size={18} color="#0078D4" />
+              <span>Microsoft Azure</span>
+            </Group>
+          </Tabs.Tab>
           <Tabs.Tab value="aws">
             <Group spacing={6} align="center">
               <IconBrandAws size={18} color="#FF9900" />
               <span>Amazon Web Services</span>
             </Group>
           </Tabs.Tab>
-          <Tabs.Tab value="azure">
+          <Tabs.Tab value="vcd">
             <Group spacing={6} align="center">
-              <IconBrandAzure size={18} color="#0078D4" />
-              <span>Microsoft Azure</span>
+              <IconServer size={18} color="#4A5568" />
+              <span>VMware Cloud Director</span>
             </Group>
           </Tabs.Tab>
         </Tabs.List>
@@ -164,6 +174,17 @@ export function TerraformExportSection({ network, subnets }) {
             </pre>
           </div>
 
+        </Tabs.Panel>
+        <Tabs.Panel value="vcd" pt="md">
+          <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
+            <pre style={{ margin: 0, padding: 0, background: 'none' }}>
+              <code
+                className="language-hcl"
+                style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
+                dangerouslySetInnerHTML={{ __html: highlightedVcd }}
+              />
+            </pre>
+          </div>
         </Tabs.Panel>
       </Tabs>
     </Paper>
