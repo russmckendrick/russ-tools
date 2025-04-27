@@ -102,7 +102,7 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
     theme.colors.violet[5], theme.colors.orange[5], theme.colors.teal[5], 
     theme.colors.grape[5], theme.colors.lime[5]
   ];
-  const unusedColor = theme.colorScheme === 'dark' ? theme.colors.lime[9] : theme.colors.lime[1];
+  const unusedColor = theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0];
   const borderColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
 
   // Calculate percent free
@@ -127,7 +127,7 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
           overflow: 'hidden',
           border: `1px solid ${borderColor}`,
           boxShadow: theme.shadows.xs,
-          background: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white,
+          background: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],
           transition: 'box-shadow 0.3s',
         }}
       >
