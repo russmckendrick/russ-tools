@@ -82,20 +82,6 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
   ];
   const unusedColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
   const borderColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
-  
-  // Helper to get a light variant of a color for dark mode
-  const getLightVariant = (color) => {
-    // Extract the color name and index from the color value
-    for (const [colorName, shades] of Object.entries(theme.colors)) {
-      const index = shades.indexOf(color);
-      if (index !== -1) {
-        // Return a lighter shade (0 or 1 depending on theme)
-        return theme.colorScheme === 'dark' ? theme.fn.rgba(color, 0.7) : color;
-      }
-    }
-    // Fallback
-    return color;
-  };
 
   // Calculate percent free
   const usedAddresses = subnetBlocks.reduce((acc, s) => acc + (s.end - s.start + 1), 0);
@@ -153,7 +139,7 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
                 style={{
                   width: `${widthPct(seg.start, seg.end)}%`,
                   height: '100%',
-                  background: getLightVariant(color),
+                  background: color,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
