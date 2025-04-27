@@ -443,162 +443,91 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       
       <Box 
         ref={diagramRef}
-        p="lg" 
-        sx={{
-          backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
-          borderRadius: theme.radius.md,
-          boxShadow: theme.shadows.sm,
-        }}
+        className={animate ? 'fade-in' : ''}
       >
         {/* Parent Network Container */}
-        <Box
+        <Paper
           p="md"
           mb="md"
-          style={{
-            border: `2px solid ${theme.colors.blue[7]}`,
-            borderRadius: theme.radius.md,
-            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white,
-            transition: 'all 0.3s ease',
-            opacity: animate ? 1 : 0,
-            transform: animate ? 'translateY(0)' : 'translateY(10px)',
-          }}
+          radius="md"
+          withBorder
+          bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1]}
+          style={{ borderColor: theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3] }}
         >
-          <Group spacing="xs" mb="sm" wrap="nowrap">
-            <IconNetwork size={18} style={{ color: theme.colors.blue[7], flexShrink: 0 }} />
-            <Text fw={700} size="sm">{parentNetwork.name || 'Parent Network'}</Text>
-            <Text size="xs" fw={500} color="dimmed">({parentBlock.base}/{parentNetwork.cidr})</Text>
+          <Group noWrap spacing="sm">
+            <IconNetwork size={24} color={theme.fn.variant({ variant: 'light', color: theme.primaryColor }).color} />
+            <Stack spacing={0}>
+              <Title order={5} c={theme.fn.variant({ variant: 'light', color: theme.primaryColor }).color}>{parentNetwork.name || 'Parent Network'} ({parentNetwork.ip}/{parentNetwork.cidr})</Title>
+              <Text size="sm" c="dimmed">Range: {parentBlock.first} - {parentBlock.last}</Text>
+              <Text size="sm" c="dimmed">Total IPs: {totalParentSize} ({freePercentage}% free)</Text>
+            </Stack>
           </Group>
-          <Text size="xs" color="dimmed" ml={28}>
-            Range: {parentBlock.base} - {parentBlock.broadcast}
-          </Text>
-          <Text size="xs" color="dimmed" ml={28}>
-            Total IPs: {parentBlock.size} ({freePercentage}% free)
-          </Text>
-          
-          {/* Combine subnets and free spaces for visualization */}
-          <Stack mt="lg" spacing="sm">
-            {/* Create a combined array of subnets and free spaces */}
-            {(() => {
-              // Create a combined array of items to display
-              const allItems = [];
-              
-              // Add subnets to the items array
-              processedSubnets.forEach(subnet => {
-                allItems.push({
-                  type: 'subnet',
-                  start: subnet.startLong,
-                  end: subnet.endLong,
-                  data: subnet
-                });
-              });
-              
-              // Add free spaces to the items array
-              freeSpaces.forEach(space => {
-                allItems.push({
-                  type: 'free',
-                  start: space.start,
-                  end: space.end,
-                  data: space
-                });
-              });
-              
-              // Sort all items by start address
-              allItems.sort((a, b) => a.start - b.start);
-              
-              // Render all items
-              return allItems.map((item, index) => {
-                if (item.type === 'subnet') {
-                  const subnet = item.data;
-                  // Using consistent color based on subnet name
-                  const color = subnet.color;
-                  
-                  return (
-                    <Box
-                      key={`subnet-${subnet.startLong}-${index}`}
-                      p="sm"
-                      ml="md"
-                      style={{
-                        border: `1px solid ${color}`,
-                        borderRadius: theme.radius.sm,
-                        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
-                        transition: 'all 0.3s ease',
-                        opacity: animate ? 1 : 0,
-                        transform: animate ? 'translateY(0)' : 'translateY(5px)',
-                        transitionDelay: `${index * 0.1}s`,
-                      }}
-                    >
-                      <Group spacing="xs" wrap="nowrap">
-                        <IconSubtask size={16} stroke={2} style={{ color: color, flexShrink: 0 }} />
-                        <Text fw={600} size="xs">{subnet.name}</Text>
-                        <Text size="xs" fw={500} color="dimmed">({subnet.block.base}/{subnet.cidr})</Text>
-                      </Group>
-                      <Stack spacing={2} ml={26}>
-                        <Text size="xs" color="dimmed">
-                          Network: {subnet.block.base}
-                        </Text>
-                        <Text size="xs" color="dimmed">
-                          Range: {subnet.block.first} - {subnet.block.last}
-                        </Text>
-                        <Text size="xs" color="dimmed">
-                          Usable IPs: {subnet.cidr >= 31 ? subnet.block.size : subnet.block.size - 2}
-                        </Text>
+        </Paper>
+
+        {/* Container for Subnets and Free Spaces */}
+        <Box ml="xl"> {/* Indent subnets/spaces */}
+          {[...processedSubnets.map(subnet => ({ ...subnet, type: 'subnet' })), ...freeSpaces.map(space => ({ ...space, type: 'space' }))]
+            .sort((a, b) => (a.type === 'subnet' ? a.startLong : a.start) - (b.type === 'subnet' ? b.startLong : b.start))
+            .map((item, index) => {
+              if (item.type === 'subnet') {
+                const subnet = item;
+                const bgColor = getLightVariant(subnet.color);
+                const textColor = theme.fn.variant({ variant: 'filled', color: subnet.color }).color;
+                const borderColor = subnet.color;
+                return (
+                  <Paper 
+                    key={`subnet-${subnet.name}-${index}`} 
+                    p="sm" 
+                    radius="sm" 
+                    mb="sm" 
+                    withBorder 
+                    bg={bgColor} 
+                    style={{ borderColor: borderColor }}
+                  >
+                    <Group noWrap spacing="sm">
+                      <IconSubtask size={20} color={textColor} />
+                      <Stack spacing={0}>
+                        <Title order={6} c={textColor}>{subnet.name} ({subnet.base}/{subnet.cidr})</Title>
+                        <Text size="xs" c={textColor}>Range: {subnet.block.first} - {subnet.block.last}</Text>
+                        <Text size="xs" c={textColor}>Usable IPs: {subnet.block.size - 2}</Text>
                       </Stack>
-                    </Box>
-                  );
-                } else if (item.type === 'free') {
-                  const space = item.data;
-                  // Using light grey for free space
-                  const freeSpaceColor = theme.colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
-                  
-                  return (
-                    <Box
-                      key={`free-${space.start}-${index}`}
-                      p="sm"
-                      ml="md"
-                      style={{
-                        border: `1px solid ${freeSpaceColor}`,
-                        borderRadius: theme.radius.sm,
-                        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
-                        transition: 'all 0.3s ease',
-                        opacity: animate ? 1 : 0,
-                        transform: animate ? 'translateY(0)' : 'translateY(5px)',
-                        transitionDelay: `${index * 0.1}s`,
-                      }}
-                    >
-                      <Group spacing="xs" wrap="nowrap">
-                        <IconSpace size={16} stroke={2} style={{ color: freeSpaceColor, flexShrink: 0 }} />
-                        <Text fw={600} size="xs">Free Space</Text>
-                        <Text size="xs" fw={500} color="dimmed">({space.size} IPs)</Text>
-                      </Group>
-                      <Stack spacing={2} ml={26}>
-                        <Text size="xs" color="dimmed">
-                          Start: {longToIp(space.start)}
-                        </Text>
-                        <Text size="xs" color="dimmed">
-                          End: {longToIp(space.end)}
-                        </Text>
-                        <Text size="xs" color="dimmed">
-                          Size: {space.size} IPs
-                        </Text>
+                    </Group>
+                  </Paper>
+                );
+              } else {
+                const space = item;
+                return (
+                  <Paper 
+                    key={`space-${index}`} 
+                    p="sm" 
+                    radius="sm" 
+                    mb="sm" 
+                    withBorder 
+                    bg={theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0]}
+                    style={{ borderStyle: 'dashed', borderColor: theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[4] }}
+                  >
+                    <Group noWrap spacing="sm">
+                      <IconSpace size={20} color={theme.colors.gray[6]} />
+                      <Stack spacing={0}>
+                        <Title order={6} c="dimmed">Free Space ({space.size} IPs)</Title>
+                        <Text size="xs" c="dimmed">Range: {space.startIp} - {space.endIp}</Text>
                       </Stack>
-                    </Box>
-                  );
-                }
-                return null;
-              });
-            })()} 
-          </Stack>
+                    </Group>
+                  </Paper>
+                );
+              }
+            })}
         </Box>
-        
-        {/* Network Legend */}
-        <Group spacing="xs" mt="xl" position="center">
-          <Text size="xs" color="dimmed">Total subnets: {subnets.length}</Text>
-          <Text size="xs" color="dimmed">•</Text>
-          <Text size="xs" color="dimmed">Total IPs: {parentBlock.size}</Text>
-          <Text size="xs" color="dimmed">•</Text>
-          <Text size="xs" color="dimmed">Free: {freeSize} IPs ({freePercentage}%)</Text>
-        </Group>
       </Box>
+
+      {/* Summary Footer */}
+      <Group spacing="xs" mt="xl" position="center">
+        <Text size="xs" color="dimmed">Total subnets: {subnets.length}</Text>
+        <Text size="xs" color="dimmed">•</Text>
+        <Text size="xs" color="dimmed">Total IPs: {parentBlock.size}</Text>
+        <Text size="xs" color="dimmed">•</Text>
+        <Text size="xs" color="dimmed">Free: {freeSize} IPs ({freePercentage}%)</Text>
+      </Group>
       
       {/* Error Modal */}
       <Modal
