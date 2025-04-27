@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Paper, Group, Button, Tabs, ActionIcon, Tooltip, Text, Title, Box, Select } from '@mantine/core';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-hcl';
-import 'prismjs/themes/prism.css';
+import '../styles/prism-theme.css';
+import { useComputedColorScheme } from '@mantine/core';
 
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform } from '@tabler/icons-react';
 import { generateAwsTerraform, generateAzureTerraform } from '../utils/terraformExport';
 import { loadAzureRegions } from './AzureRegions';
 
 export function TerraformExportSection({ network, subnets }) {
+  const colorScheme = useComputedColorScheme('light');
   const [activeTab, setActiveTab] = useState('azure');
   const [copied, setCopied] = useState(false);
   // Azure region selection with persistence and dynamic loading
@@ -93,16 +95,30 @@ export function TerraformExportSection({ network, subnets }) {
           <Box mb="xs">
             <Text size="sm" weight={500}>AWS Terraform HCL</Text>
           </Box>
-          <pre style={{ margin: 0, padding: 0, background: 'none' }}>
-            <code className="language-hcl" style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
-              dangerouslySetInnerHTML={{ __html: highlightedAws }}
-            />
-          </pre>
+          <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
+            <pre style={{ margin: 0, padding: 0, background: 'none' }}>
+              <code
+                className="language-hcl"
+                style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
+                dangerouslySetInnerHTML={{ __html: highlightedAws }}
+              />
+            </pre>
+          </div>
+
         </Tabs.Panel>
         <Tabs.Panel value="azure" pt="md">
           <Box mb="xs">
             <Text size="sm" weight={500}>Azure Terraform HCL</Text>
           </Box>
+          <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
+            <pre style={{ margin: 0, padding: 0, background: 'none' }}>
+              <code
+                className="language-hcl"
+                style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
+                dangerouslySetInnerHTML={{ __html: highlightedAzure }}
+              />
+            </pre>
+          </div>
           <Box mb="sm" style={{ maxWidth: 340 }}>
             <Select
               label="Azure Region"
@@ -118,11 +134,7 @@ export function TerraformExportSection({ network, subnets }) {
               maxDropdownHeight={350}
             />
           </Box>
-          <pre style={{ margin: 0, padding: 0, background: 'none' }}>
-            <code className="language-hcl" style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
-              dangerouslySetInnerHTML={{ __html: highlightedAzure }}
-            />
-          </pre>
+
         </Tabs.Panel>
       </Tabs>
     </Paper>

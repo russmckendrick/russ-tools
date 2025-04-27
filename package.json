@@ -18,7 +18,6 @@
     "@mantine/hooks": "^7.17.5",
     "@svgdotjs/svg.js": "^3.2.4",
     "@tabler/icons-react": "^3.31.0",
-    "highlight.js": "^11.11.1",
     "html2canvas": "^1.4.1",
     "netmask": "^2.0.2",
     "prismjs": "^1.30.0",
