@@ -203,7 +203,15 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     
     // Calculate required height
     const headerHeight = 100; // Space for parent network info
-    const totalItemsHeight = (totalItems * (subnetHeight + subnetSpacing));
+    // Calculate height based on number of items and their types
+    let totalItemsHeight = 0;
+    allItems.forEach(item => {
+      if (item.type === 'subnet') {
+        totalItemsHeight += subnetHeight + subnetSpacing;
+      } else if (item.type === 'free') {
+        totalItemsHeight += freeSpaceHeight + subnetSpacing;
+      }
+    });
     const footerHeight = 50; // Space for footer
     const bottomPadding = 40; // Extra space at the very bottom
     const height = headerHeight + totalItemsHeight + footerHeight + bottomPadding;
@@ -293,16 +301,17 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     
     // Add all items to the SVG
     const itemStartY = 150;
-    // Track actual item count for spacing
-    let itemCount = 0;
+    // Track current Y position
+    let currentY = itemStartY;
     
     allItems.forEach((item, index) => {
       if (item.type === 'subnet') {
         const subnet = item.data;
-        const subnetY = itemStartY + ((subnetHeight + subnetSpacing) * itemCount);
+        const subnetY = currentY;
         const color = subnet.color;
         const subnetTextStartX = subnetX + 15 + iconSize + iconPadding;
-        itemCount++; 
+        // Move current Y position down by subnet height + spacing
+        currentY += subnetHeight + subnetSpacing; 
         
         svg += `
           <!-- Subnet ${index + 1} -->
@@ -328,9 +337,10 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
           </text>`;
       } else if (item.type === 'free') {
         const space = item.data;
-        const freeY = itemStartY + ((freeSpaceHeight + subnetSpacing) * itemCount);
+        const freeY = currentY;
         const freeTextStartX = subnetX + 15 + iconSize + iconPadding;
-        itemCount++;
+        // Move current Y position down by free space height + spacing
+        currentY += freeSpaceHeight + subnetSpacing;
         
         svg += `
           <!-- Free Space -->
@@ -356,8 +366,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     });
     
     // Calculate footer position - ensure it's below the last item + padding
-    const lastElementBottom = itemStartY + ((subnetHeight + subnetSpacing) * itemCount);
-    const footerY = lastElementBottom + footerHeight; // Position footer well below last element
+    const footerY = currentY + footerHeight; // Position footer well below last element
     
     svg += `
       <!-- Footer -->
@@ -374,6 +383,11 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     try {
       // Generate the SVG markup directly
       const svgString = generateSVGMarkup();
+      
+      // Validate SVG string
+      if (!svgString || typeof svgString !== 'string' || !svgString.includes('<svg')) {
+        throw new Error('Invalid SVG markup generated');
+      }
         
       // Create a blob and trigger download
       const blob = new Blob([svgString], { type: 'image/svg+xml' });
@@ -391,7 +405,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       console.error('SVG export error:', e);
       setErrorModal({
         opened: true,
-        message: 'SVG export failed. Falling back to PNG...'
+        message: `SVG export failed: ${e.message || 'Unknown error'}. Falling back to PNG...`
       });
       exportDiagram(); // Fallback to PNG on error
     }
@@ -403,18 +417,18 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
         <Title order={3}>Network Diagram</Title>
         <Group spacing="xs">
           <Button 
-            leftIcon={<IconDownload size={16} />} 
             size="xs" 
             variant="outline"
             onClick={exportSVG}
+            leftSection={<IconDownload size={16} />}
           >
             Export SVG
           </Button>
           <Button 
-            leftIcon={<IconDownload size={16} />} 
             size="xs" 
             variant="outline"
             onClick={exportDiagram}
+            leftSection={<IconDownload size={16} />}
           >
             Export PNG
           </Button>
@@ -443,7 +457,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
             transform: animate ? 'translateY(0)' : 'translateY(10px)',
           }}
         >
-          <Group spacing="xs" mb="sm" noWrap>
+          <Group spacing="xs" mb="sm" wrap="nowrap">
             <IconNetwork size={18} style={{ color: theme.colors.blue[7], flexShrink: 0 }} />
             <Text fw={700} size="sm">{parentNetwork.name || 'Parent Network'}</Text>
             <Text size="xs" fw={500} color="dimmed">({parentBlock.base}/{parentNetwork.cidr})</Text>
@@ -506,7 +520,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                         transitionDelay: `${index * 0.1}s`,
                       }}
                     >
-                      <Group spacing="xs" noWrap>
+                      <Group spacing="xs" wrap="nowrap">
                         <IconSubtask size={16} style={{ color: subnet.color, flexShrink: 0 }} />
                         <Text fw={600} size="xs">{subnet.name}</Text>
                         <Text size="xs" fw={500} color="dimmed">({subnet.block.base}/{subnet.cidr})</Text>
@@ -540,7 +554,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                         transitionDelay: `${index * 0.1}s`,
                       }}
                     >
-                      <Group spacing="xs" noWrap>
+                      <Group spacing="xs" wrap="nowrap">
                         <Box style={{ color: freeSpaceColor, flexShrink: 0, width: 16, height: 16, position: 'relative' }}>
                           <div style={{ position: 'absolute', width: '100%', height: 2, backgroundColor: freeSpaceColor, top: '50%', transform: 'translateY(-50%)' }} />
                           <div style={{ position: 'absolute', width: 2, height: '100%', backgroundColor: freeSpaceColor, left: '50%', transform: 'translateX(-50%)' }} />
