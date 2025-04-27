@@ -8,26 +8,45 @@ export function generateAwsTerraform({ vpcName, vpcCidr, region, subnets }) {
 
 export function generateAzureTerraform({ vnetName, vnetCidr, location, subnets }) {
   // CAF-compliant: hyphens for Azure resource names, underscores for Terraform variables
-  function cafResourceName(type, name) {
-    // e.g. vnet, subnet, rg
-    return `${type}-${String(name).toLowerCase().replace(/[^a-z0-9]/g, '-')}`.replace(/-+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+  // CAF-compliant naming: [prefix]-[project]-[env]-[region]-[instance]
+  function getRegionShort(loc) {
+    // Example: uksouth -> uks, eastus2 -> eus2
+    if (!loc) return 'xx';
+    const match = loc.match(/^([a-z]+)[a-z]*([0-9]*)$/);
+    if (!match) return loc.slice(0,3);
+    const prefix = match[1].slice(0,3);
+    const suffix = match[2] || '';
+    return `${prefix}${suffix}`;
+  }
+  function cafResourceName(prefix, project, env, region, instance = '') {
+    let name = [prefix, project, env, region, instance].filter(Boolean).join('-');
+    name = name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+    return name.slice(0, 80);
   }
   function tfVarName(name) {
     return String(name).toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '');
   }
   const rgVar = tfVarName('resource_group_name');
   const locVar = tfVarName('location');
-  const vnetResName = cafResourceName('vnet', vnetName || 'main');
-  const vnetTfName = tfVarName(vnetName || 'main_vnet');
+  const env = 'prod';
+  const regionShort = getRegionShort(location);
+  const project = tfVarName(vnetName || 'main');
+
+  // CAF names
+  const rgName = cafResourceName('rg', project, env, regionShort);
+  const vnetResName = cafResourceName('vnet', project, env, regionShort);
+  const vnetTfName = tfVarName(vnetResName);
   const vnetResource = `resource "azurerm_virtual_network" "${vnetTfName}" {
   name                = "${vnetResName}"
   address_space       = ["${vnetCidr}"]
   location            = var.${locVar}
-  resource_group_name = var.${rgVar}
+  resource_group_name = azurerm_resource_group.main.name
 }`;
   const subnetResources = (subnets || []).map((subnet, idx) => {
-    const subnetResName = cafResourceName('subnet', subnet.name || `subnet${idx+1}`);
-    const subnetTfName = tfVarName(subnet.name || `subnet${idx+1}`);
+    // Use subnet name as purpose, idx+1 as instance
+    const purpose = tfVarName(subnet.name || `subnet${idx+1}`);
+    const subnetResName = cafResourceName('snet', project, env, regionShort, (purpose !== project ? purpose : '') + (subnets.length > 1 ? `-${idx+1}` : ''));
+    const subnetTfName = tfVarName(subnetResName);
     let cidr = '';
     if (subnet.base && subnet.cidr) {
       cidr = `${subnet.base}/${subnet.cidr}`;
@@ -40,22 +59,16 @@ export function generateAzureTerraform({ vnetName, vnetCidr, location, subnets }
     }
     return `resource "azurerm_subnet" "${subnetTfName}" {
   name                 = "${subnetResName}"
-  resource_group_name  = var.${rgVar}
+  resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.${vnetTfName}.name
   address_prefixes     = ["${cidr}"]
 }`;
   }).join("\n\n");
   const rgResource = `resource "azurerm_resource_group" "main" {
-  name     = var.${rgVar}
+  name     = "${rgName}"
   location = var.${locVar}
 }`;
-  const variables = `variable "${rgVar}" {
-  description = "Resource group name"
-  type        = string
-  default     = "example-rg"
-}
-
-variable "${locVar}" {
+  const variables = `variable "${locVar}" {
   description = "Azure region"
   type        = string
   default     = "${location || 'uksouth'}"

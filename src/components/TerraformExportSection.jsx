@@ -1,11 +1,39 @@
 import React, { useState } from 'react';
-import { Paper, Group, Button, Tabs, Code, ActionIcon, Tooltip, Text, Title, Box } from '@mantine/core';
+import { Paper, Group, Button, Tabs, Code, ActionIcon, Tooltip, Text, Title, Box, Select } from '@mantine/core';
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform } from '@tabler/icons-react';
 import { generateAwsTerraform, generateAzureTerraform } from '../utils/terraformExport';
+import { loadAzureRegions } from './AzureRegions';
 
 export function TerraformExportSection({ network, subnets }) {
   const [activeTab, setActiveTab] = useState('azure');
   const [copied, setCopied] = useState(false);
+  // Azure region selection with persistence and dynamic loading
+  const defaultRegion = 'uksouth';
+  const savedRegion = typeof window !== 'undefined' ? window.localStorage.getItem('azureRegion') : null;
+  const [azureRegion, setAzureRegion] = useState(savedRegion || defaultRegion);
+  const [regionList, setRegionList] = useState([]);
+  const [loadingRegions, setLoadingRegions] = useState(true);
+  const [regionError, setRegionError] = useState(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+    loadAzureRegions()
+      .then(list => { if (mounted) { setRegionList(list); setLoadingRegions(false); } })
+      .catch(err => {
+        setRegionError('Failed to load Azure regions list');
+        setRegionList([{ label: 'UK South', value: 'uksouth' }]);
+        setLoadingRegions(false);
+      });
+    return () => { mounted = false; };
+  }, []);
+
+  const handleRegionChange = (value) => {
+    setAzureRegion(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('azureRegion', value);
+    }
+  };
+
 
   const awsCode = generateAwsTerraform({
     vpcName: network?.name || 'main_vpc',
@@ -16,7 +44,7 @@ export function TerraformExportSection({ network, subnets }) {
   const azureCode = generateAzureTerraform({
     vnetName: network?.name || 'main_vnet',
     vnetCidr: `${network?.ip}/${network?.cidr}`,
-    location: 'uksouth', // TODO: let user pick
+    location: azureRegion,
     subnets: subnets || [],
   });
 
@@ -62,6 +90,21 @@ export function TerraformExportSection({ network, subnets }) {
         <Tabs.Panel value="azure" pt="md">
           <Box mb="xs">
             <Text size="sm" weight={500}>Azure Terraform HCL</Text>
+          </Box>
+          <Box mb="sm" style={{ maxWidth: 340 }}>
+            <Select
+              label="Azure Region"
+              data={regionList}
+              value={azureRegion}
+              onChange={handleRegionChange}
+              searchable
+              nothingFound={loadingRegions ? 'Loading...' : 'No region found'}
+              withinPortal
+              disabled={loadingRegions}
+              error={regionError}
+              placeholder={loadingRegions ? 'Loading regions...' : undefined}
+              maxDropdownHeight={350}
+            />
           </Box>
           <Code block style={{ width: '100%', fontSize: 13, whiteSpace: 'pre-wrap' }}>{azureCode}</Code>
         </Tabs.Panel>
