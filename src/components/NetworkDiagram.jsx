@@ -224,8 +224,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     // Free space color
     const freeSpaceColor = theme.colors.green[5];
     const freeSpaceLightColor = theme.colorScheme === 'dark' ? 
-      theme.fn.rgba(theme.colors.green[9], 0.2) : 
-      theme.fn.rgba(theme.colors.green[0], 0.7);
+      `rgba(${theme.colors.green[9]}, 0.2)` : 
+      `rgba(${theme.colors.green[0]}, 0.7)`;
     
     // Create SVG manually
     let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -493,7 +493,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                         border: `1px solid ${subnet.color}`,
                         borderRadius: theme.radius.sm,
                         backgroundColor: theme.colorScheme === 'dark' 
-                          ? theme.fn.rgba(subnet.color, 0.25) 
+                          ? `rgba(${subnet.color}, 0.25)` 
                           : getLightVariant(subnet.color), 
                         transition: 'all 0.3s ease',
                         opacity: animate ? 1 : 0,
@@ -527,8 +527,8 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
                         border: `1px solid ${freeSpaceColor}`,
                         borderRadius: theme.radius.sm,
                         backgroundColor: theme.colorScheme === 'dark' 
-                          ? theme.fn.rgba(theme.colors.green[9], 0.2) 
-                          : theme.fn.rgba(theme.colors.green[0], 0.7),
+                          ? `rgba(${theme.colors.green[9]}, 0.2)` 
+                          : `rgba(${theme.colors.green[0]}, 0.7)`,
                         transition: 'all 0.3s ease',
                         opacity: animate ? 1 : 0,
                         transform: animate ? 'translateY(0)' : 'translateY(5px)',
