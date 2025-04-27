@@ -81,24 +81,67 @@ export function Calculator() {
     const parentBlock = new Netmask(current.parentNetwork.ip + '/' + current.parentNetwork.cidr);
     const parentStart = ipToLong(parentBlock.base);
     const parentEnd = ipToLong(parentBlock.broadcast);
-    const size = Math.pow(2, 32 - subnet.cidr);
+    const subnetSize = Math.pow(2, 32 - subnet.cidr);
     
     // Build a sorted list of used ranges
     const used = (current.subnets || [])
-      .map(s => [ipToLong(s.base), ipToLong(new Netmask(s.base + '/' + s.cidr).broadcast)])
-      .sort((a, b) => a[0] - b[0]);
+      .map(s => {
+        const block = new Netmask(s.base + '/' + s.cidr);
+        return {
+          start: ipToLong(block.base),
+          end: ipToLong(block.broadcast),
+          cidr: s.cidr
+        };
+      })
+      .sort((a, b) => a.start - b.start);
     
-    // Scan for the first available gap
+    // Start from the beginning of the parent network
     let candidateStart = parentStart;
-    for (let i = 0; i <= used.length; i++) {
-      const nextUsedStart = used[i]?.[0] ?? (parentEnd + 1);
-      const gap = nextUsedStart - candidateStart;
-      if (gap >= size) {
+    
+    // Calculate the subnet mask for proper boundary alignment
+    const subnetMask = 0xffffffff << (32 - subnet.cidr);
+    
+    // Scan for the first available gap that can fit this subnet
+    while (candidateStart <= parentEnd - subnetSize + 1) {
+      // Align to proper network boundary based on CIDR
+      candidateStart = (candidateStart & subnetMask) >>> 0;
+      
+      // If we're not at a valid boundary for this subnet size, move to the next one
+      if ((candidateStart & subnetMask) !== candidateStart) {
+        candidateStart = ((candidateStart >> (32 - subnet.cidr)) + 1) << (32 - subnet.cidr);
+        continue;
+      }
+      
+      const candidateEnd = candidateStart + subnetSize - 1;
+      
+      // Check if this candidate subnet would exceed parent network
+      if (candidateEnd > parentEnd) {
+        alert('No available space for this subnet size.');
+        return;
+      }
+      
+      // Check if this candidate subnet overlaps with any existing subnet
+      let overlaps = false;
+      for (const usedRange of used) {
+        // Check for overlap
+        if (candidateStart <= usedRange.end && candidateEnd >= usedRange.start) {
+          overlaps = true;
+          // Move past this used range for the next candidate
+          candidateStart = usedRange.end + 1;
+          break;
+        }
+      }
+      
+      // If no overlap, we found a valid position
+      if (!overlaps) {
         const candidateBlock = new Netmask(longToIp(candidateStart) + '/' + subnet.cidr);
+        
+        // Final validation that it's within the parent network
         if (
           parentBlock.contains(candidateBlock.base) &&
           parentBlock.contains(candidateBlock.broadcast)
         ) {
+          // Add the subnet with its properly calculated base address
           setNetworks(networks.map(n =>
             n.id === selectedNetworkId
               ? { ...n, subnets: [...(n.subnets || []), { ...subnet, base: candidateBlock.base }] }
@@ -107,8 +150,8 @@ export function Calculator() {
           return;
         }
       }
-      if (used[i]) candidateStart = used[i][1] + 1;
     }
+    
     alert('No available space for this subnet size.');
   };
 
