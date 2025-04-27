@@ -32,6 +32,15 @@ Russ Tools is a modern, responsive web application for IPv4 subnet calculation a
   - 📝 Export includes all subnets, free space, and legend
   - 🏷️ SVG export uses proper icons and color schemes for documentation-quality output
 
+- 🏗️ **Terraform Export:**
+  - Easily export your network/subnet design as ready-to-use Terraform code for AWS or Azure.
+  - Select your preferred cloud provider (AWS or Azure) using tabs.
+  - Dynamically choose a region from a dropdown list (region data loaded live from cloud provider lists).
+  - Copy the generated HCL code to your clipboard with a single click.
+  - Region selections are saved for convenience.
+  - Powered by the `TerraformExportSection.jsx` component.
+  - Supports both AWS and Azure native region lists.
+
 - 💾 **State Persistence:**
   - 🗃️ All network designs and subnets are saved to localStorage and restored automatically
 
