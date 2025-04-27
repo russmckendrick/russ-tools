@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Paper, Group, Button, Tabs, Code, ActionIcon, Tooltip, Text, Title, Box, Select } from '@mantine/core';
+import { Paper, Group, Button, Tabs, ActionIcon, Tooltip, Text, Title, Box, Select } from '@mantine/core';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-hcl';
+import 'prismjs/themes/prism.css';
+
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform } from '@tabler/icons-react';
 import { generateAwsTerraform, generateAzureTerraform } from '../utils/terraformExport';
 import { loadAzureRegions } from './AzureRegions';
@@ -49,6 +53,10 @@ export function TerraformExportSection({ network, subnets }) {
   });
 
   const code = activeTab === 'aws' ? awsCode : azureCode;
+
+  // PrismJS highlighting
+  const highlightedAws = Prism.highlight(awsCode, Prism.languages.hcl, 'hcl');
+  const highlightedAzure = Prism.highlight(azureCode, Prism.languages.hcl, 'hcl');
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
@@ -85,7 +93,11 @@ export function TerraformExportSection({ network, subnets }) {
           <Box mb="xs">
             <Text size="sm" weight={500}>AWS Terraform HCL</Text>
           </Box>
-          <Code block style={{ width: '100%', fontSize: 13, whiteSpace: 'pre-wrap' }}>{awsCode}</Code>
+          <pre style={{ margin: 0, padding: 0, background: 'none' }}>
+            <code className="language-hcl" style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
+              dangerouslySetInnerHTML={{ __html: highlightedAws }}
+            />
+          </pre>
         </Tabs.Panel>
         <Tabs.Panel value="azure" pt="md">
           <Box mb="xs">
@@ -106,7 +118,11 @@ export function TerraformExportSection({ network, subnets }) {
               maxDropdownHeight={350}
             />
           </Box>
-          <Code block style={{ width: '100%', fontSize: 13, whiteSpace: 'pre-wrap' }}>{azureCode}</Code>
+          <pre style={{ margin: 0, padding: 0, background: 'none' }}>
+            <code className="language-hcl" style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
+              dangerouslySetInnerHTML={{ __html: highlightedAzure }}
+            />
+          </pre>
         </Tabs.Panel>
       </Tabs>
     </Paper>
