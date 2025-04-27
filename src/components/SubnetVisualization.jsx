@@ -1,4 +1,6 @@
 import { Box, Paper, Text, Tooltip, useMantineTheme } from '@mantine/core';
+import { useMantineColorScheme } from '@mantine/core';
+import { getSubnetBgColorHex } from '../utils';
 import { IconNetwork, IconBroadcast } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { Netmask } from 'netmask';
@@ -40,7 +42,7 @@ const getContrastColor = (hexColor, theme) => {
 
 export function SubnetVisualization({ parentNetwork, subnets }) {
   const theme = useMantineTheme();
-  const { colorScheme } = useMantineTheme();
+  const { colorScheme } = useMantineColorScheme();
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
@@ -100,7 +102,7 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
     theme.colors.violet[5], theme.colors.orange[5], theme.colors.teal[5], 
     theme.colors.grape[5], theme.colors.lime[5]
   ];
-  const unusedColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
+  const unusedColor = theme.colorScheme === 'dark' ? theme.colors.lime[9] : theme.colors.lime[1];
   const borderColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
 
   // Calculate percent free
@@ -132,14 +134,9 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
         {segments.map((seg, idx) => {
           if (seg.end < seg.start) return null;
 
-          // Derive the base HEX color for *this* segment
-          const colorObj = seg.color; // Use seg.color
-          let segmentColorHex = theme.colors.gray[6]; // Default fallback
-          if (colorObj && typeof colorObj === 'object' && colorObj.name && colorObj.index !== undefined) {
-            segmentColorHex = theme.colors[colorObj.name]?.[colorObj.index] || theme.colors.gray[6];
-          } else if (seg.type === 'subnet') { // Only warn for subnets, not free space
-            // console.warn('Invalid color object for subnet segment in SubnetVisualization, falling back to gray:', seg.color); // Keep warning commented for now
-          }
+          // Derive the theme-aware background color for *this* subnet segment
+          const colorObj = seg.color;
+          let segmentColorHex = getSubnetBgColorHex(colorObj, theme, colorScheme);
 
           if (seg.type === 'unused') {
             return (

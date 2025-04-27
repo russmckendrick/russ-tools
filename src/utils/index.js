@@ -28,4 +28,6 @@ export function ipToLong(ip) {
  */
 export function longToIp(long) {
   return [24, 16, 8, 0].map(shift => (long >>> shift) & 255).join('.');
-} 
+}
+
+export { getSubnetBgColorHex } from './getSubnetBgColorHex';

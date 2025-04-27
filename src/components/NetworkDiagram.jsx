@@ -1,4 +1,5 @@
 import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal, useMantineColorScheme } from '@mantine/core';
+import { getSubnetBgColorHex } from '../utils';
 import { IconDownload, IconNetwork, IconSubtask, IconSpace } from '@tabler/icons-react';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
@@ -83,28 +84,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     return colorHex;
   };
 
-  // Function to get theme-aware background color based on stored color name
-  const getSubnetBgColorHex = (colorObj) => {
-    if (!colorObj || typeof colorObj !== 'object' || !colorObj.name) {
-      // Fallback to standard gray if color object is invalid or missing name
-      if (colorObj && typeof colorObj === 'object' && !colorObj.name) {
-        console.warn('Color object missing name for background in NetworkDiagram, falling back to gray bg:', colorObj);
-      }
-      return colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1];
-    }
-    // Use index 1 for light mode background, index 7 for dark mode background
-    const lightBgIndex = 1;
-    const darkBgIndex = 7;
-    const bgIndex = colorScheme === 'dark' ? darkBgIndex : lightBgIndex;
 
-    const bgHex = theme.colors[colorObj.name]?.[bgIndex];
-
-    if (!bgHex) {
-      console.warn(`Theme background color lookup failed for ${colorObj.name}[${bgIndex}] in NetworkDiagram getSubnetBgColorHex (${colorScheme} mode), falling back to default gray bg.`);
-      return colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[1];
-    }
-    return bgHex;
-  };
 
   // Export diagram as PNG
   const exportDiagram = () => {
@@ -276,7 +256,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
 
         // Calculate colors based on the color object
         const subnetIconBorderColorHex = getBaseColorHex(subnet.color);
-        const subnetBgColorHex = getSubnetBgColorHex(subnet.color);
+        const subnetBgColorHex = getSubnetBgColorHex(subnet.color, theme, colorScheme);
         const subnetNameColorHex = colorScheme === 'dark' ? theme.white : theme.black;
         const subnetDetailColorHex = colorScheme === 'dark' ? theme.colors.gray[3] : theme.colors.gray[7];
         const subnetCidrColorHex = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
@@ -435,7 +415,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
 
                   // Calculate colors based on the color object
                   const subnetIconBorderColor = getBaseColorHex(subnet.color);
-                  const subnetBgColor = getSubnetBgColorHex(subnet.color);
+                  const subnetBgColor = getSubnetBgColorHex(subnet.color, theme, colorScheme);
 
                   return (
                     <Box
