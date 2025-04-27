@@ -74,10 +74,28 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
     });
   }
 
-  // Colors
-  const colors = [theme.colors.blue[5], theme.colors.green[5], theme.colors.cyan[5], theme.colors.violet[5], theme.colors.orange[5], theme.colors.teal[5], theme.colors.grape[5], theme.colors.lime[5]];
+  // Default colors for fallback and unused space
+  const defaultColors = [
+    theme.colors.blue[5], theme.colors.green[5], theme.colors.cyan[5], 
+    theme.colors.violet[5], theme.colors.orange[5], theme.colors.teal[5], 
+    theme.colors.grape[5], theme.colors.lime[5]
+  ];
   const unusedColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
   const borderColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
+  
+  // Helper to get a light variant of a color for dark mode
+  const getLightVariant = (color) => {
+    // Extract the color name and index from the color value
+    for (const [colorName, shades] of Object.entries(theme.colors)) {
+      const index = shades.indexOf(color);
+      if (index !== -1) {
+        // Return a lighter shade (0 or 1 depending on theme)
+        return theme.colorScheme === 'dark' ? theme.fn.rgba(color, 0.7) : color;
+      }
+    }
+    // Fallback
+    return color;
+  };
 
   // Calculate percent free
   const usedAddresses = subnetBlocks.reduce((acc, s) => acc + (s.end - s.start + 1), 0);
@@ -121,8 +139,8 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
               </Tooltip>
             );
           }
-          // Subnet segment
-          const color = colors[idx % colors.length];
+          // Subnet segment - use the subnet's color if available, or fall back to a default
+          const color = seg.color || defaultColors[idx % defaultColors.length];
           return (
             <Tooltip
               key={idx}
@@ -135,7 +153,7 @@ export function SubnetVisualization({ parentNetwork, subnets }) {
                 style={{
                   width: `${widthPct(seg.start, seg.end)}%`,
                   height: '100%',
-                  background: color,
+                  background: getLightVariant(color),
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

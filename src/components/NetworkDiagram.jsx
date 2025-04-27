@@ -129,8 +129,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
     // Border color
     const borderColor = theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3];
     
-    // Use the imported SVG files for icons
-    // We'll embed them directly in the SVG output
+    // We'll use the imported SVG files for icons
     
     // Create SVG manually
     let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -153,7 +152,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
               stroke="${theme.colors.blue[6]}" 
               x="${parentBoxX}" y="${parentBoxY}"></rect>
         
-        <!-- Parent Network Icon (Using network.svg as embedded image) -->
+        <!-- Parent Network Icon (Using network.svg) -->
         <image x="40" y="70" width="${iconSize}" height="${iconSize}" href="${networkSvg}" />
         
         <!-- Parent Network header -->
@@ -183,7 +182,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
               stroke="${color}" 
               x="${subnetX}" y="${subnetY}"></rect>
         
-        <!-- Subnet Icon (Using subnet.svg as embedded image) -->
+        <!-- Subnet Icon (Using subnet.svg) -->
         <image x="${subnetX + 15}" y="${subnetY + 20}" width="${iconSize}" height="${iconSize}" href="${subnetSvg}" />
               
         <!-- Subnet details -->

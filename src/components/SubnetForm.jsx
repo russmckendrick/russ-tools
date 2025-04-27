@@ -1,12 +1,42 @@
-import { useState, useMemo } from 'react';
-import { TextInput, Button, Group, Paper, Select, Text } from '@mantine/core';
+import { useState, useMemo, useEffect } from 'react';
+import { TextInput, Button, Group, Paper, Select, Text, ColorSwatch, Popover, SimpleGrid, useMantineTheme, Box } from '@mantine/core';
 import { Netmask } from 'netmask';
 import { ipToLong } from '../utils';
 
 export function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) {
+  const theme = useMantineTheme();
   const [name, setName] = useState('');
   const [cidr, setCidr] = useState('');
   const [error, setError] = useState(null);
+  const [colorPickerOpened, setColorPickerOpened] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('');
+  
+  // Define a palette of 24 colors using Mantine's theme colors
+  const colorPalette = useMemo(() => [
+    // Blues
+    theme.colors.blue[5], theme.colors.blue[7], theme.colors.indigo[5],
+    // Greens
+    theme.colors.green[5], theme.colors.green[7], theme.colors.teal[5],
+    // Cyans
+    theme.colors.cyan[5], theme.colors.cyan[7],
+    // Purples
+    theme.colors.violet[5], theme.colors.violet[7], theme.colors.grape[5],
+    // Reds
+    theme.colors.red[5], theme.colors.red[7], theme.colors.pink[5],
+    // Oranges
+    theme.colors.orange[5], theme.colors.orange[7], theme.colors.yellow[5],
+    // Limes
+    theme.colors.lime[5], theme.colors.lime[7],
+    // Other colors
+    theme.colors.teal[7], theme.colors.grape[7], theme.colors.pink[7],
+    theme.colors.yellow[7], theme.colors.indigo[7]
+  ], [theme]);
+  
+  // Set a random color from the palette when the component mounts
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * colorPalette.length);
+    setSelectedColor(colorPalette[randomIndex]);
+  }, [colorPalette]);
 
   // Generate CIDR options for dropdown based on available space
   const cidrOptions = useMemo(() => {
@@ -91,15 +121,19 @@ export function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) 
     // Reset error
     setError(null);
 
-    // Add subnet
+    // Add subnet with color
     onAddSubnet({
       name: name.trim(),
-      cidr: parseInt(cidr, 10)
+      cidr: parseInt(cidr, 10),
+      color: selectedColor
     });
 
     // Reset form
     setName('');
     setCidr('');
+    // Set a new random color for the next subnet
+    const randomIndex = Math.floor(Math.random() * colorPalette.length);
+    setSelectedColor(colorPalette[randomIndex]);
   };
 
   return (
@@ -123,6 +157,40 @@ export function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) 
           style={{ width: '120px' }}
           disabled={cidrOptions.length === 0}
         />
+        <Box style={{ width: '80px' }}>
+          <Text size="sm" weight={500} mb={5}>Color</Text>
+          <Popover 
+            opened={colorPickerOpened} 
+            position="bottom" 
+            width={240} 
+            withinPortal
+            onChange={setColorPickerOpened}
+          >
+            <Popover.Target>
+              <ColorSwatch 
+                color={selectedColor} 
+                onClick={() => setColorPickerOpened((o) => !o)}
+                size={28}
+                style={{ cursor: 'pointer', marginTop: '3px' }}
+              />
+            </Popover.Target>
+            <Popover.Dropdown>
+              <SimpleGrid cols={8} spacing="xs">
+                {colorPalette.map((color) => (
+                  <ColorSwatch
+                    key={color}
+                    color={color}
+                    onClick={() => {
+                      setSelectedColor(color);
+                      setColorPickerOpened(false);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  />
+                ))}
+              </SimpleGrid>
+            </Popover.Dropdown>
+          </Popover>
+        </Box>
         <Button 
           onClick={handleSubmit} 
           style={{ marginBottom: '1px' }}
