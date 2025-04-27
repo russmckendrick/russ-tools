@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Modal, Tabs, Code, Group, ActionIcon, Tooltip, Text } from '@mantine/core';
-import { IconCopy } from '@tabler/icons-react';
+import { IconCopy, IconServer } from '@tabler/icons-react';
 import { generateAwsTerraform, generateAzureTerraform } from '../utils/terraformExport';
 
 export function TerraformExportModal({ opened, onClose, network, subnets }) {
@@ -35,6 +35,9 @@ export function TerraformExportModal({ opened, onClose, network, subnets }) {
         <Tabs.List>
           <Tabs.Tab value="azure">Azure</Tabs.Tab>
           <Tabs.Tab value="aws">AWS</Tabs.Tab>
+          <Tabs.Tab value="vcd" icon={<IconServer size={16} />}>
+            VMware Cloud Director
+          </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="azure" pt="md">
           <Group position="apart" mb="xs">
@@ -57,6 +60,14 @@ export function TerraformExportModal({ opened, onClose, network, subnets }) {
             </Tooltip>
           </Group>
           <Code block style={{ width: '100%', fontSize: 13, whiteSpace: 'pre-wrap' }}>{awsCode}</Code>
+        </Tabs.Panel>
+        <Tabs.Panel value="vcd" pt="md">
+          <Group position="apart" mb="xs">
+            <Text weight={500}><IconServer size={16} style={{ verticalAlign: 'middle', marginRight: 6 }} />VMware Cloud Director Terraform HCL</Text>
+          </Group>
+          <Code block style={{ width: '100%', fontSize: 13, whiteSpace: 'pre-wrap' }}>
+            {`# VMware Cloud Director Terraform export is coming soon!\n# See the provider docs: https://registry.terraform.io/providers/vmware/vcd/latest/docs`}
+          </Code>
         </Tabs.Panel>
       </Tabs>
     </Modal>
