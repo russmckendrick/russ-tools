@@ -95,7 +95,7 @@ export function NavbarMinimal() {
     <Box pb={120}>
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
-          <img src="/assets/logo.svg" alt="Logo" style={{ width: 40, height: 40, display: 'block' }} />
+          <Text fw={700} size="xl">RussTools</Text>
 
           <Group h="100%" gap={0} visibleFrom="sm">
             <a href="#" className={classes.link}>
