@@ -66,7 +66,7 @@ const mockdata = [
   },
 ];
 
-function ThemeToggle({ size = 36 }) {
+function ThemeToggle({ size = 36, ...props }) {
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme('light');
   return (
@@ -76,6 +76,7 @@ function ThemeToggle({ size = 36 }) {
       title="Toggle color scheme"
       size={size}
       style={{ minWidth: size, minHeight: size }}
+      {...props}
     >
       {computedColorScheme === 'dark' ? <IconSun size={size * 0.55} /> : <IconMoonStars size={size * 0.55} />}
     </ActionIcon>
@@ -164,6 +165,7 @@ export function NavbarMinimal() {
             </a>
           </Group>
 
+          <ThemeToggle size={36} visibleFrom="sm" />
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
         </Group>
       </header>
