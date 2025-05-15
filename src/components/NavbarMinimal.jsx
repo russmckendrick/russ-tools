@@ -66,12 +66,26 @@ const mockdata = [
   },
 ];
 
+function ThemeToggle({ size = 36 }) {
+  const { setColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme('light');
+  return (
+    <ActionIcon
+      variant="outline"
+      onClick={() => setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark')}
+      title="Toggle color scheme"
+      size={size}
+      style={{ minWidth: size, minHeight: size }}
+    >
+      {computedColorScheme === 'dark' ? <IconSun size={size * 0.55} /> : <IconMoonStars size={size * 0.55} />}
+    </ActionIcon>
+  );
+}
+
 export function NavbarMinimal() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
   const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
   const theme = useMantineTheme();
-  const { setColorScheme } = useMantineColorScheme();
-  const computedColorScheme = useComputedColorScheme('light');
 
   const links = mockdata.map((item) => (
     <UnstyledButton className={classes.subLink} key={item.title}>
@@ -150,15 +164,6 @@ export function NavbarMinimal() {
             </a>
           </Group>
 
-          <ActionIcon
-            variant="outline"
-            onClick={() => setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark')}
-            title="Toggle color scheme"
-            size={36}
-          >
-            {computedColorScheme === 'dark' ? <IconSun size={20} /> : <IconMoonStars size={20} />}
-          </ActionIcon>
-
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
         </Group>
       </header>
@@ -196,16 +201,9 @@ export function NavbarMinimal() {
 
           <Divider my="sm" />
 
-          <Group justify="center" grow pb="xl" px="md">
-            <ActionIcon
-              variant="outline"
-              onClick={() => setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark')}
-              title="Toggle color scheme"
-              size={36}
-            >
-              {computedColorScheme === 'dark' ? <IconSun size={20} /> : <IconMoonStars size={20} />}
-            </ActionIcon>
-          </Group>
+          <Center pb="xl" px="md">
+            <ThemeToggle size={36} />
+          </Center>
         </ScrollArea>
       </Drawer>
     </Box>
