@@ -6,6 +6,8 @@ import {
   IconCoin,
   IconFingerprint,
   IconNotification,
+  IconSun,
+  IconMoonStars,
 } from '@tabler/icons-react';
 import {
   Anchor,
@@ -24,6 +26,9 @@ import {
   ThemeIcon,
   UnstyledButton,
   useMantineTheme,
+  ActionIcon,
+  useMantineColorScheme,
+  useComputedColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import classes from './HeaderMegaMenu.module.css';
@@ -65,6 +70,8 @@ export function NavbarMinimal() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
   const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
   const theme = useMantineTheme();
+  const { setColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme('light');
 
   const links = mockdata.map((item) => (
     <UnstyledButton className={classes.subLink} key={item.title}>
@@ -143,10 +150,14 @@ export function NavbarMinimal() {
             </a>
           </Group>
 
-          <Group visibleFrom="sm">
-            <Button variant="default">Log in</Button>
-            <Button>Sign up</Button>
-          </Group>
+          <ActionIcon
+            variant="outline"
+            onClick={() => setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark')}
+            title="Toggle color scheme"
+            size={36}
+          >
+            {computedColorScheme === 'dark' ? <IconSun size={20} /> : <IconMoonStars size={20} />}
+          </ActionIcon>
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
         </Group>
@@ -186,8 +197,14 @@ export function NavbarMinimal() {
           <Divider my="sm" />
 
           <Group justify="center" grow pb="xl" px="md">
-            <Button variant="default">Log in</Button>
-            <Button>Sign up</Button>
+            <ActionIcon
+              variant="outline"
+              onClick={() => setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark')}
+              title="Toggle color scheme"
+              size={36}
+            >
+              {computedColorScheme === 'dark' ? <IconSun size={20} /> : <IconMoonStars size={20} />}
+            </ActionIcon>
           </Group>
         </ScrollArea>
       </Drawer>
