@@ -113,7 +113,6 @@ const ResultsDisplay = ({ formState, validationState, tableLayout }) => {
             Save
           </Button>
         </Group>
-        <Title order={4} size="h5" mb="sm">Generated Names</Title>
         <Table stickyHeader striped highlightOnHover withTableBorder withColumnBorders>
           <Table.Thead>
             <Table.Tr>
