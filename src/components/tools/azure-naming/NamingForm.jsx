@@ -49,7 +49,6 @@ const NamingForm = () => {
           data={environments.map((env) => ({ value: env, label: env.charAt(0).toUpperCase() + env.slice(1) }))}
           error={validationState.errors.environment}
           withAsterisk
-          withinPortal
         />
 
         <Select
@@ -66,7 +65,6 @@ const NamingForm = () => {
           data={regions.map((region) => ({ value: region, label: region.replace(/([A-Z])/g, ' $1').trim() }))}
           error={validationState.errors.region}
           withAsterisk
-          withinPortal
         />
 
         <TextInput

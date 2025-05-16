@@ -31,7 +31,6 @@ const ResourceTypeSelector = () => {
       error={validationState.errors.resourceType}
       withAsterisk
       mb="md"
-      withinPortal
     />
   );
 };
