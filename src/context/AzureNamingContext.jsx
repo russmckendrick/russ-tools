@@ -7,11 +7,20 @@ import { loadAzureRegionData } from '../utils/azure-naming/region-parser';
 const rawResourceTypes = Object.values(RESOURCE_TYPES);
 console.log('RAW RESOURCE_TYPES:', rawResourceTypes);
 
-// Build resourceTypes as an array of { value: name, label: slug }, filtering out malformed entries
-const resourceTypes = rawResourceTypes
-  .filter(rt => rt && rt.name && rt.type)
-  .map(rt => ({ value: rt.name, label: rt.type }));
+// Filter for unique resource type names (use only the first occurrence)
+const seenNames = new Set();
+const uniqueResourceTypes = [];
+for (const rt of rawResourceTypes) {
+  if (rt && rt.name && rt.type && !seenNames.has(rt.name)) {
+    uniqueResourceTypes.push(rt);
+    seenNames.add(rt.name);
+  }
+}
+if (uniqueResourceTypes.length < rawResourceTypes.length) {
+  console.warn('[AzureNamingContext] Duplicate resource type names detected. Only the first occurrence of each name will be used.');
+}
 
+const resourceTypes = uniqueResourceTypes.map(rt => ({ value: rt.name, label: rt.type }));
 console.log('resourceTypes for Select:', resourceTypes);
 
 // Initial state

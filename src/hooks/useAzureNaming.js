@@ -40,7 +40,10 @@ export const useAzureNaming = () => {
     }
 
     if (!formState.workload) {
-      errors.workload = 'Workload name is required';
+      errors.workload = 'Workload/Application Name is required';
+      isValid = false;
+    } else if (!/^[a-zA-Z0-9 _-]+$/.test(formState.workload)) {
+      errors.workload = 'Only letters, numbers, spaces, dashes, and underscores are allowed';
       isValid = false;
     }
 
@@ -58,15 +61,8 @@ export const useAzureNaming = () => {
     if (formState.resourceType) {
       const rules = RESOURCE_TYPES[formState.resourceType];
       if (rules) {
-        // Validate workload name
-        const workloadValidation = validateResourceName(formState.workload, formState.resourceType);
-        if (!workloadValidation.valid) {
-          errors.workload = workloadValidation.error;
-          isValid = false;
-        }
-
         // Validate instance number if required
-        if (rules.format.includes('[instance]') && !/^\d{3}$/.test(formState.instance)) {
+        if (rules.format.includes('[instance]') && !/^[0-9]{3}$/.test(formState.instance)) {
           errors.instance = 'Instance must be a 3-digit number';
           isValid = false;
         }
