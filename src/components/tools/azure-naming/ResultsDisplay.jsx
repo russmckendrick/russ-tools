@@ -3,6 +3,7 @@ import { Paper, Group, Text, Button, Code, Divider, SimpleGrid, Stack, Title, Ta
 import { IconCopy, IconCheck, IconDownload, IconDeviceFloppy } from '@tabler/icons-react';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import { utils as XLSXUtils, writeFile as XLSXWriteFile } from 'xlsx';
+import { v4 as uuidv4 } from 'uuid';
 
 const ResultsDisplay = ({ formState, validationState, tableLayout }) => {
   const { addToHistory, resourceTypes } = useAzureNamingContext();
@@ -69,12 +70,15 @@ const ResultsDisplay = ({ formState, validationState, tableLayout }) => {
     const types = Array.isArray(formState.resourceType)
       ? formState.resourceType
       : [formState.resourceType];
-    names.forEach((name, idx) => {
-      addToHistory({
-        resourceType: types[idx],
-        generatedName: name,
-        configuration: { ...formState }
-      });
+    const group = names.map((name, idx) => ({
+      resourceType: types[idx],
+      generatedName: name
+    }));
+    addToHistory({
+      id: uuidv4(),
+      group,
+      configuration: { ...formState },
+      timestamp: Date.now()
     });
   };
 

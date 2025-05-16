@@ -32,9 +32,18 @@ const NamingHistory = () => {
             <Paper key={item.id} radius="sm" p="sm" withBorder mb="xs">
               <Group justify="space-between" align="center">
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <Text size="sm" fw={500} truncate c="blue.7">{item.generatedName}</Text>
+                  {item.group && Array.isArray(item.group) ? (
+                    item.group.map((g, idx) => (
+                      <Text key={g.generatedName + idx} size="sm" fw={500} truncate c="blue.7">
+                        {g.generatedName}
+                        <Text span size="xs" c="dimmed" ml={8}>{g.resourceType}</Text>
+                      </Text>
+                    ))
+                  ) : (
+                    <Text size="sm" fw={500} truncate c="blue.7">{item.generatedName}</Text>
+                  )}
                   <Text size="xs" c="dimmed">
-                    {item.resourceType} • {new Date(item.timestamp).toLocaleString()}
+                    {new Date(item.timestamp).toLocaleString()}
                   </Text>
                 </div>
                 <Button
