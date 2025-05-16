@@ -8,6 +8,7 @@ import {
   IconNotification,
   IconSun,
   IconMoonStars,
+  IconNetwork,
 } from '@tabler/icons-react';
 import {
   Anchor,
@@ -35,35 +36,36 @@ import classes from './HeaderMegaMenu.module.css';
 
 const mockdata = [
   {
-    icon: IconCode,
-    title: 'Open source',
-    description: "This Pokémon's cry is very loud and distracting",
+    icon: IconNetwork,
+    title: 'Network Designer',
+    description: "Plan your cloud network and subnets",
+    link: "/network-designer",
   },
-  {
-    icon: IconCoin,
-    title: 'Free for everyone',
-    description: "The fluid of Smeargle's tail secretions changes",
-  },
-  {
-    icon: IconBook,
-    title: 'Documentation',
-    description: "Yanma is capable of seeing 360 degrees without",
-  },
-  {
-    icon: IconFingerprint,
-    title: 'Security',
-    description: "The shell's rounded shape and the grooves on its.",
-  },
-  {
-    icon: IconChartPie3,
-    title: 'Analytics',
-    description: "This Pokémon uses its flying ability to quickly chase",
-  },
-  {
-    icon: IconNotification,
-    title: 'Notifications',
-    description: "Combusken battles with the intensely hot flames it spews",
-  },
+  // {
+  //   icon: IconCoin,
+  //   title: 'Free for everyone',
+  //   description: "The fluid of Smeargle's tail secretions changes",
+  // },
+  // {
+  //   icon: IconBook,
+  //   title: 'Documentation',
+  //   description: "Yanma is capable of seeing 360 degrees without",
+  // },
+  // {
+  //   icon: IconFingerprint,
+  //   title: 'Security',
+  //   description: "The shell's rounded shape and the grooves on its.",
+  // },
+  // {
+  //   icon: IconChartPie3,
+  //   title: 'Analytics',
+  //   description: "This Pokémon uses its flying ability to quickly chase",
+  // },
+  // {
+  //   icon: IconNotification,
+  //   title: 'Notifications',
+  //   description: "Combusken battles with the intensely hot flames it spews",
+  // },
 ];
 
 function ThemeToggle({ size = 36, ...props }) {
@@ -89,9 +91,10 @@ export function NavbarMinimal() {
   const theme = useMantineTheme();
 
   const links = mockdata.map((item) => (
-    <UnstyledButton className={classes.subLink} key={item.title}>
-      <Group wrap="nowrap" align="flex-start">
-        <ThemeIcon size={34} variant="default" radius="md">
+    <a href={item.link} key={item.title}>
+      <UnstyledButton className={classes.subLink}>
+        <Group wrap="nowrap" align="flex-start">
+          <ThemeIcon size={34} variant="default" radius="md">
           <item.icon size={22} color={theme.colors.blue[6]} />
         </ThemeIcon>
         <div>
@@ -104,6 +107,7 @@ export function NavbarMinimal() {
         </div>
       </Group>
     </UnstyledButton>
+    </a>
   ));
 
   return (
@@ -113,7 +117,7 @@ export function NavbarMinimal() {
           <Text fw={700} size="xl">RussTools</Text>
 
           <Group h="100%" gap={0} visibleFrom="sm">
-            <a href="#" className={classes.link}>
+            <a href="/" className={classes.link}>
               Home
             </a>
             <HoverCard width={600} position="bottom" radius="md" shadow="md" withinPortal>
@@ -121,7 +125,7 @@ export function NavbarMinimal() {
                 <a href="#" className={classes.link}>
                   <Center inline>
                     <Box component="span" mr={5}>
-                      Features
+                      Tools
                     </Box>
                     <IconChevronDown size={16} color={theme.colors.blue[6]} />
                   </Center>
@@ -130,10 +134,7 @@ export function NavbarMinimal() {
 
               <HoverCard.Dropdown style={{ overflow: 'hidden' }}>
                 <Group justify="space-between" px="md">
-                  <Text fw={500}>Features</Text>
-                  <Anchor href="#" fz="xs">
-                    View all
-                  </Anchor>
+                  <Text fw={500}>Tools</Text>
                 </Group>
 
                 <Divider my="sm" />
@@ -146,23 +147,17 @@ export function NavbarMinimal() {
                   <Group justify="space-between">
                     <div>
                       <Text fw={500} fz="sm">
-                        Get started
+                        About
                       </Text>
                       <Text size="xs" c="dimmed">
-                        Their food sources have decreased, and their numbers
+                        Just a random collection of tools
                       </Text>
                     </div>
-                    <Button variant="default">Get started</Button>
+                    <a href="https://www.russ.cloud/about/" target="_blank" rel="noopener noreferrer"><Button variant="default">More about Russ</Button></a>
                   </Group>
                 </div>
               </HoverCard.Dropdown>
             </HoverCard>
-            <a href="#" className={classes.link}>
-              Learn
-            </a>
-            <a href="#" className={classes.link}>
-              Academy
-            </a>
           </Group>
 
           <ThemeToggle size={36} visibleFrom="sm" />
@@ -194,12 +189,6 @@ export function NavbarMinimal() {
             </Center>
           </UnstyledButton>
           <Collapse in={linksOpened}>{links}</Collapse>
-          <a href="#" className={classes.link}>
-            Learn
-          </a>
-          <a href="#" className={classes.link}>
-            Academy
-          </a>
 
           <Divider my="sm" />
 
