@@ -32,11 +32,11 @@ const ResourceTypeSelector = ({ formState, updateFormState, validationState, sho
       value={formState.resourceType}
       onChange={handleResourceTypeChange}
       error={validationState.errors.resourceType}
-      mb="md"
+      mb="xs"
       searchable
       clearable
-      maxDropdownHeight={200}
-      size="md"
+      maxDropdownHeight={500}
+      size="sm"
       style={{ minHeight: 90 }}
     />
   );

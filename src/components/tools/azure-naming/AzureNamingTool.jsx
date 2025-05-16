@@ -43,7 +43,7 @@ const AzureNamingTool = () => {
           validationState={validationState}
         />
         <form onSubmit={e => { e.preventDefault(); generateName(); }}>
-          <Grid gutter="md">
+          <Grid grow gutter="xs">
             {/* Row 1 */}
             <Grid.Col span={12} mb="sm">
               <TextInput
@@ -66,7 +66,7 @@ const AzureNamingTool = () => {
               />
             </Grid.Col>
             {/* Row 2 */}
-            <Grid.Col span={12} mb="sm">
+            <Grid.Col span={12}>
               <ResourceTypeSelector
                 formState={formState}
                 updateFormState={updateFormState}
@@ -118,12 +118,16 @@ const AzureNamingTool = () => {
                 searchable
               />
             </Grid.Col>
+             {/* Optional Row Header */}
+            <Grid.Col span={12} mb="xs">
+              <Text size="sm" fw={600} c="dimmed">Optional</Text>
+            </Grid.Col>
             {/* Row 4 */}
             <Grid.Col span={3} mb="sm">
               <TextInput
                 label={
                   <Group gap={4} align="center">
-                    <Text size="sm" fw={500}>Instance Number (Optional)</Text>
+                    <Text size="sm" fw={500}>Instance Number</Text>
                     <HelpTooltip content="Enter a number up to 5 digits (e.g., 001, 12345). Optional field for resources that support multiple instances." />
                   </Group>
                 }
@@ -151,7 +155,7 @@ const AzureNamingTool = () => {
               <TextInput
                 label={
                   <Group gap={4} align="center">
-                    <Text size="sm" fw={500}>Custom Prefix (Optional)</Text>
+                    <Text size="sm" fw={500}>Custom Prefix</Text>
                     <HelpTooltip content="Add a custom prefix to the resource name. This will be added before the resource type prefix." />
                   </Group>
                 }
@@ -165,7 +169,7 @@ const AzureNamingTool = () => {
               <TextInput
                 label={
                   <Group gap={4} align="center">
-                    <Text size="sm" fw={500}>Custom Suffix (Optional)</Text>
+                    <Text size="sm" fw={500}>Custom Suffix</Text>
                     <HelpTooltip content="Add a custom suffix to the resource name. This will be added at the end of the name." />
                   </Group>
                 }
