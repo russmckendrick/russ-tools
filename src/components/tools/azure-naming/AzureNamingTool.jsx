@@ -30,7 +30,12 @@ const AzureNamingTool = () => {
           />
         </Group>
 
-        <Stack gap="xl">
+        <ValidationIndicator
+          formState={formState}
+          validationState={validationState}
+        />
+
+        <form onSubmit={e => { e.preventDefault(); generateName(); }}>
           <Group align="flex-start" grow>
             <Stack gap="md" style={{ flex: 1 }}>
               <ResourceTypeSelector
@@ -43,21 +48,28 @@ const AzureNamingTool = () => {
                 updateFormState={updateFormState}
                 validationState={validationState}
                 generateName={generateName}
+                column="left"
               />
             </Stack>
             <Stack gap="md" style={{ flex: 1 }}>
-              <ValidationIndicator
+              <NamingForm
                 formState={formState}
+                updateFormState={updateFormState}
                 validationState={validationState}
-              />
-              <ResultsDisplay
-                formState={formState}
-                validationState={validationState}
+                generateName={generateName}
+                column="right"
               />
             </Stack>
           </Group>
-          <NamingHistory />
-        </Stack>
+        </form>
+
+        <ResultsDisplay
+          formState={formState}
+          validationState={validationState}
+          tableLayout
+        />
+
+        <NamingHistory />
       </Paper>
     </Container>
   );

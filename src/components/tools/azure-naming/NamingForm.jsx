@@ -3,20 +3,15 @@ import { TextInput, Select, Button, Group, Stack, Grid, Text } from '@mantine/co
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import HelpTooltip from './HelpTooltip';
 
-const NamingForm = ({ formState, updateFormState, validationState, generateName }) => {
+const NamingForm = ({ formState, updateFormState, validationState, generateName, column }) => {
   const { environmentOptions, regionDropdownOptions, isLoading } = useAzureNamingContext();
 
   const handleInputChange = (name, value) => {
     updateFormState(name, value);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    generateName();
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
+  if (column === 'left') {
+    return (
       <Stack gap="md">
         <TextInput
           label={
@@ -32,7 +27,6 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName 
           error={validationState.errors.workload}
           withAsterisk
         />
-
         <Select
           label={
             <Group gap={4} align="center">
@@ -48,7 +42,12 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName 
           error={validationState.errors.environment}
           withAsterisk
         />
-
+      </Stack>
+    );
+  }
+  if (column === 'right') {
+    return (
+      <Stack gap="md">
         <Select
           label={
             <Group gap={4} align="center">
@@ -65,7 +64,6 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName 
           withAsterisk
           searchable
         />
-
         <TextInput
           label={
             <Group gap={4} align="center">
@@ -79,7 +77,6 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName 
           placeholder="001"
           error={validationState.errors.instance}
         />
-
         <Grid gutter="md">
           <Grid.Col span={6}>
             <TextInput
@@ -110,13 +107,13 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName 
             />
           </Grid.Col>
         </Grid>
-
-        <Button type="submit" fullWidth mt="md" size="md">
+        <Button type="submit" fullWidth mt="md" size="md" onClick={generateName}>
           Generate Name
         </Button>
       </Stack>
-    </form>
-  );
+    );
+  }
+  return null;
 };
 
 export default NamingForm; 

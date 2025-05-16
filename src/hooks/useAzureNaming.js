@@ -6,7 +6,7 @@ export const useAzureNaming = () => {
   const { shortNames } = useAzureNamingContext();
 
   const [formState, setFormState] = useState({
-    resourceType: '',
+    resourceType: [],
     workload: '',
     environment: '',
     region: '',
@@ -34,8 +34,8 @@ export const useAzureNaming = () => {
     let isValid = true;
 
     // Required fields validation
-    if (!formState.resourceType) {
-      errors.resourceType = 'Resource type is required';
+    if (!formState.resourceType || formState.resourceType.length === 0) {
+      errors.resourceType = 'At least one resource type is required';
       isValid = false;
     }
 
@@ -58,8 +58,10 @@ export const useAzureNaming = () => {
     }
 
     // Resource-specific validation
-    if (formState.resourceType) {
-      const rules = RESOURCE_TYPES[formState.resourceType];
+    if (formState.resourceType && formState.resourceType.length > 0) {
+      // Only validate against the first selected type for now
+      const firstType = formState.resourceType[0];
+      const rules = RESOURCE_TYPES[firstType];
       if (rules) {
         // Validate instance number if required
         if (rules.format.includes('[instance]') && !/^[0-9]{3}$/.test(formState.instance)) {
@@ -84,11 +86,6 @@ export const useAzureNaming = () => {
       : resourceType;
 
   const generateName = useCallback(async () => {
-    const params = {
-      ...formState,
-      resourceType: getSlug(formState.resourceType),
-    };
-    console.log('[generateName] called with params:', params);
     if (!validateForm()) {
       console.log('[generateName] form is invalid:', validationState.errors);
       return null;
@@ -100,17 +97,22 @@ export const useAzureNaming = () => {
     }));
 
     try {
-      // Pass only the slug to generateResourceName
-      const generatedName = generateResourceName(params, shortNames);
-      console.log('[generateName] generated name:', generatedName);
+      const generatedNames = (formState.resourceType || []).map((type) => {
+        const params = {
+          ...formState,
+          resourceType: getSlug(type),
+        };
+        return generateResourceName(params, shortNames);
+      });
+      console.log('[generateName] generated names:', generatedNames);
       setValidationState(prev => ({
         ...prev,
-        generatedName,
+        generatedName: generatedNames,
         isValid: true,
         errors: {},
         isLoading: false
       }));
-      return generatedName;
+      return generatedNames;
     } catch (error) {
       console.log('[generateName] error:', error.message);
       setValidationState(prev => ({
@@ -125,7 +127,7 @@ export const useAzureNaming = () => {
 
   const resetForm = useCallback(() => {
     setFormState({
-      resourceType: '',
+      resourceType: [],
       workload: '',
       environment: '',
       region: '',

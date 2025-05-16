@@ -3,7 +3,7 @@ import { Group, Text, ThemeIcon, Alert, Stack } from '@mantine/core';
 import { IconCheck, IconAlertTriangle, IconX } from '@tabler/icons-react';
 
 const ValidationIndicator = ({ formState, validationState }) => {
-  if (!formState.resourceType) {
+  if (!formState.resourceType || formState.resourceType.length === 0) {
     return null;
   }
 
