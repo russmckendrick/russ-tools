@@ -57,7 +57,7 @@ const ResultsDisplay = ({ formState, validationState }) => {
     const rows = names.map((name, idx) => ({
       'Generated Name': name,
       'Resource Type': getResourceTypeLabel(types[idx]),
-      'Workload': formState.workload,
+      'Workload/Application Name': formState.workload,
       'Environment': getEnvironmentLabel(formState.environment),
       'Region': getRegionLabel(formState.region),
       'Instance': formState.instance
@@ -82,7 +82,7 @@ const ResultsDisplay = ({ formState, validationState }) => {
     const rows = names.map((name, idx) => ({
       'Generated Name': name,
       'Resource Type': getResourceTypeLabel(types[idx]),
-      'Workload': formState.workload,
+      'Workload/Application Name': formState.workload,
       'Environment': getEnvironmentLabel(formState.environment),
       'Region': getRegionLabel(formState.region),
       'Instance': formState.instance
@@ -124,6 +124,12 @@ const ResultsDisplay = ({ formState, validationState }) => {
     ? formState.resourceType
     : [formState.resourceType];
 
+  // Determine which optional columns to show
+  const showInstance = names.some(() => formState.instance && formState.instance !== '');
+  const showCustomPrefix = names.some(() => formState.customPrefix && formState.customPrefix !== '');
+  const showCustomSuffix = names.some(() => formState.customSuffix && formState.customSuffix !== '');
+  const showRandom = names.some(() => formState.randomLength && Number(formState.randomLength) > 0);
+
   return (
     <Paper radius="md" p="md" withBorder mt={24}>
       <Table striped highlightOnHover withTableBorder withColumnBorders>
@@ -131,10 +137,13 @@ const ResultsDisplay = ({ formState, validationState }) => {
           <Table.Tr>
             <Table.Th>Generated Name</Table.Th>
             <Table.Th>Resource Type</Table.Th>
-            <Table.Th>Workload</Table.Th>
+            <Table.Th>Workload/Application Name</Table.Th>
             <Table.Th>Environment</Table.Th>
             <Table.Th>Region</Table.Th>
-            <Table.Th>Instance</Table.Th>
+            {showInstance && <Table.Th>Instance</Table.Th>}
+            {showCustomPrefix && <Table.Th>Custom Prefix</Table.Th>}
+            {showCustomSuffix && <Table.Th>Custom Suffix</Table.Th>}
+            {showRandom && <Table.Th>Random Characters</Table.Th>}
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -155,9 +164,10 @@ const ResultsDisplay = ({ formState, validationState }) => {
               <Table.Td>
                 <Text size="sm">{getRegionLabel(formState.region)}</Text>
               </Table.Td>
-              <Table.Td>
-                <Text size="sm">{formState.instance}</Text>
-              </Table.Td>
+              {showInstance && <Table.Td><Text size="sm">{formState.instance}</Text></Table.Td>}
+              {showCustomPrefix && <Table.Td><Text size="sm">{formState.customPrefix}</Text></Table.Td>}
+              {showCustomSuffix && <Table.Td><Text size="sm">{formState.customSuffix}</Text></Table.Td>}
+              {showRandom && <Table.Td><Text size="sm">{formState.randomLength}</Text></Table.Td>}
             </Table.Tr>
           ))}
         </Table.Tbody>
