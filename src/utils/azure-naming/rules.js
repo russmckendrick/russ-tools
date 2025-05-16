@@ -143,7 +143,7 @@ export const generateResourceName = (params, shortNames = {}) => {
     workload,
     environment,
     region, // region slug
-    instance = '001',
+    instance = '',
     customPrefix,
     customSuffix,
     separator = '-',
@@ -172,7 +172,12 @@ export const generateResourceName = (params, shortNames = {}) => {
     .replace('[workload]', cleanedWorkload)
     .replace('[environment]', cleanedEnv)
     .replace('[region]', cleanedRegion)
-    .replace('[instance]', cleanedInstance);
+    .replace('[instance]', cleanedInstance ? cleanedInstance : '');
+
+  // Add instance number if defined
+  if (cleanedInstance) {
+    name = `${name}${cleanedSeparator}${cleanedInstance}`;
+  }
 
   // Compose using precedence (default: name, slug, random, suffixes, prefixes)
   const precedence = ['name', 'slug', 'random', 'suffixes', 'prefixes'];

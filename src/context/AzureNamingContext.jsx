@@ -126,7 +126,7 @@ export const AzureNamingProvider = ({ children }) => {
     workload: '',
     environment: '',
     region: '',
-    instance: '001',
+    instance: '',
     customPrefix: '',
     customSuffix: ''
   });
