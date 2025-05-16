@@ -15,6 +15,7 @@ const ResourceTypeSelector = () => {
   }));
 
   const handleResourceTypeChange = (value) => {
+    console.log('[ResourceTypeSelector] onChange value:', value);
     updateFormState('resourceType', value);
   };
 
@@ -37,6 +38,9 @@ const ResourceTypeSelector = () => {
       error={validationState.errors.resourceType}
       withAsterisk
       mb="md"
+      searchable={false}
+      creatable={false}
+      allowDeselect={false}
     />
   );
 };

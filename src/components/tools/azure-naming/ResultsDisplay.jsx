@@ -9,6 +9,9 @@ const ResultsDisplay = () => {
   const { addToHistory } = useAzureNamingContext();
   const [copySuccess, setCopySuccess] = useState(false);
 
+  // Debug log
+  console.log('[ResultsDisplay] generatedName:', validationState.generatedName, 'formState:', formState);
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(validationState.generatedName);

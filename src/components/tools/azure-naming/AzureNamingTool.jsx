@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Paper, Title, Group, Stack } from '@mantine/core';
 import { AzureNamingProvider } from '../../../context/AzureNamingContext';
+import { useAzureNaming } from '../../../hooks/useAzureNaming';
 import ResourceTypeSelector from './ResourceTypeSelector';
 import NamingForm from './NamingForm';
 import ValidationIndicator from './ValidationIndicator';
@@ -9,6 +10,14 @@ import NamingHistory from './NamingHistory';
 import HelpTooltip from './HelpTooltip';
 
 const AzureNamingTool = () => {
+  const {
+    formState,
+    validationState,
+    updateFormState,
+    generateName,
+    resetForm
+  } = useAzureNaming();
+
   return (
     <AzureNamingProvider>
       <Container size="lg" py="xl">
@@ -26,12 +35,27 @@ const AzureNamingTool = () => {
           <Stack gap="xl">
             <Group align="flex-start" grow>
               <Stack gap="md" style={{ flex: 1 }}>
-                <ResourceTypeSelector />
-                <NamingForm />
+                <ResourceTypeSelector
+                  formState={formState}
+                  updateFormState={updateFormState}
+                  validationState={validationState}
+                />
+                <NamingForm
+                  formState={formState}
+                  updateFormState={updateFormState}
+                  validationState={validationState}
+                  generateName={generateName}
+                />
               </Stack>
               <Stack gap="md" style={{ flex: 1 }}>
-                <ValidationIndicator />
-                <ResultsDisplay />
+                <ValidationIndicator
+                  formState={formState}
+                  validationState={validationState}
+                />
+                <ResultsDisplay
+                  formState={formState}
+                  validationState={validationState}
+                />
               </Stack>
             </Group>
             <NamingHistory />
