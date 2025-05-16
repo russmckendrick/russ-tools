@@ -1,11 +1,6 @@
 import {
-  IconBook,
-  IconChartPie3,
+  IconBrandAzure,
   IconChevronDown,
-  IconCode,
-  IconCoin,
-  IconFingerprint,
-  IconNotification,
   IconSun,
   IconMoonStars,
   IconNetwork,
@@ -40,6 +35,12 @@ const mockdata = [
     title: 'Network Designer',
     description: "Plan your cloud network and subnets",
     link: "/network-designer",
+  },
+  {
+    icon: IconBrandAzure,
+    title: 'Azure Naming Tool',
+    description: "Generate and validate Azure resource names",
+    link: "/azure-naming",
   },
   // {
   //   icon: IconCoin,

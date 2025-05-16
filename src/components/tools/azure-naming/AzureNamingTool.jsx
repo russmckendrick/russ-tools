@@ -1,4 +1,5 @@
 import React from 'react';
+import { Container, Paper, Title, Group, Stack } from '@mantine/core';
 import { AzureNamingProvider } from '../../../context/AzureNamingContext';
 import ResourceTypeSelector from './ResourceTypeSelector';
 import NamingForm from './NamingForm';
@@ -10,34 +11,33 @@ import HelpTooltip from './HelpTooltip';
 const AzureNamingTool = () => {
   return (
     <AzureNamingProvider>
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">
-            Azure Resource Naming Tool
+      <Container size="lg" py="xl">
+        <Paper radius="md" shadow="md" p="xl" withBorder>
+          <Group align="center" mb="lg">
+            <Title order={2} color="blue.8">
+              Azure Resource Naming Tool
+            </Title>
             <HelpTooltip
               content="Generate compliant Azure resource names following Microsoft's naming conventions and best practices."
               className="ml-2"
             />
-          </h1>
+          </Group>
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+          <Stack gap="xl">
+            <Group align="flex-start" grow>
+              <Stack gap="md" style={{ flex: 1 }}>
                 <ResourceTypeSelector />
                 <NamingForm />
-              </div>
-              <div>
+              </Stack>
+              <Stack gap="md" style={{ flex: 1 }}>
                 <ValidationIndicator />
                 <ResultsDisplay />
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <NamingHistory />
-            </div>
-          </div>
-        </div>
-      </div>
+              </Stack>
+            </Group>
+            <NamingHistory />
+          </Stack>
+        </Paper>
+      </Container>
     </AzureNamingProvider>
   );
 };
