@@ -3,6 +3,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { NetworkDesign } from './pages/NetworkDesign';
 
+/**
+ * Main application component that sets up:
+ * - Mantine UI provider with theme configuration
+ * - React Router for navigation
+ * - Global layout and routes
+ */
 export default function App() {
   return (
     <MantineProvider
@@ -21,7 +27,13 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
+            {/* Default route - currently points to NetworkDesign */}
             <Route index element={<NetworkDesign />} />
+            
+            {/* Network Designer route */}
+            <Route path="network-designer" element={<NetworkDesign />} />
+            
+            {/* Add more routes here as needed */}
           </Route>
         </Routes>
       </BrowserRouter>
