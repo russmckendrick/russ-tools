@@ -1,16 +1,14 @@
 import React from 'react';
 import { Paper, Group, Text, Button, Divider, Stack, ScrollArea } from '@mantine/core';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
-import { useAzureNaming } from '../../../hooks/useAzureNaming';
 
 const NamingHistory = () => {
-  const { namingHistory, clearHistory } = useAzureNamingContext();
-  const { updateFormState } = useAzureNaming();
+  const { namingHistory, clearHistory, setFormState, generateName } = useAzureNamingContext();
 
-  const handleLoadConfiguration = (configuration) => {
-    Object.entries(configuration).forEach(([field, value]) => {
-      updateFormState(field, value);
-    });
+  const handleLoadConfiguration = async (configuration) => {
+    setFormState(configuration);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await generateName();
   };
 
   if (namingHistory.length === 0) {

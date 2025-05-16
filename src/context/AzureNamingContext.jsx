@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
-import { RESOURCE_TYPES } from '../utils/azure-naming/rules';
+import { useLocalStorage } from '@mantine/hooks';
+import { RESOURCE_TYPES, generateResourceName } from '../utils/azure-naming/rules';
 import environments from '../environments.json';
 import { loadAzureRegionData } from '../utils/azure-naming/region-parser';
 
@@ -41,7 +42,6 @@ const initialState = {
   regionDropdownOptions: [],
   shortNames: {},
   regionData: null,
-  namingHistory: [],
   savedConfigurations: [],
   preferences: {
     defaultEnvironment: 'development',
@@ -57,8 +57,6 @@ const ActionTypes = {
   SET_REGION_DATA: 'SET_REGION_DATA',
   SET_REGION_DROPDOWN: 'SET_REGION_DROPDOWN',
   SET_SHORTNAMES: 'SET_SHORTNAMES',
-  ADD_TO_HISTORY: 'ADD_TO_HISTORY',
-  CLEAR_HISTORY: 'CLEAR_HISTORY',
   SAVE_CONFIGURATION: 'SAVE_CONFIGURATION',
   DELETE_CONFIGURATION: 'DELETE_CONFIGURATION',
   UPDATE_PREFERENCES: 'UPDATE_PREFERENCES'
@@ -86,16 +84,6 @@ const reducer = (state, action) => {
       return {
         ...state,
         shortNames: action.payload
-      };
-    case ActionTypes.ADD_TO_HISTORY:
-      return {
-        ...state,
-        namingHistory: [action.payload, ...state.namingHistory].slice(0, 10)
-      };
-    case ActionTypes.CLEAR_HISTORY:
-      return {
-        ...state,
-        namingHistory: []
       };
     case ActionTypes.SAVE_CONFIGURATION:
       return {
@@ -127,6 +115,134 @@ const AzureNamingContext = createContext();
 export const AzureNamingProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
+  const [namingHistory, setNamingHistory] = useLocalStorage({
+    key: 'azure-naming-history',
+    defaultValue: []
+  });
+
+  // --- BEGIN: Move form state and logic here ---
+  const [formState, setFormState] = useState({
+    resourceType: [],
+    workload: '',
+    environment: '',
+    region: '',
+    instance: '001',
+    customPrefix: '',
+    customSuffix: ''
+  });
+
+  const [validationState, setValidationState] = useState({
+    isValid: false,
+    errors: {},
+    generatedName: '',
+    isLoading: false
+  });
+
+  const updateFormState = (field, value) => {
+    setFormState(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    let isValid = true;
+    if (!formState.resourceType || formState.resourceType.length === 0) {
+      errors.resourceType = 'At least one resource type is required';
+      isValid = false;
+    }
+    if (!formState.workload) {
+      errors.workload = 'Workload/Application Name is required';
+      isValid = false;
+    } else if (!/^[a-zA-Z0-9 _-]+$/.test(formState.workload)) {
+      errors.workload = 'Only letters, numbers, spaces, dashes, and underscores are allowed';
+      isValid = false;
+    }
+    if (!formState.environment) {
+      errors.environment = 'Environment is required';
+      isValid = false;
+    }
+    if (!formState.region) {
+      errors.region = 'Region is required';
+      isValid = false;
+    }
+    if (formState.resourceType && formState.resourceType.length > 0) {
+      const firstType = formState.resourceType[0];
+      const rules = RESOURCE_TYPES[firstType];
+      if (rules) {
+        if (rules.format.includes('[instance]') && !/^[0-9]{3}$/.test(formState.instance)) {
+          errors.instance = 'Instance must be a 3-digit number';
+          isValid = false;
+        }
+      }
+    }
+    setValidationState(prev => ({
+      ...prev,
+      isValid,
+      errors
+    }));
+    return isValid;
+  };
+
+  const getSlug = (resourceType) =>
+    resourceType && resourceType.includes('|')
+      ? resourceType.split('|')[0]
+      : resourceType;
+
+  const generateName = async () => {
+    if (!validateForm()) {
+      return null;
+    }
+    setValidationState(prev => ({
+      ...prev,
+      isLoading: true
+    }));
+    try {
+      const generatedNames = (formState.resourceType || []).map((type) => {
+        const params = {
+          ...formState,
+          resourceType: getSlug(type),
+        };
+        return generateResourceName(params, state.shortNames);
+      });
+      setValidationState(prev => ({
+        ...prev,
+        generatedName: generatedNames,
+        isValid: true,
+        errors: {},
+        isLoading: false
+      }));
+      return generatedNames;
+    } catch (error) {
+      setValidationState(prev => ({
+        ...prev,
+        isValid: false,
+        errors: { general: error.message },
+        isLoading: false
+      }));
+      return null;
+    }
+  };
+
+  const resetForm = () => {
+    setFormState({
+      resourceType: [],
+      workload: '',
+      environment: '',
+      region: '',
+      instance: '001',
+      customPrefix: '',
+      customSuffix: ''
+    });
+    setValidationState({
+      isValid: false,
+      errors: {},
+      generatedName: '',
+      isLoading: false
+    });
+  };
+  // --- END: Move form state and logic here ---
 
   useEffect(() => {
     const loadRegions = async () => {
@@ -161,8 +277,19 @@ export const AzureNamingProvider = ({ children }) => {
     ...state,
     isLoading,
     environmentOptions,
-    addToHistory: (name) => dispatch({ type: ActionTypes.ADD_TO_HISTORY, payload: name }),
-    clearHistory: () => dispatch({ type: ActionTypes.CLEAR_HISTORY }),
+    namingHistory,
+    formState,
+    validationState,
+    updateFormState,
+    setFormState,
+    validateForm,
+    generateName,
+    resetForm,
+    addToHistory: (name) => {
+      const newHistory = [name, ...namingHistory].slice(0, 10);
+      setNamingHistory(newHistory);
+    },
+    clearHistory: () => setNamingHistory([]),
     saveConfiguration: (config) => dispatch({ type: ActionTypes.SAVE_CONFIGURATION, payload: config }),
     deleteConfiguration: (id) => dispatch({ type: ActionTypes.DELETE_CONFIGURATION, payload: id }),
     updatePreferences: (prefs) => dispatch({ type: ActionTypes.UPDATE_PREFERENCES, payload: prefs })

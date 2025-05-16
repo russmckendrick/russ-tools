@@ -36,7 +36,6 @@ const ResourceTypeSelector = ({ formState, updateFormState, validationState, sho
       searchable
       clearable
       maxDropdownHeight={200}
-      dropdownPosition="bottom"
       size="md"
       style={{ minHeight: 90 }}
     />

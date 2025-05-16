@@ -1,152 +1,24 @@
-import { useState, useCallback } from 'react';
-import { generateResourceName, validateResourceName, RESOURCE_TYPES } from '../utils/azure-naming/rules';
+import { useCallback } from 'react';
 import { useAzureNamingContext } from '../context/AzureNamingContext';
 
 export const useAzureNaming = () => {
-  const { shortNames } = useAzureNamingContext();
+  // Use everything from context
+  const {
+    formState,
+    validationState,
+    updateFormState,
+    setFormState,
+    validateForm,
+    generateName,
+    resetForm
+  } = useAzureNamingContext();
 
-  const [formState, setFormState] = useState({
-    resourceType: [],
-    workload: '',
-    environment: '',
-    region: '',
-    instance: '001',
-    customPrefix: '',
-    customSuffix: ''
-  });
-
-  const [validationState, setValidationState] = useState({
-    isValid: false,
-    errors: {},
-    generatedName: '',
-    isLoading: false
-  });
-
-  const updateFormState = useCallback((field, value) => {
-    setFormState(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  }, []);
-
-  const validateForm = useCallback(() => {
-    const errors = {};
-    let isValid = true;
-
-    // Required fields validation
-    if (!formState.resourceType || formState.resourceType.length === 0) {
-      errors.resourceType = 'At least one resource type is required';
-      isValid = false;
-    }
-
-    if (!formState.workload) {
-      errors.workload = 'Workload/Application Name is required';
-      isValid = false;
-    } else if (!/^[a-zA-Z0-9 _-]+$/.test(formState.workload)) {
-      errors.workload = 'Only letters, numbers, spaces, dashes, and underscores are allowed';
-      isValid = false;
-    }
-
-    if (!formState.environment) {
-      errors.environment = 'Environment is required';
-      isValid = false;
-    }
-
-    if (!formState.region) {
-      errors.region = 'Region is required';
-      isValid = false;
-    }
-
-    // Resource-specific validation
-    if (formState.resourceType && formState.resourceType.length > 0) {
-      // Only validate against the first selected type for now
-      const firstType = formState.resourceType[0];
-      const rules = RESOURCE_TYPES[firstType];
-      if (rules) {
-        // Validate instance number if required
-        if (rules.format.includes('[instance]') && !/^[0-9]{3}$/.test(formState.instance)) {
-          errors.instance = 'Instance must be a 3-digit number';
-          isValid = false;
-        }
-      }
-    }
-
-    setValidationState(prev => ({
-      ...prev,
-      isValid,
-      errors
-    }));
-
-    return isValid;
-  }, [formState]);
-
-  const getSlug = (resourceType) =>
-    resourceType && resourceType.includes('|')
-      ? resourceType.split('|')[0]
-      : resourceType;
-
-  const generateName = useCallback(async () => {
-    if (!validateForm()) {
-      console.log('[generateName] form is invalid:', validationState.errors);
-      return null;
-    }
-
-    setValidationState(prev => ({
-      ...prev,
-      isLoading: true
-    }));
-
-    try {
-      const generatedNames = (formState.resourceType || []).map((type) => {
-        const params = {
-          ...formState,
-          resourceType: getSlug(type),
-        };
-        return generateResourceName(params, shortNames);
-      });
-      console.log('[generateName] generated names:', generatedNames);
-      setValidationState(prev => ({
-        ...prev,
-        generatedName: generatedNames,
-        isValid: true,
-        errors: {},
-        isLoading: false
-      }));
-      return generatedNames;
-    } catch (error) {
-      console.log('[generateName] error:', error.message);
-      setValidationState(prev => ({
-        ...prev,
-        isValid: false,
-        errors: { general: error.message },
-        isLoading: false
-      }));
-      return null;
-    }
-  }, [formState, validateForm, validationState.errors, shortNames]);
-
-  const resetForm = useCallback(() => {
-    setFormState({
-      resourceType: [],
-      workload: '',
-      environment: '',
-      region: '',
-      instance: '001',
-      customPrefix: '',
-      customSuffix: ''
-    });
-    setValidationState({
-      isValid: false,
-      errors: {},
-      generatedName: '',
-      isLoading: false
-    });
-  }, []);
-
+  // Optionally, you can wrap updateFormState etc. in useCallback if you want, but not required
   return {
     formState,
     validationState,
     updateFormState,
+    setFormState,
     validateForm,
     generateName,
     resetForm
