@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Paper, Group, Text, Button, Code, Divider, SimpleGrid, Stack, Title } from '@mantine/core';
+import { IconCopy, IconCheck } from '@tabler/icons-react';
 import { useAzureNaming } from '../../../hooks/useAzureNaming';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 
@@ -12,8 +14,6 @@ const ResultsDisplay = () => {
       await navigator.clipboard.writeText(validationState.generatedName);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
-
-      // Add to history
       addToHistory({
         resourceType: formState.resourceType,
         generatedName: validationState.generatedName,
@@ -29,60 +29,41 @@ const ResultsDisplay = () => {
   }
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
-      <h3 className="text-lg font-medium text-gray-900 mb-2">Generated Name</h3>
-      
-      <div className="flex items-center space-x-2">
-        <code className="flex-1 bg-white px-3 py-2 rounded border border-gray-300 text-sm font-mono">
+    <Paper radius="md" p="md" withBorder bg="gray.0">
+      <Stack gap="xs">
+        <Group justify="space-between" align="center" mb="xs">
+          <Title order={4} size="h5">Generated Name</Title>
+          <Button
+            onClick={handleCopy}
+            size="xs"
+            leftSection={copySuccess ? <IconCheck size={16} /> : <IconCopy size={16} />}
+            color={copySuccess ? 'green' : 'blue'}
+            variant={copySuccess ? 'light' : 'filled'}
+            radius="md"
+          >
+            {copySuccess ? 'Copied!' : 'Copy'}
+          </Button>
+        </Group>
+        <Code block fz="md" py={8} px={12} radius="md" mb="sm" style={{ fontSize: 16 }}>
           {validationState.generatedName}
-        </code>
-        
-        <button
-          onClick={handleCopy}
-          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          {copySuccess ? 'Copied!' : 'Copy'}
-        </button>
-      </div>
-
-      <div className="mt-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Name Components:</h4>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <dt className="text-gray-500">Resource Type:</dt>
-          <dd className="text-gray-900">{formState.resourceType}</dd>
-          
-          <dt className="text-gray-500">Workload:</dt>
-          <dd className="text-gray-900">{formState.workload}</dd>
-          
-          <dt className="text-gray-500">Environment:</dt>
-          <dd className="text-gray-900">{formState.environment}</dd>
-          
-          <dt className="text-gray-500">Region:</dt>
-          <dd className="text-gray-900">{formState.region}</dd>
-          
-          {formState.instance && (
-            <>
-              <dt className="text-gray-500">Instance:</dt>
-              <dd className="text-gray-900">{formState.instance}</dd>
-            </>
-          )}
-          
-          {formState.customPrefix && (
-            <>
-              <dt className="text-gray-500">Custom Prefix:</dt>
-              <dd className="text-gray-900">{formState.customPrefix}</dd>
-            </>
-          )}
-          
-          {formState.customSuffix && (
-            <>
-              <dt className="text-gray-500">Custom Suffix:</dt>
-              <dd className="text-gray-900">{formState.customSuffix}</dd>
-            </>
-          )}
-        </dl>
-      </div>
-    </div>
+        </Code>
+        <Divider my="xs" />
+        <Text size="sm" fw={500} mb={4}>Name Components:</Text>
+        <SimpleGrid cols={2} spacing={4} verticalSpacing={2}>
+          <Text c="dimmed" size="sm">Resource Type:</Text>
+          <Text size="sm">{formState.resourceType}</Text>
+          <Text c="dimmed" size="sm">Workload:</Text>
+          <Text size="sm">{formState.workload}</Text>
+          <Text c="dimmed" size="sm">Environment:</Text>
+          <Text size="sm">{formState.environment}</Text>
+          <Text c="dimmed" size="sm">Region:</Text>
+          <Text size="sm">{formState.region}</Text>
+          {formState.instance && <><Text c="dimmed" size="sm">Instance:</Text><Text size="sm">{formState.instance}</Text></>}
+          {formState.customPrefix && <><Text c="dimmed" size="sm">Custom Prefix:</Text><Text size="sm">{formState.customPrefix}</Text></>}
+          {formState.customSuffix && <><Text c="dimmed" size="sm">Custom Suffix:</Text><Text size="sm">{formState.customSuffix}</Text></>}
+        </SimpleGrid>
+      </Stack>
+    </Paper>
   );
 };
 

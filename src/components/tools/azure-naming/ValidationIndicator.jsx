@@ -1,4 +1,6 @@
 import React from 'react';
+import { Group, Text, ThemeIcon, Alert, Stack } from '@mantine/core';
+import { IconCheck, IconAlertTriangle, IconX } from '@tabler/icons-react';
 import { useAzureNaming } from '../../../hooks/useAzureNaming';
 
 const ValidationIndicator = () => {
@@ -10,42 +12,46 @@ const ValidationIndicator = () => {
 
   const hasErrors = Object.keys(validationState.errors).length > 0;
 
+  let statusIcon, statusColor, statusText;
+  if (hasErrors) {
+    statusIcon = <IconX size={16} />;
+    statusColor = 'red';
+    statusText = 'Validation Errors';
+  } else if (validationState.isValid) {
+    statusIcon = <IconCheck size={16} />;
+    statusColor = 'green';
+    statusText = 'Valid';
+  } else {
+    statusIcon = <IconAlertTriangle size={16} />;
+    statusColor = 'yellow';
+    statusText = 'Incomplete';
+  }
+
   return (
-    <div className="mb-6">
-      <div className="flex items-center space-x-2">
-        <div
-          className={`w-3 h-3 rounded-full ${
-            hasErrors ? 'bg-red-500' : validationState.isValid ? 'bg-green-500' : 'bg-yellow-500'
-          }`}
-        />
-        <span className="text-sm font-medium text-gray-700">
-          {hasErrors
-            ? 'Validation Errors'
-            : validationState.isValid
-            ? 'Valid'
-            : 'Incomplete'}
-        </span>
-      </div>
+    <Stack gap="xs" mb="md">
+      <Group align="center" gap={8}>
+        <ThemeIcon color={statusColor} size={20} radius="xl" variant="light">
+          {statusIcon}
+        </ThemeIcon>
+        <Text size="sm" fw={500} c="gray.7">{statusText}</Text>
+      </Group>
 
       {hasErrors && (
-        <div className="mt-2 p-3 bg-red-50 rounded-md">
-          <h4 className="text-sm font-medium text-red-800">Please fix the following issues:</h4>
-          <ul className="mt-2 text-sm text-red-700 list-disc list-inside">
+        <Alert color="red" title="Please fix the following issues:" icon={<IconX size={18} />} variant="light">
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
             {Object.entries(validationState.errors).map(([field, error]) => (
-              <li key={field}>{error}</li>
+              <li key={field}><Text size="sm" c="red.7">{error}</Text></li>
             ))}
           </ul>
-        </div>
+        </Alert>
       )}
 
       {validationState.isValid && (
-        <div className="mt-2 p-3 bg-green-50 rounded-md">
-          <p className="text-sm text-green-800">
-            All inputs are valid. You can generate a name for your resource.
-          </p>
-        </div>
+        <Alert color="green" icon={<IconCheck size={18} />} variant="light">
+          <Text size="sm" c="green.8">All inputs are valid. You can generate a name for your resource.</Text>
+        </Alert>
       )}
-    </div>
+    </Stack>
   );
 };
 

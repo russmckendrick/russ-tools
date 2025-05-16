@@ -1,4 +1,5 @@
 import React from 'react';
+import { Paper, Group, Text, Button, Divider, Stack, ScrollArea } from '@mantine/core';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import { useAzureNaming } from '../../../hooks/useAzureNaming';
 
@@ -17,44 +18,39 @@ const NamingHistory = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">Recent Names</h3>
-        <button
-          onClick={clearHistory}
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
+    <Paper radius="md" withBorder p="md" mt="md">
+      <Group justify="space-between" align="center" mb="xs">
+        <Text fw={600} size="md">Recent Names</Text>
+        <Button onClick={clearHistory} size="xs" color="gray" variant="subtle">
           Clear History
-        </button>
-      </div>
-      
-      <div className="border-t border-gray-200">
-        <ul className="divide-y divide-gray-200">
+        </Button>
+      </Group>
+      <Divider my="xs" />
+      <ScrollArea h={220} type="auto" offsetScrollbars>
+        <Stack gap={0}>
           {namingHistory.map((item) => (
-            <li key={item.id} className="px-4 py-4 sm:px-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-indigo-600 truncate">
-                    {item.generatedName}
-                  </p>
-                  <p className="mt-1 text-sm text-gray-500">
+            <Paper key={item.id} radius="sm" p="sm" withBorder mb="xs">
+              <Group justify="space-between" align="center">
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <Text size="sm" fw={500} truncate c="blue.7">{item.generatedName}</Text>
+                  <Text size="xs" c="dimmed">
                     {item.resourceType} • {new Date(item.timestamp).toLocaleString()}
-                  </p>
+                  </Text>
                 </div>
-                <div className="ml-4 flex-shrink-0">
-                  <button
-                    onClick={() => handleLoadConfiguration(item.configuration)}
-                    className="text-sm text-indigo-600 hover:text-indigo-900"
-                  >
-                    Load
-                  </button>
-                </div>
-              </div>
-            </li>
+                <Button
+                  onClick={() => handleLoadConfiguration(item.configuration)}
+                  size="xs"
+                  color="blue"
+                  variant="light"
+                >
+                  Load
+                </Button>
+              </Group>
+            </Paper>
           ))}
-        </ul>
-      </div>
-    </div>
+        </Stack>
+      </ScrollArea>
+    </Paper>
   );
 };
 
