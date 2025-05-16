@@ -154,13 +154,13 @@ export const generateResourceName = (params, shortNames = {}) => {
   const regionAbbr = shortNames[region] || region;
 
   // Clean each part
-  const cleanedWorkload = cleanString(workload, rules.validChars);
-  const cleanedPrefix = customPrefix ? cleanString(customPrefix, rules.validChars) : '';
-  const cleanedSuffix = customSuffix ? cleanString(customSuffix, rules.validChars) : '';
-  const cleanedInstance = cleanString(instance, rules.validChars);
-  const cleanedEnv = cleanString(envAbbr, rules.validChars);
-  const cleanedRegion = cleanString(regionAbbr, rules.validChars);
-  const cleanedSeparator = cleanString(separator, rules.validChars);
+  const cleanedWorkload = cleanString(workload, rules.regex);
+  const cleanedPrefix = customPrefix ? cleanString(customPrefix, rules.regex) : '';
+  const cleanedSuffix = customSuffix ? cleanString(customSuffix, rules.regex) : '';
+  const cleanedInstance = cleanString(instance, rules.regex);
+  const cleanedEnv = cleanString(envAbbr, rules.regex);
+  const cleanedRegion = cleanString(regionAbbr, rules.regex);
+  const cleanedSeparator = rules.dashes === false ? '' : cleanString(separator, rules.regex);
 
   // Compose the name parts
   let name = rules.format
@@ -183,6 +183,9 @@ export const generateResourceName = (params, shortNames = {}) => {
 
   let composed = composeName(cleanedSeparator, parts, rules.maxLength, precedence);
   composed = trimResourceName(composed, rules.maxLength);
+
+  // Clean the composed name before validation
+  composed = cleanString(composed, rules.regex);
 
   // Lowercase if required
   if (rules.caseSensitive === true) {

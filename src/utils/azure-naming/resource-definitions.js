@@ -74,7 +74,7 @@ const processDefinitions = (defs) => {
       validChars: cleaningRegex, // for cleaning
       validPattern: validationRegex, // for validation
       pattern: goRegexToJsValidation(def.validation_regex),
-      format: `[workload]-[environment]-[region]`,
+      format: def.dashes === false ? `[workload][environment][region]` : `[workload]-[environment]-[region]`,
       dashes: def.dashes,
       scope: def.scope
     };
