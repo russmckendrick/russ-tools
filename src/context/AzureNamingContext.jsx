@@ -108,6 +108,7 @@ export const AzureNamingProvider = ({ children }) => {
           label: displayName,
           value: slug
         }));
+        console.log('[AzureNamingContext] Region dropdown options:', dropdownOptions);
         dispatch({ type: ActionTypes.SET_REGION_DROPDOWN, payload: dropdownOptions });
         dispatch({ type: ActionTypes.SET_SHORTNAMES, payload: regionData.shortNames });
       } catch (error) {

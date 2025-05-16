@@ -34,9 +34,7 @@ const ResourceTypeSelector = ({ formState, updateFormState, validationState }) =
       error={validationState.errors.resourceType}
       withAsterisk
       mb="md"
-      searchable={false}
-      creatable={false}
-      allowDeselect={false}
+      searchable
     />
   );
 };

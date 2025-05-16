@@ -8,25 +8,25 @@ const CLI_NAMES_REGEX = /cli_names\s*=\s*{([^}]+)}/;
 
 /**
  * Parses a Terraform map string into a JavaScript object
+ * Only includes lines above the '# Global/continental zones' comment if filterGlobal is true
  * @param {string} mapString - The string containing the Terraform map
+ * @param {boolean} filterGlobal - Whether to stop at the global/continental zones comment
  * @returns {Object} The parsed map as a JavaScript object
  */
-function parseTerraformMap(mapString) {
+function parseTerraformMap(mapString, filterGlobal = false) {
   const map = {};
   const lines = mapString.split('\n');
-  
-  lines.forEach(line => {
+  for (let line of lines) {
+    if (filterGlobal && line.trim().startsWith('# Global/continental zones')) break;
     // Skip empty lines and comments
-    if (!line.trim() || line.trim().startsWith('#')) return;
-    
+    if (!line.trim() || line.trim().startsWith('#')) continue;
     // Extract key and value
     const match = line.match(/"([^"]+)"\s*=\s*"([^"]+)"/);
     if (match) {
       const [, key, value] = match;
       map[key.trim()] = value.trim();
     }
-  });
-  
+  }
   return map;
 }
 
@@ -50,7 +50,8 @@ export async function loadAzureRegionData() {
     }
 
     // Parse each map
-    const regions = parseTerraformMap(regionsMatch[1]);
+    // Only include real Azure regions (above the global/continental zones comment)
+    const regions = parseTerraformMap(regionsMatch[1], true);
     const shortNames = parseTerraformMap(shortNamesMatch[1]);
     const cliNames = parseTerraformMap(cliNamesMatch[1]);
 
