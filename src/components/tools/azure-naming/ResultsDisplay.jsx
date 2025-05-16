@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Paper, Group, Text, Button, Table, Center } from '@mantine/core';
+import { Paper, Text, Button, Table, SimpleGrid } from '@mantine/core';
 import { IconCopy, IconCheck, IconDownload, IconDeviceFloppy } from '@tabler/icons-react';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import { utils as XLSXUtils, writeFile as XLSXWriteFile } from 'xlsx';
@@ -162,29 +162,28 @@ const ResultsDisplay = ({ formState, validationState }) => {
           ))}
         </Table.Tbody>
       </Table>
-      <Center mt="md">
-        <Group>
-          <Button leftSection={<IconDownload size={16} />} variant="default" size="xs" onClick={handleExportCSV}>
-            Export CSV
-          </Button>
-          <Button leftSection={<IconDownload size={16} />} variant="default" size="xs" onClick={handleExportExcel}>
-            Export Excel
-          </Button>
-          <Button leftSection={<IconDeviceFloppy size={16} />} variant="filled" size="xs" color="blue" onClick={handleSave}>
-            Save
-          </Button>
-          <Button
-            onClick={handleCopy}
-            size="xs"
-            leftSection={copySuccess ? <IconCheck size={16} /> : <IconCopy size={16} />}
-            color={copySuccess ? 'green' : 'blue'}
-            variant={copySuccess ? 'light' : 'filled'}
-            radius="md"
-          >
-            {copySuccess ? 'Copied!' : 'Copy'}
-          </Button>
-        </Group>
-      </Center>
+      <SimpleGrid cols={4} spacing="md" mt="md">
+        <Button leftSection={<IconDownload size={16} />} variant="default" size="md" radius="md"fullWidth onClick={handleExportCSV}>
+          Export CSV
+        </Button>
+        <Button leftSection={<IconDownload size={16} />} variant="default" size="md" radius="md" fullWidth onClick={handleExportExcel}>
+          Export Excel
+        </Button>
+        <Button leftSection={<IconDeviceFloppy size={16} />} variant="filled" size="md" color="blue" radius="md" fullWidth onClick={handleSave}>
+          Save
+        </Button>
+        <Button
+          onClick={handleCopy}
+          size="md"
+          fullWidth
+          leftSection={copySuccess ? <IconCheck size={16} /> : <IconCopy size={16} />}
+          color={copySuccess ? 'green' : 'blue'}
+          variant={copySuccess ? 'light' : 'filled'}
+          radius="md"
+        >
+          {copySuccess ? 'Copied!' : 'Copy'}
+        </Button>
+      </SimpleGrid>
     </Paper>
   );
 };
