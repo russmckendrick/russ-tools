@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Paper, Group, Text, Button, Table } from '@mantine/core';
+import { Paper, Group, Text, Button, Table, Center } from '@mantine/core';
 import { IconCopy, IconCheck, IconDownload, IconDeviceFloppy } from '@tabler/icons-react';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import { utils as XLSXUtils, writeFile as XLSXWriteFile } from 'xlsx';
@@ -125,28 +125,7 @@ const ResultsDisplay = ({ formState, validationState }) => {
     : [formState.resourceType];
 
   return (
-    <Paper radius="md" p="md" withBorder bg="gray.0" mt={24}>
-      <Group mb="xs" justify="flex-end">
-        <Button leftSection={<IconDownload size={16} />} variant="default" size="xs" onClick={handleExportCSV}>
-          Export CSV
-        </Button>
-        <Button leftSection={<IconDownload size={16} />} variant="default" size="xs" onClick={handleExportExcel}>
-          Export Excel
-        </Button>
-        <Button leftSection={<IconDeviceFloppy size={16} />} variant="filled" size="xs" color="blue" onClick={handleSave}>
-          Save
-        </Button>
-        <Button
-          onClick={handleCopy}
-          size="xs"
-          leftSection={copySuccess ? <IconCheck size={16} /> : <IconCopy size={16} />}
-          color={copySuccess ? 'green' : 'blue'}
-          variant={copySuccess ? 'light' : 'filled'}
-          radius="md"
-        >
-          {copySuccess ? 'Copied!' : 'Copy'}
-        </Button>
-      </Group>
+    <Paper radius="md" p="md" withBorder mt={24}>
       <Table striped highlightOnHover withTableBorder withColumnBorders>
         <Table.Thead>
           <Table.Tr>
@@ -183,6 +162,29 @@ const ResultsDisplay = ({ formState, validationState }) => {
           ))}
         </Table.Tbody>
       </Table>
+      <Center mt="md">
+        <Group>
+          <Button leftSection={<IconDownload size={16} />} variant="default" size="xs" onClick={handleExportCSV}>
+            Export CSV
+          </Button>
+          <Button leftSection={<IconDownload size={16} />} variant="default" size="xs" onClick={handleExportExcel}>
+            Export Excel
+          </Button>
+          <Button leftSection={<IconDeviceFloppy size={16} />} variant="filled" size="xs" color="blue" onClick={handleSave}>
+            Save
+          </Button>
+          <Button
+            onClick={handleCopy}
+            size="xs"
+            leftSection={copySuccess ? <IconCheck size={16} /> : <IconCopy size={16} />}
+            color={copySuccess ? 'green' : 'blue'}
+            variant={copySuccess ? 'light' : 'filled'}
+            radius="md"
+          >
+            {copySuccess ? 'Copied!' : 'Copy'}
+          </Button>
+        </Group>
+      </Center>
     </Paper>
   );
 };
