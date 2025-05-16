@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Paper, Text, Button, Table, SimpleGrid } from '@mantine/core';
 import { IconCopy, IconCheck, IconDownload, IconDeviceFloppy } from '@tabler/icons-react';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
-import { utils as XLSXUtils, writeFile as XLSXWriteFile } from 'xlsx';
+import ExcelJS from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 
 const ResultsDisplay = ({ formState, validationState }) => {
@@ -72,7 +72,7 @@ const ResultsDisplay = ({ formState, validationState }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     const names = Array.isArray(validationState.generatedName)
       ? validationState.generatedName
       : [validationState.generatedName];
@@ -87,10 +87,29 @@ const ResultsDisplay = ({ formState, validationState }) => {
       'Region': getRegionLabel(formState.region),
       'Instance': formState.instance
     }));
-    const ws = XLSXUtils.json_to_sheet(rows);
-    const wb = XLSXUtils.book_new();
-    XLSXUtils.book_append_sheet(wb, ws, 'Names');
-    XLSXWriteFile(wb, 'azure-resource-names.xlsx');
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Names');
+    
+    // Add headers
+    worksheet.columns = Object.keys(rows[0]).map(key => ({
+      header: key,
+      key: key,
+      width: 20
+    }));
+
+    // Add rows
+    worksheet.addRows(rows);
+
+    // Generate and download the file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'azure-resource-names.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleSave = () => {
