@@ -34,6 +34,7 @@ const processDefinitions = (defs) => {
   return defs.reduce((acc, def) => {
     // Convert the definition to our internal format
     const processedDef = {
+      name: def.name,
       type: def.slug,
       maxLength: def.max_length,
       minLength: def.min_length,

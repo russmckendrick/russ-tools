@@ -3,8 +3,12 @@ import { RESOURCE_TYPES } from '../utils/azure-naming/rules';
 import environments from '../environments.json';
 import { loadAzureRegionData } from '../utils/azure-naming/region-parser';
 
+// Log raw RESOURCE_TYPES values for debugging
+const rawResourceTypes = Object.values(RESOURCE_TYPES);
+console.log('RAW RESOURCE_TYPES:', rawResourceTypes);
+
 // Build resourceTypes as an array of { value: name, label: slug }, filtering out malformed entries
-const resourceTypes = Object.values(RESOURCE_TYPES)
+const resourceTypes = rawResourceTypes
   .filter(rt => rt && rt.name && rt.type)
   .map(rt => ({ value: rt.name, label: rt.type }));
 
