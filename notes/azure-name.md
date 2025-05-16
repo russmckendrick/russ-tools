@@ -1,5 +1,15 @@
 # Azure Naming Function Application - Detailed Implementation Plan
 
+## [Update: Region Source Simplification]
+
+**As of [DATE], the `regions` map in `azure-name-regions.tf` now only contains real Azure regions.**
+- All global/continental pseudo-regions have been removed from the file.
+- The region parser (`region-parser.js`) now parses all entries in the `regions` map directly, with no filtering or comment-based splitting.
+- The dropdown for region selection and the abbreviation logic both use all entries in the `regions` map.
+- To update the available regions, simply update the `regions` map in `azure-name-regions.tf`.
+
+---
+
 ## Overview
 This document outlines the comprehensive plan for implementing an Azure naming convention function as the second tool in our collection. The function will help users generate compliant Azure resource names based on Microsoft's naming conventions and best practices. It will provide a user-friendly interface for generating standardized names that follow organizational governance requirements while adhering to Azure's resource-specific limitations.
 
