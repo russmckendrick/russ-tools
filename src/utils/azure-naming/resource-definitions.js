@@ -5,12 +5,16 @@ import outOfDocsDefinitions from '../../../src/azure-naming/azure-name-resourceD
 // Convert Go-style regex to JavaScript-compatible regex for validation (full string)
 function goRegexToJsValidation(str, fallback = /.*/) {
   if (!str || typeof str !== 'string' || str.trim() === '') return fallback;
-  let cleaned = str.trim().replace(/^(["'`])|(["'`])$/g, '');
+  let cleaned = str.trim();
+
+  // Remove leading/trailing quotes (single, double, or backtick)
+  cleaned = cleaned.replace(/^(\"|'|`)/, '').replace(/(\"|'|`)$/, '');
+
+  // Unescape double-escaped backslashes (from JSON/Go)
   cleaned = cleaned.replace(/\\/g, '\\');
-  if (/^\[\^.*\]$/.test(cleaned)) {
-    const charSet = cleaned.slice(2, -1);
-    cleaned = `^[${charSet}]+$`;
-  }
+
+  console.log('goRegexToJsValidation:', { original: str, cleaned }); // Debug log
+
   try {
     return new RegExp(cleaned);
   } catch (e) {
@@ -64,7 +68,7 @@ const processDefinitions = (defs) => {
   return defs.reduce((acc, def) => {
     // Convert the definition to our internal format
     const cleaningRegex = goRegexToJsCleaning(def.regex);
-    const validationRegex = goRegexToJsValidation(def.regex);
+    const validationRegex = goRegexToJsValidation(def.validation_regex);
     const processedDef = {
       name: def.name,
       type: def.slug,
@@ -79,13 +83,13 @@ const processDefinitions = (defs) => {
       scope: def.scope
     };
 
-    // Add any special rules based on the resource type
-    if (def.name.includes('virtual_machine')) {
-      processedDef.maxLength = {
-        windows: 15,
-        linux: 64
-      };
-    }
+    // Debug log for validation
+    console.log('Validating resource:', {
+      type: def.type,
+      input: def.name,
+      validationRegex: validationRegex.toString(),
+      matches: validationRegex.test(def.name)
+    });
 
     // Store by both the full name and the slug for easy lookup
     acc[def.name] = processedDef;

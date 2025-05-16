@@ -12,27 +12,30 @@ export const RESOURCE_TYPES = RESOURCE_DEFINITIONS;
 export const validateResourceName = (name, resourceType) => {
   // Get the rules object
   const rules = getResourceDefinition(resourceType);
+  console.log('[validateResourceName] name:', name, 'resourceType:', resourceType, 'rules:', rules);
   if (!rules) return { valid: false, error: 'Invalid resource type' };
 
   // Check length
   if (typeof rules.maxLength === 'object') {
-    // Special case for VMs with different Windows/Linux limits
-    const maxLength = rules.maxLength.windows; // Default to Windows limit
+    const maxLength = rules.maxLength.windows;
     if (name.length > maxLength) {
+      console.log('[validateResourceName] FAIL: too long', name.length, '>', maxLength);
       return { valid: false, error: `Name exceeds maximum length of ${maxLength} characters` };
     }
   } else if (name.length > rules.maxLength) {
+    console.log('[validateResourceName] FAIL: too long', name.length, '>', rules.maxLength);
     return { valid: false, error: `Name exceeds maximum length of ${rules.maxLength} characters` };
   }
 
   if (rules.minLength && name.length < rules.minLength) {
+    console.log('[validateResourceName] FAIL: too short', name.length, '<', rules.minLength);
     return { valid: false, error: `Name must be at least ${rules.minLength} characters` };
   }
 
   // Check character validity (use validPattern)
   if (!rules.validPattern.test(name)) {
-    // Find invalid characters
     const invalidChars = name.split('').filter(c => !rules.validPattern.test(c));
+    console.log('[validateResourceName] FAIL: invalid chars', name, 'regex:', rules.validPattern, 'invalid:', invalidChars);
     return {
       valid: false,
       error: `Name contains invalid characters: "${name}". Invalid: [${invalidChars.join(', ')}]. Regex: ${rules.validPattern}`
@@ -41,9 +44,11 @@ export const validateResourceName = (name, resourceType) => {
 
   // Check pattern
   if (!rules.pattern.test(name)) {
+    console.log('[validateResourceName] FAIL: pattern mismatch', name, 'pattern:', rules.pattern);
     return { valid: false, error: 'Name does not match required pattern' };
   }
 
+  console.log('[validateResourceName] PASS:', name);
   return { valid: true };
 };
 
