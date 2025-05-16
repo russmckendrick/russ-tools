@@ -2,6 +2,7 @@ import { MantineProvider } from '@mantine/core';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { NetworkDesign } from './pages/NetworkDesign';
+import AzureNamingTool from './components/tools/azure-naming/AzureNamingTool';
 
 /**
  * Main application component that sets up:
@@ -32,6 +33,9 @@ export default function App() {
             
             {/* Network Designer route */}
             <Route path="network-designer" element={<NetworkDesign />} />
+            
+            {/* Azure Naming Tool route */}
+            <Route path="azure-naming" element={<AzureNamingTool />} />
             
             {/* Add more routes here as needed */}
           </Route>

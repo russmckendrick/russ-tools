@@ -16,12 +16,7 @@ export function Layout() {
       </AppShell.Header>
 
       <AppShell.Main>
-        <Container size="lg" style={{ height: '100%' }}>
-          <Text component={Link} to="/" size="xl" fw={700} mb="lg">
-            russ.tools
-          </Text>
-          <Outlet />
-        </Container>
+        <Outlet />
       </AppShell.Main>
     </AppShell>
   );
