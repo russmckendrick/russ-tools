@@ -138,6 +138,9 @@ export const AzureNamingProvider = ({ children }) => {
     isLoading: false
   });
 
+  // Pending load flag for reliable post-load generation
+  const [pendingLoad, setPendingLoad] = useState(false);
+
   const updateFormState = (field, value) => {
     setFormState(prev => ({
       ...prev,
@@ -242,7 +245,15 @@ export const AzureNamingProvider = ({ children }) => {
       isLoading: false
     });
   };
-  // --- END: Move form state and logic here ---
+
+  // useEffect to trigger generateName after a load
+  React.useEffect(() => {
+    if (pendingLoad) {
+      generateName();
+      setPendingLoad(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState, pendingLoad]);
 
   useEffect(() => {
     const loadRegions = async () => {
@@ -282,6 +293,7 @@ export const AzureNamingProvider = ({ children }) => {
     validationState,
     updateFormState,
     setFormState,
+    setPendingLoad,
     validateForm,
     generateName,
     resetForm,

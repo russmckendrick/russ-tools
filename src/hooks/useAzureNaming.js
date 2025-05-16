@@ -8,6 +8,7 @@ export const useAzureNaming = () => {
     validationState,
     updateFormState,
     setFormState,
+    setPendingLoad,
     validateForm,
     generateName,
     resetForm
@@ -19,6 +20,7 @@ export const useAzureNaming = () => {
     validationState,
     updateFormState,
     setFormState,
+    setPendingLoad,
     validateForm,
     generateName,
     resetForm

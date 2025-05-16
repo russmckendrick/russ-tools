@@ -3,12 +3,11 @@ import { Paper, Group, Text, Button, Divider, Stack, ScrollArea } from '@mantine
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 
 const NamingHistory = () => {
-  const { namingHistory, clearHistory, setFormState, generateName } = useAzureNamingContext();
+  const { namingHistory, clearHistory, setFormState, setPendingLoad } = useAzureNamingContext();
 
   const handleLoadConfiguration = async (configuration) => {
     setFormState(configuration);
-    await new Promise(resolve => setTimeout(resolve, 100));
-    await generateName();
+    setPendingLoad(true);
   };
 
   if (namingHistory.length === 0) {
