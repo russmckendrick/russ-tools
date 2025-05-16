@@ -36,12 +36,21 @@ const ValidationIndicator = () => {
         <Text size="sm" fw={500} c="gray.7">{statusText}</Text>
       </Group>
 
+      {/* Show general error if present */}
+      {validationState.errors.general && (
+        <Alert color="red" icon={<IconX size={18} />} variant="light" mb={4}>
+          <Text size="sm" c="red.7">{validationState.errors.general}</Text>
+        </Alert>
+      )}
+
       {hasErrors && (
         <Alert color="red" title="Please fix the following issues:" icon={<IconX size={18} />} variant="light">
           <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {Object.entries(validationState.errors).map(([field, error]) => (
-              <li key={field}><Text size="sm" c="red.7">{error}</Text></li>
-            ))}
+            {Object.entries(validationState.errors)
+              .filter(([field]) => field !== 'general')
+              .map(([field, error]) => (
+                <li key={field}><Text size="sm" c="red.7">{error}</Text></li>
+              ))}
           </ul>
         </Alert>
       )}
