@@ -1,9 +1,9 @@
 import { Box, Paper, Text, Tooltip, useMantineTheme, useComputedColorScheme } from '@mantine/core';
-import { getSubnetBgColorHex } from '../utils';
+import { getSubnetBgColorHex } from '../../../utils';
 import { IconNetwork, IconBroadcast } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { Netmask } from 'netmask';
-import { ipToLong, longToIp } from '../utils';
+import { ipToLong, longToIp } from '../../../utils';
 
 // Tooltip content for subnet details
 function getSubnetTooltip(subnet) {

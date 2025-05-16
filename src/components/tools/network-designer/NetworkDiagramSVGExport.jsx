@@ -1,11 +1,11 @@
 import { useMantineTheme, useMantineColorScheme, Button, Modal } from '@mantine/core';
 import { useRef, useState } from 'react';
 import { Netmask } from 'netmask';
-import { ipToLong, longToIp, getSubnetBgColorHex } from '../utils';
-import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../utils/networkDiagramUtils';
-import networkSvg from '../assets/network.svg';
-import subnetSvg from '../assets/subnet.svg';
-import spaceSvg from '../assets/space.svg';
+import { ipToLong, longToIp, getSubnetBgColorHex } from '../../../utils';
+import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../../../utils/networkDiagramUtils';
+import networkSvg from '../../../assets/network.svg';
+import subnetSvg from '../../../assets/subnet.svg';
+import spaceSvg from '../../../assets/space.svg';
 
 // Helper for contrast (copied from SubnetVisualization)
 const getContrastColor = (hexColor, theme) => {

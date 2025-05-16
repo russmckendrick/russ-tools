@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Paper, Group, Button, Tabs, ActionIcon, Tooltip, Text, Title, Box, Select } from '@mantine/core';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-hcl';
-import '../styles/prism-theme.css';
+import '../../../styles/prism-theme.css';
 import { useComputedColorScheme } from '@mantine/core';
 
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform, IconServer } from '@tabler/icons-react';
-import { generateAwsTerraform, generateAzureTerraform } from '../utils/terraformExport';
-import { loadAzureRegions } from './AzureRegions';
-import { loadAwsRegions } from './AwsRegions';
+import { generateAwsTerraform, generateAzureTerraform } from '../../../utils/terraformExport';
+import { loadAzureRegions } from '../../../utils/regions/AzureRegions';
+import { loadAwsRegions } from '../../../utils/regions/AwsRegions';
 
 export function TerraformExportSection({ network, subnets }) {
   const colorScheme = useComputedColorScheme('light');

@@ -1,0 +1,38 @@
+{
+  "development": {
+    "abbreviation": "dev",
+    "displayName": "Development"
+  },
+  "testing": {
+    "abbreviation": "test",
+    "displayName": "Testing"
+  },
+  "staging": {
+    "abbreviation": "stage",
+    "displayName": "Staging"
+  },
+  "userAcceptanceTesting": {
+    "abbreviation": "uat",
+    "displayName": "User Acceptance Testing"
+  },
+  "qualityAssurance": {
+    "abbreviation": "qa",
+    "displayName": "Quality Assurance"
+  },
+  "production": {
+    "abbreviation": "prod",
+    "displayName": "Production"
+  },
+  "disasterRecovery": {
+    "abbreviation": "dr",
+    "displayName": "Disaster Recovery"
+  },
+  "sandbox": {
+    "abbreviation": "sbx",
+    "displayName": "Sandbox"
+  },
+  "preproduction": {
+    "abbreviation": "preprod",
+    "displayName": "Pre Production"
+  }
+} 

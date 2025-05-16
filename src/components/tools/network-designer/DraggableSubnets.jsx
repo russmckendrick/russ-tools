@@ -5,7 +5,7 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import { CSS } from '@dnd-kit/utilities';
 import { Netmask } from 'netmask';
 import { IconGripVertical } from '@tabler/icons-react';
-import { ipToLong } from '../utils';
+import { ipToLong } from '../../../utils';
 
 // Sortable subnet item
 function SortableSubnet({ subnet, index, onRemoveSubnet }) {

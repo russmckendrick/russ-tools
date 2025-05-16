@@ -1,0 +1,116 @@
+import React from 'react';
+import { TextInput, Select, Button, Group, Stack, Grid, Text } from '@mantine/core';
+import { useAzureNamingContext } from '../../../context/AzureNamingContext';
+import HelpTooltip from './HelpTooltip';
+
+const NamingForm = ({ formState, updateFormState, validationState, generateName, column }) => {
+  const { environmentOptions, regionDropdownOptions, isLoading } = useAzureNamingContext();
+
+  const handleInputChange = (name, value) => {
+    updateFormState(name, value);
+  };
+
+  if (column === 'left') {
+    return (
+      <Stack gap="md">
+        <TextInput
+          label={
+            <Group gap={4} align="center">
+              <Text size="sm" fw={500}>Workload/Application Name</Text>
+              <HelpTooltip content="Enter the name of your workload or application. This will be used as the main identifier in the resource name." />
+            </Group>
+          }
+          name="workload"
+          value={formState.workload}
+          onChange={(e) => handleInputChange('workload', e.target.value)}
+          placeholder="e.g., payments, webapp, database"
+          error={validationState.errors.workload}
+          withAsterisk
+        />
+        <Select
+          label={
+            <Group gap={4} align="center">
+              <Text size="sm" fw={500}>Environment</Text>
+              <HelpTooltip content="Select the environment where this resource will be deployed." />
+            </Group>
+          }
+          name="environment"
+          value={formState.environment}
+          onChange={(value) => handleInputChange('environment', value)}
+          placeholder="Select an environment"
+          data={environmentOptions}
+          error={validationState.errors.environment}
+          withAsterisk
+        />
+      </Stack>
+    );
+  }
+  if (column === 'right') {
+    return (
+      <Stack gap="md">
+        <Select
+          label={
+            <Group gap={4} align="center">
+              <Text size="sm" fw={500}>Region</Text>
+              <HelpTooltip content="Select the Azure region for your resource. Display name is shown, but the abbreviation will be used in the generated name." />
+            </Group>
+          }
+          name="region"
+          value={formState.region}
+          onChange={(value) => handleInputChange('region', value)}
+          placeholder={isLoading ? 'Loading regions...' : 'Select a region'}
+          data={regionDropdownOptions}
+          error={validationState.errors.region}
+          withAsterisk
+          searchable
+        />
+        <TextInput
+          label={
+            <Group gap={4} align="center">
+              <Text size="sm" fw={500}>Instance Number</Text>
+              <HelpTooltip content="Enter a 3-digit instance number (e.g., 001, 002). Required for resources that support multiple instances." />
+            </Group>
+          }
+          name="instance"
+          value={formState.instance}
+          onChange={(e) => handleInputChange('instance', e.target.value)}
+          placeholder="001"
+          error={validationState.errors.instance}
+        />
+        <Grid gutter="md">
+          <Grid.Col span={6}>
+            <TextInput
+              label={
+                <Group gap={4} align="center">
+                  <Text size="sm" fw={500}>Custom Prefix (Optional)</Text>
+                  <HelpTooltip content="Add a custom prefix to the resource name. This will be added before the resource type prefix." />
+                </Group>
+              }
+              name="customPrefix"
+              value={formState.customPrefix}
+              onChange={(e) => handleInputChange('customPrefix', e.target.value)}
+              placeholder="e.g., team, project"
+            />
+          </Grid.Col>
+          <Grid.Col span={6}>
+            <TextInput
+              label={
+                <Group gap={4} align="center">
+                  <Text size="sm" fw={500}>Custom Suffix (Optional)</Text>
+                  <HelpTooltip content="Add a custom suffix to the resource name. This will be added at the end of the name." />
+                </Group>
+              }
+              name="customSuffix"
+              value={formState.customSuffix}
+              onChange={(e) => handleInputChange('customSuffix', e.target.value)}
+              placeholder="e.g., backup, archive"
+            />
+          </Grid.Col>
+        </Grid>
+      </Stack>
+    );
+  }
+  return null;
+};
+
+export default NamingForm; 

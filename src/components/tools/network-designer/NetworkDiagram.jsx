@@ -1,15 +1,15 @@
 import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal, useMantineColorScheme } from '@mantine/core';
-import { getSubnetBgColorHex } from '../utils';
-import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../utils/networkDiagramUtils';
+import { getSubnetBgColorHex } from '../../../utils';
+import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../../../utils/networkDiagramUtils';
 import { IconDownload, IconNetwork, IconSubtask, IconSpace, IconFileTypeSvg, IconFileTypePng } from '@tabler/icons-react';
 import { NetworkDiagramSVGExport } from './NetworkDiagramSVGExport';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
-import { longToIp, ipToLong } from '../utils';
+import { longToIp, ipToLong } from '../../../utils';
 import html2canvas from 'html2canvas';
-import networkSvg from '../assets/network.svg';
-import subnetSvg from '../assets/subnet.svg';
-import spaceSvg from '../assets/space.svg';
+import networkSvg from '../../../assets/network.svg';
+import subnetSvg from '../../../assets/subnet.svg';
+import spaceSvg from '../../../assets/space.svg';
 
 export function NetworkDiagram({ parentNetwork, subnets }) {
   const theme = useMantineTheme();

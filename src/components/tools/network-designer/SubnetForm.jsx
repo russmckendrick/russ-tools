@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { TextInput, Button, Group, Paper, Select, Text, ColorSwatch, Popover, SimpleGrid, useMantineTheme, Box } from '@mantine/core';
 import { Netmask } from 'netmask';
-import { ipToLong } from '../utils';
+import { ipToLong } from '../../../utils';
 
 // Helper function to find color name and index from HEX value
 const findColorNameAndIndex = (hexValue, theme) => {
