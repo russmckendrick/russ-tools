@@ -1,13 +1,9 @@
 import React from 'react';
 import { Select, Text, Group } from '@mantine/core';
-import { useAzureNaming } from '../../../hooks/useAzureNaming';
-import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import { RESOURCE_TYPES } from '../../../utils/azure-naming/rules';
 import HelpTooltip from './HelpTooltip';
 
-const ResourceTypeSelector = () => {
-  const { formState, updateFormState, validationState } = useAzureNaming();
-
+const ResourceTypeSelector = ({ formState, updateFormState, validationState }) => {
   // Map resource types to code/label pairs
   const resourceTypeOptions = Object.entries(RESOURCE_TYPES).map(([key, def]) => ({
     value: def.type,

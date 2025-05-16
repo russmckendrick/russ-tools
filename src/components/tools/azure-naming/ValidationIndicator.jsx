@@ -1,11 +1,8 @@
 import React from 'react';
 import { Group, Text, ThemeIcon, Alert, Stack } from '@mantine/core';
 import { IconCheck, IconAlertTriangle, IconX } from '@tabler/icons-react';
-import { useAzureNaming } from '../../../hooks/useAzureNaming';
 
-const ValidationIndicator = () => {
-  const { validationState, formState } = useAzureNaming();
-
+const ValidationIndicator = ({ formState, validationState }) => {
   if (!formState.resourceType) {
     return null;
   }

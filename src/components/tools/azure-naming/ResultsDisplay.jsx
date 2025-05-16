@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import { Paper, Group, Text, Button, Code, Divider, SimpleGrid, Stack, Title } from '@mantine/core';
 import { IconCopy, IconCheck } from '@tabler/icons-react';
-import { useAzureNaming } from '../../../hooks/useAzureNaming';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 
-const ResultsDisplay = () => {
-  const { validationState, formState } = useAzureNaming();
+const ResultsDisplay = ({ formState, validationState }) => {
   const { addToHistory } = useAzureNamingContext();
   const [copySuccess, setCopySuccess] = useState(false);
-
-  // Debug log
-  console.log('[ResultsDisplay] generatedName:', validationState.generatedName, 'formState:', formState);
 
   const handleCopy = async () => {
     try {
