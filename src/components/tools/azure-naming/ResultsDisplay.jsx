@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Paper, Group, Text, Button, Code, Divider, SimpleGrid, Stack, Title, Table } from '@mantine/core';
-import { IconCopy, IconCheck } from '@tabler/icons-react';
+import { IconCopy, IconCheck, IconDownload, IconDeviceFloppy } from '@tabler/icons-react';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
+import { utils as XLSXUtils, writeFile as XLSXWriteFile } from 'xlsx';
 
 const ResultsDisplay = ({ formState, validationState, tableLayout }) => {
-  const { addToHistory } = useAzureNamingContext();
+  const { addToHistory, resourceTypes } = useAzureNamingContext();
   const [copySuccess, setCopySuccess] = useState(false);
 
   const handleCopy = async () => {
@@ -22,18 +23,69 @@ const ResultsDisplay = ({ formState, validationState, tableLayout }) => {
     }
   };
 
+  // Export handlers
+  const handleExportCSV = () => {
+    const names = Array.isArray(validationState.generatedName)
+      ? validationState.generatedName
+      : [validationState.generatedName];
+    const types = Array.isArray(formState.resourceType)
+      ? formState.resourceType
+      : [formState.resourceType];
+    const rows = names.map((name, idx) => ({
+      'Resource Type': getResourceTypeLabel(types[idx]),
+      'Generated Name': name
+    }));
+    const csv = [Object.keys(rows[0]).join(','), ...rows.map(row => Object.values(row).map(v => `"${v}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'azure-resource-names.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportExcel = () => {
+    const names = Array.isArray(validationState.generatedName)
+      ? validationState.generatedName
+      : [validationState.generatedName];
+    const types = Array.isArray(formState.resourceType)
+      ? formState.resourceType
+      : [formState.resourceType];
+    const rows = names.map((name, idx) => ({
+      'Resource Type': getResourceTypeLabel(types[idx]),
+      'Generated Name': name
+    }));
+    const ws = XLSXUtils.json_to_sheet(rows);
+    const wb = XLSXUtils.book_new();
+    XLSXUtils.book_append_sheet(wb, ws, 'Names');
+    XLSXWriteFile(wb, 'azure-resource-names.xlsx');
+  };
+
+  const handleSave = () => {
+    const names = Array.isArray(validationState.generatedName)
+      ? validationState.generatedName
+      : [validationState.generatedName];
+    const types = Array.isArray(formState.resourceType)
+      ? formState.resourceType
+      : [formState.resourceType];
+    names.forEach((name, idx) => {
+      addToHistory({
+        resourceType: types[idx],
+        generatedName: name,
+        configuration: { ...formState }
+      });
+    });
+  };
+
   if (!validationState.generatedName || (Array.isArray(validationState.generatedName) && validationState.generatedName.length === 0)) {
     return null;
   }
 
   // Helper to get label for a resource type value
   const getResourceTypeLabel = (value) => {
-    if (!Array.isArray(formState.resourceType)) return value;
-    const idx = formState.resourceType.indexOf(value);
-    if (idx !== -1 && Array.isArray(formState.resourceType)) {
-      return formState.resourceType[idx];
-    }
-    return value;
+    const found = resourceTypes.find(rt => rt.value === value);
+    return found ? found.label.replace(/ \([^)]+\)$/, '') : value;
   };
 
   // Table layout for results
@@ -46,6 +98,17 @@ const ResultsDisplay = ({ formState, validationState, tableLayout }) => {
       : [formState.resourceType];
     return (
       <section style={{ marginTop: 40 }}>
+        <Group mb="xs" justify="flex-end">
+          <Button leftSection={<IconDownload size={16} />} variant="default" size="xs" onClick={handleExportCSV}>
+            Export CSV
+          </Button>
+          <Button leftSection={<IconDownload size={16} />} variant="default" size="xs" onClick={handleExportExcel}>
+            Export Excel
+          </Button>
+          <Button leftSection={<IconDeviceFloppy size={16} />} variant="filled" size="xs" color="blue" onClick={handleSave}>
+            Save
+          </Button>
+        </Group>
         <Title order={4} size="h5" mb="sm">Generated Names</Title>
         <Table stickyHeader striped highlightOnHover withTableBorder withColumnBorders>
           <Table.Thead>
