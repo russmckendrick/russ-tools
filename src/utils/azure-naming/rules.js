@@ -109,7 +109,8 @@ export const REGION_ABBREVIATIONS = {
 
 // Validation functions
 export const validateResourceName = (name, resourceType) => {
-  const rules = RESOURCE_TYPES[resourceType];
+  // Find the rules object by type code
+  const rules = Object.values(RESOURCE_TYPES).find(def => def.type === resourceType);
   if (!rules) return { valid: false, error: 'Invalid resource type' };
 
   // Check length
@@ -154,7 +155,8 @@ export const generateResourceName = (params) => {
     customSuffix
   } = params;
 
-  const rules = RESOURCE_TYPES[resourceType];
+  // Find the rules object by type code
+  const rules = Object.values(RESOURCE_TYPES).find(def => def.type === resourceType);
   if (!rules) throw new Error('Invalid resource type');
 
   // Get abbreviations
