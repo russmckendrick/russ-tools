@@ -123,15 +123,28 @@ const AzureNamingTool = () => {
               <TextInput
                 label={
                   <Group gap={4} align="center">
-                    <Text size="sm" fw={500}>Instance Number</Text>
-                    <HelpTooltip content="Enter a 3-digit instance number (e.g., 001, 002). Required for resources that support multiple instances." />
+                    <Text size="sm" fw={500}>Instance Number (Optional)</Text>
+                    <HelpTooltip content="Enter a number up to 5 digits (e.g., 001, 12345). Optional field for resources that support multiple instances." />
                   </Group>
                 }
                 name="instance"
                 value={formState.instance}
-                onChange={(e) => handleInputChange('instance', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Only allow numbers and limit to 5 digits
+                  if (value === '' || (/^\d+$/.test(value) && value.length <= 5)) {
+                    handleInputChange('instance', value);
+                  }
+                }}
                 placeholder="001"
-                error={validationState.errors.instance}
+                error={
+                  formState.instance && 
+                  (!/^\d+$/.test(formState.instance) 
+                    ? 'Only numbers are allowed' 
+                    : formState.instance.length > 5 
+                      ? 'Maximum 5 digits allowed' 
+                      : null)
+                }
               />
             </Grid.Col>
             <Grid.Col span={4} mb="sm">
