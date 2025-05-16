@@ -45,9 +45,9 @@ const ResultsDisplay = ({ formState, validationState, tableLayout }) => {
       ? formState.resourceType
       : [formState.resourceType];
     return (
-      <Paper radius="md" p="md" withBorder bg="gray.0" mt="xl">
-        <Title order={4} size="h5" mb="sm">Generated Name{names.length > 1 ? 's' : ''}</Title>
-        <Table striped highlightOnHover withTableBorder withColumnBorders>
+      <section style={{ marginTop: 40 }}>
+        <Title order={4} size="h5" mb="sm">Generated Names</Title>
+        <Table stickyHeader striped highlightOnHover withTableBorder withColumnBorders>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Resource Type</Table.Th>
@@ -61,9 +61,7 @@ const ResultsDisplay = ({ formState, validationState, tableLayout }) => {
                   <Text size="sm">{getResourceTypeLabel(types[idx])}</Text>
                 </Table.Td>
                 <Table.Td>
-                  <Code block fz="md" py={8} px={12} radius="md" style={{ fontSize: 16 }}>
-                    {name}
-                  </Code>
+                  <Text size="md" style={{ fontFamily: 'monospace', fontWeight: 500 }}>{name}</Text>
                 </Table.Td>
               </Table.Tr>
             ))}
@@ -84,7 +82,7 @@ const ResultsDisplay = ({ formState, validationState, tableLayout }) => {
           {formState.customPrefix && <><Text c="dimmed" size="sm">Custom Prefix:</Text><Text size="sm">{formState.customPrefix}</Text></>}
           {formState.customSuffix && <><Text c="dimmed" size="sm">Custom Suffix:</Text><Text size="sm">{formState.customSuffix}</Text></>}
         </SimpleGrid>
-      </Paper>
+      </section>
     );
   }
 
