@@ -45,11 +45,16 @@ const AzureNamingTool = () => {
         <form onSubmit={e => { e.preventDefault(); generateName(); }}>
           <Grid gutter="md">
             {/* Row 1 */}
-            <Grid.Col span={12} mb="md">
+            <Grid.Col span={12} mb="sm">
               <TextInput
                 label={
                   <Group gap={4} align="center">
-                    <Text size="sm" fw={500}>Workload/Application Name</Text>
+                    <Text size="sm" fw={500}>
+                      Workload/Application Name
+                      {validationState.errors.workload && (
+                        <Text span c="red" ml={4}>*</Text>
+                      )}
+                    </Text>
                     <HelpTooltip content="Enter the name of your workload or application. This will be used as the main identifier in the resource name." />
                   </Group>
                 }
@@ -58,23 +63,28 @@ const AzureNamingTool = () => {
                 onChange={(e) => handleInputChange('workload', e.target.value)}
                 placeholder="e.g., payments, webapp, database"
                 error={validationState.errors.workload}
-                withAsterisk
               />
             </Grid.Col>
             {/* Row 2 */}
-            <Grid.Col span={12} mb="md">
+            <Grid.Col span={12} mb="sm">
               <ResourceTypeSelector
                 formState={formState}
                 updateFormState={updateFormState}
                 validationState={validationState}
+                showAsterisk={!!validationState.errors.resourceType}
               />
             </Grid.Col>
             {/* Row 3 */}
-            <Grid.Col span={6} mb="md">
+            <Grid.Col span={6} mb="sm">
               <Select
                 label={
                   <Group gap={4} align="center">
-                    <Text size="sm" fw={500}>Environment</Text>
+                    <Text size="sm" fw={500}>
+                      Environment
+                      {validationState.errors.environment && (
+                        <Text span c="red" ml={4}>*</Text>
+                      )}
+                    </Text>
                     <HelpTooltip content="Select the environment where this resource will be deployed." />
                   </Group>
                 }
@@ -84,14 +94,18 @@ const AzureNamingTool = () => {
                 placeholder="Select an environment"
                 data={environmentOptions}
                 error={validationState.errors.environment}
-                withAsterisk
               />
             </Grid.Col>
-            <Grid.Col span={6} mb="md">
+            <Grid.Col span={6} mb="sm">
               <Select
                 label={
                   <Group gap={4} align="center">
-                    <Text size="sm" fw={500}>Region</Text>
+                    <Text size="sm" fw={500}>
+                      Region
+                      {validationState.errors.region && (
+                        <Text span c="red" ml={4}>*</Text>
+                      )}
+                    </Text>
                     <HelpTooltip content="Select the Azure region for your resource. Display name is shown, but the abbreviation will be used in the generated name." />
                   </Group>
                 }
@@ -101,12 +115,11 @@ const AzureNamingTool = () => {
                 placeholder={isLoading ? 'Loading regions...' : 'Select a region'}
                 data={regionDropdownOptions}
                 error={validationState.errors.region}
-                withAsterisk
                 searchable
               />
             </Grid.Col>
             {/* Row 4 */}
-            <Grid.Col span={4} mb="md">
+            <Grid.Col span={4} mb="sm">
               <TextInput
                 label={
                   <Group gap={4} align="center">
@@ -121,7 +134,7 @@ const AzureNamingTool = () => {
                 error={validationState.errors.instance}
               />
             </Grid.Col>
-            <Grid.Col span={4} mb="md">
+            <Grid.Col span={4} mb="sm">
               <TextInput
                 label={
                   <Group gap={4} align="center">
@@ -135,7 +148,7 @@ const AzureNamingTool = () => {
                 placeholder="e.g., team, project"
               />
             </Grid.Col>
-            <Grid.Col span={4} mb="md">
+            <Grid.Col span={4} mb="sm">
               <TextInput
                 label={
                   <Group gap={4} align="center">
