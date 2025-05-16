@@ -61,24 +61,6 @@ locals {
     us-west-3        = "West US 3"
     us-west-central  = "West Central US"
     us-west          = "West US"
-
-    # Global/continental zones
-    "asia"    = "Asia"
-    "asia-pa" = "Asia Pacific"
-    "aus"     = "Australia"
-    "bra"     = "Brazil"
-    "can"     = "Canada"
-    "eu"      = "Europe"
-    "global"  = "Global"
-    "ind"     = "India"
-    "jap"     = "Japan"
-    "kor"     = "Korea"
-    "nor"     = "Norway"
-    "nz"      = "New Zealand"
-    "sgp"     = "Singapore"
-    "swe"     = "Sweden"
-    "uk"      = "United Kingdom"
-    "us"      = "United States"
   }
 
   /* Short names based on the following rules (where possible) to have better clarity:
