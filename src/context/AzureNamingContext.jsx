@@ -20,7 +20,17 @@ if (uniqueResourceTypes.length < rawResourceTypes.length) {
   console.warn('[AzureNamingContext] Duplicate resource type names detected. Only the first occurrence of each name will be used.');
 }
 
-const resourceTypes = uniqueResourceTypes.map(rt => ({ value: rt.name, label: rt.type }));
+function toDisplayName(name, slug) {
+  let display = name.replace(/^azurerm_/, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase());
+  return `${display} (${slug})`;
+}
+
+const resourceTypes = uniqueResourceTypes.map(rt => ({
+  value: `${rt.type}|${rt.name}`,
+  label: toDisplayName(rt.name, rt.type)
+}));
 console.log('resourceTypes for Select:', resourceTypes);
 
 // Initial state

@@ -78,8 +78,17 @@ export const useAzureNaming = () => {
     return isValid;
   }, [formState]);
 
+  const getSlug = (resourceType) =>
+    resourceType && resourceType.includes('|')
+      ? resourceType.split('|')[0]
+      : resourceType;
+
   const generateName = useCallback(async () => {
-    console.log('[generateName] called with formState:', formState);
+    const params = {
+      ...formState,
+      resourceType: getSlug(formState.resourceType),
+    };
+    console.log('[generateName] called with params:', params);
     if (!validateForm()) {
       console.log('[generateName] form is invalid:', validationState.errors);
       return null;
@@ -91,8 +100,8 @@ export const useAzureNaming = () => {
     }));
 
     try {
-      // Pass shortNames to generateResourceName
-      const generatedName = generateResourceName(formState, shortNames);
+      // Pass only the slug to generateResourceName
+      const generatedName = generateResourceName(params, shortNames);
       console.log('[generateName] generated name:', generatedName);
       setValidationState(prev => ({
         ...prev,
