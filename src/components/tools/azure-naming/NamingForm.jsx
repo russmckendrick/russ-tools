@@ -107,9 +107,6 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
             />
           </Grid.Col>
         </Grid>
-        <Button type="submit" fullWidth mt="md" size="md" onClick={generateName}>
-          Generate Name
-        </Button>
       </Stack>
     );
   }
