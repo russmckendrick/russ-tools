@@ -1,11 +1,16 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { RESOURCE_TYPES } from '../utils/azure-naming/rules';
-import environments from '../assets/environments.json';
+import environments from '../environments.json';
 import { loadAzureRegionData } from '../utils/azure-naming/region-parser';
+
+// Filter out duplicate resource types by slug
+const uniqueResourceTypes = Object.values(RESOURCE_TYPES).filter(
+  (v, i, arr) => arr.findIndex(t => t.type === v.type) === i
+);
 
 // Initial state
 const initialState = {
-  resourceTypes: Object.keys(RESOURCE_TYPES),
+  resourceTypes: uniqueResourceTypes.map(rt => rt.type),
   environments: Object.keys(environments),
   regions: [],
   regionDropdownOptions: [],
