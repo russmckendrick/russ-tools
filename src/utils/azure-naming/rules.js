@@ -2,6 +2,7 @@
 
 // Import the region parser
 import { getRegionAbbreviation } from './region-parser';
+import environments from '../../assets/environments.json';
 
 // Resource type definitions with their constraints
 export const RESOURCE_TYPES = {
@@ -87,17 +88,6 @@ export const RESOURCE_TYPES = {
   }
 };
 
-// Environment abbreviations
-export const ENVIRONMENT_ABBREVIATIONS = {
-  development: 'dev',
-  testing: 'test',
-  staging: 'stage',
-  userAcceptanceTesting: 'uat',
-  qualityAssurance: 'qa',
-  production: 'prod',
-  disasterRecovery: 'dr'
-};
-
 // Validation functions
 export const validateResourceName = (name, resourceType) => {
   // Find the rules object by type code
@@ -152,7 +142,7 @@ export const generateResourceName = (params, shortNames = {}) => {
   if (!rules) throw new Error('Invalid resource type');
 
   // Get abbreviations
-  const envAbbr = ENVIRONMENT_ABBREVIATIONS[environment] || environment;
+  const envAbbr = environments[environment]?.abbreviation || environment;
   const regionAbbr = shortNames[region] || region;
 
   // Build name according to format

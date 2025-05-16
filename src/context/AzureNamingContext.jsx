@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
-import { RESOURCE_TYPES, ENVIRONMENT_ABBREVIATIONS } from '../utils/azure-naming/rules';
+import { RESOURCE_TYPES } from '../utils/azure-naming/rules';
+import environments from '../assets/environments.json';
 import { loadAzureRegionData } from '../utils/azure-naming/region-parser';
 
 // Initial state
 const initialState = {
   resourceTypes: Object.keys(RESOURCE_TYPES),
-  environments: Object.keys(ENVIRONMENT_ABBREVIATIONS),
+  environments: Object.keys(environments),
   regions: [],
   regionDropdownOptions: [],
   shortNames: {},
@@ -120,9 +121,16 @@ export const AzureNamingProvider = ({ children }) => {
     loadRegions();
   }, []);
 
+  // Add environmentOptions for dropdowns
+  const environmentOptions = Object.entries(environments).map(([key, value]) => ({
+    value: key,
+    label: value.displayName
+  }));
+
   const value = {
     ...state,
     isLoading,
+    environmentOptions,
     addToHistory: (name) => dispatch({ type: ActionTypes.ADD_TO_HISTORY, payload: name }),
     clearHistory: () => dispatch({ type: ActionTypes.CLEAR_HISTORY }),
     saveConfiguration: (config) => dispatch({ type: ActionTypes.SAVE_CONFIGURATION, payload: config }),

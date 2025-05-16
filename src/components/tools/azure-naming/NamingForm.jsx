@@ -4,7 +4,7 @@ import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import HelpTooltip from './HelpTooltip';
 
 const NamingForm = ({ formState, updateFormState, validationState, generateName }) => {
-  const { environments, regionDropdownOptions, isLoading } = useAzureNamingContext();
+  const { environmentOptions, regionDropdownOptions, isLoading } = useAzureNamingContext();
 
   const handleInputChange = (name, value) => {
     updateFormState(name, value);
@@ -44,7 +44,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName 
           value={formState.environment}
           onChange={(value) => handleInputChange('environment', value)}
           placeholder="Select an environment"
-          data={environments.map((env) => ({ value: env, label: env.charAt(0).toUpperCase() + env.slice(1) }))}
+          data={environmentOptions}
           error={validationState.errors.environment}
           withAsterisk
         />
