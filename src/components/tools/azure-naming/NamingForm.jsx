@@ -4,7 +4,7 @@ import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import HelpTooltip from './HelpTooltip';
 
 const NamingForm = ({ formState, updateFormState, validationState, generateName }) => {
-  const { environments, regions } = useAzureNamingContext();
+  const { environments, regionDropdownOptions, isLoading } = useAzureNamingContext();
 
   const handleInputChange = (name, value) => {
     updateFormState(name, value);
@@ -53,16 +53,17 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName 
           label={
             <Group gap={4} align="center">
               <Text size="sm" fw={500}>Region</Text>
-              <HelpTooltip content="Select the Azure region where this resource will be deployed." />
+              <HelpTooltip content="Select the Azure region for your resource. Display name is shown, but the abbreviation will be used in the generated name." />
             </Group>
           }
           name="region"
           value={formState.region}
           onChange={(value) => handleInputChange('region', value)}
-          placeholder="Select a region"
-          data={regions.map((region) => ({ value: region, label: region.replace(/([A-Z])/g, ' $1').trim() }))}
+          placeholder={isLoading ? 'Loading regions...' : 'Select a region'}
+          data={regionDropdownOptions}
           error={validationState.errors.region}
           withAsterisk
+          searchable
         />
 
         <TextInput
@@ -110,7 +111,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName 
           </Grid.Col>
         </Grid>
 
-        <Button type="submit" fullWidth mt="md" variant="filled" color="blue">
+        <Button type="submit" fullWidth mt="md" size="md">
           Generate Name
         </Button>
       </Stack>
