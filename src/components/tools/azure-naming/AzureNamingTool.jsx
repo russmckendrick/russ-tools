@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Paper, Title, Group, Stack, Space, Text, Button, Grid, TextInput, Select } from '@mantine/core';
+import { Container, Paper, Title, Group, Stack, Space, Text, Button, Grid, TextInput, Select, Slider } from '@mantine/core';
 import { useAzureNaming } from '../../../hooks/useAzureNaming';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import ResourceTypeSelector from './ResourceTypeSelector';
@@ -119,7 +119,7 @@ const AzureNamingTool = () => {
               />
             </Grid.Col>
             {/* Row 4 */}
-            <Grid.Col span={4} mb="sm">
+            <Grid.Col span={3} mb="sm">
               <TextInput
                 label={
                   <Group gap={4} align="center">
@@ -147,7 +147,7 @@ const AzureNamingTool = () => {
                 }
               />
             </Grid.Col>
-            <Grid.Col span={4} mb="sm">
+            <Grid.Col span={3} mb="sm">
               <TextInput
                 label={
                   <Group gap={4} align="center">
@@ -161,7 +161,7 @@ const AzureNamingTool = () => {
                 placeholder="e.g., team, project"
               />
             </Grid.Col>
-            <Grid.Col span={4} mb="sm">
+            <Grid.Col span={3} mb="sm">
               <TextInput
                 label={
                   <Group gap={4} align="center">
@@ -175,6 +175,31 @@ const AzureNamingTool = () => {
                 placeholder="e.g., backup, archive"
               />
             </Grid.Col>
+            <Grid.Col span={3} mb="sm">
+              <Group gap={4} align="center" mb="xs">
+                <Text size="sm" fw={500}>Random Characters</Text>
+                <HelpTooltip content="Select how many random characters to append to the resource name for uniqueness." />
+              </Group>
+              <Group align="center">
+                <Slider
+                  label={value => `${value} random characters`}
+                  min={0}
+                  max={5}
+                  step={1}
+                  value={formState.randomLength || 0}
+                  onChange={value => updateFormState('randomLength', value)}
+                  marks={[
+                    { value: 0, label: '0' },
+                    { value: 1, label: '1' },
+                    { value: 2, label: '2' },
+                    { value: 3, label: '3' },
+                    { value: 4, label: '4' },
+                    { value: 5, label: '5' },
+                  ]}
+                  style={{ flex: 1 }}
+                />
+              </Group>
+            </Grid.Col>
             {/* Button Row */}
             <Grid.Col span={12}>
               <Button type="submit" fullWidth size="md">
@@ -184,8 +209,6 @@ const AzureNamingTool = () => {
           </Grid>
         </form>
       </Paper>
-
-      <Space h="md" />
 
       {/* Section 2: Generated Names */}
       <Paper radius="md" shadow="xs" p="lg" withBorder mb="md">

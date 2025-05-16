@@ -128,7 +128,8 @@ export const AzureNamingProvider = ({ children }) => {
     region: '',
     instance: '',
     customPrefix: '',
-    customSuffix: ''
+    customSuffix: '',
+    randomLength: 0
   });
 
   const [validationState, setValidationState] = useState({
@@ -206,6 +207,7 @@ export const AzureNamingProvider = ({ children }) => {
         const params = {
           ...formState,
           resourceType: getSlug(type),
+          randomLength: formState.randomLength || 0,
         };
         return generateResourceName(params, state.shortNames);
       });
@@ -236,7 +238,8 @@ export const AzureNamingProvider = ({ children }) => {
       region: '',
       instance: '001',
       customPrefix: '',
-      customSuffix: ''
+      customSuffix: '',
+      randomLength: 0
     });
     setValidationState({
       isValid: false,
