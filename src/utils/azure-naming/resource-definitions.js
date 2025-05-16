@@ -6,7 +6,7 @@ import outOfDocsDefinitions from '../../../src/azure-naming/azure-name-resourceD
 function goRegexToJs(str, fallback = /.*/) {
   if (!str || typeof str !== 'string' || str.trim() === '') return fallback;
   // Remove wrapping quotes/backticks
-  let cleaned = str.trim().replace(/^(["'`])|(["'`])$/g, '');
+  let cleaned = str.trim().replace(/^(\"|'|`)|(['\"`])$/g, '');
   // Replace double backslashes with single
   cleaned = cleaned.replace(/\\/g, '\\');
   try {
@@ -15,6 +15,18 @@ function goRegexToJs(str, fallback = /.*/) {
     console.warn('Invalid Go regex for JS RegExp:', str, '->', cleaned, e);
     return fallback;
   }
+}
+
+// Check for duplicate slugs in a definitions array
+function hasDuplicateSlugs(defs) {
+  const seen = new Set();
+  for (const def of defs) {
+    if (seen.has(def.slug)) {
+      return true;
+    }
+    seen.add(def.slug);
+  }
+  return false;
 }
 
 // Merge and process resource definitions
@@ -49,8 +61,13 @@ const processDefinitions = (defs) => {
   }, {});
 };
 
-// Merge both definition files
-const allDefinitions = [...resourceDefinitions, ...outOfDocsDefinitions];
+// Prefer main resourceDefinitions if there are duplicates
+let allDefinitions = [...resourceDefinitions, ...outOfDocsDefinitions];
+if (hasDuplicateSlugs(allDefinitions)) {
+  console.warn('[Azure Naming] Duplicate slugs detected. Using only azure-name-resourceDefinition.json definitions.');
+  allDefinitions = [...resourceDefinitions];
+}
+
 export const RESOURCE_DEFINITIONS = processDefinitions(allDefinitions);
 
 // Helper function to get resource definition by type

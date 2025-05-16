@@ -3,14 +3,12 @@ import { RESOURCE_TYPES } from '../utils/azure-naming/rules';
 import environments from '../environments.json';
 import { loadAzureRegionData } from '../utils/azure-naming/region-parser';
 
-// Filter out duplicate resource types by slug
-const uniqueResourceTypes = Object.values(RESOURCE_TYPES).filter(
-  (v, i, arr) => arr.findIndex(t => t.type === v.type) === i
-);
+// Build resourceTypes as an array of { value: name, label: slug }
+const resourceTypes = Object.values(RESOURCE_TYPES).map(rt => ({ value: rt.name, label: rt.type }));
 
 // Initial state
 const initialState = {
-  resourceTypes: uniqueResourceTypes.map(rt => rt.type),
+  resourceTypes, // Now an array of { value, label }
   environments: Object.keys(environments),
   regions: [],
   regionDropdownOptions: [],
