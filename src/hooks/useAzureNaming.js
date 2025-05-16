@@ -1,7 +1,10 @@
 import { useState, useCallback } from 'react';
 import { generateResourceName, validateResourceName, RESOURCE_TYPES } from '../utils/azure-naming/rules';
+import { useAzureNamingContext } from '../context/AzureNamingContext';
 
 export const useAzureNaming = () => {
+  const { shortNames } = useAzureNamingContext();
+
   const [formState, setFormState] = useState({
     resourceType: '',
     workload: '',
@@ -92,7 +95,8 @@ export const useAzureNaming = () => {
     }));
 
     try {
-      const generatedName = await generateResourceName(formState);
+      // Pass shortNames to generateResourceName
+      const generatedName = generateResourceName(formState, shortNames);
       console.log('[generateName] generated name:', generatedName);
       setValidationState(prev => ({
         ...prev,
@@ -112,7 +116,7 @@ export const useAzureNaming = () => {
       }));
       return null;
     }
-  }, [formState, validateForm, validationState.errors]);
+  }, [formState, validateForm, validationState.errors, shortNames]);
 
   const resetForm = useCallback(() => {
     setFormState({

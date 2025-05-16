@@ -7,6 +7,8 @@ const initialState = {
   resourceTypes: Object.keys(RESOURCE_TYPES),
   environments: Object.keys(ENVIRONMENT_ABBREVIATIONS),
   regions: [],
+  regionDropdownOptions: [],
+  shortNames: {},
   regionData: null,
   namingHistory: [],
   savedConfigurations: [],
@@ -22,6 +24,8 @@ const initialState = {
 const ActionTypes = {
   SET_REGIONS: 'SET_REGIONS',
   SET_REGION_DATA: 'SET_REGION_DATA',
+  SET_REGION_DROPDOWN: 'SET_REGION_DROPDOWN',
+  SET_SHORTNAMES: 'SET_SHORTNAMES',
   ADD_TO_HISTORY: 'ADD_TO_HISTORY',
   CLEAR_HISTORY: 'CLEAR_HISTORY',
   SAVE_CONFIGURATION: 'SAVE_CONFIGURATION',
@@ -41,6 +45,16 @@ const reducer = (state, action) => {
       return {
         ...state,
         regionData: action.payload
+      };
+    case ActionTypes.SET_REGION_DROPDOWN:
+      return {
+        ...state,
+        regionDropdownOptions: action.payload
+      };
+    case ActionTypes.SET_SHORTNAMES:
+      return {
+        ...state,
+        shortNames: action.payload
       };
     case ActionTypes.ADD_TO_HISTORY:
       return {
@@ -89,13 +103,19 @@ export const AzureNamingProvider = ({ children }) => {
         const regionData = await loadAzureRegionData();
         dispatch({ type: ActionTypes.SET_REGION_DATA, payload: regionData });
         dispatch({ type: ActionTypes.SET_REGIONS, payload: Object.keys(regionData.cliNames) });
+        // Build dropdown options: [{ label, value }]
+        const dropdownOptions = Object.entries(regionData.regions).map(([slug, displayName]) => ({
+          label: displayName,
+          value: slug
+        }));
+        dispatch({ type: ActionTypes.SET_REGION_DROPDOWN, payload: dropdownOptions });
+        dispatch({ type: ActionTypes.SET_SHORTNAMES, payload: regionData.shortNames });
       } catch (error) {
         console.error('Failed to load region data:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
     loadRegions();
   }, []);
 

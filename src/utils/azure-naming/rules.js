@@ -135,12 +135,13 @@ export const validateResourceName = (name, resourceType) => {
 };
 
 // Name generation function
-export const generateResourceName = async (params) => {
+// Accepts shortNames as an argument for region abbreviation lookup
+export const generateResourceName = (params, shortNames = {}) => {
   const {
     resourceType,
     workload,
     environment,
-    region,
+    region, // region slug
     instance = '001',
     customPrefix,
     customSuffix
@@ -152,7 +153,7 @@ export const generateResourceName = async (params) => {
 
   // Get abbreviations
   const envAbbr = ENVIRONMENT_ABBREVIATIONS[environment] || environment;
-  const regionAbbr = await getRegionAbbreviation(region);
+  const regionAbbr = shortNames[region] || region;
 
   // Build name according to format
   let name = rules.format
