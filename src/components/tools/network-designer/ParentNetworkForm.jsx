@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TextInput, Button, Paper, Group, Select } from '@mantine/core';
-import { isValidIPv4 } from '../utils';
+import { isValidIPv4 } from '../../../utils';
 
 export function ParentNetworkForm({ onSubmit }) {
   const [ip, setIp] = useState('');
