@@ -1,5 +1,8 @@
 // Azure Resource Naming Rules and Configuration
 
+// Import the region parser
+import { getRegionAbbreviation } from './region-parser';
+
 // Resource type definitions with their constraints
 export const RESOURCE_TYPES = {
   RESOURCE_GROUP: {
@@ -95,18 +98,6 @@ export const ENVIRONMENT_ABBREVIATIONS = {
   disasterRecovery: 'dr'
 };
 
-// Region abbreviations
-export const REGION_ABBREVIATIONS = {
-  eastus: 'eus',
-  westus: 'wus',
-  northeurope: 'neu',
-  westeurope: 'weu',
-  southeastasia: 'sea',
-  eastasia: 'ea',
-  uksouth: 'uks',
-  ukwest: 'ukw'
-};
-
 // Validation functions
 export const validateResourceName = (name, resourceType) => {
   // Find the rules object by type code
@@ -144,7 +135,7 @@ export const validateResourceName = (name, resourceType) => {
 };
 
 // Name generation function
-export const generateResourceName = (params) => {
+export const generateResourceName = async (params) => {
   const {
     resourceType,
     workload,
@@ -161,7 +152,7 @@ export const generateResourceName = (params) => {
 
   // Get abbreviations
   const envAbbr = ENVIRONMENT_ABBREVIATIONS[environment] || environment;
-  const regionAbbr = REGION_ABBREVIATIONS[region] || region;
+  const regionAbbr = await getRegionAbbreviation(region);
 
   // Build name according to format
   let name = rules.format

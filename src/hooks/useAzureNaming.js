@@ -15,7 +15,8 @@ export const useAzureNaming = () => {
   const [validationState, setValidationState] = useState({
     isValid: false,
     errors: {},
-    generatedName: ''
+    generatedName: '',
+    isLoading: false
   });
 
   const updateFormState = useCallback((field, value) => {
@@ -78,21 +79,27 @@ export const useAzureNaming = () => {
     return isValid;
   }, [formState]);
 
-  const generateName = useCallback(() => {
+  const generateName = useCallback(async () => {
     console.log('[generateName] called with formState:', formState);
     if (!validateForm()) {
       console.log('[generateName] form is invalid:', validationState.errors);
       return null;
     }
 
+    setValidationState(prev => ({
+      ...prev,
+      isLoading: true
+    }));
+
     try {
-      const generatedName = generateResourceName(formState);
+      const generatedName = await generateResourceName(formState);
       console.log('[generateName] generated name:', generatedName);
       setValidationState(prev => ({
         ...prev,
         generatedName,
         isValid: true,
-        errors: {}
+        errors: {},
+        isLoading: false
       }));
       return generatedName;
     } catch (error) {
@@ -100,7 +107,8 @@ export const useAzureNaming = () => {
       setValidationState(prev => ({
         ...prev,
         isValid: false,
-        errors: { general: error.message }
+        errors: { general: error.message },
+        isLoading: false
       }));
       return null;
     }
@@ -119,7 +127,8 @@ export const useAzureNaming = () => {
     setValidationState({
       isValid: false,
       errors: {},
-      generatedName: ''
+      generatedName: '',
+      isLoading: false
     });
   }, []);
 

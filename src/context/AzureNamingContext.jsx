@@ -1,11 +1,13 @@
-import React, { createContext, useContext, useReducer } from 'react';
-import { RESOURCE_TYPES, ENVIRONMENT_ABBREVIATIONS, REGION_ABBREVIATIONS } from '../utils/azure-naming/rules';
+import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
+import { RESOURCE_TYPES, ENVIRONMENT_ABBREVIATIONS } from '../utils/azure-naming/rules';
+import { loadAzureRegionData } from '../utils/azure-naming/region-parser';
 
 // Initial state
 const initialState = {
   resourceTypes: Object.keys(RESOURCE_TYPES),
   environments: Object.keys(ENVIRONMENT_ABBREVIATIONS),
-  regions: Object.keys(REGION_ABBREVIATIONS),
+  regions: [],
+  regionData: null,
   namingHistory: [],
   savedConfigurations: [],
   preferences: {
@@ -18,6 +20,8 @@ const initialState = {
 
 // Action types
 const ActionTypes = {
+  SET_REGIONS: 'SET_REGIONS',
+  SET_REGION_DATA: 'SET_REGION_DATA',
   ADD_TO_HISTORY: 'ADD_TO_HISTORY',
   CLEAR_HISTORY: 'CLEAR_HISTORY',
   SAVE_CONFIGURATION: 'SAVE_CONFIGURATION',
@@ -28,46 +32,36 @@ const ActionTypes = {
 // Reducer
 const reducer = (state, action) => {
   switch (action.type) {
+    case ActionTypes.SET_REGIONS:
+      return {
+        ...state,
+        regions: action.payload
+      };
+    case ActionTypes.SET_REGION_DATA:
+      return {
+        ...state,
+        regionData: action.payload
+      };
     case ActionTypes.ADD_TO_HISTORY:
       return {
         ...state,
-        namingHistory: [
-          {
-            id: Date.now(),
-            timestamp: new Date().toISOString(),
-            ...action.payload
-          },
-          ...state.namingHistory.slice(0, 9) // Keep last 10 items
-        ]
+        namingHistory: [action.payload, ...state.namingHistory].slice(0, 10)
       };
-
     case ActionTypes.CLEAR_HISTORY:
       return {
         ...state,
         namingHistory: []
       };
-
     case ActionTypes.SAVE_CONFIGURATION:
       return {
         ...state,
-        savedConfigurations: [
-          {
-            id: Date.now(),
-            name: action.payload.name,
-            configuration: action.payload.configuration
-          },
-          ...state.savedConfigurations
-        ]
+        savedConfigurations: [...state.savedConfigurations, action.payload]
       };
-
     case ActionTypes.DELETE_CONFIGURATION:
       return {
         ...state,
-        savedConfigurations: state.savedConfigurations.filter(
-          config => config.id !== action.payload
-        )
+        savedConfigurations: state.savedConfigurations.filter(config => config.id !== action.payload)
       };
-
     case ActionTypes.UPDATE_PREFERENCES:
       return {
         ...state,
@@ -76,60 +70,43 @@ const reducer = (state, action) => {
           ...action.payload
         }
       };
-
     default:
       return state;
   }
 };
 
-// Create context
+// Context
 const AzureNamingContext = createContext();
 
-// Provider component
+// Provider
 export const AzureNamingProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const addToHistory = (namingResult) => {
-    dispatch({
-      type: ActionTypes.ADD_TO_HISTORY,
-      payload: namingResult
-    });
-  };
+  useEffect(() => {
+    const loadRegions = async () => {
+      try {
+        const regionData = await loadAzureRegionData();
+        dispatch({ type: ActionTypes.SET_REGION_DATA, payload: regionData });
+        dispatch({ type: ActionTypes.SET_REGIONS, payload: Object.keys(regionData.cliNames) });
+      } catch (error) {
+        console.error('Failed to load region data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const clearHistory = () => {
-    dispatch({
-      type: ActionTypes.CLEAR_HISTORY
-    });
-  };
-
-  const saveConfiguration = (name, configuration) => {
-    dispatch({
-      type: ActionTypes.SAVE_CONFIGURATION,
-      payload: { name, configuration }
-    });
-  };
-
-  const deleteConfiguration = (id) => {
-    dispatch({
-      type: ActionTypes.DELETE_CONFIGURATION,
-      payload: id
-    });
-  };
-
-  const updatePreferences = (preferences) => {
-    dispatch({
-      type: ActionTypes.UPDATE_PREFERENCES,
-      payload: preferences
-    });
-  };
+    loadRegions();
+  }, []);
 
   const value = {
     ...state,
-    addToHistory,
-    clearHistory,
-    saveConfiguration,
-    deleteConfiguration,
-    updatePreferences
+    isLoading,
+    addToHistory: (name) => dispatch({ type: ActionTypes.ADD_TO_HISTORY, payload: name }),
+    clearHistory: () => dispatch({ type: ActionTypes.CLEAR_HISTORY }),
+    saveConfiguration: (config) => dispatch({ type: ActionTypes.SAVE_CONFIGURATION, payload: config }),
+    deleteConfiguration: (id) => dispatch({ type: ActionTypes.DELETE_CONFIGURATION, payload: id }),
+    updatePreferences: (prefs) => dispatch({ type: ActionTypes.UPDATE_PREFERENCES, payload: prefs })
   };
 
   return (
@@ -139,7 +116,7 @@ export const AzureNamingProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the context
+// Hook
 export const useAzureNamingContext = () => {
   const context = useContext(AzureNamingContext);
   if (!context) {
