@@ -6,6 +6,9 @@ import ExcelJS from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 
 const ResultsDisplay = ({ formState, validationState }) => {
+  // Use a snapshot of the form state at the time of generation (if available)
+  // Fallback to current formState if not present
+  const generatedFormState = validationState.generatedFormState || formState;
   const { addToHistory, resourceTypes, environmentOptions, regionDropdownOptions } = useAzureNamingContext();
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -20,11 +23,6 @@ const ResultsDisplay = ({ formState, validationState }) => {
       await navigator.clipboard.writeText(textToCopy);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
-      addToHistory({
-        resourceType: formState.resourceType,
-        generatedName: validationState.generatedName,
-        configuration: { ...formState }
-      });
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
@@ -54,15 +52,36 @@ const ResultsDisplay = ({ formState, validationState }) => {
     const types = Array.isArray(formState.resourceType)
       ? formState.resourceType
       : [formState.resourceType];
-    const rows = names.map((name, idx) => ({
-      'Generated Name': name,
-      'Resource Type': getResourceTypeLabel(types[idx]),
-      'Workload/Application Name': formState.workload,
-      'Environment': getEnvironmentLabel(formState.environment),
-      'Region': getRegionLabel(formState.region),
-      'Instance': formState.instance
-    }));
-    const csv = [Object.keys(rows[0]).join(','), ...rows.map(row => Object.values(row).map(v => `"${v}"`).join(','))].join('\n');
+
+    // Determine which optional columns to include
+    const columns = [
+      'Generated Name',
+      'Resource Type',
+      'Workload/Application Name',
+      'Environment',
+      'Region',
+    ];
+    if (showInstance) columns.push('Instance');
+    if (showCustomPrefix) columns.push('Custom Prefix');
+    if (showCustomSuffix) columns.push('Custom Suffix');
+    if (showRandom) columns.push('Random Characters');
+
+    const rows = names.map((name, idx) => {
+      const row = {
+        'Generated Name': name,
+        'Resource Type': getResourceTypeLabel(types[idx]),
+        'Workload/Application Name': formState.workload,
+        'Environment': getEnvironmentLabel(formState.environment),
+        'Region': getRegionLabel(formState.region),
+      };
+      if (showInstance) row['Instance'] = formState.instance;
+      if (showCustomPrefix) row['Custom Prefix'] = formState.customPrefix;
+      if (showCustomSuffix) row['Custom Suffix'] = formState.customSuffix;
+      if (showRandom) row['Random Characters'] = formState.randomLength;
+      return row;
+    });
+
+    const csv = [columns.join(','), ...rows.map(row => columns.map(col => `"${row[col] ?? ''}"`).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -79,20 +98,40 @@ const ResultsDisplay = ({ formState, validationState }) => {
     const types = Array.isArray(formState.resourceType)
       ? formState.resourceType
       : [formState.resourceType];
-    const rows = names.map((name, idx) => ({
-      'Generated Name': name,
-      'Resource Type': getResourceTypeLabel(types[idx]),
-      'Workload/Application Name': formState.workload,
-      'Environment': getEnvironmentLabel(formState.environment),
-      'Region': getRegionLabel(formState.region),
-      'Instance': formState.instance
-    }));
+
+    // Determine which optional columns to include
+    const columns = [
+      'Generated Name',
+      'Resource Type',
+      'Workload/Application Name',
+      'Environment',
+      'Region',
+    ];
+    if (showInstance) columns.push('Instance');
+    if (showCustomPrefix) columns.push('Custom Prefix');
+    if (showCustomSuffix) columns.push('Custom Suffix');
+    if (showRandom) columns.push('Random Characters');
+
+    const rows = names.map((name, idx) => {
+      const row = {
+        'Generated Name': name,
+        'Resource Type': getResourceTypeLabel(types[idx]),
+        'Workload/Application Name': formState.workload,
+        'Environment': getEnvironmentLabel(formState.environment),
+        'Region': getRegionLabel(formState.region),
+      };
+      if (showInstance) row['Instance'] = formState.instance;
+      if (showCustomPrefix) row['Custom Prefix'] = formState.customPrefix;
+      if (showCustomSuffix) row['Custom Suffix'] = formState.customSuffix;
+      if (showRandom) row['Random Characters'] = formState.randomLength;
+      return row;
+    });
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Names');
     
     // Add headers
-    worksheet.columns = Object.keys(rows[0]).map(key => ({
+    worksheet.columns = columns.map(key => ({
       header: key,
       key: key,
       width: 20
@@ -139,15 +178,15 @@ const ResultsDisplay = ({ formState, validationState }) => {
   const names = Array.isArray(validationState.generatedName)
     ? validationState.generatedName
     : [validationState.generatedName];
-  const types = Array.isArray(formState.resourceType)
-    ? formState.resourceType
-    : [formState.resourceType];
+  const types = Array.isArray(generatedFormState.resourceType)
+    ? generatedFormState.resourceType
+    : [generatedFormState.resourceType];
 
   // Determine which optional columns to show
-  const showInstance = names.some(() => formState.instance && formState.instance !== '');
-  const showCustomPrefix = names.some(() => formState.customPrefix && formState.customPrefix !== '');
-  const showCustomSuffix = names.some(() => formState.customSuffix && formState.customSuffix !== '');
-  const showRandom = names.some(() => formState.randomLength && Number(formState.randomLength) > 0);
+  const showInstance = names.some(() => generatedFormState.instance && generatedFormState.instance !== '');
+  const showCustomPrefix = names.some(() => generatedFormState.customPrefix && generatedFormState.customPrefix !== '');
+  const showCustomSuffix = names.some(() => generatedFormState.customSuffix && generatedFormState.customSuffix !== '');
+  const showRandom = names.some(() => generatedFormState.randomLength && Number(generatedFormState.randomLength) > 0);
 
   return (
     <Paper radius="md" p="md" withBorder mt={24}>
@@ -169,24 +208,24 @@ const ResultsDisplay = ({ formState, validationState }) => {
           {names.map((name, idx) => (
             <Table.Tr key={name + idx}>
               <Table.Td>
-                <Text size="md" style={{ fontFamily: 'monospace', fontWeight: 500 }}>{name}</Text>
+                <Text size="sm" style={{ fontFamily: 'monospace', fontWeight: 500 }}>{name}</Text>
               </Table.Td>
               <Table.Td>
                 <Text size="sm">{getResourceTypeLabel(types[idx])}</Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">{formState.workload}</Text>
+                <Text size="sm">{generatedFormState.workload}</Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">{getEnvironmentLabel(formState.environment)}</Text>
+                <Text size="sm">{getEnvironmentLabel(generatedFormState.environment)}</Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">{getRegionLabel(formState.region)}</Text>
+                <Text size="sm">{getRegionLabel(generatedFormState.region)}</Text>
               </Table.Td>
-              {showInstance && <Table.Td><Text size="sm">{formState.instance}</Text></Table.Td>}
-              {showCustomPrefix && <Table.Td><Text size="sm">{formState.customPrefix}</Text></Table.Td>}
-              {showCustomSuffix && <Table.Td><Text size="sm">{formState.customSuffix}</Text></Table.Td>}
-              {showRandom && <Table.Td><Text size="sm">{formState.randomLength}</Text></Table.Td>}
+              {showInstance && <Table.Td><Text size="sm">{generatedFormState.instance}</Text></Table.Td>}
+              {showCustomPrefix && <Table.Td><Text size="sm">{generatedFormState.customPrefix}</Text></Table.Td>}
+              {showCustomSuffix && <Table.Td><Text size="sm">{generatedFormState.customSuffix}</Text></Table.Td>}
+              {showRandom && <Table.Td><Text size="sm">{generatedFormState.randomLength}</Text></Table.Td>}
             </Table.Tr>
           ))}
         </Table.Tbody>

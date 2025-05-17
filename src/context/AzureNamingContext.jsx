@@ -292,6 +292,7 @@ export const AzureNamingProvider = ({ children }) => {
     isLoading,
     environmentOptions,
     namingHistory,
+    setNamingHistory, // <-- add this line
     formState,
     validationState,
     updateFormState,
