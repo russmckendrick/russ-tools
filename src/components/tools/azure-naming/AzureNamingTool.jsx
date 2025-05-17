@@ -38,10 +38,7 @@ const AzureNamingTool = () => {
       {/* Section 1: Resource Naming Form */}
       <Paper radius="md" shadow="xs" p="lg" withBorder mb="md">
         <Title order={4} mb="md">Resource Naming Form</Title>
-        <ValidationIndicator
-          formState={formState}
-          validationState={validationState}
-        />
+
         <form onSubmit={e => { e.preventDefault(); generateName(); }}>
           <Grid grow gutter="xs">
             {/* Row 1 */}
@@ -206,9 +203,19 @@ const AzureNamingTool = () => {
             </Grid.Col>
             {/* Button Row */}
             <Grid.Col span={12}>
-              <Button type="submit" fullWidth size="md">
+              <Button
+                fullWidth
+                size="md"
+                color="blue"
+                mt="md"
+                onClick={generateName}
+                disabled={isLoading}
+              >
                 Generate Name
               </Button>
+            </Grid.Col>
+            <Grid.Col span={12} mt="md">
+              <ValidationIndicator formState={formState} validationState={validationState} />
             </Grid.Col>
           </Grid>
         </form>

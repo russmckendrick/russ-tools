@@ -35,46 +35,44 @@ const NamingHistory = () => {
   }
 
   return (
-    <Paper radius="xs" withBorder p="xs" mt="xs">
-      <ScrollArea h={220} type="auto" offsetScrollbars>
-        <Stack gap={0}>
-          {namingHistory.map((item) => (
-            <Group key={item.id} justify="space-between" align="center" mb="xs" p="sm" style={{ border: '1px solid #eee', borderRadius: 8 }}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <Text size="sm" fw={500} truncate c="blue.7">
-                  {item.configuration?.workload || 'Unnamed Workload'}
-                </Text>
-                <Text size="xs" c="dimmed" mt={2}>
-                  {item.group && Array.isArray(item.group)
-                    ? item.group.map((g, idx) => getResourceTypeLabel(g.resourceType)).join(', ')
-                    : ''}
-                </Text>
-                <Text size="xs" c="dimmed" mt={2}>
-                  {new Date(item.timestamp).toLocaleString()}
-                </Text>
-              </div>
-              <Group gap={4}>
-                <Button
-                  onClick={() => handleLoadConfiguration(item.configuration)}
-                  size="xs"
-                  color="blue"
-                  variant="light"
-                >
-                  Load
-                </Button>
-                <Button
-                  onClick={() => handleDelete(item.id)}
-                  size="xs"
-                  color="red"
-                  variant="outline"
-                >
-                  Delete
-                </Button>
-              </Group>
+    <>
+      <Stack gap={0}>
+        {namingHistory.map((item) => (
+          <Group key={item.id} justify="space-between" align="center" mb="xs" p="sm" style={{ border: '1px solid #eee', borderRadius: 8 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <Text size="sm" fw={500} truncate c="blue.7">
+                {item.configuration?.workload || 'Unnamed Workload'}
+              </Text>
+              <Text size="xs" c="dimmed" mt={2}>
+                {item.group && Array.isArray(item.group)
+                  ? item.group.map((g, idx) => getResourceTypeLabel(g.resourceType)).join(', ')
+                  : ''}
+              </Text>
+              <Text size="xs" c="dimmed" mt={2}>
+                {new Date(item.timestamp).toLocaleString()}
+              </Text>
+            </div>
+            <Group gap={4}>
+              <Button
+                onClick={() => handleLoadConfiguration(item.configuration)}
+                size="xs"
+                color="blue"
+                variant="light"
+              >
+                Load
+              </Button>
+              <Button
+                onClick={() => handleDelete(item.id)}
+                size="xs"
+                color="red"
+                variant="outline"
+              >
+                Delete
+              </Button>
             </Group>
-          ))}
-        </Stack>
-      </ScrollArea>
+          </Group>
+        ))}
+      </Stack>
       <Modal opened={showConfirm} onClose={() => setShowConfirm(false)} title="Delete Name?" centered>
         <Text>Are you sure you want to delete this name? This action cannot be undone.</Text>
         <Group mt="md" position="right">
@@ -86,7 +84,7 @@ const NamingHistory = () => {
           </Button>
         </Group>
       </Modal>
-    </Paper>
+    </>
   );
 };
 
