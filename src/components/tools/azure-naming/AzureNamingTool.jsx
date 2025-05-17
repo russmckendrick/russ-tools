@@ -29,10 +29,6 @@ const AzureNamingTool = () => {
         <Title order={2} color="blue.8">
           Azure Resource Naming Tool
         </Title>
-        <HelpTooltip
-          content="Generate compliant Azure resource names following Microsoft's naming conventions and best practices."
-          className="ml-2"
-        />
       </Group>
 
       {/* Section 1: Resource Naming Form */}
@@ -231,11 +227,9 @@ const AzureNamingTool = () => {
         />
       </Paper>
 
-      <Space h="md" />
-
-      {/* Section 3: Recent Names */}
+      {/* Section 3: Saved Names */}
       <Paper radius="md" shadow="xs" p="lg" withBorder>
-        <Title order={4} mb="md">Recent Names</Title>
+        <Title order={4} mb="md">Saved Names</Title>
         <NamingHistory />
       </Paper>
     </Container>
