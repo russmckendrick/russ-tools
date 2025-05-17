@@ -4,6 +4,7 @@ import { Layout } from './components/layout/Layout';
 import { NetworkDesign } from './pages/NetworkDesign';
 import { AzureNamingProvider } from './context/AzureNamingContext';
 import AzureNamingTool from './components/tools/azure-naming/AzureNamingTool';
+import HomeView from './components/layout/HomeView';
 
 /**
  * Main application component that sets up:
@@ -30,8 +31,8 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Layout />}>
-              {/* Default route - currently points to NetworkDesign */}
-              <Route index element={<NetworkDesign />} />
+              {/* Default route - now points to HomeView */}
+              <Route index element={<HomeView />} />
               
               {/* Network Designer route */}
               <Route path="network-designer" element={<NetworkDesign />} />
