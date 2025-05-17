@@ -34,13 +34,13 @@ const mockdata = [
     icon: IconNetwork,
     title: 'Network Designer',
     description: "Plan your cloud network and subnets",
-    link: "/network-designer",
+    link: "/network-designer/",
   },
   {
     icon: IconBrandAzure,
     title: 'Azure Resource Naming Tool',
     description: "Generate and validate Azure resource names",
-    link: "/azure-naming",
+    link: "/azure-naming/",
   },
 ];
 
