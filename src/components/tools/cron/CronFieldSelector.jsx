@@ -1,6 +1,5 @@
 import React from 'react';
 import { Select, Group, Text, Chip, SimpleGrid, SegmentedControl, NumberInput } from '@mantine/core';
-import { TimeInput, DatePickerInput, MonthPickerInput } from '@mantine/dates';
 
 const fieldOptions = {
   minute: Array.from({ length: 60 }, (_, i) => ({ value: String(i), label: String(i) })),
@@ -70,28 +69,39 @@ const CronFieldSelector = ({ field, value, onChange }) => {
 
   if (field === 'month') {
     const isEvery = value === '*';
+    const months = [
+      { value: '1', label: 'Jan' }, { value: '2', label: 'Feb' }, { value: '3', label: 'Mar' }, { value: '4', label: 'Apr' },
+      { value: '5', label: 'May' }, { value: '6', label: 'Jun' }, { value: '7', label: 'Jul' }, { value: '8', label: 'Aug' },
+      { value: '9', label: 'Sep' }, { value: '10', label: 'Oct' }, { value: '11', label: 'Nov' }, { value: '12', label: 'Dec' }
+    ];
+    const selected = isEvery ? [] : value.split(',');
     return (
-      <Group align="center" gap="sm">
+      <Group align="center" gap="sm" align-items="flex-start">
         <Text w={120}>{fieldLabels[field]}</Text>
-        <MonthPickerInput
-          type="multiple"
-          value={isEvery ? [] : value.split(',').map(v => new Date(2023, Number(v)-1))}
-          onChange={dates => {
-            if (!dates || dates.length === 0) onChange('*');
-            else onChange(dates.map(d => String(d.getMonth()+1)).join(','));
-          }}
-          placeholder={isEvery ? 'Every' : ''}
-          style={{ flex: 1 }}
-          disabled={isEvery}
-        />
-        <Chip
-          checked={isEvery}
-          onChange={checked => onChange(checked ? '*' : '1')}
-          color="blue"
-          variant="outline"
-        >
-          Every
-        </Chip>
+        <div style={{ flex: 1 }}>
+          <Chip.Group
+            multiple
+            value={selected}
+            onChange={vals => onChange(vals.length ? vals.join(',') : '*')}
+          >
+            <SimpleGrid cols={6} spacing={4} verticalSpacing={4}>
+              {months.map(opt => (
+                <Chip key={opt.value} value={opt.value} color="blue" variant="filled">
+                  {opt.label}
+                </Chip>
+              ))}
+            </SimpleGrid>
+          </Chip.Group>
+          <Chip
+            checked={isEvery}
+            onChange={checked => onChange(checked ? '*' : selected.join(','))}
+            color="blue"
+            variant="outline"
+            style={{ width: '100%', marginTop: 8 }}
+          >
+            Every
+          </Chip>
+        </div>
       </Group>
     );
   }
@@ -132,28 +142,35 @@ const CronFieldSelector = ({ field, value, onChange }) => {
   // Day of Month
   if (field === 'dayOfMonth') {
     const isEvery = value === '*';
+    const days = Array.from({ length: 31 }, (_, i) => ({ value: String(i+1), label: String(i+1) }));
+    const selected = isEvery ? [] : value.split(',');
     return (
-      <Group align="center" gap="sm">
+      <Group align="center" gap="sm" align-items="flex-start">
         <Text w={120}>{fieldLabels[field]}</Text>
-        <DatePickerInput
-          type="multiple"
-          value={isEvery ? [] : value.split(',').map(v => new Date(2023, 0, Number(v)))}
-          onChange={dates => {
-            if (!dates || dates.length === 0) onChange('*');
-            else onChange(dates.map(d => String(d.getDate())).join(','));
-          }}
-          placeholder={isEvery ? 'Every' : ''}
-          style={{ flex: 1 }}
-          disabled={isEvery}
-        />
-        <Chip
-          checked={isEvery}
-          onChange={checked => onChange(checked ? '*' : '1')}
-          color="blue"
-          variant="outline"
-        >
-          Every
-        </Chip>
+        <div style={{ flex: 1 }}>
+          <Chip.Group
+            multiple
+            value={selected}
+            onChange={vals => onChange(vals.length ? vals.join(',') : '*')}
+          >
+            <SimpleGrid cols={10} spacing={2} verticalSpacing={2}>
+              {days.map(opt => (
+                <Chip key={opt.value} value={opt.value} color="blue" variant="filled">
+                  {opt.label}
+                </Chip>
+              ))}
+            </SimpleGrid>
+          </Chip.Group>
+          <Chip
+            checked={isEvery}
+            onChange={checked => onChange(checked ? '*' : selected.join(','))}
+            color="blue"
+            variant="outline"
+            style={{ width: '100%', marginTop: 8 }}
+          >
+            Every
+          </Chip>
+        </div>
       </Group>
     );
   }
