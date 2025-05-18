@@ -95,7 +95,7 @@ export function NavbarMinimal() {
   ));
 
   return (
-    <Box pb={120}>
+    <Box pb={0}>
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
           <Text fw={700} size="xl">RussTools</Text>
