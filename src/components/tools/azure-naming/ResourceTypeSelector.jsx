@@ -8,11 +8,6 @@ const ResourceTypeSelector = ({ formState, updateFormState, validationState, sho
   // Get resourceTypes from context (array of { value: name, label: slug })
   const { resourceTypes } = useAzureNamingContext();
 
-  const handleResourceTypeChange = (value) => {
-    devLog('[ResourceTypeSelector] onChange value:', value);
-    updateFormState('resourceType', value);
-  };
-
   return (
     <MultiSelect
       label={

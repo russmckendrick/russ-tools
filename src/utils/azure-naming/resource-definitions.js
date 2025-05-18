@@ -13,12 +13,12 @@ function goRegexToJsValidation(str, fallback = /.*/) {
   // Unescape double-escaped backslashes (from JSON/Go)
   cleaned = cleaned.replace(/\\/g, '\\');
 
-  console.log('goRegexToJsValidation:', { original: str, cleaned }); // Debug log
+  // console.log('goRegexToJsValidation:', { original: str, cleaned }); // Debug log
 
   try {
     return new RegExp(cleaned);
   } catch (e) {
-    console.warn('Invalid Go regex for JS RegExp (validation):', str, '->', cleaned, e);
+    // console.warn('Invalid Go regex for JS RegExp (validation):', str, '->', cleaned, e);
     return fallback;
   }
 }
@@ -33,7 +33,7 @@ function goRegexToJsCleaning(str, fallback = /[^a-zA-Z0-9-._()]/g) {
     try {
       return new RegExp(cleaned, 'g');
     } catch (e) {
-      console.warn('Invalid Go regex for JS RegExp (cleaning):', str, '->', cleaned, e);
+      //console.warn('Invalid Go regex for JS RegExp (cleaning):', str, '->', cleaned, e);
       return fallback;
     }
   }
@@ -44,7 +44,7 @@ function goRegexToJsCleaning(str, fallback = /[^a-zA-Z0-9-._()]/g) {
     try {
       return new RegExp(cleaned, 'g');
     } catch (e) {
-      console.warn('Invalid Go regex for JS RegExp (cleaning):', str, '->', cleaned, e);
+      // console.warn('Invalid Go regex for JS RegExp (cleaning):', str, '->', cleaned, e);
       return fallback;
     }
   }
@@ -83,13 +83,6 @@ const processDefinitions = (defs) => {
       scope: def.scope
     };
 
-    // Debug log for validation
-    console.log('Validating resource:', {
-      type: def.type,
-      input: def.name,
-      validationRegex: validationRegex.toString(),
-      matches: validationRegex.test(def.name)
-    });
 
     // Store by both the full name and the slug for easy lookup
     acc[def.name] = processedDef;
@@ -102,7 +95,7 @@ const processDefinitions = (defs) => {
 // Prefer main resourceDefinitions if there are duplicates
 let allDefinitions = [...resourceDefinitions, ...outOfDocsDefinitions];
 if (hasDuplicateSlugs(allDefinitions)) {
-  console.warn('[Azure Naming] Duplicate slugs detected. Using only azure-name-resourceDefinition.json definitions.');
+  // console.warn('[Azure Naming] Duplicate slugs detected. Using only azure-name-resourceDefinition.json definitions.');
   allDefinitions = [...resourceDefinitions];
 }
 
