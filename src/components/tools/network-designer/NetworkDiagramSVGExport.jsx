@@ -1,4 +1,5 @@
 import { useMantineTheme, useMantineColorScheme, Button, Modal } from '@mantine/core';
+import { devError } from '../../../utils/devLog';
 import { useRef, useState } from 'react';
 import { Netmask } from 'netmask';
 import { ipToLong, longToIp, getSubnetBgColorHex } from '../../../utils';
@@ -150,7 +151,7 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = 
       document.body.removeChild(downloadLink);
       URL.revokeObjectURL(svgUrl);
     } catch (err) {
-      console.error('SVG export error:', err);
+      devError('SVG export error:', err);
       setErrorModal({
         opened: true,
         message: 'SVG export failed. Could not generate diagram markup.',

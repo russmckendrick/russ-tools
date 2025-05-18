@@ -1,4 +1,5 @@
 import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal, useMantineColorScheme } from '@mantine/core';
+import { devError } from '../../../utils/devLog';
 import { getSubnetBgColorHex } from '../../../utils';
 import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../../../utils/networkDiagramUtils';
 import { IconDownload, IconNetwork, IconSubtask, IconSpace, IconFileTypeSvg, IconFileTypePng } from '@tabler/icons-react';
@@ -70,7 +71,7 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       link.download = `${parentNetwork.name || 'network'}-diagram.png`;
       link.click();
     }).catch(err => {
-      console.error('PNG export error:', err);
+      devError('PNG export error:', err);
       setErrorModal({
         opened: true,
         message: 'PNG export failed. Please try again later.'

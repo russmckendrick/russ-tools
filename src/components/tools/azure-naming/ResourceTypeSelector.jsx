@@ -1,5 +1,6 @@
 import React from 'react';
 import { MultiSelect, Text, Group } from '@mantine/core';
+import { devLog } from '../../../utils/devLog';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import HelpTooltip from './HelpTooltip';
 
@@ -8,7 +9,7 @@ const ResourceTypeSelector = ({ formState, updateFormState, validationState, sho
   const { resourceTypes } = useAzureNamingContext();
 
   const handleResourceTypeChange = (value) => {
-    console.log('[ResourceTypeSelector] onChange value:', value);
+    devLog('[ResourceTypeSelector] onChange value:', value);
     updateFormState('resourceType', value);
   };
 
