@@ -5,6 +5,7 @@ import {
   IconMoonStars,
   IconNetwork,
   IconBrandGithub,
+  IconClock,
 } from '@tabler/icons-react';
 import {
   Anchor,
@@ -42,6 +43,12 @@ const mockdata = [
     title: 'Azure Resource Naming Tool',
     description: "Generate and validate Azure resource names",
     link: "/azure-naming/",
+  },
+  {
+    icon: IconClock,
+    title: 'Cron Expression Builder',
+    description: "Build and validate cron job expressions",
+    link: "/cron/",
   },
   {
     icon: IconBrandGithub,

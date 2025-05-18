@@ -4,6 +4,7 @@ import { Layout } from './components/layout/Layout';
 import { NetworkDesign } from './pages/NetworkDesign';
 import { AzureNamingProvider } from './context/AzureNamingContext';
 import AzureNamingTool from './components/tools/azure-naming/AzureNamingTool';
+import CronBuilderTool from './components/tools/cron/CronBuilderTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -43,6 +44,9 @@ export default function App() {
               
               {/* Hidden route for clearing all local storage */}
               <Route path="delete" element={<ClearAllStorage />} />
+
+              {/* Cron Builder Tool route */}
+              <Route path="cron" element={<CronBuilderTool />} />
 
               {/* Add more routes here as needed */}
             </Route>
