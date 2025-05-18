@@ -4,6 +4,7 @@ import {
   IconSun,
   IconMoonStars,
   IconNetwork,
+  IconBrandGithub,
 } from '@tabler/icons-react';
 import {
   Anchor,
@@ -41,6 +42,12 @@ const mockdata = [
     title: 'Azure Resource Naming Tool',
     description: "Generate and validate Azure resource names",
     link: "/azure-naming/",
+  },
+  {
+    icon: IconBrandGithub,
+    title: 'Source Code',
+    description: "View the source code on GitHub",
+    link: "https://github.com/russmckendrick/russ-tools",
   },
 ];
 
