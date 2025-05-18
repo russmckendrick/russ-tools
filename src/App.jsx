@@ -5,6 +5,7 @@ import { NetworkDesign } from './pages/NetworkDesign';
 import { AzureNamingProvider } from './context/AzureNamingContext';
 import AzureNamingTool from './components/tools/azure-naming/AzureNamingTool';
 import HomeView from './components/layout/HomeView';
+import ClearAllStorage from './components/ClearAllStorage';
 
 /**
  * Main application component that sets up:
@@ -40,6 +41,9 @@ export default function App() {
               {/* Azure Naming Tool route */}
               <Route path="azure-naming" element={<AzureNamingTool />} />
               
+              {/* Hidden route for clearing all local storage */}
+              <Route path="delete" element={<ClearAllStorage />} />
+
               {/* Add more routes here as needed */}
             </Route>
           </Routes>

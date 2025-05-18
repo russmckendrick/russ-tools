@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { useLocalStorage } from '@mantine/hooks';
+import { devLog, devWarn, devError } from '../utils/devLog';
 import { RESOURCE_TYPES, generateResourceName } from '../utils/azure-naming/rules';
 import environments from '../environments.json';
 import { loadAzureRegionData } from '../utils/azure-naming/region-parser';
 
 // Log raw RESOURCE_TYPES values for debugging
 const rawResourceTypes = Object.values(RESOURCE_TYPES);
-console.log('RAW RESOURCE_TYPES:', rawResourceTypes);
+devLog('RAW RESOURCE_TYPES:', rawResourceTypes);
 
 // Filter for unique resource type names (use only the first occurrence)
 const seenNames = new Set();
@@ -18,7 +19,7 @@ for (const rt of rawResourceTypes) {
   }
 }
 if (uniqueResourceTypes.length < rawResourceTypes.length) {
-  console.warn('[AzureNamingContext] Duplicate resource type names detected. Only the first occurrence of each name will be used.');
+  devWarn('[AzureNamingContext] Duplicate resource type names detected. Only the first occurrence of each name will be used.');
 }
 
 function toDisplayName(name, slug) {
@@ -32,7 +33,7 @@ const resourceTypes = uniqueResourceTypes.map(rt => ({
   value: `${rt.type}|${rt.name}`,
   label: toDisplayName(rt.name, rt.type)
 }));
-console.log('resourceTypes for Select:', resourceTypes);
+devLog('resourceTypes for Select:', resourceTypes);
 
 // Initial state
 const initialState = {
@@ -269,11 +270,11 @@ export const AzureNamingProvider = ({ children }) => {
           label: displayName,
           value: slug
         }));
-        console.log('[AzureNamingContext] Region dropdown options:', dropdownOptions);
+        devLog('[AzureNamingContext] Region dropdown options:', dropdownOptions);
         dispatch({ type: ActionTypes.SET_REGION_DROPDOWN, payload: dropdownOptions });
         dispatch({ type: ActionTypes.SET_SHORTNAMES, payload: regionData.shortNames });
       } catch (error) {
-        console.error('Failed to load region data:', error);
+        devError('Failed to load region data:', error);
       } finally {
         setIsLoading(false);
       }
