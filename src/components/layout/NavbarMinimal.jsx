@@ -52,6 +52,7 @@ function ThemeToggle({ size = 36, ...props }) {
       variant="outline"
       onClick={() => setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark')}
       title="Toggle color scheme"
+      color="grey"
       size={size}
       style={{ minWidth: size, minHeight: size }}
       {...props}
@@ -153,13 +154,13 @@ export function NavbarMinimal() {
         <ScrollArea h="calc(100vh - 80px" mx="-md">
           <Divider my="sm" />
 
-          <a href="#" className={classes.link}>
+          <a href="/" className={classes.link}>
             Home
           </a>
           <UnstyledButton className={classes.link} onClick={toggleLinks}>
             <Center inline>
               <Box component="span" mr={5}>
-                Features
+                Tools
               </Box>
               <IconChevronDown size={16} color={theme.colors.blue[6]} />
             </Center>

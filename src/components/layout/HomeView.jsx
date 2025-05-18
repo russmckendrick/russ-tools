@@ -14,7 +14,7 @@ export default function HomeView() {
     alt="Network Designer"
     height={200}
     fit="contain"
-    style={{ maxWidth: '100%', height: '100%', objectFit: 'contain' }}
+    style={{ maxWidth: '100%', height: '400px', objectFit: 'contain' }}
   />
 </Card.Section>
           <Group position="apart" mt="md" mb="xs">
@@ -39,7 +39,7 @@ export default function HomeView() {
     alt="Azure Naming Tool"
     height={200}
     fit="contain"
-    style={{ maxWidth: '100%', height: '100%', objectFit: 'contain' }}
+    style={{ maxWidth: '100%', height: '400px', objectFit: 'contain' }}
   />
 </Card.Section>
           <Group position="apart" mt="md" mb="xs">
