@@ -75,7 +75,7 @@ const AzureNamingTool = () => {
           <Tabs.Panel value="builder" pt="lg">
             <Stack gap="lg">
               {/* Resource Type Selection */}
-              <Paper p="md" withBorder radius="md" bg="var(--mantine-color-gray-0)">
+              <Paper p="md" withBorder radius="md">
                 <Stack gap="sm">
                   <Group gap="xs" align="center">
                     <Badge variant="light" color="blue" size="sm">Resource Types</Badge>
@@ -126,7 +126,7 @@ const AzureNamingTool = () => {
               </Grid>
 
               {/* Generate Button & Validation */}
-              <Paper p="md" withBorder radius="md" bg="blue.0">
+              <Paper p="md" withBorder radius="md">
                 <Stack gap="md">
                   <Button
                     fullWidth

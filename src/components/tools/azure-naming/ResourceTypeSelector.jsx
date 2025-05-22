@@ -41,11 +41,6 @@ const ResourceTypeSelector = ({ formState, updateFormState, validationState, sho
       styles={{
         input: {
           minHeight: '80px',
-        },
-        pill: {
-          backgroundColor: 'var(--mantine-color-blue-0)',
-          color: 'var(--mantine-color-blue-7)',
-          border: '1px solid var(--mantine-color-blue-2)',
         }
       }}
     />

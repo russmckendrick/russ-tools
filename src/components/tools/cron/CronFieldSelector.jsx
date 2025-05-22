@@ -70,21 +70,21 @@ const CronFieldSelector = ({ field, value, onChange }) => {
               
               <Stack gap="xs">
                 {presets.map(preset => (
-                  <Paper
-                    key={preset.value}
-                    p="xs"
-                    radius="sm"
-                    bg={value === preset.value ? 'blue.0' : undefined}
-                    withBorder
-                    style={{ 
-                      cursor: 'pointer',
-                      borderColor: value === preset.value ? 'var(--mantine-color-blue-4)' : undefined 
-                    }}
-                    onClick={() => {
-                      onChange(preset.value);
-                      setShowCustom(false);
-                    }}
-                  >
+                                  <Paper
+                  key={preset.value}
+                  p="xs"
+                  radius="sm"
+                  withBorder
+                  style={{ 
+                    cursor: 'pointer',
+                    borderColor: value === preset.value ? 'var(--mantine-color-blue-4)' : undefined,
+                    backgroundColor: value === preset.value ? 'var(--mantine-color-blue-light)' : undefined
+                  }}
+                  onClick={() => {
+                    onChange(preset.value);
+                    setShowCustom(false);
+                  }}
+                >
                     <Group justify="space-between" align="center">
                       <div>
                         <Text size="sm" fw={500} c={value === preset.value ? 'blue' : undefined}>
@@ -106,11 +106,11 @@ const CronFieldSelector = ({ field, value, onChange }) => {
                 <Paper
                   p="xs"
                   radius="sm"
-                  bg={showCustom ? 'blue.0' : undefined}
                   withBorder
                   style={{ 
                     cursor: 'pointer',
-                    borderColor: showCustom ? 'var(--mantine-color-blue-4)' : undefined 
+                    borderColor: showCustom ? 'var(--mantine-color-blue-4)' : undefined,
+                    backgroundColor: showCustom ? 'var(--mantine-color-blue-light)' : undefined
                   }}
                   onClick={() => setShowCustom(true)}
                 >
@@ -241,7 +241,7 @@ const CronFieldSelector = ({ field, value, onChange }) => {
     const selected = isEvery ? [] : value.split(',').filter(Boolean);
     
     return (
-      <Paper p="md" withBorder radius="sm" bg="var(--mantine-color-gray-0)">
+      <Paper p="md" withBorder radius="sm">
         <Stack gap="sm">
           <Group justify="space-between" align="center">
             <Text fw={500} size="sm">{fieldLabels[field]}</Text>
@@ -292,7 +292,7 @@ const CronFieldSelector = ({ field, value, onChange }) => {
     const selected = isEvery ? [] : value.split(',').filter(Boolean);
     
     return (
-      <Paper p="md" withBorder radius="sm" bg="var(--mantine-color-gray-0)">
+      <Paper p="md" withBorder radius="sm">
         <Stack gap="sm">
           <Group justify="space-between" align="center">
             <Text fw={500} size="sm">{fieldLabels[field]}</Text>
@@ -340,7 +340,7 @@ const CronFieldSelector = ({ field, value, onChange }) => {
     const selected = isEvery ? [] : value.split(',').filter(Boolean);
     
     return (
-      <Paper p="md" withBorder radius="sm" bg="var(--mantine-color-gray-0)">
+      <Paper p="md" withBorder radius="sm">
         <Stack gap="sm">
           <Group justify="space-between" align="center">
             <Text fw={500} size="sm">{fieldLabels[field]}</Text>

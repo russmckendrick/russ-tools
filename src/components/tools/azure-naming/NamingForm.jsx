@@ -249,22 +249,13 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
                     },
                     thumb: {
                       borderWidth: '2px',
-                      backgroundColor: 'var(--mantine-color-gray-0)',
-                      borderColor: 'var(--mantine-color-blue-5)',
-                    },
-                    mark: {
-                      backgroundColor: 'var(--mantine-color-gray-4)',
-                      borderColor: 'var(--mantine-color-gray-4)',
                     },
                     markLabel: {
                       fontSize: '11px',
-                      color: 'var(--mantine-color-gray-6)',
                       fontWeight: 500,
                       marginTop: '8px',
                     },
                     label: {
-                      backgroundColor: 'var(--mantine-color-blue-5)',
-                      color: 'white',
                       fontSize: '12px',
                       fontWeight: 600,
                       padding: '4px 8px',

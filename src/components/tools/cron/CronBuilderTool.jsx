@@ -107,7 +107,7 @@ const CronBuilderTool = () => {
           <Tabs.Panel value="builder" pt="lg">
             <Stack gap="lg">
               {/* Cron Expression Output */}
-              <Paper p="md" withBorder radius="md" bg="var(--mantine-color-gray-0)">
+              <Paper p="md" withBorder radius="md">
                 <Group justify="space-between" align="center">
                   <div style={{ flex: 1 }}>
                     <Text size="xs" c="dimmed" mb={4}>Generated Expression:</Text>
