@@ -40,7 +40,7 @@ const CronExpressionInput = ({ value, onChange, readOnly = false }) => {
 
   if (readOnly) {
     return (
-      <Paper p="md" withBorder radius="sm" bg="var(--mantine-color-gray-0)">
+      <Paper p="md" withBorder radius="sm">
         <Stack gap="xs">
           <Text size="xs" c="dimmed">Generated Cron Expression:</Text>
           <Group justify="space-between" align="center">
@@ -66,7 +66,7 @@ const CronExpressionInput = ({ value, onChange, readOnly = false }) => {
   }
 
   return (
-    <Paper p="md" withBorder radius="sm" bg="var(--mantine-color-gray-0)">
+    <Paper p="md" withBorder radius="sm">
       <Stack gap="xs">
         <Text size="xs" c="dimmed">Manual Cron Expression Input:</Text>
         {isEditing ? (
@@ -108,9 +108,8 @@ const CronExpressionInput = ({ value, onChange, readOnly = false }) => {
             <Text 
               font="monospace" 
               size="sm" 
-              c={value ? "dark" : "dimmed"}
+              c={value ? undefined : "dimmed"}
               style={{ 
-                backgroundColor: 'var(--mantine-color-gray-0)',
                 padding: '8px 12px',
                 borderRadius: '4px',
                 border: '1px solid var(--mantine-color-gray-3)',

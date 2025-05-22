@@ -42,8 +42,7 @@ export default function HomeView() {
             RussTools
           </Title>
           <Text size="lg" c="dimmed" maw={600}>
-            Professional tools for cloud infrastructure and DevOps workflows. 
-            Streamline your Azure, AWS, and VMware deployments with enterprise-grade utilities.
+            A random collection of tools for cloud infrastructure and DevOps workflows. 
           </Text>
         </Stack>
 
@@ -133,10 +132,7 @@ export default function HomeView() {
         {/* Footer */}
         <Stack gap="xs" align="center" ta="center" mt="xl">
           <Text size="sm" c="dimmed">
-            Built for enterprise infrastructure teams and DevOps professionals
-          </Text>
-          <Text size="xs" c="dimmed">
-            All tools generate production-ready configurations following industry best practices
+          All tools are provided as-is, without warranty of any kind.
           </Text>
         </Stack>
       </Stack>

@@ -47,7 +47,7 @@ const CronFieldSelector = ({ field, value, onChange }) => {
     }, [isCustom]);
     
     return (
-      <Paper p="md" withBorder radius="sm" bg="var(--mantine-color-gray-0)">
+      <Paper p="md" withBorder radius="sm">
         <Stack gap="sm">
           <Group justify="space-between" align="center">
             <Text fw={500} size="sm">{fieldLabels[field]}</Text>
@@ -132,7 +132,7 @@ const CronFieldSelector = ({ field, value, onChange }) => {
                 </Paper>
                 
                 {showCustom && (
-                  <Paper p="sm" bg="var(--mantine-color-gray-1)" radius="sm">
+                  <Paper p="sm" radius="sm" withBorder>
                     <Text size="xs" c="dimmed" mb="xs">
                       Select specific minutes (0-59):
                     </Text>
@@ -180,7 +180,7 @@ const CronFieldSelector = ({ field, value, onChange }) => {
     const selected = isEvery ? [] : value.split(',').filter(Boolean);
     
     return (
-      <Paper p="md" withBorder radius="sm" bg="var(--mantine-color-gray-0)">
+      <Paper p="md" withBorder radius="sm">
         <Stack gap="sm">
           <Group justify="space-between" align="center">
             <Text fw={500} size="sm">{fieldLabels[field]}</Text>
