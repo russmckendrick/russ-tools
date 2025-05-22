@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { TextInput, Button, Group, Paper, Select, Text, ColorSwatch, Popover, SimpleGrid, useMantineTheme, Box } from '@mantine/core';
+import { TextInput, Button, Group, Paper, Select, Text, ColorSwatch, Popover, SimpleGrid, useMantineTheme, Box, Grid, Stack } from '@mantine/core';
 import { Netmask } from 'netmask';
 import { ipToLong } from '../../../utils';
 
@@ -142,74 +142,95 @@ export function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) 
   };
 
   return (
-    <Paper p="md" radius="md" withBorder mb="md">
-      <Group position="apart" spacing="md" align="flex-end">
-        <TextInput
-          label="Subnet Name"
-          placeholder="e.g., Web Tier"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          error={error && error.includes('name') ? error : null}
-          style={{ flex: 1 }}
-        />
-        <Select
-          label="CIDR Size"
-          placeholder="Select size"
-          value={cidr}
-          onChange={setCidr}
-          data={cidrOptions}
-          error={error && error.includes('CIDR') ? error : null}
-          style={{ width: '120px' }}
-          disabled={cidrOptions.length === 0}
-        />
-        <Box style={{ width: '80px' }}>
-          <Text size="sm" weight={500} mb={5}>Color</Text>
-          <Popover
-            opened={colorPickerOpened}
-            position="bottom"
-            width={240}
-            withinPortal
-            onChange={setColorPickerOpened}
-          >
-            <Popover.Target>
-              <ColorSwatch
-                color={selectedColor?.value || '#ccc'}
-                size={28}
-                style={{ cursor: 'pointer', marginTop: '3px' }}
-                onClick={() => setColorPickerOpened((o) => !o)}
-              />
-            </Popover.Target>
-            <Popover.Dropdown>
-              <SimpleGrid cols={8} spacing="xs">
-                {colorPalette.map((color) => (
-                  <ColorSwatch
-                    key={`${color.name}-${color.index}`}
-                    color={color.value}
-                    onClick={() => {
-                      setSelectedColor(color);
-                      setColorPickerOpened(false);
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  />
-                ))}
-              </SimpleGrid>
-            </Popover.Dropdown>
-          </Popover>
-        </Box>
-        <Button
-          onClick={handleSubmit}
-          style={{ marginBottom: '1px' }}
-          disabled={cidrOptions.length === 0}
-        >
-          Add Subnet
-        </Button>
-      </Group>
+    <div>
+      <Grid>
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <TextInput
+            label={
+              <Group gap={4} align="center">
+                <Text size="sm" fw={500}>Subnet Name</Text>
+              </Group>
+            }
+            placeholder="e.g., Web Tier"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            error={error && error.includes('name') ? error : null}
+            withAsterisk
+            size="sm"
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 3 }}>
+          <Select
+            label={
+              <Group gap={4} align="center">
+                <Text size="sm" fw={500}>CIDR Size</Text>
+              </Group>
+            }
+            placeholder="Select size"
+            value={cidr}
+            onChange={setCidr}
+            data={cidrOptions}
+            error={error && error.includes('CIDR') ? error : null}
+            disabled={cidrOptions.length === 0}
+            withAsterisk
+            size="sm"
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 2 }}>
+          <Stack gap="xs">
+            <Text size="sm" fw={500}>Color</Text>
+            <Popover
+              opened={colorPickerOpened}
+              position="bottom"
+              width={240}
+              withinPortal
+              onChange={setColorPickerOpened}
+            >
+              <Popover.Target>
+                <ColorSwatch
+                  color={selectedColor?.value || '#ccc'}
+                  size={28}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setColorPickerOpened((o) => !o)}
+                />
+              </Popover.Target>
+              <Popover.Dropdown>
+                <SimpleGrid cols={8} spacing="xs">
+                  {colorPalette.map((color) => (
+                    <ColorSwatch
+                      key={`${color.name}-${color.index}`}
+                      color={color.value}
+                      onClick={() => {
+                        setSelectedColor(color);
+                        setColorPickerOpened(false);
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  ))}
+                </SimpleGrid>
+              </Popover.Dropdown>
+            </Popover>
+          </Stack>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 3 }}>
+          <Group justify="flex-end" mt={24}>
+            <Button
+              onClick={handleSubmit}
+              disabled={cidrOptions.length === 0}
+              size="sm"
+            >
+              Add Subnet
+            </Button>
+          </Group>
+        </Grid.Col>
+      </Grid>
+      
       {error && !error.includes('name') && !error.includes('CIDR') && (
         <Text color="red" size="sm" mt="xs">{error}</Text>
       )}
       {cidrOptions.length === 0 && parentNetwork && (
         <Text color="orange" size="sm" mt="xs">No space available for additional subnets</Text>
       )}
-    </Paper>
+    </div>
   );
 }

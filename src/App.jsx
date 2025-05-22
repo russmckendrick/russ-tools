@@ -1,7 +1,7 @@
 import { MantineProvider } from '@mantine/core';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
-import { NetworkDesign } from './pages/NetworkDesign';
+import NetworkDesignerTool from './components/tools/network-designer/NetworkDesignerTool';
 import { AzureNamingProvider } from './context/AzureNamingContext';
 import AzureNamingTool from './components/tools/azure-naming/AzureNamingTool';
 import CronBuilderTool from './components/tools/cron/CronBuilderTool';
@@ -37,7 +37,7 @@ export default function App() {
               <Route index element={<HomeView />} />
               
               {/* Network Designer route */}
-              <Route path="network-designer" element={<NetworkDesign />} />
+              <Route path="network-designer" element={<NetworkDesignerTool />} />
               
               {/* Azure Naming Tool route */}
               <Route path="azure-naming" element={<AzureNamingTool />} />
