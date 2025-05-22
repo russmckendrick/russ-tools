@@ -139,7 +139,7 @@ export function TerraformExportSection({ network, subnets }) {
   // PrismJS highlighting
   const highlightedAws = Prism.highlight(awsCode, Prism.languages.hcl, 'hcl');
   const highlightedAzure = Prism.highlight(azureCode, Prism.languages.hcl, 'hcl');
-  const highlightedVcd = Prism.highlight(`# VMware Cloud Director Terraform export is coming soon!\n# See the provider docs: https://registry.terraform.io/providers/vmware/vcd/latest/docs`, Prism.languages.hcl, 'hcl');
+  const highlightedVcd = Prism.highlight(vcdCode, Prism.languages.hcl, 'hcl');
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
@@ -229,6 +229,45 @@ export function TerraformExportSection({ network, subnets }) {
 
         </Tabs.Panel>
         <Tabs.Panel value="vcd" pt="md">
+          <Group gap="md" mb="md">
+            <Select
+              label="Network Type"
+              data={[
+                { value: 'routed', label: 'Routed Network' },
+                { value: 'isolated', label: 'Isolated Network' }
+              ]}
+              value={vcdNetworkType}
+              onChange={handleVcdNetworkTypeChange}
+              style={{ width: 160 }}
+              size="sm"
+            />
+            <TextInput
+              label="Organization"
+              value={vcdOrg}
+              onChange={(e) => handleVcdOrgChange(e.target.value)}
+              placeholder="my-org"
+              style={{ width: 140 }}
+              size="sm"
+            />
+            <TextInput
+              label="VDC"
+              value={vcdVdc}
+              onChange={(e) => handleVcdVdcChange(e.target.value)}
+              placeholder="my-vdc"
+              style={{ width: 140 }}
+              size="sm"
+            />
+            {vcdNetworkType === 'routed' && (
+              <TextInput
+                label="Edge Gateway"
+                value={vcdEdgeGateway}
+                onChange={(e) => handleVcdEdgeGatewayChange(e.target.value)}
+                placeholder="edge-gateway"
+                style={{ width: 160 }}
+                size="sm"
+              />
+            )}
+          </Group>
           <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
             <pre style={{ margin: 0, padding: 0, background: 'none' }}>
               <code
