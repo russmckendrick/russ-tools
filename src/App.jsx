@@ -1,9 +1,10 @@
 import { MantineProvider } from '@mantine/core';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
-import { NetworkDesign } from './pages/NetworkDesign';
+import NetworkDesignerTool from './components/tools/network-designer/NetworkDesignerTool';
 import { AzureNamingProvider } from './context/AzureNamingContext';
 import AzureNamingTool from './components/tools/azure-naming/AzureNamingTool';
+import CronBuilderTool from './components/tools/cron/CronBuilderTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -36,13 +37,16 @@ export default function App() {
               <Route index element={<HomeView />} />
               
               {/* Network Designer route */}
-              <Route path="network-designer" element={<NetworkDesign />} />
+              <Route path="network-designer" element={<NetworkDesignerTool />} />
               
               {/* Azure Naming Tool route */}
               <Route path="azure-naming" element={<AzureNamingTool />} />
               
               {/* Hidden route for clearing all local storage */}
               <Route path="delete" element={<ClearAllStorage />} />
+
+              {/* Cron Builder Tool route */}
+              <Route path="cron" element={<CronBuilderTool />} />
 
               {/* Add more routes here as needed */}
             </Route>

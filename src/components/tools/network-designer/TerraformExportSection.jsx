@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Paper, Group, Button, Tabs, ActionIcon, Tooltip, Text, Title, Box, Select } from '@mantine/core';
+import { Paper, Group, Button, Tabs, ActionIcon, Tooltip, Text, Title, Box, Select, TextInput } from '@mantine/core';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-hcl';
 import '../../../styles/prism-theme.css';
 import { useComputedColorScheme } from '@mantine/core';
 
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform, IconServer } from '@tabler/icons-react';
-import { generateAwsTerraform, generateAzureTerraform } from '../../../utils/terraformExport';
+import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/terraformExport';
 import { loadAzureRegions } from '../../../utils/regions/AzureRegions';
 import { loadAwsRegions } from '../../../utils/regions/AwsRegions';
 
@@ -29,6 +29,17 @@ export function TerraformExportSection({ network, subnets }) {
   const [regionListAws, setRegionListAws] = useState([]);
   const [loadingRegionsAws, setLoadingRegionsAws] = useState(true);
   const [regionErrorAws, setRegionErrorAws] = useState(null);
+
+  // VCD configuration with persistence
+  const savedVcdOrg = typeof window !== 'undefined' ? window.localStorage.getItem('vcdOrg') : null;
+  const savedVcdVdc = typeof window !== 'undefined' ? window.localStorage.getItem('vcdVdc') : null;
+  const savedVcdEdgeGateway = typeof window !== 'undefined' ? window.localStorage.getItem('vcdEdgeGateway') : null;
+  const savedVcdNetworkType = typeof window !== 'undefined' ? window.localStorage.getItem('vcdNetworkType') : null;
+  
+  const [vcdOrg, setVcdOrg] = useState(savedVcdOrg || 'my-org');
+  const [vcdVdc, setVcdVdc] = useState(savedVcdVdc || 'my-vdc');
+  const [vcdEdgeGateway, setVcdEdgeGateway] = useState(savedVcdEdgeGateway || 'edge-gateway');
+  const [vcdNetworkType, setVcdNetworkType] = useState(savedVcdNetworkType || 'routed');
 
   React.useEffect(() => {
     let mounted = true;
@@ -56,6 +67,35 @@ export function TerraformExportSection({ network, subnets }) {
     }
   };
 
+  // VCD configuration handlers
+  const handleVcdOrgChange = (value) => {
+    setVcdOrg(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('vcdOrg', value);
+    }
+  };
+
+  const handleVcdVdcChange = (value) => {
+    setVcdVdc(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('vcdVdc', value);
+    }
+  };
+
+  const handleVcdEdgeGatewayChange = (value) => {
+    setVcdEdgeGateway(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('vcdEdgeGateway', value);
+    }
+  };
+
+  const handleVcdNetworkTypeChange = (value) => {
+    setVcdNetworkType(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('vcdNetworkType', value);
+    }
+  };
+
   React.useEffect(() => {
     let mounted = true;
     loadAwsRegions()
@@ -80,16 +120,26 @@ export function TerraformExportSection({ network, subnets }) {
     location: azureRegion,
     subnets: subnets || [],
   });
+  const vcdCode = generateVcdTerraform({
+    networkName: network?.name || 'main-network',
+    networkCidr: `${network?.ip}/${network?.cidr}`,
+    org: vcdOrg,
+    vdc: vcdVdc,
+    edgeGateway: vcdEdgeGateway,
+    networkType: vcdNetworkType,
+    subnets: subnets || [],
+  });
 
   let code;
   if (activeTab === 'aws') code = awsCode;
   else if (activeTab === 'azure') code = azureCode;
-  else code = `# VMware Cloud Director Terraform export is coming soon!\n# See the provider docs: https://registry.terraform.io/providers/vmware/vcd/latest/docs`;
+  else if (activeTab === 'vcd') code = vcdCode;
+  else code = '';
 
   // PrismJS highlighting
   const highlightedAws = Prism.highlight(awsCode, Prism.languages.hcl, 'hcl');
   const highlightedAzure = Prism.highlight(azureCode, Prism.languages.hcl, 'hcl');
-  const highlightedVcd = Prism.highlight(`# VMware Cloud Director Terraform export is coming soon!\n# See the provider docs: https://registry.terraform.io/providers/vmware/vcd/latest/docs`, Prism.languages.hcl, 'hcl');
+  const highlightedVcd = Prism.highlight(vcdCode, Prism.languages.hcl, 'hcl');
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
@@ -97,35 +147,31 @@ export function TerraformExportSection({ network, subnets }) {
   };
 
   return (
-    <Paper p="md" radius="md" withBorder mt="xl">
-      <Group position="apart" mb="xs">
-        <Group>
-          <IconBrandTerraform size={22} color="#7B42F6" />
-          <Title order={4} ml={4}>Terraform Export</Title>
+    <Paper p="lg" radius="md" withBorder bg="white">
+      <Group justify="space-between" mb="lg">
+        <Group gap="sm">
+          <IconBrandTerraform size={20} color="#7B42F6" />
+          <Title order={4}>Terraform Export</Title>
         </Group>
-        <Button size="xs" color="teal" variant="outline" onClick={handleCopy} leftIcon={<IconCopy size={16} />}>
+        <Button 
+          size="sm" 
+          variant="light" 
+          onClick={handleCopy} 
+          leftSection={<IconCopy size={16} />}
+        >
           {copied ? 'Copied!' : 'Copy Code'}
         </Button>
       </Group>
-      <Tabs value={activeTab} onChange={setActiveTab} mt="md">
+      <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
-          <Tabs.Tab value="azure">
-            <Group spacing={6} align="center">
-              <IconBrandAzure size={18} color="#0078D4" />
-              <span>Microsoft Azure</span>
-            </Group>
+          <Tabs.Tab value="azure" leftSection={<IconBrandAzure size={16} color="#0078D4" />}>
+            Microsoft Azure
           </Tabs.Tab>
-          <Tabs.Tab value="aws">
-            <Group spacing={6} align="center">
-              <IconBrandAws size={18} color="#FF9900" />
-              <span>Amazon Web Services</span>
-            </Group>
+          <Tabs.Tab value="aws" leftSection={<IconBrandAws size={16} color="#FF9900" />}>
+            Amazon Web Services
           </Tabs.Tab>
-          <Tabs.Tab value="vcd">
-            <Group spacing={6} align="center">
-              <IconServer size={18} color="#4A5568" />
-              <span>VMware Cloud Director</span>
-            </Group>
+          <Tabs.Tab value="vcd" leftSection={<IconServer size={16} color="#4A5568" />}>
+            VMware Cloud Director
           </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="aws" pt="md">
@@ -183,6 +229,45 @@ export function TerraformExportSection({ network, subnets }) {
 
         </Tabs.Panel>
         <Tabs.Panel value="vcd" pt="md">
+          <Group gap="md" mb="md">
+            <Select
+              label="Network Type"
+              data={[
+                { value: 'routed', label: 'Routed Network' },
+                { value: 'isolated', label: 'Isolated Network' }
+              ]}
+              value={vcdNetworkType}
+              onChange={handleVcdNetworkTypeChange}
+              style={{ width: 160 }}
+              size="sm"
+            />
+            <TextInput
+              label="Organization"
+              value={vcdOrg}
+              onChange={(e) => handleVcdOrgChange(e.target.value)}
+              placeholder="my-org"
+              style={{ width: 140 }}
+              size="sm"
+            />
+            <TextInput
+              label="VDC"
+              value={vcdVdc}
+              onChange={(e) => handleVcdVdcChange(e.target.value)}
+              placeholder="my-vdc"
+              style={{ width: 140 }}
+              size="sm"
+            />
+            {vcdNetworkType === 'routed' && (
+              <TextInput
+                label="Edge Gateway"
+                value={vcdEdgeGateway}
+                onChange={(e) => handleVcdEdgeGatewayChange(e.target.value)}
+                placeholder="edge-gateway"
+                style={{ width: 160 }}
+                size="sm"
+              />
+            )}
+          </Group>
           <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
             <pre style={{ margin: 0, padding: 0, background: 'none' }}>
               <code

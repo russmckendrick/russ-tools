@@ -33,12 +33,21 @@ const ResourceTypeSelector = ({ formState, updateFormState, validationState, sho
       value={formState.resourceType}
       onChange={handleResourceTypeChange}
       error={validationState.errors.resourceType}
-      mb="xs"
       searchable
       clearable
       maxDropdownHeight={500}
       size="sm"
-      style={{ minHeight: 90 }}
+      withAsterisk
+      styles={{
+        input: {
+          minHeight: '80px',
+        },
+        pill: {
+          backgroundColor: 'var(--mantine-color-blue-0)',
+          color: 'var(--mantine-color-blue-7)',
+          border: '1px solid var(--mantine-color-blue-2)',
+        }
+      }}
     />
   );
 };

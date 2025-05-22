@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Modal, Tabs, Code, Group, ActionIcon, Tooltip, Text } from '@mantine/core';
 import { IconCopy, IconServer } from '@tabler/icons-react';
-import { generateAwsTerraform, generateAzureTerraform } from '../../../utils/terraformExport';
+import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/terraformExport';
 
 export function TerraformExportModal({ opened, onClose, network, subnets }) {
   const [activeTab, setActiveTab] = useState('azure');
@@ -20,8 +20,21 @@ export function TerraformExportModal({ opened, onClose, network, subnets }) {
     location: 'uksouth', // TODO: let user pick
     subnets: subnets || [],
   });
+  const vcdCode = generateVcdTerraform({
+    networkName: network?.name || 'main-network',
+    networkCidr: `${network?.ip}/${network?.cidr}`,
+    org: 'my-org', // TODO: let user pick
+    vdc: 'my-vdc', // TODO: let user pick
+    edgeGateway: 'edge-gateway', // TODO: let user pick
+    networkType: 'routed', // TODO: let user pick
+    subnets: subnets || [],
+  });
 
-  const code = activeTab === 'aws' ? awsCode : azureCode;
+  let code;
+  if (activeTab === 'aws') code = awsCode;
+  else if (activeTab === 'azure') code = azureCode;
+  else if (activeTab === 'vcd') code = vcdCode;
+  else code = '';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -64,10 +77,13 @@ export function TerraformExportModal({ opened, onClose, network, subnets }) {
         <Tabs.Panel value="vcd" pt="md">
           <Group position="apart" mb="xs">
             <Text weight={500}><IconServer size={16} style={{ verticalAlign: 'middle', marginRight: 6 }} />VMware Cloud Director Terraform HCL</Text>
+            <Tooltip label={copied ? 'Copied!' : 'Copy to clipboard'}>
+              <ActionIcon onClick={handleCopy} color={copied ? 'green' : 'blue'}>
+                <IconCopy size={18} />
+              </ActionIcon>
+            </Tooltip>
           </Group>
-          <Code block style={{ width: '100%', fontSize: 13, whiteSpace: 'pre-wrap' }}>
-            {`# VMware Cloud Director Terraform export is coming soon!\n# See the provider docs: https://registry.terraform.io/providers/vmware/vcd/latest/docs`}
-          </Code>
+          <Code block style={{ width: '100%', fontSize: 13, whiteSpace: 'pre-wrap' }}>{vcdCode}</Code>
         </Tabs.Panel>
       </Tabs>
     </Modal>
