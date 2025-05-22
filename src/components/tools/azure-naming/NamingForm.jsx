@@ -40,7 +40,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
   if (column === 'left') {
     return (
       <Stack gap="md">
-        <Paper p="md" withBorder radius="sm" bg="white">
+        <Paper p="md" withBorder radius="sm">
           <TextInput
             label={
               <Group gap={4} align="center">
@@ -58,7 +58,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
           />
         </Paper>
         
-        <Paper p="md" withBorder radius="sm" bg="white">
+        <Paper p="md" withBorder radius="sm">
           <Select
             label={
               <Group gap={4} align="center">
@@ -77,7 +77,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
           />
         </Paper>
 
-        <Paper p="md" withBorder radius="sm" bg="white">
+        <Paper p="md" withBorder radius="sm">
           <Select
             label={
               <Group gap={4} align="center">
@@ -104,7 +104,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
     return (
       <Stack gap="md">
         {/* Instance Number */}
-        <Paper p="md" withBorder radius="sm" bg="white">
+        <Paper p="md" withBorder radius="sm">
           <Stack gap="sm">
             <Group justify="space-between" align="center">
               <Group gap={4} align="center">
@@ -146,7 +146,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
         </Paper>
         
         {/* Custom Prefix */}
-        <Paper p="md" withBorder radius="sm" bg="white">
+        <Paper p="md" withBorder radius="sm">
           <Stack gap="sm">
             <Group justify="space-between" align="center">
               <Group gap={4} align="center">
@@ -174,7 +174,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
         </Paper>
 
         {/* Custom Suffix */}
-        <Paper p="md" withBorder radius="sm" bg="white">
+        <Paper p="md" withBorder radius="sm">
           <Stack gap="sm">
             <Group justify="space-between" align="center">
               <Group gap={4} align="center">
@@ -202,7 +202,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
         </Paper>
         
         {/* Random Characters */}
-        <Paper p="md" withBorder radius="sm" bg="white">
+        <Paper p="md" withBorder radius="sm">
           <Stack gap="sm">
             <Group justify="space-between" align="center">
               <Group gap={4} align="center">
@@ -249,7 +249,7 @@ const NamingForm = ({ formState, updateFormState, validationState, generateName,
                     },
                     thumb: {
                       borderWidth: '2px',
-                      backgroundColor: 'white',
+                      backgroundColor: 'var(--mantine-color-gray-0)',
                       borderColor: 'var(--mantine-color-blue-5)',
                     },
                     mark: {

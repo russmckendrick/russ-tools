@@ -41,7 +41,7 @@ export function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel =
   };
 
   return (
-    <Paper p="lg" withBorder radius="md" bg="white">
+    <Paper p="lg" withBorder radius="md">
       <Group gap="sm" mb="lg">
         <IconNetwork size={20} style={{ color: 'var(--mantine-color-blue-6)' }} />
         <Title order={4}>

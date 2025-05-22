@@ -333,11 +333,11 @@ const NetworkDesignerTool = () => {
   // Setup tab content
   const renderSetupTab = () => (
     <Stack gap="lg">
-      <Paper p="lg" withBorder radius="md" bg="white">
-        <Group gap="sm" mb="lg">
-          <IconNetwork size={20} style={{ color: 'var(--mantine-color-blue-6)' }} />
-          <Title order={4}>Network Management</Title>
-        </Group>
+              <Paper p="lg" withBorder radius="md">
+          <Group gap="sm" mb="lg">
+            <IconNetwork size={20} style={{ color: 'var(--mantine-color-blue-6)' }} />
+            <Title order={4}>Network Management</Title>
+          </Group>
         
         <Grid>
           <Grid.Col span={{ base: 12, md: 8 }}>
@@ -388,7 +388,7 @@ const NetworkDesignerTool = () => {
 
       {current ? (
         current.parentNetwork && !isReconfiguring ? (
-          <Paper p="lg" withBorder radius="md" bg="white">
+          <Paper p="lg" withBorder radius="md">
             <Group gap="sm" mb="md">
               <IconInfoCircle size={20} style={{ color: 'var(--mantine-color-green-6)' }} />
               <Title order={4}>Parent Network Details</Title>
@@ -432,7 +432,7 @@ const NetworkDesignerTool = () => {
           />
         )
       ) : (
-        <Paper p="xl" withBorder radius="md" bg="gray.0">
+        <Paper p="xl" withBorder radius="md" bg="var(--mantine-color-gray-0)">
           <Stack align="center" gap="md">
             <IconNetwork size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
             <Title order={3} ta="center" c="dimmed">No Network Selected</Title>
@@ -455,7 +455,7 @@ const NetworkDesignerTool = () => {
   const renderDesignTab = () => {
     if (!current?.parentNetwork) {
       return (
-        <Paper p="xl" withBorder radius="md" bg="gray.0">
+        <Paper p="xl" withBorder radius="md" bg="var(--mantine-color-gray-0)">
           <Stack align="center" gap="md">
             <IconSubtask size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
             <Title order={3} ta="center" c="dimmed">Configure Parent Network First</Title>
@@ -475,7 +475,7 @@ const NetworkDesignerTool = () => {
 
     return (
       <Stack gap="lg">
-        <Paper p="lg" withBorder radius="md" bg="white">
+        <Paper p="lg" withBorder radius="md">
           <Group gap="sm" mb="lg">
             <IconSubtask size={20} style={{ color: 'var(--mantine-color-blue-6)' }} />
             <Title order={4}>Add Subnet</Title>
@@ -490,7 +490,7 @@ const NetworkDesignerTool = () => {
         </Paper>
 
         {(current.subnets || []).length > 0 && (
-          <Paper p="lg" withBorder radius="md" bg="white">
+          <Paper p="lg" withBorder radius="md">
             <Group gap="sm" mb="lg">
               <IconSubtask size={20} style={{ color: 'var(--mantine-color-orange-6)' }} />
               <Title order={4}>Manage Subnets</Title>
@@ -513,7 +513,7 @@ const NetworkDesignerTool = () => {
   const renderVisualizationTab = () => {
     if (!current?.parentNetwork) {
       return (
-        <Paper p="xl" withBorder radius="md" bg="gray.0">
+        <Paper p="xl" withBorder radius="md" bg="var(--mantine-color-gray-0)">
           <Stack align="center" gap="md">
             <IconChartDots3 size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
             <Title order={3} ta="center" c="dimmed">No Network to Visualize</Title>
@@ -544,7 +544,7 @@ const NetworkDesignerTool = () => {
   const renderExportTab = () => {
     if (!current?.parentNetwork) {
       return (
-        <Paper p="xl" withBorder radius="md" bg="gray.0">
+        <Paper p="xl" withBorder radius="md" bg="var(--mantine-color-gray-0)">
           <Stack align="center" gap="md">
             <IconDownload size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
             <Title order={3} ta="center" c="dimmed">No Network to Export</Title>
@@ -559,7 +559,7 @@ const NetworkDesignerTool = () => {
     return (
       <Stack gap="lg">
         {/* Diagram Export Section */}
-        <Paper p="lg" withBorder radius="md" bg="white">
+        <Paper p="lg" withBorder radius="md">
           <Group gap="sm" mb="lg">
             <IconChartDots3 size={20} style={{ color: 'var(--mantine-color-blue-6)' }} />
             <Title order={4}>Export Diagrams</Title>
@@ -590,7 +590,7 @@ const NetworkDesignerTool = () => {
   return (
     <Container size="xl" py="lg">
       {/* Header */}
-      <Paper p="lg" withBorder radius="md" bg="white" mb="lg">
+      <Paper p="lg" withBorder radius="md" mb="lg">
         <Group gap="md" align="flex-start">
           <IconNetwork size={32} style={{ color: 'var(--mantine-color-blue-6)', marginTop: 4 }} />
           <div style={{ flex: 1 }}>

@@ -147,7 +147,7 @@ export function TerraformExportSection({ network, subnets }) {
   };
 
   return (
-    <Paper p="lg" radius="md" withBorder bg="white">
+    <Paper p="lg" radius="md" withBorder>
       <Group justify="space-between" mb="lg">
         <Group gap="sm">
           <IconBrandTerraform size={20} color="#7B42F6" />
