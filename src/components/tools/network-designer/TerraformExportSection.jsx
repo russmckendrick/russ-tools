@@ -6,7 +6,7 @@ import '../../../styles/prism-theme.css';
 import { useComputedColorScheme } from '@mantine/core';
 
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform, IconServer } from '@tabler/icons-react';
-import { generateAwsTerraform, generateAzureTerraform } from '../../../utils/terraformExport';
+import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/terraformExport';
 import { loadAzureRegions } from '../../../utils/regions/AzureRegions';
 import { loadAwsRegions } from '../../../utils/regions/AwsRegions';
 
@@ -29,6 +29,17 @@ export function TerraformExportSection({ network, subnets }) {
   const [regionListAws, setRegionListAws] = useState([]);
   const [loadingRegionsAws, setLoadingRegionsAws] = useState(true);
   const [regionErrorAws, setRegionErrorAws] = useState(null);
+
+  // VCD configuration with persistence
+  const savedVcdOrg = typeof window !== 'undefined' ? window.localStorage.getItem('vcdOrg') : null;
+  const savedVcdVdc = typeof window !== 'undefined' ? window.localStorage.getItem('vcdVdc') : null;
+  const savedVcdEdgeGateway = typeof window !== 'undefined' ? window.localStorage.getItem('vcdEdgeGateway') : null;
+  const savedVcdNetworkType = typeof window !== 'undefined' ? window.localStorage.getItem('vcdNetworkType') : null;
+  
+  const [vcdOrg, setVcdOrg] = useState(savedVcdOrg || 'my-org');
+  const [vcdVdc, setVcdVdc] = useState(savedVcdVdc || 'my-vdc');
+  const [vcdEdgeGateway, setVcdEdgeGateway] = useState(savedVcdEdgeGateway || 'edge-gateway');
+  const [vcdNetworkType, setVcdNetworkType] = useState(savedVcdNetworkType || 'routed');
 
   React.useEffect(() => {
     let mounted = true;
@@ -56,6 +67,35 @@ export function TerraformExportSection({ network, subnets }) {
     }
   };
 
+  // VCD configuration handlers
+  const handleVcdOrgChange = (value) => {
+    setVcdOrg(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('vcdOrg', value);
+    }
+  };
+
+  const handleVcdVdcChange = (value) => {
+    setVcdVdc(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('vcdVdc', value);
+    }
+  };
+
+  const handleVcdEdgeGatewayChange = (value) => {
+    setVcdEdgeGateway(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('vcdEdgeGateway', value);
+    }
+  };
+
+  const handleVcdNetworkTypeChange = (value) => {
+    setVcdNetworkType(value);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('vcdNetworkType', value);
+    }
+  };
+
   React.useEffect(() => {
     let mounted = true;
     loadAwsRegions()
@@ -80,11 +120,21 @@ export function TerraformExportSection({ network, subnets }) {
     location: azureRegion,
     subnets: subnets || [],
   });
+  const vcdCode = generateVcdTerraform({
+    networkName: network?.name || 'main-network',
+    networkCidr: `${network?.ip}/${network?.cidr}`,
+    org: vcdOrg,
+    vdc: vcdVdc,
+    edgeGateway: vcdEdgeGateway,
+    networkType: vcdNetworkType,
+    subnets: subnets || [],
+  });
 
   let code;
   if (activeTab === 'aws') code = awsCode;
   else if (activeTab === 'azure') code = azureCode;
-  else code = `# VMware Cloud Director Terraform export is coming soon!\n# See the provider docs: https://registry.terraform.io/providers/vmware/vcd/latest/docs`;
+  else if (activeTab === 'vcd') code = vcdCode;
+  else code = '';
 
   // PrismJS highlighting
   const highlightedAws = Prism.highlight(awsCode, Prism.languages.hcl, 'hcl');
