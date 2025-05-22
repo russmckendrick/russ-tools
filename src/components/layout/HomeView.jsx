@@ -1,62 +1,145 @@
-import { Card, Image, Group, Text, Title, Grid } from '@mantine/core';
+import { Card, Group, Text, Title, Grid, Stack, Badge, ThemeIcon, Paper, Container } from '@mantine/core';
+import { IconNetwork, IconBrandAzure, IconClock, IconChevronRight } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 
 export default function HomeView() {
-  return (
-    <div style={{ padding: '2rem', height: '100%' }}>
-      <Grid gutter="xl" align="stretch" style={{ height: '100%' }}>
-  <Grid.Col span={{ base: 12, md: 6 }} style={{ height: '100%' }}>
+  const tools = [
+    {
+      id: 'network-designer',
+      title: 'Network Designer',
+      description: 'Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, and export configurations for Azure, AWS, or VMware environments.',
+      icon: IconNetwork,
+      iconColor: 'blue',
+      badges: ['Subnet Planning', 'Visual Diagrams', 'Terraform Export'],
+      path: '/network-designer'
+    },
+    {
+      id: 'azure-naming',
+      title: 'Azure Resource Naming Tool',
+      description: 'Generate consistent Azure resource names following Cloud Adoption Framework best practices and your organizational conventions.',
+      icon: IconBrandAzure,
+      iconColor: 'cyan',
+      badges: ['CAF Compliant', 'Best Practices', 'Bulk Export'],
+      path: '/azure-naming'
+    },
+    {
+      id: 'cron-builder',
+      title: 'Cron Expression Builder',
+      description: 'Build and validate cron job expressions with an intuitive interface. Generate scheduling patterns for automated tasks and system jobs.',
+      icon: IconClock,
+      iconColor: 'orange',
+      badges: ['Schedule Builder', 'Expression Validator', 'Human Readable'],
+      path: '/cron'
+    }
+  ];
 
-        <Card shadow="sm" padding="lg" radius="md" withBorder style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Card.Section style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-  <Image
-    src="/assets/home-network-designer.png"
-    alt="Network Designer"
-    height={200}
-    fit="contain"
-    style={{ maxWidth: '100%', height: '400px', objectFit: 'contain' }}
-  />
-</Card.Section>
-          <Group position="apart" mt="md" mb="xs">
-            <Text weight={500}>Network Designer</Text>
-          </Group>
-          <Text size="sm" color="dimmed">
-            Plan and visualize your IP subnets interactively. Allocate, manage, and export network diagrams.
+  return (
+    <Container size="lg" py="xl">
+      <Stack gap="xl">
+        {/* Header */}
+        <Stack gap="md" align="center" ta="center">
+          <Title order={1} size="h1" fw={700}>
+            RussTools
+          </Title>
+          <Text size="lg" c="dimmed" maw={600}>
+            Professional tools for cloud infrastructure and DevOps workflows. 
+            Streamline your Azure, AWS, and VMware deployments with enterprise-grade utilities.
           </Text>
-          <div style={{ flex: 1 }} />
-          <Link to="/network-designer" style={{ textDecoration: 'none', marginTop: 'auto' }}>
-            <Text mt="md" color="blue" weight={600}>
-              Open Network Designer →
-            </Text>
-          </Link>
-        </Card>
-  </Grid.Col>
-  <Grid.Col span={{ base: 12, md: 6 }} style={{ height: '100%' }}>
-        <Card shadow="sm" padding="lg" radius="md" withBorder style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Card.Section style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-  <Image
-    src="/assets/home-azure-naming.png"
-    alt="Azure Naming Tool"
-    height={200}
-    fit="contain"
-    style={{ maxWidth: '100%', height: '400px', objectFit: 'contain' }}
-  />
-</Card.Section>
-          <Group position="apart" mt="md" mb="xs">
-            <Text weight={500}>Azure Resource Naming Tool</Text>
-          </Group>
-          <Text size="sm" color="dimmed">
-            Generate consistent Azure resource names following best practices and your conventions.
+        </Stack>
+
+        {/* Tools Grid */}
+        <Grid gutter="xl">
+          {tools.map((tool) => {
+            const IconComponent = tool.icon;
+            
+            return (
+                             <Grid.Col key={tool.id} span={{ base: 12, sm: 6, md: 4 }}>
+                <Paper
+                  component={Link}
+                  to={tool.path}
+                  p="xl"
+                  radius="lg"
+                  withBorder
+                  style={{
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                  className="tool-card"
+                  sx={(theme) => ({
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: theme.shadows.lg,
+                      borderColor: theme.colors[tool.iconColor][3]
+                    }
+                  })}
+                >
+                  <Stack gap="lg" h="100%">
+                    {/* Icon and Title */}
+                    <Group gap="md" align="flex-start">
+                      <ThemeIcon
+                        size={48}
+                        radius="md"
+                        color={tool.iconColor}
+                        variant="light"
+                      >
+                        <IconComponent size={28} />
+                      </ThemeIcon>
+                      <div style={{ flex: 1 }}>
+                        <Group justify="space-between" align="flex-start">
+                          <Title order={3} fw={600} lh={1.2}>
+                            {tool.title}
+                          </Title>
+                          <ThemeIcon
+                            size="sm"
+                            variant="subtle"
+                            color="gray"
+                          >
+                            <IconChevronRight size={16} />
+                          </ThemeIcon>
+                        </Group>
+                      </div>
+                    </Group>
+
+                    {/* Description */}
+                    <Text size="sm" c="dimmed" lh={1.5} style={{ flex: 1 }}>
+                      {tool.description}
+                    </Text>
+
+                    {/* Badges */}
+                    <Group gap="xs">
+                      {tool.badges.map((badge) => (
+                        <Badge
+                          key={badge}
+                          variant="light"
+                          color={tool.iconColor}
+                          size="sm"
+                        >
+                          {badge}
+                        </Badge>
+                      ))}
+                    </Group>
+                  </Stack>
+                </Paper>
+              </Grid.Col>
+            );
+          })}
+        </Grid>
+
+        {/* Footer */}
+        <Stack gap="xs" align="center" ta="center" mt="xl">
+          <Text size="sm" c="dimmed">
+            Built for enterprise infrastructure teams and DevOps professionals
           </Text>
-          <div style={{ flex: 1 }} />
-          <Link to="/azure-naming" style={{ textDecoration: 'none', marginTop: 'auto' }}>
-            <Text mt="md" color="blue" weight={600}>
-              Open Azure Resource Naming Tool →
-            </Text>
-          </Link>
-        </Card>
-  </Grid.Col>
-</Grid>
-    </div>
+          <Text size="xs" c="dimmed">
+            All tools generate production-ready configurations following industry best practices
+          </Text>
+        </Stack>
+      </Stack>
+    </Container>
   );
 }
