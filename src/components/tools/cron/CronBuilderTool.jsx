@@ -1,8 +1,24 @@
 import React from 'react';
 
 import { useState } from 'react';
-import { Paper, Stack, Title, ThemeIcon, Divider, Grid, rem } from '@mantine/core';
-import { IconClock } from '@tabler/icons-react';
+import { 
+  Paper, 
+  Stack, 
+  Title, 
+  ThemeIcon, 
+  Grid, 
+  rem,
+  Tabs,
+  Group,
+  Text,
+  Code,
+  Alert,
+  ActionIcon,
+  Tooltip,
+  Badge
+} from '@mantine/core';
+import { IconClock, IconCopy, IconCheck, IconInfoCircle } from '@tabler/icons-react';
+import { useClipboard } from '@mantine/hooks';
 import CronFieldSelector from './CronFieldSelector';
 import CronExpressionInput from './CronExpressionInput';
 import CronValidationInfo from './CronValidationInfo';
@@ -18,6 +34,7 @@ const defaultFields = {
 
 const CronBuilderTool = () => {
   const [fields, setFields] = useState(defaultFields);
+  const clipboard = useClipboard({ timeout: 2000 });
 
   // Build cron string from fields
   const cronString = `${fields.minute} ${fields.hour} ${fields.dayOfMonth} ${fields.month} ${fields.dayOfWeek}`;
@@ -26,50 +43,154 @@ const CronBuilderTool = () => {
     setFields((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleCopy = () => {
+    clipboard.copy(cronString);
+  };
+
+  // Parse cron expression back into fields
+  const parseCronExpression = (cronExpression) => {
+    const parts = cronExpression.trim().split(/\s+/);
+    if (parts.length === 5) {
+      const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+      setFields({
+        minute,
+        hour,
+        dayOfMonth,
+        month,
+        dayOfWeek,
+      });
+    }
+  };
+
+  const handleManualCronChange = (newCronString) => {
+    parseCronExpression(newCronString);
+  };
+
   return (
     <Paper
-      shadow="lg"
-      radius="xl"
+      shadow="md"
+      radius="md"
       p="xl"
       withBorder
       style={{
-        maxWidth: 900,
+        maxWidth: 1000,
         width: '100%',
-        margin: '40px auto',
-        position: 'relative',
-        paddingLeft: 32,
-        paddingRight: 32,
+        margin: '20px auto',
       }}
     >
-      <Stack gap="lg">
-        <Stack gap={4} align="center">
-          <ThemeIcon size={48} radius="xl" color="blue" variant="gradient" gradient={{ from: 'blue', to: 'cyan', deg: 90 }}>
-            <IconClock size={32} />
+      <Stack gap="xl">
+        {/* Header */}
+        <Group justify="center" gap="md">
+          <ThemeIcon size={42} radius="md" color="blue" variant="gradient" gradient={{ from: 'blue', to: 'cyan', deg: 90 }}>
+            <IconClock size={24} />
           </ThemeIcon>
-          <Title order={2} style={{ fontWeight: 800, letterSpacing: -1, marginTop: 8, marginBottom: 0, textAlign: 'center' }}>
-            Cron Job Expression<br />Builder/Validator
-          </Title>
-        </Stack>
-        <Divider label="Time" labelPosition="left" color="blue.2" my={8} />
-        <Stack gap="md">
-          <CronFieldSelector field="minute" value={fields.minute} onChange={val => handleFieldChange('minute', val)} layout="vertical" />
-          <CronFieldSelector field="hour" value={fields.hour} onChange={val => handleFieldChange('hour', val)} layout="vertical" />
-        </Stack>
-        <Divider label="Date" labelPosition="left" color="blue.2" my={8} />
-        <Stack gap="md">
-          <CronFieldSelector field="dayOfMonth" value={fields.dayOfMonth} onChange={val => handleFieldChange('dayOfMonth', val)} layout="vertical" />
-          <CronFieldSelector field="month" value={fields.month} onChange={val => handleFieldChange('month', val)} layout="vertical" />
-        </Stack>
-        <Divider label="Repeat" labelPosition="left" color="blue.2" my={8} />
-        <Stack gap="md">
-          <CronFieldSelector field="dayOfWeek" value={fields.dayOfWeek} onChange={val => handleFieldChange('dayOfWeek', val)} layout="vertical" />
-        </Stack>
-        <Divider label="Cron Output & Feedback" labelPosition="center" color="blue.2" my={8} />
-        <Stack gap="md">
-          <CronExpressionInput value={cronString} onChange={() => {}} readOnly />
-          <CronValidationInfo cronString={cronString} />
-          <CronTranslatorDisplay cronString={cronString} />
-        </Stack>
+          <div>
+            <Title order={2} style={{ fontWeight: 700, letterSpacing: -0.5, margin: 0 }}>
+              Cron Job Expression Builder/Validator
+            </Title>
+            <Text size="sm" c="dimmed" mt={2}>
+              Build and validate cron expressions with ease
+            </Text>
+          </div>
+        </Group>
+
+        <Tabs defaultValue="builder" variant="pills" orientation="horizontal">
+          <Tabs.List grow>
+            <Tabs.Tab value="builder" leftSection={<IconClock size={16} />}>
+              Builder
+            </Tabs.Tab>
+            <Tabs.Tab value="input" leftSection={<IconCopy size={16} />}>
+              Input/Validator
+            </Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="builder" pt="lg">
+            <Stack gap="lg">
+              {/* Cron Expression Output */}
+              <Paper p="md" withBorder radius="md" bg="gray.0">
+                <Group justify="space-between" align="center">
+                  <div style={{ flex: 1 }}>
+                    <Text size="xs" c="dimmed" mb={4}>Generated Expression:</Text>
+                    <Code block size="lg" fw="bold" c="blue">
+                      {cronString}
+                    </Code>
+                  </div>
+                  <Tooltip label={clipboard.copied ? 'Copied!' : 'Copy to clipboard'}>
+                    <ActionIcon 
+                      variant="light" 
+                      color={clipboard.copied ? 'green' : 'blue'}
+                      onClick={handleCopy}
+                      size="lg"
+                    >
+                      {clipboard.copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
+                <CronTranslatorDisplay cronString={cronString} />
+              </Paper>
+
+              {/* Field Selectors in Grid */}
+              <Grid gutter="lg">
+                <Grid.Col span={{ base: 12, md: 6 }}>
+                  <Stack gap="md">
+                    <Group gap="xs" align="center">
+                      <Badge variant="light" color="blue" size="sm">Time</Badge>
+                      <Text size="xs" c="dimmed">Configure when the job runs</Text>
+                    </Group>
+                    <CronFieldSelector 
+                      field="minute" 
+                      value={fields.minute} 
+                      onChange={val => handleFieldChange('minute', val)} 
+                    />
+                    <CronFieldSelector 
+                      field="hour" 
+                      value={fields.hour} 
+                      onChange={val => handleFieldChange('hour', val)} 
+                    />
+                  </Stack>
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, md: 6 }}>
+                  <Stack gap="md">
+                    <Group gap="xs" align="center">
+                      <Badge variant="light" color="green" size="sm">Date</Badge>
+                      <Text size="xs" c="dimmed">Configure which dates to run</Text>
+                    </Group>
+                    <CronFieldSelector 
+                      field="dayOfMonth" 
+                      value={fields.dayOfMonth} 
+                      onChange={val => handleFieldChange('dayOfMonth', val)} 
+                    />
+                    <CronFieldSelector 
+                      field="month" 
+                      value={fields.month} 
+                      onChange={val => handleFieldChange('month', val)} 
+                    />
+                    <CronFieldSelector 
+                      field="dayOfWeek" 
+                      value={fields.dayOfWeek} 
+                      onChange={val => handleFieldChange('dayOfWeek', val)} 
+                    />
+                  </Stack>
+                </Grid.Col>
+              </Grid>
+
+              {/* Validation Info */}
+              <CronValidationInfo cronString={cronString} />
+            </Stack>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="input" pt="lg">
+            <Stack gap="lg">
+              <Alert icon={<IconInfoCircle size={16} />} title="Manual Input" color="blue" variant="light">
+                Enter a cron expression directly to validate and translate it
+              </Alert>
+              <CronExpressionInput value={cronString} onChange={handleManualCronChange} />
+              <CronValidationInfo cronString={cronString} />
+              <CronTranslatorDisplay cronString={cronString} />
+            </Stack>
+          </Tabs.Panel>
+        </Tabs>
       </Stack>
     </Paper>
   );
