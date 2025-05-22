@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { TextInput, Button, Paper, Group, Select, Stack, Text, Title, Grid } from '@mantine/core';
+import { TextInput, Button, Paper, Group, Select, Stack, Text, Title, Grid, Badge } from '@mantine/core';
 import { IconNetwork } from '@tabler/icons-react';
 import { isValidIPv4 } from '../../../utils';
 import HelpTooltip from '../azure-naming/HelpTooltip';
 
-export function ParentNetworkForm({ onSubmit }) {
-  const [ip, setIp] = useState('');
-  const [cidr, setCidr] = useState('');
-  const [name, setName] = useState('');
+export function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }) {
+  const [ip, setIp] = useState(existingNetwork?.ip || '');
+  const [cidr, setCidr] = useState(existingNetwork?.cidr ? String(existingNetwork.cidr) : '');
+  const [name, setName] = useState(existingNetwork?.name || '');
   const [error, setError] = useState(null);
 
-  // Generate CIDR options for dropdown
+  // Generate CIDR options for dropdown (reversed: /31 to /8)
   const cidrOptions = Array.from({ length: 24 }, (_, i) => {
-    const value = String(i + 8); // Start from /8 to /31
+    const value = String(31 - i); // Start from /31 down to /8
     return { value, label: `/${value}` };
   });
 
@@ -44,17 +44,29 @@ export function ParentNetworkForm({ onSubmit }) {
     <Paper p="lg" withBorder radius="md" bg="white">
       <Group gap="sm" mb="lg">
         <IconNetwork size={20} style={{ color: 'var(--mantine-color-blue-6)' }} />
-        <Title order={4}>Configure Parent Network</Title>
+        <Title order={4}>
+          {existingNetwork ? 'Reconfigure Parent Network' : 'Configure Parent Network'}
+        </Title>
+        {existingNetwork && (
+          <Badge variant="light" color="orange">Editing</Badge>
+        )}
       </Group>
       
       <Stack gap="md">
+        {existingNetwork && (
+          <Text size="sm" c="orange" p="sm" bg="orange.0" style={{ borderRadius: '4px', border: '1px solid var(--mantine-color-orange-3)' }}>
+            ⚠️ <strong>Warning:</strong> Changing the parent network will remove all existing subnets. You'll need to recreate them after saving.
+          </Text>
+        )}
+        
         <Grid>
           <Grid.Col span={{ base: 12, md: 6 }}>
             <TextInput
-              label={
+              label="Parent Network IP"
+              description={
                 <Group gap={4} align="center">
-                  <Text size="sm" fw={500}>Parent Network IP</Text>
-                  <HelpTooltip content="Enter the base IP address for your network (e.g., 10.0.0.0, 192.168.1.0)" />
+                  <Text size="xs" c="dimmed">Enter the base IP address for your network</Text>
+                  <HelpTooltip content="Examples: 10.0.0.0, 192.168.1.0, 172.16.0.0" />
                 </Group>
               }
               placeholder="e.g., 10.0.0.0"
@@ -67,10 +79,11 @@ export function ParentNetworkForm({ onSubmit }) {
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 3 }}>
             <Select
-              label={
+              label="CIDR Size"
+              description={
                 <Group gap={4} align="center">
-                  <Text size="sm" fw={500}>CIDR Size</Text>
-                  <HelpTooltip content="Select the subnet mask in CIDR notation (smaller numbers = larger networks)" />
+                  <Text size="xs" c="dimmed">Subnet mask notation</Text>
+                  <HelpTooltip content="Smaller numbers = larger networks (e.g., /16 = 65,536 IPs, /24 = 256 IPs)" />
                 </Group>
               }
               placeholder="Select size"
@@ -84,10 +97,11 @@ export function ParentNetworkForm({ onSubmit }) {
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 3 }}>
             <TextInput
-              label={
+              label="Network Name"
+              description={
                 <Group gap={4} align="center">
-                  <Text size="sm" fw={500}>Network Name</Text>
-                  <HelpTooltip content="Give your network a descriptive name (optional)" />
+                  <Text size="xs" c="dimmed">Descriptive name (optional)</Text>
+                  <HelpTooltip content="Give your network a meaningful name for easier identification" />
                 </Group>
               }
               placeholder="e.g., Production VPC"
@@ -98,13 +112,22 @@ export function ParentNetworkForm({ onSubmit }) {
           </Grid.Col>
         </Grid>
 
-        <Group justify="flex-end" mt="md">
+        <Group justify="flex-end" mt="md" gap="sm">
+          {onCancel && (
+            <Button 
+              variant="outline"
+              onClick={onCancel}
+              size="sm"
+            >
+              Cancel
+            </Button>
+          )}
           <Button 
             onClick={handleSubmit}
             leftSection={<IconNetwork size={16} />}
             size="sm"
           >
-            Set Parent Network
+            {existingNetwork ? 'Update Parent Network' : 'Set Parent Network'}
           </Button>
         </Group>
       </Stack>

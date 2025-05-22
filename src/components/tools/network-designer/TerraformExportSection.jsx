@@ -97,35 +97,31 @@ export function TerraformExportSection({ network, subnets }) {
   };
 
   return (
-    <Paper p="md" radius="md" withBorder mt="xl">
-      <Group position="apart" mb="xs">
-        <Group>
-          <IconBrandTerraform size={22} color="#7B42F6" />
-          <Title order={4} ml={4}>Terraform Export</Title>
+    <Paper p="lg" radius="md" withBorder bg="white">
+      <Group justify="space-between" mb="lg">
+        <Group gap="sm">
+          <IconBrandTerraform size={20} color="#7B42F6" />
+          <Title order={4}>Terraform Export</Title>
         </Group>
-        <Button size="xs" color="teal" variant="outline" onClick={handleCopy} leftIcon={<IconCopy size={16} />}>
+        <Button 
+          size="sm" 
+          variant="light" 
+          onClick={handleCopy} 
+          leftSection={<IconCopy size={16} />}
+        >
           {copied ? 'Copied!' : 'Copy Code'}
         </Button>
       </Group>
-      <Tabs value={activeTab} onChange={setActiveTab} mt="md">
+      <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
-          <Tabs.Tab value="azure">
-            <Group spacing={6} align="center">
-              <IconBrandAzure size={18} color="#0078D4" />
-              <span>Microsoft Azure</span>
-            </Group>
+          <Tabs.Tab value="azure" leftSection={<IconBrandAzure size={16} color="#0078D4" />}>
+            Microsoft Azure
           </Tabs.Tab>
-          <Tabs.Tab value="aws">
-            <Group spacing={6} align="center">
-              <IconBrandAws size={18} color="#FF9900" />
-              <span>Amazon Web Services</span>
-            </Group>
+          <Tabs.Tab value="aws" leftSection={<IconBrandAws size={16} color="#FF9900" />}>
+            Amazon Web Services
           </Tabs.Tab>
-          <Tabs.Tab value="vcd">
-            <Group spacing={6} align="center">
-              <IconServer size={18} color="#4A5568" />
-              <span>VMware Cloud Director</span>
-            </Group>
+          <Tabs.Tab value="vcd" leftSection={<IconServer size={16} color="#4A5568" />}>
+            VMware Cloud Director
           </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="aws" pt="md">

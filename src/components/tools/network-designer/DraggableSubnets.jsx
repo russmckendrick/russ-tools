@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { Button, Grid, Paper, Text, Title } from '@mantine/core';
+import { Button, Grid, Paper, Text, Title, Stack, Group, Badge, ActionIcon, useMantineTheme } from '@mantine/core';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Netmask } from 'netmask';
-import { IconGripVertical } from '@tabler/icons-react';
+import { IconGripVertical, IconTrash, IconNetwork } from '@tabler/icons-react';
 import { ipToLong } from '../../../utils';
+import { getSubnetBgColorHex } from '../../../utils';
 
 // Sortable subnet item
 function SortableSubnet({ subnet, index, onRemoveSubnet }) {
+  const theme = useMantineTheme();
   const {
     attributes,
     listeners,
@@ -21,31 +23,95 @@ function SortableSubnet({ subnet, index, onRemoveSubnet }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.6 : 1,
-    zIndex: isDragging ? 10 : 1
+    opacity: isDragging ? 0.8 : 1,
+    zIndex: isDragging ? 10 : 1,
+    cursor: isDragging ? 'grabbing' : 'grab'
   };
 
   // Ensure we have a fresh Netmask calculation with proper base address
   const block = new Netmask(subnet.base + '/' + subnet.cidr);
+  
+  // Get subnet color
+  const subnetColor = subnet.color ? 
+    theme.colors[subnet.color.name][subnet.color.index] : 
+    theme.colors.blue[5];
 
   return (
-    <Grid.Col span={4} ref={setNodeRef} style={style} {...attributes}>
-      <Paper p="sm" radius="sm" withBorder mb="sm" shadow={isDragging ? "md" : "xs"}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-          <div {...listeners} style={{ cursor: 'grab', marginRight: 8, padding: 4 }}>
-            <IconGripVertical size={16} stroke={1.5} />
-          </div>
-          <Text fw={500}>{subnet.name} (/{subnet.cidr})</Text>
-        </div>
-        <Text size="sm">Network Address: {block.base}</Text>
-        <Text size="sm">Broadcast Address: {block.broadcast}</Text>
-        <Text size="sm">First Usable Host: {block.first}</Text>
-        <Text size="sm">Last Usable Host: {block.last}</Text>
-        <Text size="sm">Number of Hosts: {block.size}</Text>
-        <Text size="sm">Subnet Mask: {block.mask} (/{block.bitmask})</Text>
-        <Button color="red" size="xs" mt="xs" onClick={() => onRemoveSubnet(index)}>
-          Remove
-        </Button>
+    <Grid.Col span={{ base: 12, sm: 6, lg: 4 }} ref={setNodeRef} style={style} {...attributes}>
+      <Paper 
+        p="md" 
+        radius="md" 
+        withBorder 
+        shadow={isDragging ? "lg" : "sm"}
+        style={{
+          borderLeft: `4px solid ${subnetColor}`,
+          transition: 'all 0.2s ease',
+          transform: isDragging ? 'scale(1.02)' : 'scale(1)'
+        }}
+      >
+        <Stack gap="sm">
+          {/* Header with drag handle and subnet name */}
+          <Group justify="space-between" align="flex-start">
+            <Group gap="xs" align="center">
+              <div 
+                {...listeners} 
+                style={{ 
+                  cursor: 'grab', 
+                  padding: '4px',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.1s ease'
+                }}
+                onMouseDown={(e) => e.target.style.backgroundColor = theme.colors.gray[1]}
+                onMouseUp={(e) => e.target.style.backgroundColor = 'transparent'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
+                <IconGripVertical size={16} color={theme.colors.gray[6]} />
+              </div>
+              <div>
+                <Group gap="xs" align="center">
+                  <IconNetwork size={16} color={subnetColor} />
+                  <Text fw={600} size="sm">{subnet.name}</Text>
+                  <Badge variant="light" color={subnet.color?.name || 'blue'} size="xs">
+                    /{subnet.cidr}
+                  </Badge>
+                </Group>
+              </div>
+            </Group>
+            <ActionIcon 
+              variant="subtle" 
+              color="red" 
+              size="sm"
+              onClick={() => onRemoveSubnet(index)}
+              style={{ marginTop: 2 }}
+            >
+              <IconTrash size={14} />
+            </ActionIcon>
+          </Group>
+
+          {/* Network details */}
+          <Stack gap="xs">
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed">Network</Text>
+              <Text size="xs" fw={500}>{block.base}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed">Broadcast</Text>
+              <Text size="xs" fw={500}>{block.broadcast}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed">Usable Range</Text>
+              <Text size="xs" fw={500}>{block.first} - {block.last}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed">Host Count</Text>
+              <Text size="xs" fw={500}>{block.size.toLocaleString()}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed">Subnet Mask</Text>
+              <Text size="xs" fw={500}>{block.mask}</Text>
+            </Group>
+          </Stack>
+        </Stack>
       </Paper>
     </Grid.Col>
   );
@@ -114,16 +180,24 @@ export function DraggableSubnets({ subnets, onReorder, onRemoveSubnet, parentNet
 
   if (!sortedSubnets || sortedSubnets.length === 0) {
     return (
-      <Paper p="md" radius="md" withBorder mt="lg">
-        <Title order={4} mb="sm">Subnet List</Title>
-        <Text color="dimmed" size="sm">No subnets have been added yet.</Text>
-      </Paper>
+      <Stack align="center" gap="md" p="xl">
+        <IconNetwork size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
+        <Title order={4} ta="center" c="dimmed">No Subnets Added</Title>
+        <Text ta="center" c="dimmed" size="sm">
+          Add your first subnet using the form above to get started
+        </Text>
+      </Stack>
     );
   }
 
   return (
-    <Paper p="md" radius="md" withBorder mt="lg">
-      <Title order={3} mb="md">Subnet List</Title>
+    <Stack gap="md">
+      <Group justify="space-between" align="center">
+        <Text size="sm" c="dimmed">
+          Drag and drop to reorder subnets. Order affects IP allocation.
+        </Text>
+      </Group>
+      
       <DndContext 
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -145,6 +219,6 @@ export function DraggableSubnets({ subnets, onReorder, onRemoveSubnet, parentNet
           </Grid>
         </SortableContext>
       </DndContext>
-    </Paper>
+    </Stack>
   );
 } 

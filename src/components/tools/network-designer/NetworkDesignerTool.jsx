@@ -102,9 +102,18 @@ const NetworkDesignerTool = () => {
 
   // Set parent network for current
   const handleSetParentNetwork = (parentNet) => {
-    setNetworks(networks.map(n =>
-      n.id === selectedNetworkId ? { ...n, parentNetwork: parentNet, name: parentNet.name } : n
-    ));
+    if (isReconfiguring) {
+      // When reconfiguring, clear existing subnets since the parent network changed
+      setNetworks(networks.map(n =>
+        n.id === selectedNetworkId ? { ...n, parentNetwork: parentNet, name: parentNet.name, subnets: [] } : n
+      ));
+      setIsReconfiguring(false);
+    } else {
+      // Normal case: just set the parent network
+      setNetworks(networks.map(n =>
+        n.id === selectedNetworkId ? { ...n, parentNetwork: parentNet, name: parentNet.name } : n
+      ));
+    }
     setActiveTab('design'); // Move to design tab after setting parent network
   };
 
@@ -180,17 +189,29 @@ const NetworkDesignerTool = () => {
     ));
   };
 
-  // Reset/clear current network
+  // Reset/clear current network OR start reconfiguring
   const handleReset = () => {
-    setNetworks(networks.map(n =>
-      n.id === selectedNetworkId
-        ? { ...n, parentNetwork: null, subnets: [] }
-        : n
-    ));
+    if (current?.parentNetwork) {
+      // If there's an existing parent network, we're reconfiguring
+      setIsReconfiguring(true);
+    } else {
+      // If no parent network, we're clearing
+      setNetworks(networks.map(n =>
+        n.id === selectedNetworkId
+          ? { ...n, parentNetwork: null, subnets: [] }
+          : n
+      ));
+    }
     setActiveTab('setup');
   };
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isReconfiguring, setIsReconfiguring] = useState(false);
+
+  // Cancel reconfiguration
+  const handleCancelReconfigure = () => {
+    setIsReconfiguring(false);
+  };
 
   // Delete current network
   const handleDeleteNetwork = () => {
@@ -366,7 +387,7 @@ const NetworkDesignerTool = () => {
       </Paper>
 
       {current ? (
-        current.parentNetwork ? (
+        current.parentNetwork && !isReconfiguring ? (
           <Paper p="lg" withBorder radius="md" bg="white">
             <Group gap="sm" mb="md">
               <IconInfoCircle size={20} style={{ color: 'var(--mantine-color-green-6)' }} />
@@ -404,7 +425,11 @@ const NetworkDesignerTool = () => {
             </Group>
           </Paper>
         ) : (
-          <ParentNetworkForm onSubmit={handleSetParentNetwork} />
+          <ParentNetworkForm 
+            onSubmit={handleSetParentNetwork} 
+            existingNetwork={isReconfiguring ? current.parentNetwork : null}
+            onCancel={isReconfiguring ? handleCancelReconfigure : null}
+          />
         )
       ) : (
         <Paper p="xl" withBorder radius="md" bg="gray.0">
