@@ -6,13 +6,15 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 
 - 🧮 Network Designer & Subnet Calculator
 - 🛠 Azure Resource Naming Tool
+- 🔒 SSL Certificate Checker
 
 ## 🧰 Tools Overview
 
 | Tool | Description |
 |------|-------------|
 | 🧮 **Network Designer & Subnet Calculator** | Design, calculate, and visualize IPv4 subnets, plan address allocations, and export professional diagrams. |
-| 🛠 **Azure Resource Naming Tool** | Generate compliant Azure resource names following Microsoft’s conventions and best practices. |
+| 🛠 **Azure Resource Naming Tool** | Generate compliant Azure resource names following Microsoft's conventions and best practices. |
+| 🔒 **SSL Certificate Checker** | Analyze and validate SSL certificates for any domain with comprehensive security analysis using SSL Labs API. |
 
 ---
 
@@ -72,7 +74,7 @@ You can find an example of an SVG export below:
 
 ## 🛠 Azure Resource Naming Tool
 
-The Azure Resource Naming Tool helps users generate compliant Azure resource names based on Microsoft's naming conventions and best practices. It provides a user-friendly interface for generating standardized names that follow organizational governance requirements and Azure’s resource-specific limitations.
+The Azure Resource Naming Tool helps users generate compliant Azure resource names based on Microsoft's naming conventions and best practices. It provides a user-friendly interface for generating standardized names that follow organizational governance requirements and Azure's resource-specific limitations.
 
 ### ✨ Why Use This Tool?
 - 🏷️ Ensures consistent naming across all Azure resources
@@ -83,12 +85,66 @@ The Azure Resource Naming Tool helps users generate compliant Azure resource nam
 
 ### 🔑 Key Features
 - ⚛️ React-based, fast, and modern UI
-- 📏 Supports Microsoft’s recommended naming patterns and abbreviations
+- ✅ Supports Microsoft's recommended naming patterns and abbreviations
 - ✅ Validates names in real time and provides feedback
 - 🏗️ Lets users select resource type, environment, region, and other variables
 - 🔤 Automatically abbreviates common terms
 - 👀 Visual indicators for validation and compliance
 - 🧩 Designed for extensibility and organizational policy integration
+
+---
+
+## 🔒 SSL Certificate Checker
+
+The SSL Certificate Checker provides enterprise-grade SSL/TLS certificate analysis for any domain. It leverages industry-standard tools like SSL Labs API v4 to deliver comprehensive security assessments and certificate validation.
+
+### ✨ Why Use This Tool?
+- 🛡️ **Enterprise-grade analysis** using SSL Labs API v4 - the gold standard for SSL testing
+- ⚡ **Instant results** with real-time certificate validation and security grading
+- 🔍 **Comprehensive scanning** including vulnerability testing (Heartbleed, POODLE, BEAST, etc.)
+- 🌐 **Privacy-focused** - no domain information is logged or stored
+- 📊 **Industry-standard grading** using the SSL Labs A+ to F rating system
+- 🔄 **Smart fallbacks** ensure reliable results even when primary services are unavailable
+
+### 🔑 Key Features
+
+- 🏆 **SSL Labs Integration:**
+  - Powered by SSL Labs API v4 for authoritative SSL analysis
+  - Comprehensive security testing and vulnerability scanning
+  - Industry-standard grading system (A+ to F ratings)
+  - Real-time assessment with polling for complete results
+
+- 🛡️ **Security Analysis:**
+  - Certificate validity and trust chain verification
+  - TLS protocol and cipher suite analysis
+  - Vulnerability testing (Heartbleed, POODLE, BEAST, etc.)
+  - HSTS and security header validation
+  - Browser compatibility testing
+
+- 📋 **Certificate Information:**
+  - Detailed certificate details (issuer, validity dates, serial number)
+  - Subject Alternative Names (SAN) and domain matching
+  - Certificate chain analysis and trust validation
+  - Expiration warnings and renewal recommendations
+
+- 🔒 **Privacy & Security:**
+  - Cloudflare Worker backend for secure API access
+  - No domain information logged or stored
+  - Restricted to authorized origins only
+  - Encrypted connections throughout the analysis process
+
+- 📱 **Modern Interface:**
+  - Clean, intuitive design with real-time results
+  - Tabbed interface with comprehensive information panels
+  - Visual grading system with color-coded security ratings
+  - Responsive design for desktop and mobile devices
+
+#### 🎯 Example Use Cases
+- **Website Security Audits:** Validate SSL configuration for production websites
+- **Certificate Monitoring:** Check certificate expiration dates and renewal needs
+- **Security Compliance:** Ensure SSL configuration meets security standards
+- **Troubleshooting:** Diagnose SSL/TLS connection issues and misconfigurations
+- **Education:** Learn about SSL/TLS security and best practices
 
 ## 🚀 Usage
 
@@ -127,6 +183,27 @@ Visit [https://www.russ.tools/azure-naming/](https://www.russ.tools/azure-naming
    - Click **Generate Name** to create a compliant resource name
 6. 💾 **Save or Load Names:**  
    - Save generated names for reuse, or load previously saved names from the list
+
+### SSL Certificate Checker
+
+Visit [https://www.russ.tools/ssl-checker](https://www.russ.tools/ssl-checker) and:
+
+1. 🌐 **Enter Domain:**
+   - Type any domain name (e.g., example.com, www.github.com)
+   - The tool automatically handles protocol removal and domain cleaning
+
+2. 🔍 **Analyze Certificate:**
+   - Click "Check SSL Certificate" to start the analysis
+   - Real-time progress updates during SSL Labs assessment
+
+3. 📊 **Review Results:**
+   - **Certificate Details:** Validity dates, issuer information, and trust status
+   - **Security Grade:** Industry-standard A+ to F rating with explanation
+   - **Validation Info:** Comprehensive security analysis and recommendations
+
+4. 📚 **Learn More:**
+   - Switch to the "About SSL" tab for educational content
+   - Understand SSL/TLS concepts, grading system, and security best practices
 
 ---
 
