@@ -30,7 +30,28 @@ const SSLValidationInfo = ({ data, domain }) => {
     return null;
   }
 
-  const endpoint = data.endpoints[0];
+  // Only show security analysis if we have at least one complete endpoint with meaningful data
+  const hasCompleteResults = data.endpoints.some(endpoint => 
+    endpoint.isComplete && 
+    endpoint.grade && 
+    endpoint.grade !== '-' && 
+    endpoint.grade !== 'T' &&
+    endpoint.details?.cert
+  );
+
+  // Don't render the security analysis section if we don't have complete results
+  if (!hasCompleteResults) {
+    return null;
+  }
+
+  // Find the first endpoint with complete results for analysis
+  const endpoint = data.endpoints.find(ep => 
+    ep.isComplete && 
+    ep.grade && 
+    ep.grade !== '-' && 
+    ep.details?.cert
+  ) || data.endpoints[0];
+
   const details = endpoint.details;
   const cert = details?.cert;
   const protocols = details?.protocols;

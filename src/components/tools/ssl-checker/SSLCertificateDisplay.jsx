@@ -117,14 +117,28 @@ const SSLCertificateDisplay = ({ data, domain, error }) => {
             <Group justify="space-between" mb="xs">
               <Text size="sm" fw={500}>Analysis Status</Text>
               <Text size="sm" c="dimmed">
-                {data.status === 'READY' ? 'Complete' : data.status}
+                {data.status === 'READY' ? 'Complete' : 
+                 data.status === 'IN_PROGRESS' ? 'In Progress' : 
+                 data.status === 'DNS' ? 'Resolving Domain' : 
+                 data.status}
               </Text>
             </Group>
-            <Progress 
-              value={endpoint?.progress || 100} 
-              color={data.status === 'READY' ? 'green' : 'blue'}
-              size="sm"
-            />
+            {data.assessmentProgress ? (
+              <Progress 
+                value={data.assessmentProgress.completionPercentage} 
+                color={data.status === 'READY' ? 'green' : 'blue'}
+                size="sm"
+              />
+            ) : (
+              <Progress 
+                value={endpoint?.progress || (data.status === 'READY' ? 100 : 0)} 
+                color={data.status === 'READY' ? 'green' : 'blue'}
+                size="sm"
+              />
+            )}
+            {data.statusMessage && (
+              <Text size="xs" c="dimmed" mt="xs">{data.statusMessage}</Text>
+            )}
           </div>
         )}
 

@@ -46,6 +46,17 @@ const SSLCheckerTool = () => {
         console.log('🌟 Attempting API-based SSL check...');
         result = await checkWithSSLAPI(cleanDomain);
         console.log('✅ API check succeeded:', result);
+        
+        // If SSL Labs returned polling info, handle the polling
+        if (result.pollInfo && result.pollInfo.shouldPoll) {
+          console.log(`⏳ SSL Labs assessment in progress, will poll in ${result.pollInfo.recommendedInterval} seconds`);
+          setCertificateData(result); // Show partial results immediately
+          
+          // Start polling for completion
+          await pollForCompletion(cleanDomain, result.pollInfo.recommendedInterval);
+          return;
+        }
+        
       } catch (apiError) {
         console.error('❌ API check failed:', apiError.message);
         console.log('🔄 Falling back to browser-based check...');
@@ -278,6 +289,53 @@ const SSLCheckerTool = () => {
     }
   };
 
+  // New function to handle SSL Labs polling
+  const pollForCompletion = async (domain, initialInterval) => {
+    let pollCount = 0;
+    const maxPolls = 20; // Max 20 polls to prevent infinite polling
+    let currentInterval = initialInterval;
+
+    while (pollCount < maxPolls) {
+      await new Promise(resolve => setTimeout(resolve, currentInterval * 1000));
+      pollCount++;
+
+      try {
+        console.log(`🔄 Polling SSL Labs (attempt ${pollCount}/${maxPolls}) for ${domain}...`);
+        
+        const result = await checkWithSSLAPI(domain);
+        
+        // Update the display with current results
+        setCertificateData(result);
+        
+        // Check if polling should continue
+        if (!result.pollInfo || !result.pollInfo.shouldPoll) {
+          console.log('✅ SSL Labs assessment completed!');
+          setLoading(false);
+          break;
+        }
+        
+        // Update polling interval based on SSL Labs recommendation
+        currentInterval = result.pollInfo.recommendedInterval;
+        console.log(`⏳ Assessment still in progress, next poll in ${currentInterval} seconds`);
+        
+        // Update progress in UI
+        if (result.assessmentProgress) {
+          console.log(`📊 Progress: ${result.assessmentProgress.completionPercentage}% (${result.assessmentProgress.readyEndpoints}/${result.assessmentProgress.totalEndpoints} endpoints)`);
+        }
+        
+      } catch (pollError) {
+        console.error(`❌ Polling error: ${pollError.message}`);
+        setLoading(false);
+        break;
+      }
+    }
+    
+    if (pollCount >= maxPolls) {
+      console.log('⚠️ Reached maximum polling attempts, assessment may still be in progress');
+      setLoading(false);
+    }
+  };
+
   return (
     <Paper
       shadow="md"
@@ -340,6 +398,21 @@ const SSLCheckerTool = () => {
                   data={certificateData}
                   domain={domain}
                 />
+              )}
+
+              {/* Progress Message for Incomplete Analysis */}
+              {certificateData && certificateData.pollInfo?.shouldPoll && (
+                <Alert icon={<IconInfoCircle size={16} />} title="Security Analysis in Progress" color="blue" variant="light">
+                  <Text size="sm">
+                    SSL Labs is analyzing the security configuration. Security analysis results will appear when the assessment is complete.
+                  </Text>
+                  {certificateData.assessmentProgress && (
+                    <Text size="sm" mt="xs">
+                      Progress: {certificateData.assessmentProgress.readyEndpoints}/{certificateData.assessmentProgress.totalEndpoints} endpoints complete 
+                      ({certificateData.assessmentProgress.completionPercentage}%)
+                    </Text>
+                  )}
+                </Alert>
               )}
             </Stack>
           </Tabs.Panel>

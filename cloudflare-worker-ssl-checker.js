@@ -132,8 +132,8 @@ async function checkSSLLabs(domain) {
     throw new Error(`SSL Labs service unavailable: ${infoError.message}`);
   }
 
-  // Step 2: Always try to get cached results first (even if partial)
-  let analyzeUrl = `${SSL_LABS_CONFIG.baseUrl}/analyze?host=${domain}&publish=off&fromCache=on&maxAge=168&all=done`;
+  // Step 2: Try to get cached results first (prefer recent cache)
+  let analyzeUrl = `${SSL_LABS_CONFIG.baseUrl}/analyze?host=${domain}&publish=off&fromCache=on&maxAge=24&all=done`;
   
   let response = await fetch(analyzeUrl, {
     headers: {
@@ -153,19 +153,13 @@ async function checkSSLLabs(domain) {
     throw new Error(`SSL Labs error: ${data.errors[0].message}`);
   }
 
-  // Step 3: Check if we have usable cached results
-  const hasUsableResults = data.status === 'READY' && data.endpoints && data.endpoints.length > 0;
-  const hasPartialResults = data.endpoints && data.endpoints.some(ep => ep.statusMessage === 'Ready');
-  
-  if (hasUsableResults) {
+  // Step 3: If we have recent cached results, return them
+  if (data.status === 'READY' && data.endpoints && data.endpoints.length > 0) {
     console.log(`✅ Found complete cached SSL Labs results for ${domain}`);
-    return await enhanceWithEndpointDetails(data, domain);
-  } else if (hasPartialResults) {
-    console.log(`⚡ Found partial cached SSL Labs results for ${domain}`);
     return await enhanceWithEndpointDetails(data, domain);
   }
 
-  // Step 4: Start new assessment but don't wait too long
+  // Step 4: If no good cache, start new assessment and return immediately with progress
   console.log(`🔄 Starting new SSL Labs assessment for ${domain}...`);
   
   analyzeUrl = `${SSL_LABS_CONFIG.baseUrl}/analyze?host=${domain}&publish=off&startNew=on&all=done`;
@@ -188,64 +182,94 @@ async function checkSSLLabs(domain) {
     throw new Error(`SSL Labs error: ${data.errors[0].message}`);
   }
 
-  // Step 5: Limited polling for quick results (max 30 seconds for worker timeout)
-  let pollCount = 0;
-  const maxPolls = 3; // Max 3 polls = ~30 seconds total
-  
-  while ((data.status === 'DNS' || data.status === 'IN_PROGRESS') && pollCount < maxPolls) {
-    console.log(`⏳ Quick poll ${pollCount + 1}/${maxPolls} for ${domain} - Status: ${data.status}`);
-    
-    await new Promise(resolve => setTimeout(resolve, 8000)); // Wait 8 seconds
-    
-    // Poll for results
-    analyzeUrl = `${SSL_LABS_CONFIG.baseUrl}/analyze?host=${domain}&all=done`;
-    
-    response = await fetch(analyzeUrl, {
-      headers: {
-        'User-Agent': SSL_LABS_CONFIG.userAgent,
-        'Accept': 'application/json',
-        'email': SSL_LABS_CONFIG.email
-      }
-    });
-
-    if (!response.ok) {
-      console.log(`⚠️ Poll failed: ${response.status}, returning current results`);
-      break;
-    }
-
-    data = await response.json();
-    pollCount++;
-    
-    // If we have any ready endpoints, return partial results
-    if (data.endpoints && data.endpoints.some(ep => ep.statusMessage === 'Ready')) {
-      console.log(`⚡ Got partial results after ${pollCount} polls for ${domain}`);
-      break;
-    }
-  }
-
-  // Step 6: Return whatever we have (even if incomplete)
+  // Step 5: Return immediately with current status (don't poll in worker)
   if (data.status === 'ERROR') {
     console.log(`❌ SSL Labs returned ERROR for ${domain}: ${data.statusMessage || 'Unknown error'}`);
     throw new Error(`SSL Labs analysis failed: ${data.statusMessage || 'Assessment error'}`);
   }
 
-  console.log(`📊 Returning SSL Labs results for ${domain} - Status: ${data.status}`);
-  return await enhanceWithEndpointDetails(data, domain);
+  console.log(`📊 Returning SSL Labs status for ${domain} - Status: ${data.status}`);
+  
+  // Calculate next poll time based on SSL Labs recommendations
+  let recommendedPollInterval = 10; // Default 10 seconds
+  if (data.status === 'DNS') {
+    recommendedPollInterval = 5; // Poll every 5 seconds until IN_PROGRESS
+  } else if (data.status === 'IN_PROGRESS') {
+    // Use the minimum ETA from endpoints, or default to 10 seconds
+    const minEta = data.endpoints?.reduce((min, ep) => {
+      return ep.eta && ep.eta > 0 ? Math.min(min, ep.eta) : min;
+    }, 60) || 60;
+    recommendedPollInterval = Math.max(10, Math.min(30, minEta)); // Between 10-30 seconds
+  }
+
+  // Enhance ready endpoints only
+  const enhancedData = await enhanceReadyEndpoints(data, domain);
+  
+  // Add polling guidance to response
+  enhancedData.pollInfo = {
+    shouldPoll: data.status === 'DNS' || data.status === 'IN_PROGRESS',
+    recommendedInterval: recommendedPollInterval,
+    nextPollTime: Date.now() + (recommendedPollInterval * 1000)
+  };
+
+  return enhancedData;
 }
 
-// Separate function to add endpoint details (but with timeout protection)
-async function enhanceWithEndpointDetails(data, domain) {
-  // Only try to get endpoint details for the first few ready endpoints to avoid timeout
+// Enhanced function that only processes ready endpoints (fast)
+async function enhanceReadyEndpoints(data, domain) {
   if (data.endpoints && data.endpoints.length > 0) {
-    console.log(`🔍 Getting endpoint details for first few endpoints of ${domain}...`);
+    console.log(`🔍 Enhancing ready endpoints for ${domain}...`);
     
-    const maxEndpointsToEnhance = 2; // Limit to first 2 endpoints to avoid timeout
+    // Only enhance first 2 ready endpoints to keep response fast
+    const readyEndpoints = data.endpoints.filter(ep => ep.statusMessage === 'Ready').slice(0, 2);
+    
+    for (const endpoint of readyEndpoints) {
+      if (endpoint.ipAddress && (!endpoint.details || !endpoint.details.cert)) {
+        try {
+          const endpointUrl = `${SSL_LABS_CONFIG.baseUrl}/getEndpointData?host=${domain}&s=${endpoint.ipAddress}`;
+          
+          const endpointResponse = await fetch(endpointUrl, {
+            headers: {
+              'User-Agent': SSL_LABS_CONFIG.userAgent,
+              'Accept': 'application/json',
+              'email': SSL_LABS_CONFIG.email
+            }
+          });
+
+          if (endpointResponse.ok) {
+            const endpointData = await endpointResponse.json();
+            if (endpointData.details) {
+              // Find and update the endpoint in the original data
+              const endpointIndex = data.endpoints.findIndex(ep => ep.ipAddress === endpoint.ipAddress);
+              if (endpointIndex !== -1) {
+                data.endpoints[endpointIndex].details = endpointData.details;
+                console.log(`✅ Enhanced endpoint ${endpoint.ipAddress}`);
+              }
+            }
+          }
+        } catch (endpointError) {
+          console.log(`⚠️ Failed to enhance endpoint ${endpoint.ipAddress}: ${endpointError.message}`);
+        }
+      }
+    }
+  }
+
+  console.log(`✅ SSL Labs processing complete for ${domain}`);
+  return parseSSLLabsResponse(data, domain);
+}
+
+// Keep the original enhanceWithEndpointDetails for complete results
+async function enhanceWithEndpointDetails(data, domain) {
+  // For complete cached results, enhance more endpoints
+  if (data.endpoints && data.endpoints.length > 0) {
+    console.log(`🔍 Getting detailed endpoint data for ${domain}...`);
+    
+    const maxEndpointsToEnhance = 3; // Slightly more for cached complete results
     let enhancedCount = 0;
     
     for (let i = 0; i < data.endpoints.length && enhancedCount < maxEndpointsToEnhance; i++) {
       const endpoint = data.endpoints[i];
       
-      // Only enhance ready endpoints that don't already have full details
       if (endpoint.statusMessage === 'Ready' && endpoint.ipAddress && (!endpoint.details || !endpoint.details.cert)) {
         try {
           const endpointUrl = `${SSL_LABS_CONFIG.baseUrl}/getEndpointData?host=${domain}&s=${endpoint.ipAddress}`;
@@ -265,18 +289,15 @@ async function enhanceWithEndpointDetails(data, domain) {
               enhancedCount++;
               console.log(`✅ Enhanced endpoint ${endpoint.ipAddress} (${enhancedCount}/${maxEndpointsToEnhance})`);
             }
-          } else {
-            console.log(`⚠️ Failed to enhance endpoint ${endpoint.ipAddress}: ${endpointResponse.status}`);
           }
         } catch (endpointError) {
           console.log(`⚠️ Error enhancing endpoint: ${endpointError.message}`);
-          break; // Stop trying if we hit errors
+          break;
         }
       }
     }
   }
 
-  console.log(`✅ SSL Labs processing complete for ${domain}`);
   return parseSSLLabsResponse(data, domain);
 }
 
@@ -345,9 +366,44 @@ function parseSSLLabsResponse(data, domain) {
     firstCert = data.certs[0]; // First cert in the chain is usually the leaf certificate
   }
   
-  return {
+  // Count endpoint statuses
+  const totalEndpoints = data.endpoints ? data.endpoints.length : 0;
+  const readyEndpoints = data.endpoints ? data.endpoints.filter(ep => ep.statusMessage === 'Ready').length : 0;
+  const inProgressEndpoints = data.endpoints ? data.endpoints.filter(ep => ep.statusMessage && ep.statusMessage.includes('progress')).length : 0;
+  const pendingEndpoints = data.endpoints ? data.endpoints.filter(ep => ep.statusMessage === 'Pending').length : 0;
+  
+  // Calculate overall ETA
+  const maxEta = data.endpoints?.reduce((max, ep) => {
+    return ep.eta && ep.eta > 0 ? Math.max(max, ep.eta) : max;
+  }, 0) || 0;
+  
+  // Determine overall status message
+  let overallStatusMessage = '';
+  if (data.status === 'READY' && readyEndpoints === totalEndpoints) {
+    overallStatusMessage = 'SSL Labs analysis completed';
+  } else if (data.status === 'IN_PROGRESS' || inProgressEndpoints > 0 || pendingEndpoints > 0) {
+    const etaText = maxEta > 0 ? ` (ETA: ${Math.ceil(maxEta / 60)} min)` : '';
+    overallStatusMessage = `SSL Labs analysis in progress - ${readyEndpoints}/${totalEndpoints} endpoints complete${etaText}`;
+  } else if (readyEndpoints > 0) {
+    overallStatusMessage = `SSL Labs partial results - ${readyEndpoints}/${totalEndpoints} endpoints analyzed`;
+  } else if (data.status === 'DNS') {
+    overallStatusMessage = 'SSL Labs resolving domain...';
+  } else {
+    overallStatusMessage = 'SSL Labs analysis started';
+  }
+  
+  const result = {
     host: domain,
     status: data.status || 'READY',
+    statusMessage: overallStatusMessage,
+    assessmentProgress: {
+      totalEndpoints,
+      readyEndpoints,
+      inProgressEndpoints,
+      pendingEndpoints,
+      completionPercentage: totalEndpoints > 0 ? Math.round((readyEndpoints / totalEndpoints) * 100) : 0,
+      estimatedTimeRemaining: maxEta
+    },
     startTime: data.startTime,
     testTime: data.testTime,
     endpoints: data.endpoints?.map(endpoint => {
@@ -369,15 +425,16 @@ function parseSSLLabsResponse(data, domain) {
       return {
         ipAddress: endpoint.ipAddress,
         serverName: endpoint.serverName,
-        statusMessage: endpoint.statusMessage || 'SSL Labs analysis completed',
-        grade: endpoint.grade || 'T',
+        statusMessage: endpoint.statusMessage || 'SSL Labs analysis in progress',
+        grade: endpoint.grade || (endpoint.statusMessage === 'Ready' ? 'T' : '-'),
         gradeTrustIgnored: endpoint.gradeTrustIgnored,
         futureGrade: endpoint.futureGrade,
         hasWarnings: endpoint.hasWarnings || false,
         isExceptional: endpoint.isExceptional || false,
-        progress: endpoint.progress || 100,
+        progress: endpoint.progress || (endpoint.statusMessage === 'Ready' ? 100 : 0),
         eta: endpoint.eta || 0,
         delegation: endpoint.delegation || 1,
+        isComplete: endpoint.statusMessage === 'Ready',
         details: {
           cert: cert ? {
             subject: cert.subject,
@@ -425,83 +482,87 @@ function parseSSLLabsResponse(data, domain) {
             preference: endpoint.details.suites.preference,
             chaCha20Preference: endpoint.details.suites.chaCha20Preference
           } : { list: [] },
-          // Certificate chain information
-          certChains: endpoint.details?.certChains?.map(chain => ({
-            id: chain.id,
-            certIds: chain.certIds,
-            trustPaths: chain.trustPaths,
-            issues: chain.issues,
-            noSni: chain.noSni
-          })) || [],
-          // Security features and vulnerabilities
-          vulnBeast: endpoint.details?.vulnBeast,
-          renegSupport: endpoint.details?.renegSupport,
-          sessionResumption: endpoint.details?.sessionResumption,
-          compressionMethods: endpoint.details?.compressionMethods,
-          supportsNpn: endpoint.details?.supportsNpn,
-          npnProtocols: endpoint.details?.npnProtocols,
-          supportsAlpn: endpoint.details?.supportsAlpn,
-          alpnProtocols: endpoint.details?.alpnProtocols,
-          sessionTickets: endpoint.details?.sessionTickets,
-          ocspStapling: endpoint.details?.ocspStapling,
-          staplingRevocationStatus: endpoint.details?.staplingRevocationStatus,
-          sniRequired: endpoint.details?.sniRequired,
-          httpStatusCode: endpoint.details?.httpStatusCode,
-          httpForwarding: endpoint.details?.httpForwarding,
-          supportsRc4: endpoint.details?.supportsRc4,
-          rc4WithModern: endpoint.details?.rc4WithModern,
-          forwardSecrecy: endpoint.details?.forwardSecrecy,
-          supportsAead: endpoint.details?.supportsAead,
-          supportsCBC: endpoint.details?.supportsCBC,
-          protocolIntolerance: endpoint.details?.protocolIntolerance,
-          miscIntolerance: endpoint.details?.miscIntolerance,
-          // Vulnerability tests
-          heartbleed: endpoint.details?.heartbleed,
-          heartbeat: endpoint.details?.heartbeat,
-          openSslCcs: endpoint.details?.openSslCcs,
-          openSSLLuckyMinus20: endpoint.details?.openSSLLuckyMinus20,
-          ticketbleed: endpoint.details?.ticketbleed,
-          bleichenbacher: endpoint.details?.bleichenbacher,
-          zombiePoodle: endpoint.details?.zombiePoodle,
-          goldenDoodle: endpoint.details?.goldenDoodle,
-          zeroLengthPaddingOracle: endpoint.details?.zeroLengthPaddingOracle,
-          sleepingPoodle: endpoint.details?.sleepingPoodle,
-          poodle: endpoint.details?.poodle,
-          poodleTls: endpoint.details?.poodleTls,
-          fallbackScsv: endpoint.details?.fallbackScsv,
-          freak: endpoint.details?.freak,
-          logjam: endpoint.details?.logjam,
-          drownVulnerable: endpoint.details?.drownVulnerable,
-          drownErrors: endpoint.details?.drownErrors,
-          drownHosts: endpoint.details?.drownHosts,
-          // TLS 1.3 features
-          implementsTLS13MandatoryCS: endpoint.details?.implementsTLS13MandatoryCS,
-          zeroRTTEnabled: endpoint.details?.zeroRTTEnabled,
-          // Security policies
-          hstsPolicy: endpoint.details?.hstsPolicy,
-          hstsPreloads: endpoint.details?.hstsPreloads,
-          hpkpPolicy: endpoint.details?.hpkpPolicy,
-          hpkpRoPolicy: endpoint.details?.hpkpRoPolicy,
-          staticPkpPolicy: endpoint.details?.staticPkpPolicy,
-          // Additional details
-          namedGroups: endpoint.details?.namedGroups,
-          dhPrimes: endpoint.details?.dhPrimes,
-          dhUsesKnownPrimes: endpoint.details?.dhUsesKnownPrimes,
-          dhYsReuse: endpoint.details?.dhYsReuse,
-          ecdhParameterReuse: endpoint.details?.ecdhParameterReuse,
-          hasSct: endpoint.details?.hasSct,
-          httpTransactions: endpoint.details?.httpTransactions,
-          sims: endpoint.details?.sims
+          // Only include detailed security info for ready endpoints
+          ...(endpoint.statusMessage === 'Ready' ? {
+            // Certificate chain information
+            certChains: endpoint.details?.certChains?.map(chain => ({
+              id: chain.id,
+              certIds: chain.certIds,
+              trustPaths: chain.trustPaths,
+              issues: chain.issues,
+              noSni: chain.noSni
+            })) || [],
+            // Security features and vulnerabilities
+            vulnBeast: endpoint.details?.vulnBeast,
+            renegSupport: endpoint.details?.renegSupport,
+            sessionResumption: endpoint.details?.sessionResumption,
+            compressionMethods: endpoint.details?.compressionMethods,
+            supportsNpn: endpoint.details?.supportsNpn,
+            npnProtocols: endpoint.details?.npnProtocols,
+            supportsAlpn: endpoint.details?.supportsAlpn,
+            alpnProtocols: endpoint.details?.alpnProtocols,
+            sessionTickets: endpoint.details?.sessionTickets,
+            ocspStapling: endpoint.details?.ocspStapling,
+            staplingRevocationStatus: endpoint.details?.staplingRevocationStatus,
+            sniRequired: endpoint.details?.sniRequired,
+            httpStatusCode: endpoint.details?.httpStatusCode,
+            httpForwarding: endpoint.details?.httpForwarding,
+            supportsRc4: endpoint.details?.supportsRc4,
+            rc4WithModern: endpoint.details?.rc4WithModern,
+            forwardSecrecy: endpoint.details?.forwardSecrecy,
+            supportsAead: endpoint.details?.supportsAead,
+            supportsCBC: endpoint.details?.supportsCBC,
+            protocolIntolerance: endpoint.details?.protocolIntolerance,
+            miscIntolerance: endpoint.details?.miscIntolerance,
+            // Vulnerability tests
+            heartbleed: endpoint.details?.heartbleed,
+            heartbeat: endpoint.details?.heartbeat,
+            openSslCcs: endpoint.details?.openSslCcs,
+            openSSLLuckyMinus20: endpoint.details?.openSSLLuckyMinus20,
+            ticketbleed: endpoint.details?.ticketbleed,
+            bleichenbacher: endpoint.details?.bleichenbacher,
+            zombiePoodle: endpoint.details?.zombiePoodle,
+            goldenDoodle: endpoint.details?.goldenDoodle,
+            zeroLengthPaddingOracle: endpoint.details?.zeroLengthPaddingOracle,
+            sleepingPoodle: endpoint.details?.sleepingPoodle,
+            poodle: endpoint.details?.poodle,
+            poodleTls: endpoint.details?.poodleTls,
+            fallbackScsv: endpoint.details?.fallbackScsv,
+            freak: endpoint.details?.freak,
+            logjam: endpoint.details?.logjam,
+            drownVulnerable: endpoint.details?.drownVulnerable,
+            drownErrors: endpoint.details?.drownErrors,
+            drownHosts: endpoint.details?.drownHosts,
+            // TLS 1.3 features
+            implementsTLS13MandatoryCS: endpoint.details?.implementsTLS13MandatoryCS,
+            zeroRTTEnabled: endpoint.details?.zeroRTTEnabled,
+            // Security policies
+            hstsPolicy: endpoint.details?.hstsPolicy,
+            hstsPreloads: endpoint.details?.hstsPreloads,
+            hpkpPolicy: endpoint.details?.hpkpPolicy,
+            hpkpRoPolicy: endpoint.details?.hpkpRoPolicy,
+            staticPkpPolicy: endpoint.details?.staticPkpPolicy,
+            // Additional details
+            namedGroups: endpoint.details?.namedGroups,
+            dhPrimes: endpoint.details?.dhPrimes,
+            dhUsesKnownPrimes: endpoint.details?.dhUsesKnownPrimes,
+            dhYsReuse: endpoint.details?.dhYsReuse,
+            ecdhParameterReuse: endpoint.details?.ecdhParameterReuse,
+            hasSct: endpoint.details?.hasSct,
+            httpTransactions: endpoint.details?.httpTransactions,
+            sims: endpoint.details?.sims
+          } : {})
         }
       };
     }) || [{
-      statusMessage: 'SSL Labs analysis completed',
-      grade: 'T',
+      statusMessage: 'SSL Labs analysis in progress',
+      grade: '-',
       hasWarnings: false,
       isExceptional: false,
-      progress: 100,
+      progress: 0,
       eta: 0,
       delegation: 1,
+      isComplete: false,
       details: { cert: null }
     }],
     // Include certificate data at root level
@@ -525,6 +586,13 @@ function parseSSLLabsResponse(data, domain) {
     criteriaVersion: data.criteriaVersion,
     certHostnames: data.certHostnames
   };
+
+  // Preserve pollInfo if it exists (added by the worker)
+  if (data.pollInfo) {
+    result.pollInfo = data.pollInfo;
+  }
+
+  return result;
 }
 
 function parseHackerTargetResponse(data, domain) {
