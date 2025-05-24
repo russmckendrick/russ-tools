@@ -1,0 +1,17 @@
+name = "whois-lookup"
+main = "cloudflare-worker-whois.js"
+compatibility_date = "2023-12-01"
+
+[env.production]
+name = "whois-lookup"
+
+[observability.logs]
+enabled = true
+
+routes = [
+  { pattern = "whois.russ.tools", custom_domain = true }
+]
+
+# Environment variables needed:
+# ALLOWED_ORIGINS - Comma-separated list of allowed origins
+# Example: "https://russ.tools,https://localhost:5173,http://localhost:3000" 

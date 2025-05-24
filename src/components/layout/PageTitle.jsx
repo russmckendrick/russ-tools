@@ -18,6 +18,8 @@ export function PageTitle() {
       title = 'SSL Certificate Checker - russ.tools';
     } else if (normalizedPath === '/dns-lookup') {
       title = 'DNS Lookup Tool - russ.tools';
+    } else if (normalizedPath === '/whois-lookup') {
+      title = 'WHOIS Lookup Tool - russ.tools';
     } else if (normalizedPath === '/cron') {
       title = 'Cron Builder Tool - russ.tools';
     }
