@@ -7,6 +7,8 @@ import { AzureNamingProvider } from './context/AzureNamingContext';
 import AzureNamingTool from './components/tools/azure-naming/AzureNamingTool';
 import CronBuilderTool from './components/tools/cron/CronBuilderTool';
 import SSLCheckerTool from './components/tools/ssl-checker/SSLCheckerTool';
+import DNSLookupTool from './components/tools/dns-lookup/DNSLookupTool';
+import WHOISLookupTool from './components/tools/whois/WHOISLookupTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -54,6 +56,13 @@ export default function App() {
               {/* SSL Checker Tool route */}
               <Route path="ssl-checker" element={<SSLCheckerTool />} />
               <Route path="ssl-checker/:domain" element={<SSLCheckerTool />} />
+
+              {/* DNS Lookup Tool route */}
+              <Route path="dns-lookup" element={<DNSLookupTool />} />
+
+              {/* WHOIS Lookup Tool route */}
+              <Route path="whois-lookup" element={<WHOISLookupTool />} />
+              <Route path="whois-lookup/:query" element={<WHOISLookupTool />} />
 
               {/* Add more routes here as needed */}
             </Route>

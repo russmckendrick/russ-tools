@@ -31,6 +31,8 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import classes from './HeaderMegaMenu.module.css';
+import DNSIcon from '../tools/dns-lookup/DNSIcon';
+import WHOISIcon from '../tools/whois/WHOISIcon';
 
 const mockdata = [
   {
@@ -56,6 +58,18 @@ const mockdata = [
     title: 'SSL Certificate Checker',
     description: "Analyze and validate SSL certificates",
     link: "/ssl-checker/",
+  },
+  {
+    icon: DNSIcon,
+    title: 'DNS Lookup Tool',
+    description: "Perform DNS queries for various record types",
+    link: "/dns-lookup/",
+  },
+  {
+    icon: WHOISIcon,
+    title: 'WHOIS Lookup Tool',
+    description: "Get detailed information about domains and IP addresses",
+    link: "/whois-lookup/",
   },
   {
     icon: IconBrandGithub,
