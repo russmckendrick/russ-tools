@@ -6,6 +6,7 @@ import {
   IconNetwork,
   IconBrandGithub,
   IconClock,
+  IconShield,
 } from '@tabler/icons-react';
 import {
   Anchor,
@@ -49,6 +50,12 @@ const mockdata = [
     title: 'Cron Expression Builder',
     description: "Build and validate cron job expressions",
     link: "/cron/",
+  },
+  {
+    icon: IconShield,
+    title: 'SSL Certificate Checker',
+    description: "Analyze and validate SSL certificates",
+    link: "/ssl-checker/",
   },
   {
     icon: IconBrandGithub,

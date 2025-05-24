@@ -1,0 +1,9 @@
+name = "ssl-checker"
+main = "cloudflare-worker-ssl-checker.js"
+compatibility_date = "2023-12-01"
+
+[env.production]
+name = "ssl-checker"
+
+[observability.logs]
+enabled = true
