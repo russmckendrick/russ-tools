@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   TextInput, 
   Button, 
@@ -7,13 +7,25 @@ import {
   Stack, 
   Text,
   Alert,
-  Loader
+  Loader,
+  Select,
+  Badge,
+  Tooltip,
+  ActionIcon
 } from '@mantine/core';
-import { IconWorld, IconSearch, IconAlertCircle } from '@tabler/icons-react';
+import { IconWorld, IconSearch, IconAlertCircle, IconClock, IconShieldCheck, IconShieldX, IconX } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 
-const DomainInput = ({ onSubmit, loading, error }) => {
-  const [domain, setDomain] = useState('');
+const DomainInput = ({ onSubmit, loading, error, domainHistory = [], removeDomainFromHistory, initialDomain = '' }) => {
+  const [domain, setDomain] = useState(initialDomain);
   const [validationError, setValidationError] = useState('');
+
+  // Update domain when initialDomain prop changes
+  useEffect(() => {
+    if (initialDomain && initialDomain !== domain) {
+      setDomain(initialDomain);
+    }
+  }, [initialDomain]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const validateDomain = (domainToValidate) => {
     if (!domainToValidate.trim()) {
@@ -28,7 +40,7 @@ const DomainInput = ({ onSubmit, loading, error }) => {
       .toLowerCase();
 
     // Basic domain validation regex
-    const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/;
+    const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     
     if (!domainRegex.test(cleanedDomain)) {
       return 'Please enter a valid domain name (e.g., example.com)';
@@ -70,7 +82,71 @@ const DomainInput = ({ onSubmit, loading, error }) => {
     }
   };
 
-  const exampleDomains = ['google.com', 'github.com', 'cloudflare.com', 'example.com'];
+  const exampleDomains = ['google.com', 'github.com', 'cloudflare.com', 'russ.tools'];
+
+  // Helper function to format history items for the dropdown
+  const formatHistoryOptions = () => {
+    return domainHistory.map(item => {
+      const timeAgo = getTimeAgo(item.timestamp);
+      const gradeColor = getGradeColor(item.grade);
+      
+      return {
+        value: item.domain,
+        label: item.domain,
+        description: `${item.grade} grade • ${timeAgo}`,
+        gradeColor,
+        hasWarnings: item.hasWarnings
+      };
+    });
+  };
+
+  // Helper function to get time ago string
+  const getTimeAgo = (timestamp) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'Just now';
+  };
+
+  // Helper function to get grade color
+  const getGradeColor = (grade) => {
+    switch (grade) {
+      case 'A+':
+      case 'A':
+        return 'green';
+      case 'B':
+        return 'yellow';
+      case 'C':
+        return 'orange';
+      case 'F':
+        return 'red';
+      case 'T':
+        return 'blue';
+      default:
+        return 'gray';
+    }
+  };
+
+  // Handle removing a domain from history
+  const handleRemoveDomain = (domainToRemove, event) => {
+    event.stopPropagation(); // Prevent the dropdown from selecting the item
+    if (removeDomainFromHistory) {
+      removeDomainFromHistory(domainToRemove);
+      notifications.show({
+        title: 'Domain Removed',
+        message: `${domainToRemove} has been removed from your history`,
+        color: 'red',
+        icon: <IconX size={16} />,
+        autoClose: 3000,
+      });
+    }
+  };
 
   return (
     <Paper p="md" withBorder radius="md">
@@ -78,6 +154,76 @@ const DomainInput = ({ onSubmit, loading, error }) => {
         <Group gap="xs" align="center">
           <Text size="sm" fw={500}>Enter Domain to Check</Text>
         </Group>
+
+        {/* Domain History Dropdown */}
+        {domainHistory.length > 0 && (
+          <Stack gap="xs">
+            <Text size="xs" fw={500} c="dimmed">Recently Checked Domains</Text>
+            <Select
+              placeholder="Select from history"
+              data={formatHistoryOptions()}
+              value={null}
+              onChange={(value) => {
+                if (value) {
+                  setDomain(value);
+                }
+              }}
+              leftSection={<IconClock size={16} />}
+              searchable
+              maxDropdownHeight={200}
+              disabled={loading}
+              renderOption={({ option }) => (
+                <Group justify="space-between" wrap="nowrap">
+                  <div style={{ flex: 1 }}>
+                    <Text size="sm" fw={500}>{option.label}</Text>
+                    <Text size="xs" c="dimmed">{option.description}</Text>
+                  </div>
+                  <Group gap="xs" align="center">
+                    {option.hasWarnings && (
+                      <Tooltip label="Has warnings">
+                        <IconShieldX size={14} color="orange" />
+                      </Tooltip>
+                    )}
+                    <Badge 
+                      size="xs" 
+                      color={option.gradeColor}
+                      variant="light"
+                    >
+                      {option.value === option.label ? 
+                        domainHistory.find(h => h.domain === option.value)?.grade || 'Unknown' : 
+                        'Unknown'
+                      }
+                    </Badge>
+                    {removeDomainFromHistory && (
+                      <Tooltip label={`Remove ${option.value} from history`} withArrow>
+                        <ActionIcon
+                          size="xs"
+                          variant="subtle"
+                          color="red"
+                          onClick={(e) => handleRemoveDomain(option.value, e)}
+                          style={{
+                            transition: 'all 0.2s ease',
+                            opacity: 0.6
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.opacity = '1';
+                            e.target.style.transform = 'scale(1.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.opacity = '0.6';
+                            e.target.style.transform = 'scale(1)';
+                          }}
+                        >
+                          <IconX size={12} />
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
+                  </Group>
+                </Group>
+              )}
+            />
+          </Stack>
+        )}
 
         <form onSubmit={handleSubmit}>
           <Stack gap="md">

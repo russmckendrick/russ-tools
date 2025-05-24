@@ -7,3 +7,7 @@ name = "ssl-checker"
 
 [observability.logs]
 enabled = true
+
+routes = [
+  { pattern = "ssl-checker.russ.tools", custom_domain = true }
+]
