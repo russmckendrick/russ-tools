@@ -382,7 +382,14 @@ function parseSSLLabsResponse(data, domain) {
   if (data.status === 'READY' && readyEndpoints === totalEndpoints) {
     overallStatusMessage = 'SSL Labs analysis completed';
   } else if (data.status === 'IN_PROGRESS' || inProgressEndpoints > 0 || pendingEndpoints > 0) {
-    const etaText = maxEta > 0 ? ` (ETA: ${Math.ceil(maxEta / 60)} min)` : '';
+    let etaText = '';
+    if (maxEta > 0) {
+      if (maxEta < 60) {
+        etaText = ` (ETA: ${maxEta} sec)`;
+      } else {
+        etaText = ` (ETA: ${Math.ceil(maxEta / 60)} min)`;
+      }
+    }
     overallStatusMessage = `SSL Labs analysis in progress - ${readyEndpoints}/${totalEndpoints} endpoints complete${etaText}`;
   } else if (readyEndpoints > 0) {
     overallStatusMessage = `SSL Labs partial results - ${readyEndpoints}/${totalEndpoints} endpoints analyzed`;
