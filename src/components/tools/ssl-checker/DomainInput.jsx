@@ -10,11 +10,13 @@ import {
   Loader,
   Select,
   Badge,
-  Tooltip
+  Tooltip,
+  ActionIcon
 } from '@mantine/core';
-import { IconWorld, IconSearch, IconAlertCircle, IconClock, IconShieldCheck, IconShieldX } from '@tabler/icons-react';
+import { IconWorld, IconSearch, IconAlertCircle, IconClock, IconShieldCheck, IconShieldX, IconX } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 
-const DomainInput = ({ onSubmit, loading, error, domainHistory = [] }) => {
+const DomainInput = ({ onSubmit, loading, error, domainHistory = [], removeDomainFromHistory }) => {
   const [domain, setDomain] = useState('');
   const [validationError, setValidationError] = useState('');
 
@@ -73,7 +75,7 @@ const DomainInput = ({ onSubmit, loading, error, domainHistory = [] }) => {
     }
   };
 
-  const exampleDomains = ['google.com', 'github.com', 'cloudflare.com', 'example.com'];
+  const exampleDomains = ['google.com', 'github.com', 'cloudflare.com', 'russ.tools'];
 
   // Helper function to format history items for the dropdown
   const formatHistoryOptions = () => {
@@ -124,6 +126,21 @@ const DomainInput = ({ onSubmit, loading, error, domainHistory = [] }) => {
     }
   };
 
+  // Handle removing a domain from history
+  const handleRemoveDomain = (domainToRemove, event) => {
+    event.stopPropagation(); // Prevent the dropdown from selecting the item
+    if (removeDomainFromHistory) {
+      removeDomainFromHistory(domainToRemove);
+      notifications.show({
+        title: 'Domain Removed',
+        message: `${domainToRemove} has been removed from your history`,
+        color: 'red',
+        icon: <IconX size={16} />,
+        autoClose: 3000,
+      });
+    }
+  };
+
   return (
     <Paper p="md" withBorder radius="md">
       <Stack gap="md">
@@ -154,7 +171,7 @@ const DomainInput = ({ onSubmit, loading, error, domainHistory = [] }) => {
                     <Text size="sm" fw={500}>{option.label}</Text>
                     <Text size="xs" c="dimmed">{option.description}</Text>
                   </div>
-                  <Group gap="xs">
+                  <Group gap="xs" align="center">
                     {option.hasWarnings && (
                       <Tooltip label="Has warnings">
                         <IconShieldX size={14} color="orange" />
@@ -170,6 +187,30 @@ const DomainInput = ({ onSubmit, loading, error, domainHistory = [] }) => {
                         'Unknown'
                       }
                     </Badge>
+                    {removeDomainFromHistory && (
+                      <Tooltip label={`Remove ${option.value} from history`} withArrow>
+                        <ActionIcon
+                          size="xs"
+                          variant="subtle"
+                          color="red"
+                          onClick={(e) => handleRemoveDomain(option.value, e)}
+                          style={{
+                            transition: 'all 0.2s ease',
+                            opacity: 0.6
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.opacity = '1';
+                            e.target.style.transform = 'scale(1.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.opacity = '0.6';
+                            e.target.style.transform = 'scale(1)';
+                          }}
+                        >
+                          <IconX size={12} />
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
                   </Group>
                 </Group>
               )}

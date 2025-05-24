@@ -1,4 +1,5 @@
 import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import NetworkDesignerTool from './components/tools/network-designer/NetworkDesignerTool';
@@ -30,6 +31,7 @@ export default function App() {
         }),
       }}
     >
+      <Notifications />
       <AzureNamingProvider>
         <BrowserRouter>
           <Routes>

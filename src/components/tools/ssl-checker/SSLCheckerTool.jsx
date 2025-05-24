@@ -71,6 +71,19 @@ const SSLCheckerTool = () => {
     }));
   };
 
+  // Helper function to remove domain from history
+  const removeDomainFromHistory = (domainToRemove) => {
+    const updatedHistory = domainHistory.filter(item => item.domain !== domainToRemove);
+    setDomainHistory(updatedHistory);
+    
+    // Also remove from cache if present
+    setSslCache(prev => {
+      const newCache = { ...prev };
+      delete newCache[domainToRemove];
+      return newCache;
+    });
+  };
+
   const handleDomainSubmit = async (domainToCheck) => {
     setLoading(true);
     setError(null);
@@ -145,7 +158,7 @@ const SSLCheckerTool = () => {
   // Try using a public SSL checking service (when available)
   const checkWithSSLAPI = async (domainToCheck) => {
     // Primary: Use Cloudflare Worker (when deployed)
-    const WORKER_URL = 'https://ssl-checker.russ-mckendricks-account.workers.dev'; // Update this with your actual worker URL
+    const WORKER_URL = 'https://ssl-checker.russ.tools'; // Update this with your actual worker URL
     
     try {
       console.log(`🚀 Trying Cloudflare Worker for ${domainToCheck}`);
@@ -455,6 +468,7 @@ const SSLCheckerTool = () => {
                 loading={loading}
                 error={error}
                 domainHistory={domainHistory}
+                removeDomainFromHistory={removeDomainFromHistory}
               />
 
               {/* Certificate Display */}

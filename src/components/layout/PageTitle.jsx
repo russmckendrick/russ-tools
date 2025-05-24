@@ -12,6 +12,10 @@ export function PageTitle() {
       title = 'Network Designer - russ.tools';
     } else if (path === '/azure-naming') {
       title = 'Azure Resource Naming Tool - russ.tools';
+    } else if (path === '/ssl-checker') {
+      title = 'SSL Certificate Checker - russ.tools';
+    } else if (path === '/cron') {
+      title = 'Cron Builder Tool - russ.tools';
     }
 
     document.title = title;
