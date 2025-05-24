@@ -1,6 +1,7 @@
 import { Card, Group, Text, Title, Grid, Stack, Badge, ThemeIcon, Paper, Container } from '@mantine/core';
 import { IconNetwork, IconBrandAzure, IconClock, IconChevronRight, IconShield } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
+import DNSIcon from '../tools/dns-lookup/DNSIcon';
 
 export default function HomeView() {
   const tools = [
@@ -30,6 +31,15 @@ export default function HomeView() {
       iconColor: 'green',
       badges: ['SSL Labs API', 'Security Analysis', 'Certificate Info'],
       path: '/ssl-checker'
+    },
+    {
+      id: 'dns-lookup',
+      title: 'DNS Lookup Tool',
+      description: 'Perform comprehensive DNS queries for various record types using multiple DNS providers. Get detailed DNS information with caching and history tracking.',
+      icon: DNSIcon,
+      iconColor: 'indigo',
+      badges: ['DNS over HTTPS', 'Multiple Providers', 'Record History'],
+      path: '/dns-lookup'
     },
     {
       id: 'cron-builder',
