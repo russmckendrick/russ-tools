@@ -10,10 +10,11 @@ import {
   Alert,
   Badge
 } from '@mantine/core';
-import { IconShield, IconShieldCheck, IconWorldWww, IconInfoCircle } from '@tabler/icons-react';
+import { IconShield, IconShieldCheck, IconWorldWww, IconInfoCircle, IconCertificate } from '@tabler/icons-react';
 import DomainInput from './DomainInput';
 import SSLCertificateDisplay from './SSLCertificateDisplay';
 import SSLValidationInfo from './SSLValidationInfo';
+import SSLInfoPanel from './SSLInfoPanel';
 
 const SSLCheckerTool = () => {
   const [domain, setDomain] = useState('');
@@ -418,38 +419,7 @@ const SSLCheckerTool = () => {
           </Tabs.Panel>
 
           <Tabs.Panel value="info" pt="lg">
-            <Stack gap="lg">
-              <Alert icon={<IconInfoCircle size={16} />} title="About SSL Certificates" color="blue" variant="light">
-                SSL (Secure Sockets Layer) certificates encrypt data between your browser and websites, ensuring secure communication.
-              </Alert>
-              
-              <Group gap="md">
-                <Badge variant="light" color="green" size="lg">Valid Certificate</Badge>
-                <Text size="sm" c="dimmed">Trusted, not expired, matches domain</Text>
-              </Group>
-              
-              <Group gap="md">
-                <Badge variant="light" color="yellow" size="lg">Warning</Badge>
-                <Text size="sm" c="dimmed">Certificate has issues but may still work</Text>
-              </Group>
-              
-              <Group gap="md">
-                <Badge variant="light" color="red" size="lg">Invalid</Badge>
-                <Text size="sm" c="dimmed">Certificate is expired, untrusted, or misconfigured</Text>
-              </Group>
-
-              <Alert icon={<IconInfoCircle size={16} />} title="How This Tool Works" color="blue" variant="light">
-                This tool uses multiple client-side SSL checking services including HackerTarget, SSL-Checker.io, and WhoisXML to provide comprehensive certificate analysis with real expiration dates, grades, and detailed certificate information.
-              </Alert>
-
-              <Alert icon={<IconInfoCircle size={16} />} title="About SSL Labs API" color="orange" variant="light">
-                While SSL Labs provides the industry gold standard for SSL testing, their API now requires registration and blocks direct browser access due to CORS policies. This tool uses alternative services that provide excellent SSL analysis without these restrictions.
-              </Alert>
-
-              <Alert icon={<IconInfoCircle size={16} />} title="Certificate Grading" color="green" variant="light">
-                <strong>A+</strong>: Excellent (90+ days until expiry) • <strong>A</strong>: Good (30+ days) • <strong>B</strong>: Fair (7+ days) • <strong>C</strong>: Poor (expiring soon) • <strong>F</strong>: Failed/Invalid
-              </Alert>
-            </Stack>
+            <SSLInfoPanel />
           </Tabs.Panel>
         </Tabs>
       </Stack>

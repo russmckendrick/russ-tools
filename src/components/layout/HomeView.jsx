@@ -1,5 +1,5 @@
 import { Card, Group, Text, Title, Grid, Stack, Badge, ThemeIcon, Paper, Container } from '@mantine/core';
-import { IconNetwork, IconBrandAzure, IconClock, IconChevronRight } from '@tabler/icons-react';
+import { IconNetwork, IconBrandAzure, IconClock, IconChevronRight, IconShield } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 
 export default function HomeView() {
@@ -21,6 +21,15 @@ export default function HomeView() {
       iconColor: 'cyan',
       badges: ['CAF Compliant', 'Best Practices', 'Bulk Export'],
       path: '/azure-naming'
+    },
+    {
+      id: 'ssl-checker',
+      title: 'SSL Certificate Checker',
+      description: 'Analyze and validate SSL certificates for any domain. Get detailed security analysis, certificate information, and vulnerability testing using industry-standard SSL Labs API.',
+      icon: IconShield,
+      iconColor: 'green',
+      badges: ['SSL Labs API', 'Security Analysis', 'Certificate Info'],
+      path: '/ssl-checker'
     },
     {
       id: 'cron-builder',

@@ -145,7 +145,7 @@ const SSLCertificateDisplay = ({ data, domain, error }) => {
         {/* Basic Certificate Info */}
         <Grid gutter="md">
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Paper p="sm" withBorder radius="sm" bg="gray.0">
+            <Paper p="sm" withBorder radius="sm">
               <Stack gap="xs">
                 <Group gap="xs">
                   <IconServer size={16} />
@@ -166,7 +166,7 @@ const SSLCertificateDisplay = ({ data, domain, error }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Paper p="sm" withBorder radius="sm" bg="gray.0">
+            <Paper p="sm" withBorder radius="sm">
               <Stack gap="xs">
                 <Group gap="xs">
                   <IconCertificate size={16} />

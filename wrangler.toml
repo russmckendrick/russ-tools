@@ -5,7 +5,5 @@ compatibility_date = "2023-12-01"
 [env.production]
 name = "ssl-checker"
 
-# Environment variables (optional)
-# You can set these in the Cloudflare dashboard or via wrangler secrets
-# [vars]
-# SSL_LABS_USER_AGENT = "YourApp/1.0 (your-email@domain.com)" 
+[observability.logs]
+enabled = true

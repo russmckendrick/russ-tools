@@ -80,30 +80,47 @@ const DomainInput = ({ onSubmit, loading, error }) => {
         </Group>
 
         <form onSubmit={handleSubmit}>
-          <Group gap="xs" align="flex-start">
-            <TextInput
-              value={domain}
-              onChange={handleDomainChange}
-              onKeyDown={handleKeyPress}
-              placeholder="Enter domain name (e.g., example.com)"
-              leftSection={<IconWorld size={16} />}
-              size="md"
-              style={{ flex: 1 }}
-              error={validationError}
-              disabled={loading}
-              description="Enter just the domain name - no need for https:// or paths"
-            />
-            <Button 
-              type="submit"
-              leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-              loading={loading}
-              disabled={loading || !domain.trim()}
-              size="md"
-              color="green"
-            >
-              {loading ? 'Checking...' : 'Check SSL'}
-            </Button>
-          </Group>
+          <Stack gap="md">
+            <Group gap="md" align="flex-end" wrap="nowrap">
+              <TextInput
+                value={domain}
+                onChange={handleDomainChange}
+                onKeyDown={handleKeyPress}
+                placeholder="Enter domain name (e.g., example.com)"
+                leftSection={<IconWorld size={16} />}
+                size="lg"
+                style={{ flex: 1 }}
+                error={validationError}
+                disabled={loading}
+                description="Enter just the domain name - no need for https:// or paths"
+                radius="md"
+              />
+              <Button 
+                type="submit"
+                leftSection={loading ? <Loader size={18} color="white" /> : <IconSearch size={18} />}
+                loading={loading}
+                disabled={loading || !domain.trim()}
+                size="lg"
+                variant="gradient"
+                gradient={{ from: 'teal', to: 'green', deg: 45 }}
+                radius="md"
+                styles={{
+                  root: {
+                    minWidth: '140px',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 14px 0 rgba(0, 200, 83, 0.39)',
+                    transition: 'all 0.2s ease',
+                    '&:hover:not(:disabled)': {
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 6px 20px 0 rgba(0, 200, 83, 0.5)'
+                    }
+                  }
+                }}
+              >
+                {loading ? 'Checking...' : 'Check SSL'}
+              </Button>
+            </Group>
+          </Stack>
         </form>
 
         {error && (
@@ -112,16 +129,26 @@ const DomainInput = ({ onSubmit, loading, error }) => {
           </Alert>
         )}
 
-        <Group gap="xs">
-          <Text size="xs" c="dimmed">Try these examples:</Text>
+        <Group gap="xs" align="center">
+          <Text size="xs" c="dimmed" fw={500}>Try these examples:</Text>
           {exampleDomains.map((example) => (
             <Button
               key={example}
-              variant="subtle"
+              variant="light"
               size="xs"
               onClick={() => setDomain(example)}
               disabled={loading}
-              color="gray"
+              color="teal"
+              radius="sm"
+              styles={{
+                root: {
+                  transition: 'all 0.15s ease',
+                  '&:hover:not(:disabled)': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 2px 8px rgba(32, 201, 151, 0.25)'
+                  }
+                }
+              }}
             >
               {example}
             </Button>

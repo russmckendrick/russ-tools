@@ -4,11 +4,52 @@
  * Handles CORS and provides a clean API for the client-side app
  */
 
-// SSL Labs API configuration
-const SSL_LABS_CONFIG = {
-  baseUrl: 'https://api.ssllabs.com/api/v4',
-  userAgent: 'RussTools/1.0 (ssllabs.site@wibble.email)',
-  email: 'ssllabs.site@wibble.email' // Registered email for SSL Labs API v4
+// SSL Labs API configuration - loaded from environment secrets
+const getSSLLabsConfig = (env) => {
+  console.log('getSSLLabsConfig called with env:', typeof env);
+  
+  if (!env) {
+    throw new Error('Environment object is undefined');
+  }
+  
+  if (!env.SSL_LABS_EMAIL) {
+    console.error('SSL_LABS_EMAIL missing. Available env keys:', Object.keys(env));
+    throw new Error('SSL_LABS_EMAIL environment variable is required');
+  }
+  
+  if (!env.SSL_LABS_USER_AGENT) {
+    console.error('SSL_LABS_USER_AGENT missing. Available env keys:', Object.keys(env));
+    throw new Error('SSL_LABS_USER_AGENT environment variable is required');
+  }
+  
+  console.log('SSL Labs config found:', {
+    baseUrl: 'https://api.ssllabs.com/api/v4',
+    email: env.SSL_LABS_EMAIL,
+    userAgent: env.SSL_LABS_USER_AGENT
+  });
+  
+  return {
+    baseUrl: 'https://api.ssllabs.com/api/v4',
+    email: env.SSL_LABS_EMAIL,
+    userAgent: env.SSL_LABS_USER_AGENT
+  };
+};
+
+// Allowed origins for CORS - loaded from environment secrets
+const getAllowedOrigins = (env) => {
+  console.log('getAllowedOrigins called with env:', typeof env);
+  
+  if (!env) {
+    throw new Error('Environment object is undefined');
+  }
+  
+  if (!env.ALLOWED_ORIGINS) {
+    console.error('ALLOWED_ORIGINS missing. Available env keys:', Object.keys(env));
+    throw new Error('ALLOWED_ORIGINS environment variable is required');
+  }
+  
+  console.log('ALLOWED_ORIGINS found:', env.ALLOWED_ORIGINS);
+  return env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
 };
 
 // Alternative SSL checking services
@@ -25,32 +66,98 @@ const FALLBACK_APIS = [
   }
 ];
 
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request));
-});
-
-async function handleRequest(request) {
-  // Handle CORS preflight requests
-  if (request.method === 'OPTIONS') {
-    return handleCORS();
+export default {
+  async fetch(request, env, ctx) {
+    return handleRequest(request, env);
   }
+};
 
-  // Only allow GET requests
-  if (request.method !== 'GET') {
-    return new Response('Method not allowed', { status: 405 });
-  }
-
-  const url = new URL(request.url);
-  const domain = url.searchParams.get('domain');
-
-  if (!domain) {
-    return new Response(JSON.stringify({ error: 'Domain parameter is required' }), {
-      status: 400,
-      headers: corsHeaders()
-    });
-  }
-
+async function handleRequest(request, env) {
   try {
+    // Debug: Log environment variables (safely)
+    console.log('Environment check:', {
+      hasEmail: !!env.SSL_LABS_EMAIL,
+      hasUserAgent: !!env.SSL_LABS_USER_AGENT, 
+      hasOrigins: !!env.ALLOWED_ORIGINS,
+      originsValue: env.ALLOWED_ORIGINS ? 'SET' : 'NOT_SET',
+      envKeys: Object.keys(env || {}),
+      envType: typeof env
+    });
+
+    // Check origin for security
+    const origin = request.headers.get('Origin');
+    const referer = request.headers.get('Referer');
+    
+    let isAllowedOrigin = false;
+    
+    // Get allowed origins with error handling
+    let allowedOrigins;
+    try {
+      allowedOrigins = getAllowedOrigins(env);
+    } catch (originsError) {
+      console.error('Failed to get allowed origins:', originsError.message);
+      return new Response(JSON.stringify({ 
+        error: `Configuration error: ${originsError.message}` 
+      }), {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+    
+    // Check if origin is in allowed list
+    if (origin && allowedOrigins.includes(origin)) {
+      isAllowedOrigin = true;
+    }
+    
+    // Fallback: check referer if no origin (some requests might not have origin)
+    if (!isAllowedOrigin && referer) {
+      for (const allowedOrigin of allowedOrigins) {
+        if (referer.startsWith(allowedOrigin)) {
+          isAllowedOrigin = true;
+          break;
+        }
+      }
+    }
+    
+    // Reject unauthorized requests
+    if (!isAllowedOrigin) {
+      console.log(`❌ Unauthorized request from origin: ${origin || 'unknown'}, referer: ${referer || 'unknown'}`);
+      return new Response(JSON.stringify({ 
+        error: 'Unauthorized origin. This SSL checker is restricted to authorized domains only.' 
+      }), {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0]
+        }
+      });
+    }
+
+    // Handle CORS preflight requests
+    if (request.method === 'OPTIONS') {
+      return handleCORS(origin, env);
+    }
+
+    // Only allow GET requests
+    if (request.method !== 'GET') {
+      return new Response('Method not allowed', { 
+        status: 405,
+        headers: corsHeaders(origin, env)
+      });
+    }
+
+    const url = new URL(request.url);
+    const domain = url.searchParams.get('domain');
+
+    if (!domain) {
+      return new Response(JSON.stringify({ error: 'Domain parameter is required' }), {
+        status: 400,
+        headers: corsHeaders(origin, env)
+      });
+    }
+
     console.log(`🔍 Checking SSL for domain: ${domain}`);
     
     // Clean the domain
@@ -64,7 +171,7 @@ async function handleRequest(request) {
     let result = null;
     
     try {
-      result = await checkSSLLabs(cleanDomain);
+      result = await checkSSLLabs(cleanDomain, env);
       console.log(`✅ SSL Labs succeeded for ${cleanDomain}`);
     } catch (sslLabsError) {
       console.log(`❌ SSL Labs failed: ${sslLabsError.message}`);
@@ -91,32 +198,33 @@ async function handleRequest(request) {
     }
 
     return new Response(JSON.stringify(result), {
-      headers: corsHeaders()
+      headers: corsHeaders(origin, env)
     });
 
   } catch (error) {
-    console.error(`💥 SSL check failed for ${domain}:`, error);
+    console.error(`💥 SSL check failed:`, error);
     
     return new Response(JSON.stringify({
       error: error.message || 'SSL check failed',
-      host: domain,
-      status: 'ERROR',
+      stack: error.stack,
       timestamp: Date.now()
     }), {
       status: 500,
-      headers: corsHeaders()
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
   }
 }
 
-async function checkSSLLabs(domain) {
+async function checkSSLLabs(domain, env) {
   // Step 1: Check SSL Labs API availability
-  const infoUrl = `${SSL_LABS_CONFIG.baseUrl}/info`;
+  const infoUrl = `${getSSLLabsConfig(env).baseUrl}/info`;
   
   try {
     const infoResponse = await fetch(infoUrl, {
       headers: {
-        'User-Agent': SSL_LABS_CONFIG.userAgent,
+        'User-Agent': getSSLLabsConfig(env).userAgent,
         'Accept': 'application/json'
       }
     });
@@ -133,13 +241,13 @@ async function checkSSLLabs(domain) {
   }
 
   // Step 2: Try to get cached results first (prefer recent cache)
-  let analyzeUrl = `${SSL_LABS_CONFIG.baseUrl}/analyze?host=${domain}&publish=off&fromCache=on&maxAge=24&all=done`;
+  let analyzeUrl = `${getSSLLabsConfig(env).baseUrl}/analyze?host=${domain}&publish=off&fromCache=on&maxAge=24&all=done`;
   
   let response = await fetch(analyzeUrl, {
     headers: {
-      'User-Agent': SSL_LABS_CONFIG.userAgent,
+      'User-Agent': getSSLLabsConfig(env).userAgent,
       'Accept': 'application/json',
-      'email': SSL_LABS_CONFIG.email
+      'email': getSSLLabsConfig(env).email
     }
   });
 
@@ -156,19 +264,19 @@ async function checkSSLLabs(domain) {
   // Step 3: If we have recent cached results, return them
   if (data.status === 'READY' && data.endpoints && data.endpoints.length > 0) {
     console.log(`✅ Found complete cached SSL Labs results for ${domain}`);
-    return await enhanceWithEndpointDetails(data, domain);
+    return await enhanceWithEndpointDetails(data, domain, env);
   }
 
   // Step 4: If no good cache, start new assessment and return immediately with progress
   console.log(`🔄 Starting new SSL Labs assessment for ${domain}...`);
   
-  analyzeUrl = `${SSL_LABS_CONFIG.baseUrl}/analyze?host=${domain}&publish=off&startNew=on&all=done`;
+  analyzeUrl = `${getSSLLabsConfig(env).baseUrl}/analyze?host=${domain}&publish=off&startNew=on&all=done`;
   
   response = await fetch(analyzeUrl, {
     headers: {
-      'User-Agent': SSL_LABS_CONFIG.userAgent,
+      'User-Agent': getSSLLabsConfig(env).userAgent,
       'Accept': 'application/json',
-      'email': SSL_LABS_CONFIG.email
+      'email': getSSLLabsConfig(env).email
     }
   });
 
@@ -203,7 +311,7 @@ async function checkSSLLabs(domain) {
   }
 
   // Enhance ready endpoints only
-  const enhancedData = await enhanceReadyEndpoints(data, domain);
+  const enhancedData = await enhanceReadyEndpoints(data, domain, env);
   
   // Add polling guidance to response
   enhancedData.pollInfo = {
@@ -216,7 +324,7 @@ async function checkSSLLabs(domain) {
 }
 
 // Enhanced function that only processes ready endpoints (fast)
-async function enhanceReadyEndpoints(data, domain) {
+async function enhanceReadyEndpoints(data, domain, env) {
   if (data.endpoints && data.endpoints.length > 0) {
     console.log(`🔍 Enhancing ready endpoints for ${domain}...`);
     
@@ -226,13 +334,13 @@ async function enhanceReadyEndpoints(data, domain) {
     for (const endpoint of readyEndpoints) {
       if (endpoint.ipAddress && (!endpoint.details || !endpoint.details.cert)) {
         try {
-          const endpointUrl = `${SSL_LABS_CONFIG.baseUrl}/getEndpointData?host=${domain}&s=${endpoint.ipAddress}`;
+          const endpointUrl = `${getSSLLabsConfig(env).baseUrl}/getEndpointData?host=${domain}&s=${endpoint.ipAddress}`;
           
           const endpointResponse = await fetch(endpointUrl, {
             headers: {
-              'User-Agent': SSL_LABS_CONFIG.userAgent,
+              'User-Agent': getSSLLabsConfig(env).userAgent,
               'Accept': 'application/json',
-              'email': SSL_LABS_CONFIG.email
+              'email': getSSLLabsConfig(env).email
             }
           });
 
@@ -259,7 +367,7 @@ async function enhanceReadyEndpoints(data, domain) {
 }
 
 // Keep the original enhanceWithEndpointDetails for complete results
-async function enhanceWithEndpointDetails(data, domain) {
+async function enhanceWithEndpointDetails(data, domain, env) {
   // For complete cached results, enhance more endpoints
   if (data.endpoints && data.endpoints.length > 0) {
     console.log(`🔍 Getting detailed endpoint data for ${domain}...`);
@@ -272,13 +380,13 @@ async function enhanceWithEndpointDetails(data, domain) {
       
       if (endpoint.statusMessage === 'Ready' && endpoint.ipAddress && (!endpoint.details || !endpoint.details.cert)) {
         try {
-          const endpointUrl = `${SSL_LABS_CONFIG.baseUrl}/getEndpointData?host=${domain}&s=${endpoint.ipAddress}`;
+          const endpointUrl = `${getSSLLabsConfig(env).baseUrl}/getEndpointData?host=${domain}&s=${endpoint.ipAddress}`;
           
           const endpointResponse = await fetch(endpointUrl, {
             headers: {
-              'User-Agent': SSL_LABS_CONFIG.userAgent,
+              'User-Agent': getSSLLabsConfig(env).userAgent,
               'Accept': 'application/json',
-              'email': SSL_LABS_CONFIG.email
+              'email': getSSLLabsConfig(env).email
             }
           });
 
@@ -660,17 +768,17 @@ function parseHackerTargetResponse(data, domain) {
   };
 }
 
-function handleCORS() {
+function handleCORS(origin, env) {
   return new Response(null, {
     status: 200,
-    headers: corsHeaders()
+    headers: corsHeaders(origin, env)
   });
 }
 
-function corsHeaders() {
+function corsHeaders(origin, env) {
   return {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': origin && getAllowedOrigins(env).includes(origin) ? origin : getAllowedOrigins(env)[0],
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Cache-Control': 'public, max-age=300' // Cache for 5 minutes
