@@ -53,6 +53,7 @@ export default function App() {
 
               {/* SSL Checker Tool route */}
               <Route path="ssl-checker" element={<SSLCheckerTool />} />
+              <Route path="ssl-checker/:domain" element={<SSLCheckerTool />} />
 
               {/* Add more routes here as needed */}
             </Route>

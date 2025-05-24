@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   TextInput, 
   Button, 
@@ -16,9 +16,16 @@ import {
 import { IconWorld, IconSearch, IconAlertCircle, IconClock, IconShieldCheck, IconShieldX, IconX } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 
-const DomainInput = ({ onSubmit, loading, error, domainHistory = [], removeDomainFromHistory }) => {
-  const [domain, setDomain] = useState('');
+const DomainInput = ({ onSubmit, loading, error, domainHistory = [], removeDomainFromHistory, initialDomain = '' }) => {
+  const [domain, setDomain] = useState(initialDomain);
   const [validationError, setValidationError] = useState('');
+
+  // Update domain when initialDomain prop changes
+  useEffect(() => {
+    if (initialDomain && initialDomain !== domain) {
+      setDomain(initialDomain);
+    }
+  }, [initialDomain]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const validateDomain = (domainToValidate) => {
     if (!domainToValidate.trim()) {

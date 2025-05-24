@@ -6,15 +6,17 @@ export function PageTitle() {
 
   useEffect(() => {
     const path = location.pathname;
+    // Normalize path by removing trailing slashes and converting to lowercase
+    const normalizedPath = path.replace(/\/+$/, '').toLowerCase() || '/';
     let title = 'russ.tools';
 
-    if (path === '/network-designer') {
+    if (normalizedPath === '/network-designer') {
       title = 'Network Designer - russ.tools';
-    } else if (path === '/azure-naming') {
+    } else if (normalizedPath === '/azure-naming') {
       title = 'Azure Resource Naming Tool - russ.tools';
-    } else if (path === '/ssl-checker') {
+    } else if (normalizedPath === '/ssl-checker') {
       title = 'SSL Certificate Checker - russ.tools';
-    } else if (path === '/cron') {
+    } else if (normalizedPath === '/cron') {
       title = 'Cron Builder Tool - russ.tools';
     }
 

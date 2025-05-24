@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Paper, 
   Stack, 
@@ -11,6 +11,7 @@ import {
   Badge
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
+import { useParams } from 'react-router-dom';
 import { IconShield, IconShieldCheck, IconWorldWww, IconInfoCircle, IconCertificate } from '@tabler/icons-react';
 import DomainInput from './DomainInput';
 import SSLCertificateDisplay from './SSLCertificateDisplay';
@@ -22,6 +23,9 @@ const SSLCheckerTool = () => {
   const [certificateData, setCertificateData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Get domain from URL parameters
+  const { domain: urlDomain } = useParams();
 
   // Domain history and caching using Mantine storage
   const [domainHistory, setDomainHistory] = useLocalStorage({
@@ -36,6 +40,21 @@ const SSLCheckerTool = () => {
 
   // Cache duration in milliseconds (24 hours)
   const CACHE_DURATION = 24 * 60 * 60 * 1000;
+
+  // Effect to handle URL domain parameter
+  useEffect(() => {
+    if (urlDomain && urlDomain.trim()) {
+      // Decode URL component in case domain contains special characters
+      const decodedDomain = decodeURIComponent(urlDomain);
+      console.log(`🔗 Domain from URL: ${decodedDomain}`);
+      
+      // Set the domain in the input field
+      setDomain(decodedDomain);
+      
+      // Automatically start the SSL check
+      handleDomainSubmit(decodedDomain);
+    }
+  }, [urlDomain]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Helper function to check if cached data is still valid
   const isCacheValid = (cachedData) => {
@@ -469,6 +488,7 @@ const SSLCheckerTool = () => {
                 error={error}
                 domainHistory={domainHistory}
                 removeDomainFromHistory={removeDomainFromHistory}
+                initialDomain={domain}
               />
 
               {/* Certificate Display */}
