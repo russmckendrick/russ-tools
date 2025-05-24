@@ -7,11 +7,14 @@ import {
   Stack, 
   Text,
   Alert,
-  Loader
+  Loader,
+  Select,
+  Badge,
+  Tooltip
 } from '@mantine/core';
-import { IconWorld, IconSearch, IconAlertCircle } from '@tabler/icons-react';
+import { IconWorld, IconSearch, IconAlertCircle, IconClock, IconShieldCheck, IconShieldX } from '@tabler/icons-react';
 
-const DomainInput = ({ onSubmit, loading, error }) => {
+const DomainInput = ({ onSubmit, loading, error, domainHistory = [] }) => {
   const [domain, setDomain] = useState('');
   const [validationError, setValidationError] = useState('');
 
@@ -28,7 +31,7 @@ const DomainInput = ({ onSubmit, loading, error }) => {
       .toLowerCase();
 
     // Basic domain validation regex
-    const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/;
+    const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     
     if (!domainRegex.test(cleanedDomain)) {
       return 'Please enter a valid domain name (e.g., example.com)';
@@ -72,12 +75,107 @@ const DomainInput = ({ onSubmit, loading, error }) => {
 
   const exampleDomains = ['google.com', 'github.com', 'cloudflare.com', 'example.com'];
 
+  // Helper function to format history items for the dropdown
+  const formatHistoryOptions = () => {
+    return domainHistory.map(item => {
+      const timeAgo = getTimeAgo(item.timestamp);
+      const gradeColor = getGradeColor(item.grade);
+      
+      return {
+        value: item.domain,
+        label: item.domain,
+        description: `${item.grade} grade • ${timeAgo}`,
+        gradeColor,
+        hasWarnings: item.hasWarnings
+      };
+    });
+  };
+
+  // Helper function to get time ago string
+  const getTimeAgo = (timestamp) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'Just now';
+  };
+
+  // Helper function to get grade color
+  const getGradeColor = (grade) => {
+    switch (grade) {
+      case 'A+':
+      case 'A':
+        return 'green';
+      case 'B':
+        return 'yellow';
+      case 'C':
+        return 'orange';
+      case 'F':
+        return 'red';
+      case 'T':
+        return 'blue';
+      default:
+        return 'gray';
+    }
+  };
+
   return (
     <Paper p="md" withBorder radius="md">
       <Stack gap="md">
         <Group gap="xs" align="center">
           <Text size="sm" fw={500}>Enter Domain to Check</Text>
         </Group>
+
+        {/* Domain History Dropdown */}
+        {domainHistory.length > 0 && (
+          <Stack gap="xs">
+            <Text size="xs" fw={500} c="dimmed">Recently Checked Domains</Text>
+            <Select
+              placeholder="Select from history"
+              data={formatHistoryOptions()}
+              value={null}
+              onChange={(value) => {
+                if (value) {
+                  setDomain(value);
+                }
+              }}
+              leftSection={<IconClock size={16} />}
+              searchable
+              maxDropdownHeight={200}
+              disabled={loading}
+              renderOption={({ option }) => (
+                <Group justify="space-between" wrap="nowrap">
+                  <div style={{ flex: 1 }}>
+                    <Text size="sm" fw={500}>{option.label}</Text>
+                    <Text size="xs" c="dimmed">{option.description}</Text>
+                  </div>
+                  <Group gap="xs">
+                    {option.hasWarnings && (
+                      <Tooltip label="Has warnings">
+                        <IconShieldX size={14} color="orange" />
+                      </Tooltip>
+                    )}
+                    <Badge 
+                      size="xs" 
+                      color={option.gradeColor}
+                      variant="light"
+                    >
+                      {option.value === option.label ? 
+                        domainHistory.find(h => h.domain === option.value)?.grade || 'Unknown' : 
+                        'Unknown'
+                      }
+                    </Badge>
+                  </Group>
+                </Group>
+              )}
+            />
+          </Stack>
+        )}
 
         <form onSubmit={handleSubmit}>
           <Stack gap="md">

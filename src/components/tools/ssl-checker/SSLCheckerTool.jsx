@@ -10,6 +10,7 @@ import {
   Alert,
   Badge
 } from '@mantine/core';
+import { useLocalStorage } from '@mantine/hooks';
 import { IconShield, IconShieldCheck, IconWorldWww, IconInfoCircle, IconCertificate } from '@tabler/icons-react';
 import DomainInput from './DomainInput';
 import SSLCertificateDisplay from './SSLCertificateDisplay';
@@ -21,6 +22,54 @@ const SSLCheckerTool = () => {
   const [certificateData, setCertificateData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Domain history and caching using Mantine storage
+  const [domainHistory, setDomainHistory] = useLocalStorage({
+    key: 'ssl-checker-domain-history',
+    defaultValue: []
+  });
+
+  const [sslCache, setSslCache] = useLocalStorage({
+    key: 'ssl-checker-cache',
+    defaultValue: {}
+  });
+
+  // Cache duration in milliseconds (24 hours)
+  const CACHE_DURATION = 24 * 60 * 60 * 1000;
+
+  // Helper function to check if cached data is still valid
+  const isCacheValid = (cachedData) => {
+    if (!cachedData || !cachedData.timestamp) return false;
+    return (Date.now() - cachedData.timestamp) < CACHE_DURATION;
+  };
+
+  // Helper function to add domain to history
+  const addToHistory = (domainName, sslData) => {
+    const historyItem = {
+      domain: domainName,
+      timestamp: Date.now(),
+      grade: sslData?.endpoints?.[0]?.grade || 'Unknown',
+      hasWarnings: sslData?.endpoints?.[0]?.hasWarnings || false,
+      status: sslData?.status || 'Unknown'
+    };
+
+    // Remove existing entry for this domain and add new one at the beginning
+    const filteredHistory = domainHistory.filter(item => item.domain !== domainName);
+    const newHistory = [historyItem, ...filteredHistory].slice(0, 50); // Keep only last 50 entries
+    setDomainHistory(newHistory);
+  };
+
+  // Helper function to cache SSL data
+  const cacheSSLData = (domainName, sslData) => {
+    const cacheItem = {
+      ...sslData,
+      timestamp: Date.now()
+    };
+    setSslCache(prev => ({
+      ...prev,
+      [domainName]: cacheItem
+    }));
+  };
 
   const handleDomainSubmit = async (domainToCheck) => {
     setLoading(true);
@@ -36,6 +85,16 @@ const SSLCheckerTool = () => {
         .toLowerCase();
       
       setDomain(cleanDomain);
+
+      // Check cache first
+      const cachedData = sslCache[cleanDomain];
+      if (cachedData && isCacheValid(cachedData)) {
+        console.log(`📦 Using cached SSL data for: ${cleanDomain}`);
+        setCertificateData(cachedData);
+        addToHistory(cleanDomain, cachedData);
+        setLoading(false);
+        return;
+      }
       
       console.log(`🔍 Starting SSL check for: ${cleanDomain}`);
       
@@ -68,6 +127,12 @@ const SSLCheckerTool = () => {
       }
       
       setCertificateData(result);
+      
+      // Cache the result and add to history
+      if (result) {
+        cacheSSLData(cleanDomain, result);
+        addToHistory(cleanDomain, result);
+      }
       
     } catch (err) {
       console.error('💥 Overall SSL Check Error:', err);
@@ -311,6 +376,13 @@ const SSLCheckerTool = () => {
         // Check if polling should continue
         if (!result.pollInfo || !result.pollInfo.shouldPoll) {
           console.log('✅ SSL Labs assessment completed!');
+          
+          // Cache the final result and add to history
+          if (result) {
+            cacheSSLData(domain, result);
+            addToHistory(domain, result);
+          }
+          
           setLoading(false);
           break;
         }
@@ -382,6 +454,7 @@ const SSLCheckerTool = () => {
                 onSubmit={handleDomainSubmit}
                 loading={loading}
                 error={error}
+                domainHistory={domainHistory}
               />
 
               {/* Certificate Display */}
