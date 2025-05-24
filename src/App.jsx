@@ -5,6 +5,7 @@ import NetworkDesignerTool from './components/tools/network-designer/NetworkDesi
 import { AzureNamingProvider } from './context/AzureNamingContext';
 import AzureNamingTool from './components/tools/azure-naming/AzureNamingTool';
 import CronBuilderTool from './components/tools/cron/CronBuilderTool';
+import SSLCheckerTool from './components/tools/ssl-checker/SSLCheckerTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -47,6 +48,9 @@ export default function App() {
 
               {/* Cron Builder Tool route */}
               <Route path="cron" element={<CronBuilderTool />} />
+
+              {/* SSL Checker Tool route */}
+              <Route path="ssl-checker" element={<SSLCheckerTool />} />
 
               {/* Add more routes here as needed */}
             </Route>
