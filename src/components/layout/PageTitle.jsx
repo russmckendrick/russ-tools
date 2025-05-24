@@ -20,6 +20,8 @@ export function PageTitle() {
       title = 'DNS Lookup Tool - russ.tools';
     } else if (normalizedPath === '/whois-lookup') {
       title = 'WHOIS Lookup Tool - russ.tools';
+    } else if (normalizedPath === '/json-formatter') {
+      title = 'JSON Formatter - russ.tools';
     } else if (normalizedPath === '/cron') {
       title = 'Cron Builder Tool - russ.tools';
     }

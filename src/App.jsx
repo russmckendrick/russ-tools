@@ -9,6 +9,7 @@ import CronBuilderTool from './components/tools/cron/CronBuilderTool';
 import SSLCheckerTool from './components/tools/ssl-checker/SSLCheckerTool';
 import DNSLookupTool from './components/tools/dns-lookup/DNSLookupTool';
 import WHOISLookupTool from './components/tools/whois/WHOISLookupTool';
+import JSONFormatterTool from './components/tools/json-formatter/JSONFormatterTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -63,6 +64,9 @@ export default function App() {
               {/* WHOIS Lookup Tool route */}
               <Route path="whois-lookup" element={<WHOISLookupTool />} />
               <Route path="whois-lookup/:query" element={<WHOISLookupTool />} />
+
+              {/* JSON Formatter Tool route */}
+              <Route path="json-formatter" element={<JSONFormatterTool />} />
 
               {/* Add more routes here as needed */}
             </Route>

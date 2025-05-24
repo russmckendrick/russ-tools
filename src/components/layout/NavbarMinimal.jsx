@@ -33,6 +33,7 @@ import { useDisclosure } from '@mantine/hooks';
 import classes from './HeaderMegaMenu.module.css';
 import DNSIcon from '../tools/dns-lookup/DNSIcon';
 import WHOISIcon from '../tools/whois/WHOISIcon';
+import JSONIcon from '../tools/json-formatter/JSONIcon';
 
 const mockdata = [
   {
@@ -70,6 +71,12 @@ const mockdata = [
     title: 'WHOIS Lookup Tool',
     description: "Get detailed information about domains and IP addresses",
     link: "/whois-lookup/",
+  },
+  {
+    icon: JSONIcon,
+    title: 'JSON Formatter',
+    description: "Format, validate, and analyze JSON data",
+    link: "/json-formatter/",
   },
   {
     icon: IconBrandGithub,
