@@ -9,6 +9,8 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 - 🔒 SSL Certificate Checker
 - 🕵️ DNS Lookup Tool
 - 🌐 WHOIS Lookup Tool
+- 🔄 Base64 Encoder/Decoder
+- 📜 Data Converter
 
 ## 🧰 Tools Overview
 
@@ -19,6 +21,8 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 | 🔒 **SSL Certificate Checker** | Analyze and validate SSL certificates for any domain with comprehensive security analysis using SSL Labs API. |
 | 🕵️ **DNS Lookup Tool** | Perform comprehensive DNS queries across multiple providers with support for all record types and caching. |
 | 🌐 **WHOIS Lookup Tool** | Get detailed domain registration and IP geolocation information with modern RDAP protocol integration. |
+| 🔄 **Base64 Encoder/Decoder** | Encode and decode text and files using Base64 encoding with support for standard, URL-safe, and MIME variants. Handles large files and image previews. |
+| 📜 **Data Converter** | Convert data between JSON, YAML, and TOML formats. Features auto-detection, validation, formatting options (indentation, sorting), and schema validation. |
 
 ---
 
@@ -403,6 +407,44 @@ Visit [https://www.russ.tools/whois-lookup](https://www.russ.tools/whois-lookup)
    - Export complete results as JSON
    - View lookup history with repeat functionality
 
+### Base64 Encoder/Decoder
+
+Visit [https://www.russ.tools/base64](https://www.russ.tools/base64) and:
+
+1. Toggle **Encode** or **Decode** mode.
+2. **For Encoding:**
+   - Paste text into the input area OR drag & drop/browse for a file (text or binary like an image).
+   - Select the desired **Encoding Type** (Standard, URL-Safe, MIME).
+   - Click **Encode**. The Base64 output will appear. Image previews are shown for image files.
+3. **For Decoding:**
+   - Paste a Base64 string into the input area OR upload a text file containing Base64 data.
+   - Select the **Encoding Type** if known (usually Standard for decoding).
+   - Click **Decode**. The original content will appear. Image previews are shown for decoded images (including SVGs).
+4. **Manage Output:**
+   - Use the copy icon to copy the output text.
+   - Use the download icon to save the decoded file (e.g., as an image or text file).
+
+### Data Converter
+
+Visit [https://www.russ.tools/data-converter](https://www.russ.tools/data-converter) and:
+
+1. 📝 **Input Data:**
+   - Paste your data (JSON, YAML, or TOML) into the input text area.
+   - OR click "Upload File" to load data from a local file.
+2. 🔄 **Select Formats:**
+   - Choose the **Input Format** (or leave as "Auto-detect").
+   - Choose the desired **Output Format** (JSON, YAML, or TOML).
+3. ⚙️ **(Optional) Configure Settings:**
+   - Click the settings icon (cog) to adjust indentation, character (spaces/tabs), and key sorting preferences.
+   - For JSON, enable Schema Validation if needed, select a common schema or provide a custom one.
+4. ⚡ **Convert:**
+   - The conversion happens automatically as you type or change settings.
+   - View validation status and any errors below the input area.
+5. 📋 **Use Output:**
+   - Copy the converted data using the copy icon.
+   - Download the output as a file using the download icon.
+   - Use the "Minify" or "Reformat" buttons for quick output adjustments.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -411,8 +453,20 @@ Visit [https://www.russ.tools/whois-lookup](https://www.russ.tools/whois-lookup)
 - ⚡ **Vite** (build tool)
 - 🎨 **Mantine** (UI framework)
 - 🧮 **netmask** (IPv4 subnet calculation)
-- 🖱️ **@dnd-kit** (drag-and-drop)
+- 🖱️ **@dnd-kit/core**, **@dnd-kit/sortable** (drag-and-drop)
 - 🏷️ **Tabler Icons** (SVG icons)
+
+Key libraries used in specific tools:
+- **Network Designer & Subnet Calculator:**
+  - 🧮 `netmask` (IPv4 subnet calculation)
+  - 🖱️ `@dnd-kit/core`, `@dnd-kit/sortable` (drag-and-drop)
+- **Data Converter:**
+  - 📜 `js-yaml` (YAML parsing & stringifying)
+  - 📄 `@iarna/toml` (TOML parsing & stringifying)
+  - ✨ `prismjs` (Syntax highlighting for JSON, YAML, TOML)
+  - ✅ `ajv`, `ajv-formats` (JSON Schema validation)
+- **Base64 Encoder/Decoder:**
+  - Primarily uses built-in browser APIs (`btoa`, `atob`, `FileReader`) for core operations.
 
 ## 📦 Development
 
