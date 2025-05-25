@@ -389,13 +389,31 @@ export function validateWithDetection(input) {
     return { ...jsonResult, detectedFormat: 'json' };
   }
   
+  // Check for TOML patterns before YAML (since YAML is more permissive)
+  const tomlPatterns = [
+    /^\s*\[.*\]\s*$/m,           // Section headers like [server]
+    /^\s*\w+\s*=\s*.+$/m,        // Key-value pairs like key = "value"
+    /^\s*#.*$/m,                 // Comments starting with #
+    /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/, // ISO datetime format
+    /^\s*\[\[.*\]\]\s*$/m        // Array of tables like [[products]]
+  ];
+  
+  const hasTomlPatterns = tomlPatterns.some(pattern => pattern.test(trimmedInput));
+  
+  if (hasTomlPatterns) {
+    const tomlResult = validateTOML(input);
+    if (tomlResult.success) {
+      return { ...tomlResult, detectedFormat: 'toml' };
+    }
+  }
+  
   // Try YAML
   const yamlResult = validateYAML(input);
   if (yamlResult.success) {
     return { ...yamlResult, detectedFormat: 'yaml' };
   }
   
-  // Try TOML
+  // Try TOML as fallback
   const tomlResult = validateTOML(input);
   if (tomlResult.success) {
     return { ...tomlResult, detectedFormat: 'toml' };

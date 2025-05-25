@@ -84,7 +84,7 @@ const DataConverterTool = () => {
   const [indentSize, setIndentSize] = useState(2);
   const [useSpaces, setUseSpaces] = useState(true);
   const [sortKeys, setSortKeys] = useState(false);
-  const [yamlFlowStyle, setYamlFlowStyle] = useState(false);
+
   const [history, setHistory] = useState([]);
   const [activeTab, setActiveTab] = useState('converter');
   const [analysisData, setAnalysisData] = useState(null);
@@ -153,24 +153,35 @@ const DataConverterTool = () => {
       // Not JSON, continue
     }
     
+    // Check for TOML patterns before YAML (since YAML is more permissive)
+    const tomlPatterns = [
+      /^\s*\[.*\]\s*$/m,           // Section headers like [server]
+      /^\s*\w+\s*=\s*.+$/m,        // Key-value pairs like key = "value"
+      /^\s*#.*$/m,                 // Comments starting with #
+      /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/, // ISO datetime format
+      /^\s*\[\[.*\]\]\s*$/m        // Array of tables like [[products]]
+    ];
+    
+    const hasTomlPatterns = tomlPatterns.some(pattern => pattern.test(text));
+    
+    if (hasTomlPatterns) {
+      try {
+        TOML.parse(text);
+        return 'toml';
+      } catch (e) {
+        // Might look like TOML but isn't valid, continue to YAML
+      }
+    }
+    
     // Try YAML
     try {
       yaml.load(text);
-      // Additional check: if it looks like TOML, prefer TOML
-      if (text.includes('[') && text.includes(']') && text.includes('=')) {
-        try {
-          TOML.parse(text);
-          return 'toml';
-        } catch (e) {
-          return 'yaml';
-        }
-      }
       return 'yaml';
     } catch (e) {
-      // Not YAML, try TOML
+      // Not YAML, try TOML as fallback
     }
     
-    // Try TOML
+    // Try TOML as final fallback
     try {
       TOML.parse(text);
       return 'toml';
@@ -210,7 +221,6 @@ const DataConverterTool = () => {
       case 'yaml':
         const yamlOptions = {
           indent: indentSize,
-          flowLevel: yamlFlowStyle ? 0 : -1,
           sortKeys: sortKeys
         };
         return yaml.dump(data, yamlOptions);
@@ -367,8 +377,10 @@ const DataConverterTool = () => {
           timestamp: new Date().toISOString(),
           inputFormat: validationResult.detectedFormat || inputFormat,
           outputFormat,
-          input: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
-          output: converted.substring(0, 100) + (converted.length > 100 ? '...' : ''),
+          input: input.substring(0, 100) + (input.length > 100 ? '...' : ''), // Display preview
+          output: converted.substring(0, 100) + (converted.length > 100 ? '...' : ''), // Display preview
+          fullInput: input, // Store full input for loading
+          fullOutput: converted, // Store full output for reference
           valid: true
         };
         saveHistory(historyEntry);
@@ -392,7 +404,7 @@ const DataConverterTool = () => {
       setDetectedFormat(null);
       setIsMinified(false);
     }
-  }, [input, inputFormat, outputFormat, indentSize, useSpaces, sortKeys, yamlFlowStyle, saveHistory]);
+  }, [input, inputFormat, outputFormat, indentSize, useSpaces, sortKeys, saveHistory]);
 
   // Minify output (for all formats)
   const minifyOutput = () => {
@@ -527,8 +539,42 @@ const DataConverterTool = () => {
 
   // Load from history
   const loadFromHistory = (entry) => {
-    // This would load the full content in a real implementation
+    // Load the full input data from history entry
+    // Note: We only store truncated versions in history, so we'll need to store full content
+    // For now, we'll use what we have and show a notification about truncation
+    if (entry.fullInput) {
+      setInput(entry.fullInput);
+    } else {
+      // Fallback to truncated input with notification
+      setInput(entry.input);
+      if (entry.input.endsWith('...')) {
+        notifications.show({
+          title: 'Partial Data Loaded',
+          message: 'Only a preview of the original data was stored in history',
+          color: 'yellow',
+          icon: <IconInfoCircle size={16} />
+        });
+      }
+    }
+    
+    // Set the input format if available
+    if (entry.inputFormat && entry.inputFormat !== 'auto') {
+      setInputFormat(entry.inputFormat);
+    }
+    
+    // Set the output format
+    if (entry.outputFormat) {
+      setOutputFormat(entry.outputFormat);
+    }
+    
     closeHistory();
+    
+    notifications.show({
+      title: 'Data Loaded',
+      message: 'Historical conversion data has been loaded',
+      color: 'green',
+      icon: <IconCheck size={16} />
+    });
   };
 
   // Clear history
@@ -594,7 +640,7 @@ const DataConverterTool = () => {
       const timer = setTimeout(processData, 100);
       return () => clearTimeout(timer);
     }
-  }, [outputFormat, indentSize, useSpaces, sortKeys, yamlFlowStyle]);
+  }, [outputFormat, indentSize, useSpaces, sortKeys]);
 
 
 
@@ -1417,15 +1463,7 @@ const DataConverterTool = () => {
               onChange={(e) => setSortKeys(e.currentTarget.checked)}
             />
             
-            <Divider label="YAML Options" />
-            
-            <Switch
-              label="Use Flow Style"
-              description="Use compact flow style for YAML output"
-              checked={yamlFlowStyle}
-              onChange={(e) => setYamlFlowStyle(e.currentTarget.checked)}
-              disabled={outputFormat !== 'yaml'}
-            />
+
           </Stack>
         </Modal>
 
