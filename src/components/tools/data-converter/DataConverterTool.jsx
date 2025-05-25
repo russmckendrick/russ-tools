@@ -470,7 +470,7 @@ const DataConverterTool = () => {
     const highlighted = Prism.highlight(code, Prism.languages[language] || Prism.languages.text, language);
     
     return (
-      <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
+      <div className={colorScheme === 'dark' ? 'prism-dark' : ''} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <pre style={{ 
           margin: 0, 
           padding: '1.25rem',
@@ -479,8 +479,7 @@ const DataConverterTool = () => {
           fontSize: '14px',
           lineHeight: 1.6,
           overflow: 'auto',
-          minHeight: isMinified ? '80px' : '420px',
-          maxHeight: '650px',
+          flex: 1,
           border: `2px solid ${colorScheme === 'dark' ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
           fontFamily: 'Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
           boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.1)',
@@ -491,22 +490,6 @@ const DataConverterTool = () => {
             className={`language-${language}`}
             style={{ display: 'block' }}
           />
-          {/* Format indicator */}
-          <div style={{
-            position: 'absolute',
-            top: '8px',
-            right: '12px',
-            backgroundColor: 'var(--mantine-color-blue-6)',
-            color: 'white',
-            padding: '2px 8px',
-            borderRadius: '4px',
-            fontSize: '11px',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            opacity: 0.8
-          }}>
-            {format}
-          </div>
         </pre>
       </div>
     );
@@ -698,18 +681,18 @@ zipCode = "12345"`
         </Card>
 
         {/* Sample Data Pills */}
-        <Group justify="center" gap="md">
-          <Text size="sm" c="dimmed" fw={500}>Quick Start:</Text>
+        <Group justify="center" gap="xs">
+          <Text size="xs" c="dimmed" fw={500}>Quick Start:</Text>
           {Object.entries(sampleData).map(([format, data]) => (
             <Button
               key={format}
               size="xs"
               variant={input === data ? "filled" : "light"}
               onClick={() => setInput(data)}
-              style={{ textTransform: 'uppercase' }}
+              style={{ textTransform: 'uppercase', fontSize: '10px', height: '24px', padding: '0 8px' }}
               radius="xl"
             >
-              {format} Sample
+              {format}
             </Button>
           ))}
         </Group>
@@ -729,50 +712,49 @@ zipCode = "12345"`
             <Grid gutter="lg">
               {/* Input Panel */}
               <Grid.Col span={{ base: 12, md: 6 }}>
-                <Card withBorder radius="lg" style={{ height: '100%' }}>
-                  <Stack gap="md">
-                    <Group justify="space-between" align="flex-start">
-                      <div>
-                        <Text fw={600} size="lg">
-                          Input Data
-                        </Text>
-                        {detectedFormat && (
-                          <Badge color="blue" variant="light" size="sm" mt={4}>
-                            {detectedFormat.toUpperCase()} Format
-                          </Badge>
-                        )}
-                      </div>
-                      <Group gap="xs">
-                        <input
-                          type="file"
-                          accept=".json,.yaml,.yml,.toml"
-                          style={{ display: 'none' }}
-                          onChange={loadFromFile}
-                          id="file-input"
-                        />
-                        <Tooltip label="Load from file">
-                          <ActionIcon
-                            variant="light"
-                            size="lg"
-                            onClick={() => document.getElementById('file-input').click()}
-                          >
-                            <IconUpload size={18} />
-                          </ActionIcon>
-                        </Tooltip>
-                      </Group>
+                <Card withBorder radius="lg" style={{ height: '600px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <Group justify="space-between" align="flex-start" mb="md">
+                    <div>
+                      <Text fw={600} size="lg">
+                        Input Data
+                      </Text>
+                      {detectedFormat && (
+                        <Badge color="blue" variant="light" size="sm" mt={4}>
+                          {detectedFormat.toUpperCase()} Format
+                        </Badge>
+                      )}
+                    </div>
+                    <Group gap="xs">
+                      <input
+                        type="file"
+                        accept=".json,.yaml,.yml,.toml"
+                        style={{ display: 'none' }}
+                        onChange={loadFromFile}
+                        id="file-input"
+                      />
+                      <Tooltip label="Load from file">
+                        <ActionIcon
+                          variant="light"
+                          size="lg"
+                          onClick={() => document.getElementById('file-input').click()}
+                        >
+                          <IconUpload size={18} />
+                        </ActionIcon>
+                      </Tooltip>
                     </Group>
-
-
-                  </Stack>
+                  </Group>
                   
                   <Textarea
                     placeholder="Paste your data here or use the sample data buttons above..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    minRows={16}
-                    maxRows={28}
                     autosize
+                    minRows={1}
                     styles={{
+                      wrapper: {
+                        flex: 1,
+                        paddingBottom: '80px'
+                      },
                       input: {
                         fontFamily: 'Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
                         fontSize: '14px',
@@ -780,6 +762,7 @@ zipCode = "12345"`
                         border: '2px solid var(--mantine-color-gray-3)',
                         borderRadius: '8px',
                         backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
+                        resize: 'none',
                         '&:focus': {
                           borderColor: 'var(--mantine-color-blue-5)',
                           boxShadow: '0 0 0 2px var(--mantine-color-blue-1)'
@@ -789,185 +772,189 @@ zipCode = "12345"`
                   />
                   
                   {/* Input Status */}
-                  {input && (
-                    <Card withBorder p="sm" radius="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
-                      <Group justify="space-between" align="center">
-                        <Group gap="md">
-                          {isValid === true && (
-                            <Badge 
-                              color="green" 
-                              variant="filled" 
-                              leftSection={<IconCheck size={14} />}
-                              size="md"
-                            >
-                              Valid {detectedFormat?.toUpperCase() || 'Data'}
-                            </Badge>
-                          )}
-                          {isValid === false && (
-                            <Badge 
-                              color="red" 
-                              variant="filled" 
-                              leftSection={<IconX size={14} />}
-                              size="md"
-                            >
-                              Invalid Data
-                            </Badge>
-                          )}
-                          {isValid === null && input.trim() && (
-                            <Badge 
-                              color="yellow" 
-                              variant="filled" 
-                              size="md"
-                            >
-                              Processing...
-                            </Badge>
-                          )}
+                  <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px' }}>
+                    {input && (
+                      <Card withBorder p="sm" radius="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
+                        <Group justify="space-between" align="center">
+                          <Group gap="md">
+                            {isValid === true && (
+                              <Badge 
+                                color="green" 
+                                variant="filled" 
+                                leftSection={<IconCheck size={14} />}
+                                size="md"
+                              >
+                                Valid {detectedFormat?.toUpperCase() || 'Data'}
+                              </Badge>
+                            )}
+                            {isValid === false && (
+                              <Badge 
+                                color="red" 
+                                variant="filled" 
+                                leftSection={<IconX size={14} />}
+                                size="md"
+                              >
+                                Invalid Data
+                              </Badge>
+                            )}
+                            {isValid === null && input.trim() && (
+                              <Badge 
+                                color="yellow" 
+                                variant="filled" 
+                                size="md"
+                              >
+                                Processing...
+                              </Badge>
+                            )}
+                          </Group>
+                          <Text size="sm" c="dimmed" fw={500}>
+                            {input.length.toLocaleString()} characters
+                          </Text>
                         </Group>
-                        <Text size="sm" c="dimmed" fw={500}>
-                          {input.length.toLocaleString()} characters
-                        </Text>
-                      </Group>
-                    </Card>
-                  )}
-                  
-                  {error && (
-                    <Alert 
-                      color="red" 
-                      icon={<IconAlertCircle size={20} />}
-                      title="Parsing Error"
-                      radius="md"
-                      styles={{
-                        root: { border: '2px solid var(--mantine-color-red-3)' },
-                        title: { fontSize: '16px', fontWeight: 600 }
-                      }}
-                    >
-                      <Stack gap="xs">
-                        <Text size="sm">
-                          There's an issue with your input data. Please check the format and try again.
-                        </Text>
-                        <Code 
-                          block 
-                          color="red"
-                          style={{ 
-                            backgroundColor: 'var(--mantine-color-red-0)',
-                            border: '1px solid var(--mantine-color-red-2)',
-                            padding: '8px',
-                            borderRadius: '4px'
-                          }}
-                        >
-                          {error}
-                        </Code>
-                      </Stack>
-                    </Alert>
-                  )}
+                      </Card>
+                    )}
+                    
+                    {error && (
+                      <Alert 
+                        color="red" 
+                        icon={<IconAlertCircle size={20} />}
+                        title="Parsing Error"
+                        radius="md"
+                        mt="xs"
+                        styles={{
+                          root: { border: '2px solid var(--mantine-color-red-3)' },
+                          title: { fontSize: '16px', fontWeight: 600 }
+                        }}
+                      >
+                        <Stack gap="xs">
+                          <Text size="sm">
+                            There's an issue with your input data. Please check the format and try again.
+                          </Text>
+                          <Code 
+                            block 
+                            color="red"
+                            style={{ 
+                              backgroundColor: 'var(--mantine-color-red-0)',
+                              border: '1px solid var(--mantine-color-red-2)',
+                              padding: '8px',
+                              borderRadius: '4px'
+                            }}
+                          >
+                            {error}
+                          </Code>
+                        </Stack>
+                      </Alert>
+                    )}
+                  </div>
                 </Card>
               </Grid.Col>
 
               {/* Output Panel */}
               <Grid.Col span={{ base: 12, md: 6 }}>
-                <Card withBorder radius="lg" style={{ height: '100%' }}>
-                  <Stack gap="md">
-                    <Group justify="space-between" align="flex-start">
-                      <div>
-                        <Text fw={600} size="lg">
-                          Output Data
-                        </Text>
-                        <Badge color="green" variant="light" size="sm" mt={4}>
-                          {outputFormat.toUpperCase()} Format
-                        </Badge>
-                      </div>
-                      <Group gap="xs">
-                        {!isMinified && (
-                          <Tooltip label={`Minify ${outputFormat.toUpperCase()}`}>
-                            <ActionIcon
-                              variant="light"
-                              size="lg"
-                              onClick={minifyOutput}
-                              disabled={!isValid}
-                            >
-                              <CompressIcon size={18} />
-                            </ActionIcon>
-                          </Tooltip>
-                        )}
-                        {isMinified && (
-                          <Tooltip label="Reformat">
-                            <ActionIcon
-                              variant="light"
-                              size="lg"
-                              onClick={reformatOutput}
-                              disabled={!isValid}
-                              color="blue"
-                            >
-                              <IconBraces size={18} />
-                            </ActionIcon>
-                          </Tooltip>
-                        )}
-                        <CopyButton value={output}>
-                          {({ copied, copy }) => (
-                            <Tooltip label={copied ? "Copied!" : "Copy to clipboard"}>
-                              <ActionIcon
-                                variant="light"
-                                size="lg"
-                                onClick={copy}
-                                disabled={!output}
-                                color={copied ? 'green' : 'blue'}
-                              >
-                                <IconCopy size={18} />
-                              </ActionIcon>
-                            </Tooltip>
-                          )}
-                        </CopyButton>
-                        <Tooltip label="Download file">
+                <Card withBorder radius="lg" style={{ height: '600px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <Group justify="space-between" align="flex-start" mb="md">
+                    <div>
+                      <Text fw={600} size="lg">
+                        Output Data
+                      </Text>
+                      <Badge color="green" variant="light" size="sm" mt={4}>
+                        {outputFormat.toUpperCase()} Format
+                      </Badge>
+                    </div>
+                    <Group gap="xs">
+                      {!isMinified && (
+                        <Tooltip label={`Minify ${outputFormat.toUpperCase()}`}>
                           <ActionIcon
                             variant="light"
                             size="lg"
-                            onClick={() => downloadFile(output, outputFormat)}
-                            disabled={!output}
+                            onClick={minifyOutput}
+                            disabled={!isValid}
                           >
-                            <IconDownload size={18} />
+                            <CompressIcon size={18} />
                           </ActionIcon>
                         </Tooltip>
-                      </Group>
-                    </Group>
-
-
-                  </Stack>
-                  
-                  {renderHighlightedCode(output, outputFormat)}
-                  
-                  {output && (
-                    <Card withBorder p="sm" radius="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
-                      <Group justify="space-between" align="center">
-                        <Group gap="md">
-                          <Badge color="blue" variant="filled" size="md">
-                            Converted Successfully
-                          </Badge>
-                          {isMinified && (
-                            <Badge color="orange" variant="light" size="sm">
-                              Minified
-                            </Badge>
-                          )}
-                        </Group>
-                        <Group gap="md">
-                          <Text size="sm" c="dimmed" fw={500}>
-                            {output.length.toLocaleString()} characters
-                          </Text>
-                          {input && output && (
-                            <Badge 
-                              color={input.length > output.length ? 'green' : 'blue'} 
-                              variant="light" 
-                              size="sm"
+                      )}
+                      {isMinified && (
+                        <Tooltip label="Reformat">
+                          <ActionIcon
+                            variant="light"
+                            size="lg"
+                            onClick={reformatOutput}
+                            disabled={!isValid}
+                            color="blue"
+                          >
+                            <IconBraces size={18} />
+                          </ActionIcon>
+                        </Tooltip>
+                      )}
+                      <CopyButton value={output}>
+                        {({ copied, copy }) => (
+                          <Tooltip label={copied ? "Copied!" : "Copy to clipboard"}>
+                            <ActionIcon
+                              variant="light"
+                              size="lg"
+                              onClick={copy}
+                              disabled={!output}
+                              color={copied ? 'green' : 'blue'}
                             >
-                              {input.length > output.length ? 
-                                `${((1 - output.length / input.length) * 100).toFixed(1)}% smaller` :
-                                `${((output.length / input.length - 1) * 100).toFixed(1)}% larger`
-                              }
+                              <IconCopy size={18} />
+                            </ActionIcon>
+                          </Tooltip>
+                        )}
+                      </CopyButton>
+                      <Tooltip label="Download file">
+                        <ActionIcon
+                          variant="light"
+                          size="lg"
+                          onClick={() => downloadFile(output, outputFormat)}
+                          disabled={!output}
+                        >
+                          <IconDownload size={18} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Group>
+                  </Group>
+                  
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
+                    {renderHighlightedCode(output, outputFormat)}
+                  </div>
+                  
+                  {/* Output Status */}
+                  <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px' }}>
+                    {output && (
+                      <Card withBorder p="sm" radius="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
+                        <Group justify="space-between" align="center">
+                          <Group gap="md">
+                            <Badge color="blue" variant="filled" size="md">
+                              Converted Successfully
                             </Badge>
-                          )}
+                            {isMinified && (
+                              <Badge color="orange" variant="light" size="sm">
+                                Minified
+                              </Badge>
+                            )}
+                          </Group>
+                          <Group gap="md">
+                            <Text size="sm" c="dimmed" fw={500}>
+                              {output.length.toLocaleString()} characters
+                            </Text>
+                            {input && output && (
+                              <Badge 
+                                color={input.length > output.length ? 'green' : 'blue'} 
+                                variant="light" 
+                                size="sm"
+                              >
+                                {input.length > output.length ? 
+                                  `${((1 - output.length / input.length) * 100).toFixed(1)}% smaller` :
+                                  `${((output.length / input.length - 1) * 100).toFixed(1)}% larger`
+                                }
+                              </Badge>
+                            )}
+                          </Group>
                         </Group>
-                      </Group>
-                    </Card>
-                  )}
+                      </Card>
+                    )}
+                  </div>
                 </Card>
               </Grid.Col>
             </Grid>
