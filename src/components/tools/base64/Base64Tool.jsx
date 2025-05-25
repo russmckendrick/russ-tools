@@ -64,9 +64,7 @@ const Base64Tool = () => {
   const [error, setError] = useState(null);
   const [isValidBase64, setIsValidBase64] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [batchMode, setBatchMode] = useState(false);
-  const [batchResults, setBatchResults] = useState([]);
-  const [processingProgress, setProcessingProgress] = useState(0);
+  // Batch mode removed - not needed for image processing
   const [inputImagePreview, setInputImagePreview] = useState(null);
   const [outputImagePreview, setOutputImagePreview] = useState(null);
 
@@ -173,6 +171,7 @@ const Base64Tool = () => {
           'R0lGODdh', // GIF89a  
           'UklGR', // WebP (starts with RIFF)
           'PHN2Zw', // SVG (starts with <svg)
+          'PD94bWw', // SVG (starts with <?xml)
           'Qk0', // BMP (starts with BM)
           'SUkq', // TIFF (little endian)
           'TU0A', // TIFF (big endian)
@@ -180,10 +179,19 @@ const Base64Tool = () => {
         
         const isImageSignature = imageSignatures.some(sig => cleanBase64.startsWith(sig));
         
+        // Additional check for SVG: try to decode and see if it contains SVG content
+        let isSvgContent = false;
+        try {
+          const decoded = atob(cleanBase64);
+          isSvgContent = decoded.includes('<svg') || decoded.includes('xmlns="http://www.w3.org/2000/svg"');
+        } catch (e) {
+          // Ignore decode errors
+        }
+        
         // Additional check: if it's very long and looks like base64, it might be an image
         const isLikelyImage = cleanBase64.length > 1000 && cleanBase64.length % 4 === 0;
         
-        return isImageSignature || isLikelyImage;
+        return isImageSignature || isSvgContent || isLikelyImage;
       }
     } catch (error) {
       console.log('Base64 image detection error:', error);
@@ -223,11 +231,20 @@ const Base64Tool = () => {
         else if (cleanBase64.startsWith('iVBORw0KGgo')) detectedMimeType = 'image/png';
         else if (cleanBase64.startsWith('R0lGODlh') || cleanBase64.startsWith('R0lGODdh')) detectedMimeType = 'image/gif';
         else if (cleanBase64.startsWith('UklGR')) detectedMimeType = 'image/webp';
-        else if (cleanBase64.startsWith('PHN2Zw')) detectedMimeType = 'image/svg+xml';
+        else if (cleanBase64.startsWith('PHN2Zw') || cleanBase64.startsWith('PD94bWw')) detectedMimeType = 'image/svg+xml';
         else if (cleanBase64.startsWith('Qk0')) detectedMimeType = 'image/bmp';
         else {
-          console.log('Unknown image format, cannot create preview');
-          return null; // Don't default to PNG if we can't detect the format
+          // Try to decode and check if it's SVG content
+          try {
+            const decoded = atob(cleanBase64);
+            if (decoded.includes('<svg') || decoded.includes('xmlns="http://www.w3.org/2000/svg"')) {
+              detectedMimeType = 'image/svg+xml';
+            } else {
+              return null; // Unknown format
+            }
+          } catch (e) {
+            return null; // Invalid Base64
+          }
         }
       }
       
@@ -391,7 +408,6 @@ const Base64Tool = () => {
       } else {
         // Check if the input Base64 is an image
         const isImage = isBase64Image(input);
-        console.log('Decoding Base64 - Is image detected:', isImage, 'Input length:', input.length);
         
         if (isImage) {
           // Check if this is double-encoded Base64
@@ -401,7 +417,6 @@ const Base64Tool = () => {
           try {
             const firstDecode = atob(input.replace(/\s/g, ''));
             if (isBase64Image(firstDecode)) {
-              console.log('Double-encoded Base64 detected, using inner Base64 for image');
               finalBase64 = firstDecode;
             }
           } catch (e) {
@@ -417,13 +432,26 @@ const Base64Tool = () => {
             setOutputImagePreview(imageUrl);
           } else {
             // Failed to create image, fall back to text decoding
-            console.log('Failed to create image preview, falling back to text decode');
             result = decodeBase64(input, type);
             setOutputImagePreview(null);
           }
         } else {
-          // For non-images, decode normally to text
-          result = decodeBase64(input, type);
+          // Check if it might be an SVG by trying to decode and check content
+          try {
+            const decoded = decodeBase64(input, type);
+            if (decoded.trim().startsWith('<svg') || decoded.includes('<svg')) {
+              // It's an SVG! Create a data URL for it
+              const svgDataUrl = `data:image/svg+xml;base64,${input.replace(/\s/g, '')}`;
+              result = "SVG image decoded successfully. See preview below.";
+              setOutputImagePreview(svgDataUrl);
+            } else {
+              // Regular text decoding
+              result = decoded;
+            }
+          } catch (e) {
+            // If decoding fails, show error
+            result = decodeBase64(input, type);
+          }
         }
       }
       
@@ -449,59 +477,11 @@ const Base64Tool = () => {
     }
   };
 
-  // Batch processing function
-  const processBatch = async (inputs) => {
-    setBatchResults([]);
-    setProcessingProgress(0);
-    
-    const results = [];
-    
-    for (let i = 0; i < inputs.length; i++) {
-      try {
-        const input = inputs[i].trim();
-        if (!input) continue;
-        
-        let result;
-        if (mode === 'encode') {
-          result = encodeBase64(input, encodingType);
-        } else {
-          result = decodeBase64(input, encodingType);
-        }
-        
-        results.push({
-          input: input.substring(0, 50) + (input.length > 50 ? '...' : ''),
-          output: result.substring(0, 50) + (result.length > 50 ? '...' : ''),
-          fullOutput: result,
-          success: true
-        });
-      } catch (error) {
-        results.push({
-          input: inputs[i].substring(0, 50) + (inputs[i].length > 50 ? '...' : ''),
-          output: '',
-          fullOutput: '',
-          error: error.message,
-          success: false
-        });
-      }
-      
-      setProcessingProgress(((i + 1) / inputs.length) * 100);
-    }
-    
-    setBatchResults(results);
-  };
+  // Batch processing removed - not needed for image processing
 
   // Event handlers
   const handleProcess = () => {
-    if (batchMode) {
-      const inputs = inputText.split('\n').filter(line => line.trim());
-      if (inputs.length === 0) {
-        setError('Please provide input lines for batch processing');
-        return;
-      }
-      processBatch(inputs);
-    } else {
-      processBase64Operation(inputText, mode, encodingType);
-    }
+    processBase64Operation(inputText, mode, encodingType);
   };
 
   const handleSwapMode = () => {
@@ -564,6 +544,7 @@ const Base64Tool = () => {
       else if (outputImagePreview.includes('image/gif')) extension = 'gif';
       else if (outputImagePreview.includes('image/webp')) extension = 'webp';
       else if (outputImagePreview.includes('image/bmp')) extension = 'bmp';
+      else if (outputImagePreview.includes('image/svg+xml')) extension = 'svg';
       
       a.download = `decoded-image.${extension}`;
       document.body.appendChild(a);
@@ -589,8 +570,6 @@ const Base64Tool = () => {
     setSelectedFile(null);
     setFileContent('');
     setError(null);
-    setBatchResults([]);
-    setProcessingProgress(0);
     setInputImagePreview(null);
     setOutputImagePreview(null);
   };
@@ -615,7 +594,7 @@ const Base64Tool = () => {
       {/* Controls */}
       <Card shadow="sm" padding="lg" radius="md" withBorder mb="lg">
         <Grid>
-          <Grid.Col span={{ base: 12, md: 3 }}>
+          <Grid.Col span={{ base: 12, md: 4 }}>
             <Select
               label="Operation"
               value={mode}
@@ -626,7 +605,7 @@ const Base64Tool = () => {
               ]}
             />
           </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 4 }}>
+          <Grid.Col span={{ base: 12, md: 5 }}>
             <Select
               label="Encoding Type"
               value={encodingType}
@@ -635,15 +614,6 @@ const Base64Tool = () => {
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 3 }}>
-            <Switch
-              label="Batch Mode"
-              description="Process multiple lines"
-              checked={batchMode}
-              onChange={(event) => setBatchMode(event.currentTarget.checked)}
-              mt="md"
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 2 }}>
             <Button
               fullWidth
               leftSection={<IconArrowsExchange size={16} />}
@@ -673,7 +643,7 @@ const Base64Tool = () => {
           onReject={(files) => {
             setError(`File rejected: ${files[0]?.errors?.[0]?.message || 'Invalid file'}`);
           }}
-          maxSize={50 * 1024 * 1024} // 50MB limit
+          maxSize={15 * 1024 * 1024} // 15MB limit
           accept={{
             'text/*': ['.txt', '.json', '.xml', '.csv', '.log', '.md'],
             'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg'],
@@ -710,7 +680,7 @@ const Base64Tool = () => {
                 Drag files here or click to select
               </Text>
               <Text size="sm" c="dimmed" inline mt={7}>
-                Supports text, images, and documents up to 50MB
+                Supports text, images, and documents up to 15MB
               </Text>
             </div>
           </Group>
@@ -735,9 +705,7 @@ const Base64Tool = () => {
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card shadow="sm" padding="lg" radius="md" withBorder>
             <Group justify="space-between" mb="md">
-              <Text size="lg" fw={500}>
-                Input {batchMode && '(One per line)'}
-              </Text>
+              <Text size="lg" fw={500}>Input</Text>
               <Group>
                 {selectedFile ? (
                   <Badge color="blue" size="sm">
@@ -779,11 +747,9 @@ const Base64Tool = () => {
             ) : (
               <>
                 <Textarea
-                  placeholder={batchMode ? 
-                    "Enter multiple lines to process in batch...\nLine 1\nLine 2\nLine 3" :
-                    mode === 'encode' ? 
-                      "Enter text to encode..." : 
-                      "Enter Base64 text to decode..."
+                  placeholder={mode === 'encode' ? 
+                    "Enter text to encode..." : 
+                    "Enter Base64 text to decode..."
                   }
                   value={inputText}
                   onChange={(event) => setInputText(event.currentTarget.value)}
@@ -833,32 +799,7 @@ const Base64Tool = () => {
               </Group>
             </Group>
             
-            {batchMode && batchResults.length > 0 ? (
-              <ScrollArea h={200}>
-                <Stack spacing="xs">
-                  {batchResults.map((result, index) => (
-                    <Group key={index} justify="space-between" p="xs" style={{
-                      backgroundColor: result.success ? 'var(--mantine-color-green-0)' : 'var(--mantine-color-red-0)',
-                      borderRadius: 'var(--mantine-radius-sm)'
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <Text size="xs" color="dimmed">Input: {result.input}</Text>
-                        <Text size="xs">{result.success ? result.output : result.error}</Text>
-                      </div>
-                      {result.success && (
-                        <ActionIcon
-                          size="xs"
-                          variant="light"
-                          onClick={() => copyToClipboard(result.fullOutput)}
-                        >
-                          <IconCopy size={12} />
-                        </ActionIcon>
-                      )}
-                    </Group>
-                  ))}
-                </Stack>
-              </ScrollArea>
-            ) : outputImagePreview ? (
+            {outputImagePreview ? (
               <Box>
                 <Text size="sm" fw={500} mb="xs">
                   {mode === 'encode' ? 'Encoded Image:' : 'Decoded Image:'}
@@ -904,10 +845,6 @@ const Base64Tool = () => {
               <Text size="xs" color="dimmed" mt="xs">
                 {outputText.length} characters
               </Text>
-            )}
-            
-            {batchMode && processingProgress > 0 && processingProgress < 100 && (
-              <Progress value={processingProgress} mt="xs" />
             )}
           </Card>
         </Grid.Col>
