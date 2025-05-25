@@ -6,7 +6,6 @@ import {
   ThemeIcon,
   Group,
   Text,
-  Tabs,
   Alert,
   Badge,
   Button,
@@ -14,39 +13,29 @@ import {
   Textarea,
   Grid,
   Card,
-  Code,
-  Timeline,
   ActionIcon,
-  Tooltip,
   LoadingOverlay,
-  Divider,
   FileInput,
   Switch,
   Progress,
   ScrollArea,
-  Center,
   Image,
   Box
 } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
-import { useLocalStorage } from '@mantine/hooks';
 import { useParams } from 'react-router-dom';
 import {
   IconUpload,
   IconDownload,
   IconCopy,
   IconClipboard,
-  IconRefresh,
   IconTrash,
-  IconHistory,
   IconFileText,
   IconPhoto,
   IconFile,
   IconCheck,
   IconX,
-  IconArrowsExchange,
-  IconEye,
-  IconEyeOff
+  IconArrowsExchange
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import Base64Icon from './Base64Icon';
@@ -84,11 +73,7 @@ const Base64Tool = () => {
   // Get input from URL parameters
   const { input: urlInput } = useParams();
 
-  // History and caching
-  const [operationHistory, setOperationHistory] = useLocalStorage({
-    key: 'base64-operation-history',
-    defaultValue: []
-  });
+  // Removed history functionality for performance with large files
 
   const fileInputRef = useRef();
 
@@ -110,13 +95,14 @@ const Base64Tool = () => {
         setMode('decode');
       }
       
-      // Also check if it's a Base64 image and show preview
+      // Also check if it's a Base64 image and show preview (only if no file is selected)
       if (detected && isBase64Image(inputText.trim())) {
         const imageUrl = createImagePreviewUrl(inputText.trim());
         if (imageUrl) {
           setInputImagePreview(imageUrl);
         }
-      } else {
+      } else if (!selectedFile) {
+        // Only clear preview if no file is selected
         setInputImagePreview(null);
       }
     } else if (inputText.trim() && selectedFile) {
@@ -177,7 +163,9 @@ const Base64Tool = () => {
       if (cleanBase64.length > 100 && /^[A-Za-z0-9+/]*={0,2}$/.test(cleanBase64)) {
         // Check if it starts with common image file signatures in base64
         const imageSignatures = [
-          '/9j/', // JPEG (starts with 0xFFD8)
+          '/9j/', // JPEG (starts with 0xFFD8FF)
+          '/9k/', // JPEG variant
+          '/+0/', // JPEG variant  
           'iVBORw0KGgo', // PNG (starts with PNG signature)
           'R0lGODlh', // GIF87a
           'R0lGODdh', // GIF89a  
@@ -210,40 +198,46 @@ const Base64Tool = () => {
         return base64String;
       }
       
+      const cleanBase64 = base64String.replace(/\s/g, '');
+      
+      // Validate Base64 format
+      if (!/^[A-Za-z0-9+/]*={0,2}$/.test(cleanBase64)) {
+        console.log('Invalid Base64 format for image');
+        return null;
+      }
+      
+      // Try to decode to validate it's actually valid Base64
+      try {
+        atob(cleanBase64);
+      } catch (e) {
+        console.log('Invalid Base64 data');
+        return null;
+      }
+      
       // If no mime type provided, try to detect from base64 signature
       let detectedMimeType = mimeType;
       if (!detectedMimeType) {
-        const cleanBase64 = base64String.replace(/\s/g, '');
-        if (cleanBase64.startsWith('/9j/')) detectedMimeType = 'image/jpeg';
+        if (cleanBase64.startsWith('/9j/') || cleanBase64.startsWith('/9k/') || cleanBase64.startsWith('/+0/')) detectedMimeType = 'image/jpeg';
         else if (cleanBase64.startsWith('iVBORw0KGgo')) detectedMimeType = 'image/png';
-        else if (cleanBase64.startsWith('R0lGODlh')) detectedMimeType = 'image/gif';
+        else if (cleanBase64.startsWith('R0lGODlh') || cleanBase64.startsWith('R0lGODdh')) detectedMimeType = 'image/gif';
         else if (cleanBase64.startsWith('UklGR')) detectedMimeType = 'image/webp';
         else if (cleanBase64.startsWith('PHN2Zw')) detectedMimeType = 'image/svg+xml';
-        else detectedMimeType = 'image/png'; // Default fallback
+        else if (cleanBase64.startsWith('Qk0')) detectedMimeType = 'image/bmp';
+        else {
+          console.log('Unknown image format, cannot create preview');
+          return null; // Don't default to PNG if we can't detect the format
+        }
       }
       
-      return `data:${detectedMimeType};base64,${base64String.replace(/\s/g, '')}`;
+      return `data:${detectedMimeType};base64,${cleanBase64}`;
+      
     } catch (error) {
+      console.log('Error creating image preview URL:', error);
       return null;
     }
   };
 
-  // Helper function to add operation to history
-  const addToHistory = (operation, input, output, type, fileInfo = null) => {
-    const historyItem = {
-      operation,
-      input: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
-      output: output.substring(0, 100) + (output.length > 100 ? '...' : ''),
-      type,
-      fileInfo,
-      timestamp: Date.now(),
-      inputLength: input.length,
-      outputLength: output.length
-    };
-
-    const newHistory = [historyItem, ...operationHistory].slice(0, 50);
-    setOperationHistory(newHistory);
-  };
+  // History functionality removed for performance with large files
 
   // Base64 encoding functions
   const encodeBase64 = (text, type) => {
@@ -380,18 +374,28 @@ const Base64Tool = () => {
       let result;
       
       if (operation === 'encode') {
-        result = encodeBase64(input, type);
+        // Check if we have a selected file and it's an image
+        if (selectedFile && getFileType(selectedFile.name) === 'image') {
+          // For image files, the input is already Base64 - just use it directly
+          result = input;
+          // Show the image preview in output
+          if (inputImagePreview) {
+            setOutputImagePreview(inputImagePreview);
+          }
+        } else {
+          // For text input, encode it to Base64
+          result = encodeBase64(input, type);
+        }
       } else {
         // Check if the input Base64 is an image
         const isImage = isBase64Image(input);
         console.log('Decoding Base64 - Is image detected:', isImage, 'Input length:', input.length);
         
         if (isImage) {
-          // For images, don't decode to text - just show the image
-          result = "Image decoded successfully. See preview below.";
-          
           // Check if this is double-encoded Base64
           let finalBase64 = input;
+          let imageUrl = null;
+          
           try {
             const firstDecode = atob(input.replace(/\s/g, ''));
             if (isBase64Image(firstDecode)) {
@@ -402,9 +406,18 @@ const Base64Tool = () => {
             // If first decode fails, use original
           }
           
-          const imageUrl = createImagePreviewUrl(finalBase64);
+          // Try to create image URL
+          imageUrl = createImagePreviewUrl(finalBase64);
+          
           if (imageUrl) {
+            // Successfully created image preview
+            result = "Image decoded successfully. See preview below.";
             setOutputImagePreview(imageUrl);
+          } else {
+            // Failed to create image, fall back to text decoding
+            console.log('Failed to create image preview, falling back to text decode');
+            result = decodeBase64(input, type);
+            setOutputImagePreview(null);
           }
         } else {
           // For non-images, decode normally to text
@@ -413,11 +426,6 @@ const Base64Tool = () => {
       }
       
       setOutputText(result);
-      addToHistory(operation, input, result, type, selectedFile ? {
-        name: selectedFile.name,
-        size: selectedFile.size,
-        type: getFileType(selectedFile.name)
-      } : null);
       
       notifications.show({
         title: 'Success',
@@ -502,28 +510,20 @@ const Base64Tool = () => {
     }
   };
 
-  const handleHistoryItemClick = (historyItem) => {
-    setInputText(historyItem.input);
-    setMode(historyItem.operation);
-    setEncodingType(historyItem.type);
-    processBase64Operation(historyItem.input, historyItem.operation, historyItem.type);
-  };
-
-  const clearHistory = () => {
-    setOperationHistory([]);
-    notifications.show({
-      title: 'History Cleared',
-      message: 'Operation history has been cleared',
-      color: 'blue'
-    });
-  };
+  // History functions removed for performance
 
   const copyToClipboard = async (text) => {
     try {
-      await navigator.clipboard.writeText(text);
+      // If we have an image preview and we're decoding, copy the input Base64 instead of the message
+      let textToCopy = text;
+      if (outputImagePreview && mode === 'decode') {
+        textToCopy = inputText; // Copy the original Base64 input
+      }
+      
+      await navigator.clipboard.writeText(textToCopy);
       notifications.show({
         title: 'Copied',
-        message: 'Text copied to clipboard',
+        message: 'Base64 data copied to clipboard',
         color: 'green',
         icon: <IconCopy size={16} />
       });
@@ -550,15 +550,35 @@ const Base64Tool = () => {
   };
 
   const downloadResult = () => {
-    const blob = new Blob([outputText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `base64-${mode}-result.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // If we have an image preview and we're decoding, download the actual image
+    if (outputImagePreview && mode === 'decode') {
+      // Create a download link for the image
+      const a = document.createElement('a');
+      a.href = outputImagePreview;
+      
+      // Determine file extension from mime type
+      let extension = 'jpg'; // default
+      if (outputImagePreview.includes('image/png')) extension = 'png';
+      else if (outputImagePreview.includes('image/gif')) extension = 'gif';
+      else if (outputImagePreview.includes('image/webp')) extension = 'webp';
+      else if (outputImagePreview.includes('image/bmp')) extension = 'bmp';
+      
+      a.download = `decoded-image.${extension}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      // For text output or encoding, download as text file
+      const blob = new Blob([outputText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `base64-${mode}-result.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
   const clearAll = () => {
@@ -835,18 +855,34 @@ const Base64Tool = () => {
               </ScrollArea>
             ) : outputImagePreview ? (
               <Box>
-                <Text size="sm" fw={500} mb="xs">Decoded Image:</Text>
+                <Text size="sm" fw={500} mb="xs">
+                  {mode === 'encode' ? 'Encoded Image:' : 'Decoded Image:'}
+                </Text>
                 <Image
                   src={outputImagePreview}
-                  alt="Decoded image"
+                  alt={mode === 'encode' ? 'Encoded image' : 'Decoded image'}
                   fit="contain"
                   h={200}
                   radius="md"
                   withPlaceholder
                 />
                 <Text size="xs" color="dimmed" mt="xs">
-                  Image decoded successfully • {outputText.length} characters
+                  {mode === 'encode' ? 'Image encoded to Base64' : 'Image decoded successfully'} • {outputText.length} characters
                 </Text>
+                
+                {/* Show Base64 text below the image for encoding */}
+                {mode === 'encode' && (
+                  <Box mt="md">
+                    <Text size="sm" fw={500} mb="xs">Base64 Output:</Text>
+                    <Textarea
+                      value={outputText}
+                      readOnly
+                      minRows={4}
+                      maxRows={8}
+                      autosize
+                    />
+                  </Box>
+                )}
               </Box>
             ) : (
               <Textarea
@@ -905,60 +941,7 @@ const Base64Tool = () => {
         </Alert>
       )}
 
-      {/* History */}
-      {operationHistory.length > 0 && (
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Group justify="space-between" mb="md">
-            <Text size="lg" fw={500}>
-              <IconHistory size={18} style={{ marginRight: 8 }} />
-              Recent Operations
-            </Text>
-            <Button
-              size="xs"
-              variant="light"
-              color="red"
-              leftSection={<IconTrash size={14} />}
-              onClick={clearHistory}
-            >
-              Clear History
-            </Button>
-          </Group>
-          
-          <Timeline active={-1} bulletSize={24} lineWidth={2}>
-            {operationHistory.slice(0, 10).map((item, index) => (
-              <Timeline.Item
-                key={index}
-                title={
-                  <Group>
-                    <Text fw={500}>{item.operation}</Text>
-                    <Badge size="xs" color="blue">{item.type}</Badge>
-                    {item.fileInfo && (
-                      <Badge size="xs" color={FILE_TYPES[item.fileInfo.type].color}>
-                        {item.fileInfo.name}
-                      </Badge>
-                    )}
-                  </Group>
-                }
-                bullet={<Base64Icon size={12} />}
-              >
-                <Text size="xs" color="dimmed">
-                  {new Date(item.timestamp).toLocaleString()} • 
-                  {item.inputLength} → {item.outputLength} chars
-                </Text>
-                <Button
-                  size="xs"
-                  variant="light"
-                  mt="xs"
-                  leftSection={<IconRefresh size={14} />}
-                  onClick={() => handleHistoryItemClick(item)}
-                >
-                  Repeat Operation
-                </Button>
-              </Timeline.Item>
-            ))}
-          </Timeline>
-        </Card>
-      )}
+      {/* History section removed for performance with large files */}
     </Paper>
   );
 };
