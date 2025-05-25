@@ -109,12 +109,23 @@ const Base64Tool = () => {
       if (detected && mode === 'encode') {
         setMode('decode');
       }
+      
+      // Also check if it's a Base64 image and show preview
+      if (detected && isBase64Image(inputText.trim())) {
+        const imageUrl = createImagePreviewUrl(inputText.trim());
+        if (imageUrl) {
+          setInputImagePreview(imageUrl);
+        }
+      } else {
+        setInputImagePreview(null);
+      }
     } else if (inputText.trim() && selectedFile) {
       // If we have a file, just check if it's valid base64 but don't auto-switch mode
       const detected = detectBase64(inputText.trim());
       setIsValidBase64(detected);
     } else {
       setIsValidBase64(null);
+      setInputImagePreview(null);
     }
   }, [inputText, selectedFile]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -159,21 +170,33 @@ const Base64Tool = () => {
     
     // Check if it's a raw base64 that could be an image
     try {
-      // Try to create a data URL and see if it's a valid image format
+      // Clean the base64 string - remove whitespace and line breaks
       const cleanBase64 = base64String.replace(/\s/g, '');
-      if (cleanBase64.length > 100) { // Images are typically larger
+      
+      // Must be valid base64 format and reasonably long for an image
+      if (cleanBase64.length > 100 && /^[A-Za-z0-9+/]*={0,2}$/.test(cleanBase64)) {
         // Check if it starts with common image file signatures in base64
         const imageSignatures = [
-          '/9j/', // JPEG
-          'iVBORw0KGgo', // PNG
-          'R0lGODlh', // GIF
-          'UklGR', // WebP
+          '/9j/', // JPEG (starts with 0xFFD8)
+          'iVBORw0KGgo', // PNG (starts with PNG signature)
+          'R0lGODlh', // GIF87a
+          'R0lGODdh', // GIF89a  
+          'UklGR', // WebP (starts with RIFF)
           'PHN2Zw', // SVG (starts with <svg)
+          'Qk0', // BMP (starts with BM)
+          'SUkq', // TIFF (little endian)
+          'TU0A', // TIFF (big endian)
         ];
         
-        return imageSignatures.some(sig => cleanBase64.startsWith(sig));
+        const isImageSignature = imageSignatures.some(sig => cleanBase64.startsWith(sig));
+        
+        // Additional check: if it's very long and looks like base64, it might be an image
+        const isLikelyImage = cleanBase64.length > 1000 && cleanBase64.length % 4 === 0;
+        
+        return isImageSignature || isLikelyImage;
       }
     } catch (error) {
+      console.log('Base64 image detection error:', error);
       return false;
     }
     
@@ -274,6 +297,13 @@ const Base64Tool = () => {
       }
       
       const decoded = atob(cleanText);
+      
+      // Check if the decoded result is still Base64 (double-encoded)
+      if (isBase64Image(decoded)) {
+        console.log('Detected double-encoded Base64, decoding again...');
+        return decodeURIComponent(escape(atob(decoded)));
+      }
+      
       return decodeURIComponent(escape(decoded));
     } catch (error) {
       throw new Error(`Decoding failed: ${error.message}`);
@@ -352,14 +382,33 @@ const Base64Tool = () => {
       if (operation === 'encode') {
         result = encodeBase64(input, type);
       } else {
-        result = decodeBase64(input, type);
+        // Check if the input Base64 is an image
+        const isImage = isBase64Image(input);
+        console.log('Decoding Base64 - Is image detected:', isImage, 'Input length:', input.length);
         
-        // Check if the input Base64 could be an image and create preview
-        if (isBase64Image(input)) {
-          const imageUrl = createImagePreviewUrl(input);
+        if (isImage) {
+          // For images, don't decode to text - just show the image
+          result = "Image decoded successfully. See preview below.";
+          
+          // Check if this is double-encoded Base64
+          let finalBase64 = input;
+          try {
+            const firstDecode = atob(input.replace(/\s/g, ''));
+            if (isBase64Image(firstDecode)) {
+              console.log('Double-encoded Base64 detected, using inner Base64 for image');
+              finalBase64 = firstDecode;
+            }
+          } catch (e) {
+            // If first decode fails, use original
+          }
+          
+          const imageUrl = createImagePreviewUrl(finalBase64);
           if (imageUrl) {
             setOutputImagePreview(imageUrl);
           }
+        } else {
+          // For non-images, decode normally to text
+          result = decodeBase64(input, type);
         }
       }
       
@@ -690,7 +739,9 @@ const Base64Tool = () => {
             
             {inputImagePreview ? (
               <Box>
-                <Text size="sm" fw={500} mb="xs">Image Preview:</Text>
+                <Text size="sm" fw={500} mb="xs">
+                  {selectedFile ? 'Image Preview:' : 'Base64 Image Preview:'}
+                </Text>
                 <Image
                   src={inputImagePreview}
                   alt="Input image preview"
@@ -700,7 +751,7 @@ const Base64Tool = () => {
                   withPlaceholder
                 />
                 <Text size="xs" color="dimmed" mt="xs">
-                  Image loaded • {inputText.length} characters in Base64
+                  {selectedFile ? 'Image loaded' : 'Base64 image detected'} • {inputText.length} characters in Base64
                 </Text>
               </Box>
             ) : (
