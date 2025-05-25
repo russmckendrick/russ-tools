@@ -3,7 +3,7 @@ import { IconNetwork, IconBrandAzure, IconClock, IconChevronRight, IconShield } 
 import { Link } from 'react-router-dom';
 import DNSIcon from '../tools/dns-lookup/DNSIcon';
 import WHOISIcon from '../tools/whois/WHOISIcon';
-import JSONIcon from '../tools/json-formatter/JSONIcon';
+import JSONIcon from '../tools/data-converter/JSONIcon';
 
 export default function HomeView() {
   const tools = [
@@ -53,13 +53,13 @@ export default function HomeView() {
       path: '/whois-lookup'
     },
     {
-      id: 'json-formatter',
-      title: 'JSON Formatter',
-      description: 'Format, validate, and analyze JSON data with professional-grade tools. Features real-time validation, structure analysis, and advanced formatting options.',
+      id: 'data-converter',
+      title: 'Data Converter',
+      description: 'Convert between JSON, YAML, and TOML formats with validation and formatting. Features auto-detection, syntax highlighting, and structure analysis.',
       icon: JSONIcon,
       iconColor: 'yellow',
-      badges: ['Real-time Validation', 'Structure Analysis', 'Advanced Formatting'],
-      path: '/json-formatter'
+      badges: ['Multi-Format', 'Auto-Detection', 'Syntax Highlighting'],
+      path: '/data-converter'
     },
     {
       id: 'cron-builder',

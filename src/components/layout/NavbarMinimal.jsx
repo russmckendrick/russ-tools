@@ -33,7 +33,7 @@ import { useDisclosure } from '@mantine/hooks';
 import classes from './HeaderMegaMenu.module.css';
 import DNSIcon from '../tools/dns-lookup/DNSIcon';
 import WHOISIcon from '../tools/whois/WHOISIcon';
-import JSONIcon from '../tools/json-formatter/JSONIcon';
+import JSONIcon from '../tools/data-converter/JSONIcon';
 
 const mockdata = [
   {
@@ -74,9 +74,9 @@ const mockdata = [
   },
   {
     icon: JSONIcon,
-    title: 'JSON Formatter',
-    description: "Format, validate, and analyze JSON data",
-    link: "/json-formatter/",
+          title: 'Data Converter',
+      description: "Convert between JSON, YAML, and TOML formats",
+    link: "/data-converter/",
   },
   {
     icon: IconBrandGithub,
