@@ -12,7 +12,7 @@ import {
   Alert,
   Button
 } from '@mantine/core';
-import { IconCloud, IconEdit, IconHistory, IconInfoCircle } from '@tabler/icons-react';
+import { IconBrandAzure, IconEdit, IconHistory, IconInfoCircle } from '@tabler/icons-react';
 import { useAzureNaming } from '../../../hooks/useAzureNaming';
 import { useAzureNamingContext } from '../../../context/AzureNamingContext';
 import ResourceTypeSelector from './ResourceTypeSelector';
@@ -47,7 +47,7 @@ const AzureNamingTool = () => {
         {/* Header */}
         <Group justify="center" gap="md">
           <ThemeIcon size={42} radius="md" color="blue" variant="gradient" gradient={{ from: 'blue', to: 'cyan', deg: 90 }}>
-            <IconCloud size={24} />
+            <IconBrandAzure size={24} />
           </ThemeIcon>
           <div>
             <Title order={2} style={{ fontWeight: 700, letterSpacing: -0.5, margin: 0 }}>
@@ -64,7 +64,7 @@ const AzureNamingTool = () => {
             <Tabs.Tab value="builder" leftSection={<IconEdit size={16} />}>
               Name Builder
             </Tabs.Tab>
-            <Tabs.Tab value="results" leftSection={<IconCloud size={16} />}>
+            <Tabs.Tab value="results" leftSection={<IconBrandAzure size={16} />}>
               Generated Names
             </Tabs.Tab>
             <Tabs.Tab value="history" leftSection={<IconHistory size={16} />}>
@@ -134,7 +134,7 @@ const AzureNamingTool = () => {
                     color="blue"
                     onClick={generateName}
                     disabled={isLoading}
-                    leftSection={<IconCloud size={18} />}
+                    leftSection={<IconBrandAzure size={18} />}
                   >
                     Generate Azure Resource Names
                   </Button>
