@@ -709,10 +709,10 @@ zipCode = "12345"`
           </Tabs.List>
 
           <Tabs.Panel value="converter" pt="md">
-            <Grid gutter="lg">
+            <Grid gutter="lg" align="stretch">
               {/* Input Panel */}
               <Grid.Col span={{ base: 12, md: 6 }}>
-                <Card withBorder radius="lg" style={{ height: '600px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                <Card withBorder radius="lg" style={{ minHeight: '600px', display: 'flex', flexDirection: 'column', height: '100%' }}>
                   <Group justify="space-between" align="flex-start" mb="md">
                     <div>
                       <Text fw={600} size="lg">
@@ -752,8 +752,7 @@ zipCode = "12345"`
                     minRows={1}
                     styles={{
                       wrapper: {
-                        flex: 1,
-                        paddingBottom: '80px'
+                        flex: 1
                       },
                       input: {
                         fontFamily: 'Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
@@ -772,7 +771,7 @@ zipCode = "12345"`
                   />
                   
                   {/* Input Status */}
-                  <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px' }}>
+                  <div style={{ marginTop: '12px' }}>
                     {input && (
                       <Card withBorder p="sm" radius="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
                         <Group justify="space-between" align="center">
@@ -851,7 +850,7 @@ zipCode = "12345"`
 
               {/* Output Panel */}
               <Grid.Col span={{ base: 12, md: 6 }}>
-                <Card withBorder radius="lg" style={{ height: '600px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                <Card withBorder radius="lg" style={{ minHeight: '600px', display: 'flex', flexDirection: 'column', height: '100%' }}>
                   <Group justify="space-between" align="flex-start" mb="md">
                     <div>
                       <Text fw={600} size="lg">
@@ -915,12 +914,12 @@ zipCode = "12345"`
                     </Group>
                   </Group>
                   
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     {renderHighlightedCode(output, outputFormat)}
                   </div>
                   
                   {/* Output Status */}
-                  <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px' }}>
+                  <div style={{ marginTop: '12px' }}>
                     {output && (
                       <Card withBorder p="sm" radius="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
                         <Group justify="space-between" align="center">
