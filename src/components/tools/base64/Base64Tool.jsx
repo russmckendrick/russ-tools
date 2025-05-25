@@ -406,6 +406,25 @@ const Base64Tool = () => {
       return;
     }
 
+    // Refined validation for decode operation
+    if (operation === 'decode') {
+      if (selectedFile && getFileType(selectedFile.name) === 'image') {
+        setError('Cannot decode an image file. Please switch to Encode mode to encode this image, or upload a Base64 encoded text file to decode.');
+        setLoading(false);
+        return;
+      }
+      // For text files or direct input, ensure it is valid Base64
+      if (!detectBase64(input.trim())) {
+        setError(
+          selectedFile
+            ? 'The selected text file does not contain valid Base64. Please upload a valid Base64 encoded text file.'
+            : 'The input text is not valid Base64. Please provide valid Base64 text for decoding.'
+        );
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
     setOutputText('');
