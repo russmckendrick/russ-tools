@@ -101,19 +101,21 @@ const Base64Tool = () => {
         if (imageUrl) {
           setInputImagePreview(imageUrl);
         }
-      } else if (!selectedFile) {
+      } else {
         // Only clear preview if no file is selected
         setInputImagePreview(null);
       }
     } else if (inputText.trim() && selectedFile) {
-      // If we have a file, just check if it's valid base64 but don't auto-switch mode
+      // If we have a file, just check if it's valid base64 but DON'T modify the image preview
       const detected = detectBase64(inputText.trim());
       setIsValidBase64(detected);
-    } else {
+      // Don't touch inputImagePreview when we have a selected file
+    } else if (!selectedFile) {
+      // Only clear state if no file is selected
       setIsValidBase64(null);
       setInputImagePreview(null);
     }
-  }, [inputText, selectedFile]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [inputText, selectedFile, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Helper function to detect if text is Base64
   const detectBase64 = (text) => {
@@ -807,19 +809,22 @@ const Base64Tool = () => {
               <Group>
                 {outputText && (
                   <>
-                    <ActionIcon
-                      size="sm"
-                      variant="light"
-                      onClick={() => copyToClipboard(outputText)}
-                      title="Copy to clipboard"
-                    >
-                      <IconCopy size={14} />
-                    </ActionIcon>
+                    {/* Only show copy button if not a decoded image */}
+                    {!(outputImagePreview && mode === 'decode') && (
+                      <ActionIcon
+                        size="sm"
+                        variant="light"
+                        onClick={() => copyToClipboard(outputText)}
+                        title="Copy to clipboard"
+                      >
+                        <IconCopy size={14} />
+                      </ActionIcon>
+                    )}
                     <ActionIcon
                       size="sm"
                       variant="light"
                       onClick={downloadResult}
-                      title="Download result"
+                      title={outputImagePreview && mode === 'decode' ? 'Download image' : 'Download result'}
                     >
                       <IconDownload size={14} />
                     </ActionIcon>
