@@ -65,6 +65,13 @@ import {
 import { loadSampleData } from './samples';
 
 const DataConverterTool = () => {
+  // Format color scheme
+  const formatColors = {
+    json: 'blue',
+    yaml: 'cyan', 
+    toml: 'violet'
+  };
+
   // State management
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
@@ -703,54 +710,63 @@ const DataConverterTool = () => {
               </Text>
             </Group>
             
-            <Grid gutter="xl" align="center">
+            <Grid gutter="xl" align="flex-start">
               <Grid.Col span={{ base: 12, sm: 5 }}>
-                <Stack gap="sm">
-                  <Select
-                    label="Input Format"
-                    value={inputFormat}
-                    onChange={setInputFormat}
-                    data={formatOptions}
-                    size="md"
-                    styles={{
-                      label: { fontWeight: 600, marginBottom: 8 },
-                      input: { fontSize: '16px' }
-                    }}
-                  />
-                  {detectedFormat && inputFormat === 'auto' && (
-                    <Group gap="xs" justify="center">
-                      <Badge 
-                        color="green" 
-                        variant="light" 
-                        leftSection={<IconCheck size={12} />}
-                        size="sm"
-                      >
-                        Detected: {detectedFormat.toUpperCase()}
-                      </Badge>
+                <Select
+                  label={
+                    <Group gap="xs" align="center">
+                      <Text fw={600}>Input Format</Text>
+                                             {detectedFormat && inputFormat === 'auto' && (
+                        <Badge 
+                          color={formatColors[detectedFormat] || 'green'} 
+                          variant="light" 
+                          size="xs"
+                          leftSection={<IconCheck size={10} />}
+                          style={{ 
+                            textTransform: 'uppercase',
+                            fontSize: '9px',
+                            fontWeight: 600
+                          }}
+                        >
+                          {detectedFormat} detected
+                        </Badge>
+                      )}
                     </Group>
-                  )}
-                </Stack>
+                  }
+                  value={inputFormat}
+                  onChange={setInputFormat}
+                  data={formatOptions}
+                  size="md"
+                  styles={{
+                    label: { marginBottom: 8 },
+                    input: { fontSize: '16px' }
+                  }}
+                />
               </Grid.Col>
               
               <Grid.Col span={{ base: 12, sm: 2 }}>
-                <Stack align="center" gap="xs">
+                <Stack align="center" justify="center" style={{ height: '56px', marginTop: '32px' }}>
                   <ActionIcon
-                    size="xl"
-                    radius="xl"
-                    variant="gradient"
-                    gradient={{ from: 'blue', to: 'cyan' }}
+                    size="lg"
+                    radius="md"
+                    variant="light"
+                    color="blue"
                     onClick={processData}
                     disabled={!input.trim()}
                     style={{ 
-                      transition: 'all 0.2s ease',
-                      transform: !input.trim() ? 'scale(0.9)' : 'scale(1)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    styles={{
+                      root: {
+                        '&:hover:not(:disabled)': {
+                          transform: 'translateY(-1px)',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                        }
+                      }
                     }}
                   >
-                    <IconArrowRight size={24} />
+                    <IconArrowRight size={20} />
                   </ActionIcon>
-                  <Text size="xs" c="dimmed" ta="center">
-                    Convert
-                  </Text>
                 </Stack>
               </Grid.Col>
               
@@ -781,6 +797,7 @@ const DataConverterTool = () => {
               key={format}
               size="xs"
               variant={input === data ? "filled" : "light"}
+              color={formatColors[format] || 'blue'}
               onClick={() => setInput(data)}
               style={{ textTransform: 'uppercase', fontSize: '10px', height: '24px', padding: '0 8px' }}
               radius="xl"
@@ -844,7 +861,7 @@ const DataConverterTool = () => {
                         Input Data
                       </Text>
                       {detectedFormat && (
-                        <Badge color="blue" variant="light" size="sm" mt={4}>
+                        <Badge color={formatColors[detectedFormat] || 'blue'} variant="light" size="sm" mt={4}>
                           {detectedFormat.toUpperCase()} Format
                         </Badge>
                       )}
@@ -940,112 +957,7 @@ const DataConverterTool = () => {
                       </Card>
                     )}
                     
-                    {(error || validationErrors.length > 0) && (
-                      <Alert 
-                        color="red" 
-                        icon={<IconAlertCircle size={20} />}
-                        title={validationErrors.length > 0 ? "Validation Errors" : "Parsing Error"}
-                        radius="md"
-                        mt="xs"
-                        styles={{
-                          root: { border: '2px solid var(--mantine-color-red-3)' },
-                          title: { fontSize: '16px', fontWeight: 600 }
-                        }}
-                      >
-                        <Stack gap="md">
-                          {error && (
-                            <>
-                              <Text size="sm">
-                                There's an issue with your input data. Please check the format and try again.
-                              </Text>
-                              <Code 
-                                block 
-                                color="red"
-                                style={{ 
-                                  backgroundColor: 'var(--mantine-color-red-0)',
-                                  border: '1px solid var(--mantine-color-red-2)',
-                                  padding: '8px',
-                                  borderRadius: '4px'
-                                }}
-                              >
-                                {error}
-                              </Code>
-                            </>
-                          )}
-                          
-                          {validationErrors.map((validationError, index) => {
-                            const formattedError = formatErrorForDisplay(validationError, input);
-                            return (
-                              <div key={index}>
-                                <Group gap="xs" mb="xs">
-                                  {validationError.format && (
-                                    <Badge color="red" size="sm" variant="light">
-                                      {validationError.format}
-                                    </Badge>
-                                  )}
-                                  {formattedError.line && (
-                                    <Badge color="orange" size="sm" variant="light">
-                                      Line {formattedError.line}
-                                      {formattedError.column && `:${formattedError.column}`}
-                                    </Badge>
-                                  )}
-                                </Group>
-                                
-                                <Text size="sm" mb="xs">
-                                  {formattedError.message}
-                                </Text>
-                                
-                                {formattedError.context && (
-                                  <Code 
-                                    block 
-                                    color="red"
-                                    style={{ 
-                                      backgroundColor: 'var(--mantine-color-red-0)',
-                                      border: '1px solid var(--mantine-color-red-2)',
-                                      padding: '8px',
-                                      borderRadius: '4px',
-                                      fontFamily: 'Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                                      fontSize: '12px',
-                                      lineHeight: 1.4,
-                                      whiteSpace: 'pre'
-                                    }}
-                                  >
-                                    {formattedError.context}
-                                  </Code>
-                                )}
-                                
-                                {formattedError.suggestions && formattedError.suggestions.length > 0 && (
-                                  <div style={{ marginTop: '8px' }}>
-                                    <Text size="xs" fw={600} c="blue" mb="xs">
-                                      💡 Suggestions:
-                                    </Text>
-                                    <Stack gap="xs">
-                                      {formattedError.suggestions.map((suggestion, suggestionIndex) => (
-                                        <Text 
-                                          key={suggestionIndex} 
-                                          size="xs" 
-                                          c="dimmed"
-                                          style={{ 
-                                            paddingLeft: '12px',
-                                            borderLeft: '2px solid var(--mantine-color-blue-3)'
-                                          }}
-                                        >
-                                          • {suggestion}
-                                        </Text>
-                                      ))}
-                                    </Stack>
-                                  </div>
-                                )}
-                                
-                                {index < validationErrors.length - 1 && (
-                                  <Divider my="md" />
-                                )}
-                              </div>
-                            );
-                          })}
-                        </Stack>
-                      </Alert>
-                    )}
+
                   </div>
                 </Card>
               </Grid.Col>
@@ -1058,7 +970,7 @@ const DataConverterTool = () => {
                       <Text fw={600} size="lg">
                         Output Data
                       </Text>
-                      <Badge color="green" variant="light" size="sm" mt={4}>
+                      <Badge color={formatColors[outputFormat] || 'green'} variant="light" size="sm" mt={4}>
                         {outputFormat.toUpperCase()} Format
                       </Badge>
                     </div>
@@ -1117,12 +1029,139 @@ const DataConverterTool = () => {
                   </Group>
                   
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    {renderHighlightedCode(output, outputFormat)}
+                    {(error || validationErrors.length > 0) ? (
+                      <div style={{ 
+                        flex: 1, 
+                        padding: '1.25rem',
+                        backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
+                        borderRadius: '8px',
+                        border: `2px solid ${colorScheme === 'dark' ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
+                        overflow: 'auto'
+                      }}>
+                        <Stack gap="lg">
+                          <Group gap="xs" align="center">
+                            <IconAlertCircle size={20} color="var(--mantine-color-red-6)" />
+                            <Text fw={600} size="lg" c="red">
+                              {validationErrors.length > 0 ? "Validation Errors" : "Parsing Error"}
+                            </Text>
+                          </Group>
+                          
+                          {error && (
+                            <div>
+                              <Text size="sm" mb="md" c="dimmed">
+                                There's an issue with your input data. Please check the format and try again.
+                              </Text>
+                              <Code 
+                                block 
+                                color="red"
+                                style={{ 
+                                  backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-red-9)' : 'var(--mantine-color-red-0)',
+                                  border: '1px solid var(--mantine-color-red-3)',
+                                  padding: '12px',
+                                  borderRadius: '6px',
+                                  fontSize: '13px',
+                                  lineHeight: 1.5
+                                }}
+                              >
+                                {error}
+                              </Code>
+                            </div>
+                          )}
+                          
+                          {validationErrors.map((validationError, index) => {
+                            const formattedError = formatErrorForDisplay(validationError, input);
+                            return (
+                              <div key={index}>
+                                <Group gap="xs" mb="sm">
+                                  {validationError.format && (
+                                    <Badge color={formatColors[validationError.format] || 'red'} size="sm" variant="light">
+                                      {validationError.format.toUpperCase()}
+                                    </Badge>
+                                  )}
+                                  {formattedError.line && (
+                                    <Badge color="orange" size="sm" variant="light">
+                                      Line {formattedError.line}
+                                      {formattedError.column && `:${formattedError.column}`}
+                                    </Badge>
+                                  )}
+                                </Group>
+                                
+                                <Text size="sm" mb="sm" fw={500}>
+                                  {formattedError.message}
+                                </Text>
+                                
+                                {formattedError.context && (
+                                  <Code 
+                                    block 
+                                    style={{ 
+                                      backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-red-9)' : 'var(--mantine-color-red-0)',
+                                      border: '1px solid var(--mantine-color-red-3)',
+                                      padding: '12px',
+                                      borderRadius: '6px',
+                                      fontFamily: 'Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                      fontSize: '12px',
+                                      lineHeight: 1.4,
+                                      whiteSpace: 'pre',
+                                      marginBottom: '12px'
+                                    }}
+                                  >
+                                    {formattedError.context}
+                                  </Code>
+                                )}
+                                
+                                {formattedError.suggestions && formattedError.suggestions.length > 0 && (
+                                  <div style={{ marginBottom: '16px' }}>
+                                    <Text size="sm" fw={600} c="blue" mb="xs">
+                                      💡 Suggestions:
+                                    </Text>
+                                    <Stack gap="xs">
+                                      {formattedError.suggestions.map((suggestion, suggestionIndex) => (
+                                        <Text 
+                                          key={suggestionIndex} 
+                                          size="sm" 
+                                          c="dimmed"
+                                          style={{ 
+                                            paddingLeft: '12px',
+                                            borderLeft: '3px solid var(--mantine-color-blue-4)',
+                                            lineHeight: 1.5
+                                          }}
+                                        >
+                                          • {suggestion}
+                                        </Text>
+                                      ))}
+                                    </Stack>
+                                  </div>
+                                )}
+                                
+                                {index < validationErrors.length - 1 && (
+                                  <Divider my="lg" />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </Stack>
+                      </div>
+                    ) : (
+                      renderHighlightedCode(output, outputFormat)
+                    )}
                   </div>
                   
                   {/* Output Status */}
                   <div style={{ marginTop: '12px' }}>
-                    {output && (
+                    {(error || validationErrors.length > 0) ? (
+                      <Card withBorder p="sm" radius="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
+                        <Group justify="space-between" align="center">
+                          <Group gap="md">
+                            <Badge color="red" variant="filled" size="md" leftSection={<IconX size={14} />}>
+                              {validationErrors.length > 0 ? `${validationErrors.length} Validation Error${validationErrors.length > 1 ? 's' : ''}` : 'Parsing Error'}
+                            </Badge>
+                          </Group>
+                          <Text size="sm" c="dimmed" fw={500}>
+                            See details above
+                          </Text>
+                        </Group>
+                      </Card>
+                    ) : output && (
                       <Card withBorder p="sm" radius="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
                         <Group justify="space-between" align="center">
                           <Group gap="md">
@@ -1491,9 +1530,9 @@ const DataConverterTool = () => {
                         {new Date(entry.timestamp).toLocaleString()}
                       </Text>
                       <Group gap="xs">
-                        <Badge size="sm">{entry.inputFormat?.toUpperCase()}</Badge>
+                        <Badge size="sm" color={formatColors[entry.inputFormat] || 'gray'}>{entry.inputFormat?.toUpperCase()}</Badge>
                         <IconArrowRight size={12} />
-                        <Badge size="sm">{entry.outputFormat?.toUpperCase()}</Badge>
+                        <Badge size="sm" color={formatColors[entry.outputFormat] || 'gray'}>{entry.outputFormat?.toUpperCase()}</Badge>
                       </Group>
                     </Group>
                     <Text size="xs" c="dimmed" mb="xs">Input:</Text>
