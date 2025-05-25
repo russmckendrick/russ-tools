@@ -35,6 +35,7 @@ import DNSIcon from '../tools/dns-lookup/DNSIcon';
 import WHOISIcon from '../tools/whois/WHOISIcon';
 import JSONIcon from '../tools/data-converter/JSONIcon';
 import Base64Icon from '../tools/base64/Base64Icon';
+import JWTIcon from '../tools/jwt/JWTIcon';
 
 const mockdata = [
   {
@@ -84,6 +85,12 @@ const mockdata = [
     title: 'Base64 Encoder/Decoder',
     description: "Encode and decode text and files using Base64",
     link: "/base64/",
+  },
+  {
+    icon: JWTIcon,
+    title: 'JWT Decoder/Validator',
+    description: "Decode JWT tokens client-side without external services",
+    link: "/jwt/",
   },
   {
     icon: IconBrandGithub,

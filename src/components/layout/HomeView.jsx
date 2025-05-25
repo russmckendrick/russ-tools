@@ -1,5 +1,5 @@
 import { Card, Group, Text, Title, Grid, Stack, Badge, ThemeIcon, Paper, Container } from '@mantine/core';
-import { IconNetwork, IconBrandAzure, IconClock, IconChevronRight, IconShield } from '@tabler/icons-react';
+import { IconNetwork, IconBrandAzure, IconClock, IconShield } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import DNSIcon from '../tools/dns-lookup/DNSIcon';
 import WHOISIcon from '../tools/whois/WHOISIcon';
@@ -148,18 +148,9 @@ export default function HomeView() {
                         <IconComponent size={28} />
                       </ThemeIcon>
                       <div style={{ flex: 1 }}>
-                        <Group justify="space-between" align="flex-start">
-                          <Title order={3} fw={600} lh={1.2}>
-                            {tool.title}
-                          </Title>
-                          <ThemeIcon
-                            size="sm"
-                            variant="subtle"
-                            color="gray"
-                          >
-                            <IconChevronRight size={16} />
-                          </ThemeIcon>
-                        </Group>
+                        <Title order={3} fw={600} lh={1.2}>
+                          {tool.title}
+                        </Title>
                       </div>
                     </Group>
 
