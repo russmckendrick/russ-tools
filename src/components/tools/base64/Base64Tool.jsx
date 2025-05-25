@@ -858,7 +858,7 @@ const Base64Tool = () => {
           disabled={loading || (!inputText.trim() && !selectedFile)}
           size="lg"
         >
-          {mode === 'encode' ? 'Encode' : 'Decode'} {batchMode && 'Batch'}
+          {mode === 'encode' ? 'Encode' : 'Decode'}
         </Button>
         
         <Button
