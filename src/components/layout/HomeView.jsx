@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import DNSIcon from '../tools/dns-lookup/DNSIcon';
 import WHOISIcon from '../tools/whois/WHOISIcon';
 import JSONIcon from '../tools/data-converter/JSONIcon';
+import Base64Icon from '../tools/base64/Base64Icon';
 
 export default function HomeView() {
   const tools = [
@@ -60,6 +61,15 @@ export default function HomeView() {
       iconColor: 'yellow',
       badges: ['Multi-Format', 'Auto-Detection', 'Syntax Highlighting'],
       path: '/data-converter'
+    },
+    {
+      id: 'base64',
+      title: 'Base64 Encoder/Decoder',
+      description: 'Encode and decode text and files using Base64 with multiple variants. Features auto-detection, batch processing, and security-focused workflows.',
+      icon: Base64Icon,
+      iconColor: 'teal',
+      badges: ['Multiple Variants', 'File Support', 'Batch Processing'],
+      path: '/base64'
     },
     {
       id: 'cron-builder',
