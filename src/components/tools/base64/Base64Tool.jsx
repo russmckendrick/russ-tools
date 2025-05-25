@@ -334,6 +334,10 @@ const Base64Tool = () => {
     setError(null);
     setInputImagePreview(null);
     
+    // Clear any existing output when uploading a new file
+    setOutputText('');
+    setOutputImagePreview(null);
+    
     try {
       const fileType = getFileType(file.name);
       
