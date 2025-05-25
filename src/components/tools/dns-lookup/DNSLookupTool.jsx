@@ -23,7 +23,7 @@ import {
   Divider
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   IconWorld,
   IconInfoCircle,
@@ -32,7 +32,8 @@ import {
   IconTrash,
   IconSearch,
   IconCopy,
-  IconRefresh
+  IconRefresh,
+  IconExternalLink
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import DNSIcon from './DNSIcon';
@@ -334,6 +335,15 @@ const DNSLookupTool = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Helper function to detect if a string is an IP address
+  const isIPAddress = (str) => {
+    // IPv4 regex
+    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    // IPv6 regex (simplified)
+    const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$/;
+    return ipv4Regex.test(str) || ipv6Regex.test(str);
+  };
+
   const formatDNSRecord = (record) => {
     switch (record.type) {
       case 1: // A
@@ -359,6 +369,42 @@ const DNSLookupTool = () => {
       default:
         return `${record.name} → ${record.data}`;
     }
+  };
+
+  // Component to render DNS record with WHOIS link for IP addresses
+  const DNSRecordDisplay = ({ record }) => {
+    const recordText = formatDNSRecord(record);
+    const isIP = isIPAddress(record.data);
+    
+    return (
+      <Group justify="space-between" align="center" w="100%">
+        <Code block style={{ flex: 1 }}>{recordText}</Code>
+        <Group gap="xs">
+          {isIP && (
+            <Tooltip label={`WHOIS lookup for ${record.data}`}>
+              <ActionIcon
+                size="sm"
+                variant="light"
+                color="blue"
+                component={Link}
+                to={`/whois-lookup/${record.data}`}
+              >
+                <IconExternalLink size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+          <Tooltip label="Copy record">
+            <ActionIcon
+              size="sm"
+              variant="light"
+              onClick={() => copyToClipboard(recordText)}
+            >
+              <IconCopy size={14} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      </Group>
+    );
   };
 
   return (
@@ -471,21 +517,13 @@ const DNSLookupTool = () => {
                 {lookupResults.Answer && lookupResults.Answer.length > 0 ? (
                   <Stack spacing="sm">
                     {lookupResults.Answer.map((record, index) => (
-                      <Group key={index} justify="space-between" p="sm" style={{ 
+                      <div key={index} style={{ 
+                        padding: 'var(--mantine-spacing-sm)', 
                         backgroundColor: 'var(--mantine-color-gray-0)', 
                         borderRadius: 'var(--mantine-radius-sm)' 
                       }}>
-                        <Code block>{formatDNSRecord(record)}</Code>
-                        <Tooltip label="Copy record">
-                          <ActionIcon
-                            size="sm"
-                            variant="light"
-                            onClick={() => copyToClipboard(formatDNSRecord(record))}
-                          >
-                            <IconCopy size={14} />
-                          </ActionIcon>
-                        </Tooltip>
-                      </Group>
+                        <DNSRecordDisplay record={record} />
+                      </div>
                     ))}
                   </Stack>
                 ) : (

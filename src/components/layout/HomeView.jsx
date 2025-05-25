@@ -1,10 +1,11 @@
 import { Card, Group, Text, Title, Grid, Stack, Badge, ThemeIcon, Paper, Container } from '@mantine/core';
-import { IconNetwork, IconBrandAzure, IconClock, IconChevronRight, IconShield } from '@tabler/icons-react';
+import { IconNetwork, IconBrandAzure, IconClock, IconShield } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import DNSIcon from '../tools/dns-lookup/DNSIcon';
 import WHOISIcon from '../tools/whois/WHOISIcon';
 import JSONIcon from '../tools/data-converter/JSONIcon';
 import Base64Icon from '../tools/base64/Base64Icon';
+import JWTIcon from '../tools/jwt/JWTIcon';
 
 export default function HomeView() {
   const tools = [
@@ -79,6 +80,15 @@ export default function HomeView() {
       iconColor: 'orange',
       badges: ['Schedule Builder', 'Expression Validator', 'Human Readable'],
       path: '/cron'
+    },
+    {
+      id: 'jwt',
+      title: 'JWT Decoder/Validator',
+      description: 'Decode JWT tokens completely client-side without sending to external services. Validate signatures, expiration, claims and analyze token security for API debugging and auth troubleshooting.',
+      icon: JWTIcon,
+      iconColor: 'red',
+      badges: ['100% Client-Side', 'Privacy First', 'Security Analysis'],
+      path: '/jwt'
     }
   ];
 
@@ -138,18 +148,9 @@ export default function HomeView() {
                         <IconComponent size={28} />
                       </ThemeIcon>
                       <div style={{ flex: 1 }}>
-                        <Group justify="space-between" align="flex-start">
-                          <Title order={3} fw={600} lh={1.2}>
-                            {tool.title}
-                          </Title>
-                          <ThemeIcon
-                            size="sm"
-                            variant="subtle"
-                            color="gray"
-                          >
-                            <IconChevronRight size={16} />
-                          </ThemeIcon>
-                        </Group>
+                        <Title order={3} fw={600} lh={1.2}>
+                          {tool.title}
+                        </Title>
                       </div>
                     </Group>
 

@@ -24,6 +24,8 @@ export function PageTitle() {
               title = 'Data Converter - russ.tools';
     } else if (normalizedPath === '/base64') {
       title = 'Base64 Encoder/Decoder - russ.tools';
+    } else if (normalizedPath === '/jwt') {
+      title = 'JWT Decoder/Validator - russ.tools';
     } else if (normalizedPath === '/cron') {
       title = 'Cron Builder Tool - russ.tools';
     }

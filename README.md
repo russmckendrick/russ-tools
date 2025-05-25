@@ -11,6 +11,7 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 - 🌐 WHOIS Lookup Tool
 - 🔄 Base64 Encoder/Decoder
 - 📜 Data Converter
+- 🔐 JWT Decoder/Validator
 
 ## 🧰 Tools Overview
 
@@ -23,6 +24,7 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 | 🌐 **WHOIS Lookup Tool** | Get detailed domain registration and IP geolocation information with modern RDAP protocol integration. |
 | 🔄 **Base64 Encoder/Decoder** | Encode and decode text and files using Base64 encoding with support for standard, URL-safe, and MIME variants. Handles large files and image previews. |
 | 📜 **Data Converter** | Convert data between JSON, YAML, and TOML formats. Features auto-detection, validation, formatting options (indentation, sorting), and schema validation. |
+| 🔐 **JWT Decoder/Validator** | Decode, analyze, and validate JSON Web Tokens (JWT) entirely in your browser. Features signature validation, claims inspection, and security analysis. |
 
 ---
 
@@ -302,6 +304,105 @@ Visit [https://www.russ.tools/whois-lookup](https://www.russ.tools/whois-lookup)
    - Export complete results as JSON
    - View lookup history with repeat functionality
 
+---
+
+## 🔐 JWT Decoder/Validator
+
+The JWT Decoder/Validator provides comprehensive JWT (JSON Web Token) analysis and validation entirely in your browser. It offers professional-grade token inspection with signature validation capabilities while maintaining complete privacy by never sending tokens to external services.
+
+### ✨ Why Use This Tool?
+- 🔒 **Complete Privacy** - All processing happens locally in your browser
+- 🔍 **Comprehensive Analysis** - Decode, analyze, and validate JWT tokens
+- ⚡ **Real-time Processing** - Instant token analysis as you type
+- 🛡️ **Security Focused** - Signature validation for RSA/ECDSA algorithms
+- 📊 **Professional Display** - Structured presentation of all token data
+- 🎯 **Developer Friendly** - Perfect for API debugging and authentication troubleshooting
+
+### 🔑 Key Features
+
+- 🔍 **Token Decoding & Validation:**
+  - Automatic JWT format validation (3-part structure)
+  - Header decoding with algorithm and type detection
+  - Payload decoding with all claims displayed
+  - Signature extraction and display
+  - Real-time format validation with error reporting
+
+- 📊 **Advanced Token Analysis:**
+  - Expiration status checking with visual indicators
+  - Timestamp analysis (issued at, expires at, not before)
+  - Algorithm identification and security assessment
+  - Token validity status with color-coded alerts
+  - Custom claims detection and categorization
+
+- 🔐 **Signature Validation:**
+  - RSA algorithm support (RS256, RS384, RS512)
+  - ECDSA algorithm support (ES256, ES384, ES512)
+  - RSA-PSS algorithm support (PS256, PS384, PS512)
+  - PEM and JWK public key format support
+  - Real-time validation with detailed error reporting
+
+- 📋 **Claims Inspector:**
+  - Standard JWT claims (iss, sub, aud, exp, nbf, iat, jti)
+  - Custom application-specific claims identification
+  - Structured data presentation with syntax highlighting
+  - Role and permission analysis for authorization tokens
+
+- 🛠️ **Developer Tools:**
+  - URL parameter support for direct token links
+  - Clipboard integration for quick token input
+  - Copy individual token parts (header, payload, signature)
+  - Example tokens for testing and learning
+  - Mobile-responsive design for on-the-go debugging
+
+#### 🎯 Example Use Cases
+- **API Development:** Debug JWT tokens during API integration
+- **Authentication Troubleshooting:** Analyze token claims and expiration issues
+- **Security Auditing:** Examine token structure and signing algorithms
+- **Integration Testing:** Validate token format and content before deployment
+- **Learning & Education:** Understand JWT structure and security concepts
+
+#### 🔒 Security & Privacy Features
+- **Client-Side Processing:** Tokens never leave your browser
+- **No External API Calls:** Complete offline functionality
+- **Open Source Transparency:** Full visibility into processing logic
+- **Secure Validation:** Industry-standard cryptographic libraries (jose)
+
+#### ⚠️ Browser Limitations
+Due to browser security constraints:
+- **HMAC Validation Not Supported:** HS256/HS384/HS512 require server-side validation
+- **Public Key Algorithms Only:** RSA and ECDSA validation supported
+- **Symmetric Key Limitation:** HMAC secrets cannot be safely handled in browsers
+
+### JWT Decoder/Validator
+
+Visit [https://www.russ.tools/jwt](https://www.russ.tools/jwt) and:
+
+1. 🔐 **Input JWT Token:**
+   - Paste your JWT token into the input field
+   - Use the clipboard button for quick pasting
+   - Load example tokens for testing and learning
+
+2. 🔍 **Analyze Token:**
+   - **Decoded Data:** View header, payload, and signature in separate tabs
+   - **Token Analysis:** See expiration status, algorithm info, and validity indicators
+   - **Claims Inspector:** Examine standard and custom claims with structured display
+
+3. ✅ **Validate Signature (Optional):**
+   - Enable signature validation toggle
+   - Paste your public key (PEM or JWK format)
+   - View validation results with detailed error reporting
+
+4. 📊 **Review Results:**
+   - **Security Status:** Visual indicators for token validity and expiration
+   - **Algorithm Info:** Signing method and security assessment
+   - **Claims Data:** Complete breakdown of all token claims
+   - **Timestamps:** Human-readable date/time information
+
+5. 🛠️ **Developer Features:**
+   - Copy individual token parts for debugging
+   - Share tokens via URL parameters
+   - Export analysis results for documentation
+
 ## 🚀 Usage
 
 ### Network Designer & Subnet Calculator
@@ -445,6 +546,31 @@ Visit [https://www.russ.tools/data-converter](https://www.russ.tools/data-conver
    - Download the output as a file using the download icon.
    - Use the "Minify" or "Reformat" buttons for quick output adjustments.
 
+### JWT Decoder/Validator
+
+Visit [https://www.russ.tools/jwt](https://www.russ.tools/jwt) and:
+
+1. 🔐 **Input JWT Token:**
+   - Paste your JWT token into the input field.
+   - Use the clipboard button for quick pasting from your clipboard.
+   - Try the example tokens to learn about JWT structure.
+2. 🔍 **Analyze Token:**
+   - **Decoded Data:** View the header, payload, and signature in separate tabs.
+   - **Token Analysis:** Check expiration status, algorithm info, and validity indicators.
+   - **Claims Inspector:** Examine all standard and custom claims with structured display.
+3. ✅ **(Optional) Validate Signature:**
+   - Enable the signature validation toggle.
+   - Paste your public key in PEM or JWK format.
+   - View detailed validation results and error reporting.
+4. 📊 **Review Results:**
+   - See visual indicators for token validity and expiration status.
+   - Understand the signing algorithm and security assessment.
+   - Copy individual token parts for debugging purposes.
+5. 🛠️ **Advanced Features:**
+   - Share tokens via URL parameters for collaboration.
+   - Use on mobile devices with responsive design.
+   - Learn about JWT security with built-in educational content.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -467,6 +593,10 @@ Key libraries used in specific tools:
   - ✅ `ajv`, `ajv-formats` (JSON Schema validation)
 - **Base64 Encoder/Decoder:**
   - Primarily uses built-in browser APIs (`btoa`, `atob`, `FileReader`) for core operations.
+- **JWT Decoder/Validator:**
+  - 🔐 `jwt-decode` (JWT token decoding)
+  - 🔒 `jose` (JWT signature validation and cryptographic operations)
+  - 🛡️ Built-in browser APIs for secure token processing
 
 ## 📦 Development
 
