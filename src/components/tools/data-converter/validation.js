@@ -325,32 +325,84 @@ export function validateTOML(input) {
     
     // Generate suggestions based on common TOML errors
     let message = error.message;
+    const lowerMessage = message.toLowerCase();
     
-    if (message.includes('Unexpected character')) {
-      suggestions.push("Check for unescaped special characters in strings");
-      suggestions.push("Use quotes around string values");
-      suggestions.push("Ensure proper TOML syntax for the data type");
+    // Enhanced error handling with more specific suggestions
+    if (lowerMessage.includes('unexpected character') || lowerMessage.includes('unexpected token')) {
+      if (message.includes('"') || message.includes("'")) {
+        suggestions.push("Check string quotes - TOML supports both single and double quotes");
+        suggestions.push("Ensure strings are properly closed with matching quotes");
+      } else {
+        suggestions.push("Check for invalid characters or syntax");
+        suggestions.push("Ensure proper TOML key=value format");
+        suggestions.push("Use quotes around string values that contain special characters");
+      }
     }
     
-    if (message.includes('Expected')) {
-      suggestions.push("Check the TOML syntax - ensure proper key=value format");
-      suggestions.push("Verify that arrays and inline tables are properly formatted");
+    if (lowerMessage.includes('expected') || lowerMessage.includes('missing')) {
+      if (lowerMessage.includes('=')) {
+        suggestions.push("Add an equals sign '=' between the key and value");
+        suggestions.push("TOML uses key = value format, not key: value");
+      } else if (lowerMessage.includes('newline') || lowerMessage.includes('end')) {
+        suggestions.push("Add a newline after the value");
+        suggestions.push("Each TOML key-value pair should be on its own line");
+      } else {
+        suggestions.push("Check the TOML syntax - ensure proper key=value format");
+        suggestions.push("Verify that arrays and inline tables are properly formatted");
+      }
     }
     
-    if (message.includes('Invalid')) {
-      if (message.includes('date')) {
-        suggestions.push("Use proper date format: YYYY-MM-DD or RFC 3339 format");
-      }
-      if (message.includes('number')) {
-        suggestions.push("Check number format - ensure no leading zeros or invalid characters");
-      }
-      if (message.includes('string')) {
+    if (lowerMessage.includes('invalid') || lowerMessage.includes('bad')) {
+      if (lowerMessage.includes('date') || lowerMessage.includes('time')) {
+        suggestions.push("Use proper date format: YYYY-MM-DD");
+        suggestions.push("Use proper datetime format: YYYY-MM-DDTHH:MM:SS or RFC 3339");
+        suggestions.push("Example: 2023-12-25T10:30:00Z");
+      } else if (lowerMessage.includes('number') || lowerMessage.includes('integer')) {
+        suggestions.push("Check number format - no leading zeros allowed (except 0 itself)");
+        suggestions.push("Use underscores for readability: 1_000_000");
+        suggestions.push("Ensure no invalid characters in numbers");
+      } else if (lowerMessage.includes('string')) {
         suggestions.push("Check string escaping and quote matching");
+        suggestions.push("Use triple quotes for multi-line strings: \"\"\"text\"\"\"");
+      } else if (lowerMessage.includes('boolean')) {
+        suggestions.push("Use lowercase: true or false (not True/False)");
       }
     }
     
-    if (message.includes('duplicate')) {
-      suggestions.push("Remove duplicate keys - TOML doesn't allow duplicate keys");
+    if (lowerMessage.includes('duplicate') || lowerMessage.includes('already defined')) {
+      suggestions.push("Remove duplicate keys - TOML doesn't allow duplicate keys in the same table");
+      suggestions.push("Use different key names or organize into separate tables");
+    }
+    
+    if (lowerMessage.includes('array') || lowerMessage.includes('bracket')) {
+      suggestions.push("Check array syntax: [item1, item2, item3]");
+      suggestions.push("Ensure arrays contain values of the same type");
+      suggestions.push("Use proper comma separation between array elements");
+    }
+    
+    if (lowerMessage.includes('table') || lowerMessage.includes('[')) {
+      suggestions.push("Check table header syntax: [table.name]");
+      suggestions.push("Ensure table names don't conflict with existing keys");
+      suggestions.push("Use [[array.of.tables]] for arrays of tables");
+    }
+    
+    // Check for common JSON-to-TOML conversion issues
+    if (input.includes(':') && !input.includes('=')) {
+      suggestions.push("TOML uses '=' not ':' for key-value pairs");
+      suggestions.push("Convert 'key: value' to 'key = value'");
+    }
+    
+    if (input.includes('{') || input.includes('}')) {
+      suggestions.push("TOML doesn't use curly braces for objects");
+      suggestions.push("Use [table.name] headers instead of nested objects");
+      suggestions.push("Consider using inline tables: table = { key = value }");
+    }
+    
+    // Default suggestions if none were generated
+    if (suggestions.length === 0) {
+      suggestions.push("Check TOML syntax - use key = value format");
+      suggestions.push("Ensure proper data types and formatting");
+      suggestions.push("Visit https://toml.io for TOML specification and examples");
     }
     
     const errorMessage = message || error.message || 'Unknown TOML parsing error';

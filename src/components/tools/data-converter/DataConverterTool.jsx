@@ -60,7 +60,8 @@ import {
   validateWithDetection, 
   validateWithSchema,
   formatErrorForDisplay,
-  commonSchemas
+  commonSchemas,
+  ValidationError
 } from './validation';
 import { loadSampleData } from './samples';
 
@@ -237,7 +238,41 @@ const DataConverterTool = () => {
         try {
           return TOML.stringify(data);
         } catch (e) {
-          throw new Error(`Cannot convert to TOML: ${e.message}`);
+          // Provide more helpful error messages for TOML conversion limitations
+          let errorMessage = e.message;
+          let suggestions = [];
+          
+          if (errorMessage.includes('stringify objects') || errorMessage.includes('Can only stringify')) {
+            errorMessage = "TOML can only convert simple objects, not arrays or primitive values at the root level";
+            suggestions.push("Wrap your data in an object: { data: [your array] }");
+            suggestions.push("TOML requires a top-level object structure");
+            suggestions.push("Consider using JSON or YAML for complex nested structures");
+          } else if (errorMessage.includes('nested') || errorMessage.includes('array')) {
+            errorMessage = "TOML doesn't support complex nested arrays of objects";
+            suggestions.push("Flatten your data structure or use simpler arrays");
+            suggestions.push("TOML works best with simple key-value pairs and basic arrays");
+            suggestions.push("Consider using JSON or YAML for complex nested data");
+          } else if (errorMessage.includes('circular') || errorMessage.includes('reference')) {
+            errorMessage = "TOML cannot handle circular references in objects";
+            suggestions.push("Remove circular references from your data");
+            suggestions.push("Ensure objects don't reference themselves");
+          } else if (errorMessage.includes('function') || errorMessage.includes('undefined')) {
+            errorMessage = "TOML cannot serialize functions or undefined values";
+            suggestions.push("Remove functions and undefined values from your data");
+            suggestions.push("TOML only supports basic data types: strings, numbers, booleans, arrays, and objects");
+          } else {
+            // Generic TOML conversion error
+            errorMessage = `TOML conversion failed: ${errorMessage}`;
+            suggestions.push("TOML has limitations - it works best with simple, flat data structures");
+            suggestions.push("Try converting to JSON or YAML instead for complex data");
+            suggestions.push("Ensure your data contains only basic types: strings, numbers, booleans, arrays, and simple objects");
+          }
+          
+          // Create a more detailed error with suggestions
+          const detailedError = new Error(errorMessage);
+          detailedError.suggestions = suggestions;
+          detailedError.format = 'TOML';
+          throw detailedError;
         }
       
       default:
@@ -395,8 +430,23 @@ const DataConverterTool = () => {
       } catch (conversionErr) {
         // Conversion error (e.g., TOML conversion limitations)
         setIsValid(false);
-        setError(`Conversion Error: ${conversionErr.message}`);
-        setValidationErrors([]);
+        
+        // Check if this is an enhanced error with suggestions
+        if (conversionErr.suggestions && conversionErr.suggestions.length > 0) {
+          // Create a validation error object for better display
+          const enhancedError = {
+            message: conversionErr.message,
+            suggestions: conversionErr.suggestions,
+            format: conversionErr.format || outputFormat.toUpperCase()
+          };
+          setValidationErrors([enhancedError]);
+          setError('');
+        } else {
+          // Fallback to simple error message
+          setError(`Conversion Error: ${conversionErr.message}`);
+          setValidationErrors([]);
+        }
+        
         setOutput('');
         setAnalysisData(null);
         setIsMinified(false);
