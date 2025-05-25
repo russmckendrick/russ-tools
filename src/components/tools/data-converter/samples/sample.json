@@ -1,0 +1,38 @@
+{
+  "company": "TechCorp Solutions",
+  "employees": [
+    {
+      "id": "EMP001",
+      "name": "Sarah Chen",
+      "role": "Senior Developer",
+      "email": "sarah.chen@techcorp.com",
+      "salary": 95000,
+      "skills": ["JavaScript", "React", "Node.js", "Python"],
+      "remote": true,
+      "startDate": "2021-03-15"
+    },
+    {
+      "id": "EMP002", 
+      "name": "Marcus Rodriguez",
+      "role": "DevOps Engineer",
+      "email": "marcus.r@techcorp.com",
+      "salary": 88000,
+      "skills": ["Docker", "Kubernetes", "AWS", "Terraform"],
+      "remote": false,
+      "startDate": "2020-11-08"
+    }
+  ],
+  "headquarters": {
+    "address": "456 Innovation Drive",
+    "city": "San Francisco",
+    "state": "CA",
+    "zipCode": "94105",
+    "coordinates": {
+      "lat": 37.7749,
+      "lng": -122.4194
+    }
+  },
+  "founded": 2018,
+  "publiclyTraded": false,
+  "revenue": 12500000
+} 

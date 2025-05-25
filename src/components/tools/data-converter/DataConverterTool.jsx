@@ -53,6 +53,16 @@ import '../../../styles/prism-theme.css';
 import yaml from 'js-yaml';
 import TOML from '@iarna/toml';
 import CompressIcon from './CompressIcon';
+import { 
+  validateJSON, 
+  validateYAML, 
+  validateTOML, 
+  validateWithDetection, 
+  validateWithSchema,
+  formatErrorForDisplay,
+  commonSchemas
+} from './validation';
+import { loadSampleData } from './samples';
 
 const DataConverterTool = () => {
   // State management
@@ -63,6 +73,14 @@ const DataConverterTool = () => {
   const [detectedFormat, setDetectedFormat] = useState(null);
   const [isValid, setIsValid] = useState(null);
   const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [schemaValidation, setSchemaValidation] = useState({
+    enabled: false,
+    schema: commonSchemas.user, // Initialize with default schema
+    customSchema: '',
+    selectedSchema: 'user',
+    results: null
+  });
   const [indentSize, setIndentSize] = useState(2);
   const [useSpaces, setUseSpaces] = useState(true);
   const [sortKeys, setSortKeys] = useState(false);
@@ -71,6 +89,11 @@ const DataConverterTool = () => {
   const [activeTab, setActiveTab] = useState('converter');
   const [analysisData, setAnalysisData] = useState(null);
   const [isMinified, setIsMinified] = useState(false);
+  const [sampleData, setSampleData] = useState({
+    json: '{"loading": true}',
+    yaml: 'loading: true',
+    toml: 'loading = true'
+  });
   const { colorScheme } = useMantineColorScheme();
   
   // Modal state
@@ -91,7 +114,7 @@ const DataConverterTool = () => {
     { value: 'toml', label: 'TOML' }
   ];
 
-  // Load history from localStorage on component mount
+  // Load history from localStorage and sample data on component mount
   useEffect(() => {
     const savedHistory = localStorage.getItem('data-converter-history');
     if (savedHistory) {
@@ -100,6 +123,14 @@ const DataConverterTool = () => {
       } catch (e) {
         console.error('Failed to load history:', e);
       }
+    }
+
+    // Load sample data from external files
+    try {
+      const samples = loadSampleData();
+      setSampleData(samples);
+    } catch (error) {
+      console.error('Failed to load sample data:', error);
     }
   }, []);
 
@@ -255,54 +286,107 @@ const DataConverterTool = () => {
     return analysis;
   };
 
-  // Process and convert data
+  // Process and convert data with enhanced validation
   const processData = useCallback(() => {
     if (!input.trim()) {
       setOutput('');
       setIsValid(null);
       setError('');
+      setValidationErrors([]);
       setAnalysisData(null);
       setDetectedFormat(null);
       setIsMinified(false);
       return;
     }
 
-    try {
-      // Parse input
-      const actualInputFormat = inputFormat === 'auto' ? detectFormat(input) : inputFormat;
-      setDetectedFormat(actualInputFormat);
-      
-      if (!actualInputFormat) {
-        throw new Error('Could not detect format. Please specify the input format manually.');
+    // Use enhanced validation
+    let validationResult;
+    
+    if (inputFormat === 'auto') {
+      validationResult = validateWithDetection(input);
+    } else {
+      switch (inputFormat) {
+        case 'json':
+          validationResult = validateJSON(input);
+          break;
+        case 'yaml':
+          validationResult = validateYAML(input);
+          break;
+        case 'toml':
+          validationResult = validateTOML(input);
+          break;
+        default:
+          validationResult = validateWithDetection(input);
       }
+    }
 
-      const parsedData = parseInput(input, inputFormat);
+    if (validationResult.success) {
+      // Validation successful
       setIsValid(true);
       setError('');
+      setValidationErrors([]);
+      setDetectedFormat(validationResult.detectedFormat || inputFormat);
 
-      // Analyze structure
-      const analysis = analyzeData(parsedData);
-      setAnalysisData(analysis);
+      try {
+        // Analyze structure
+        const analysis = analyzeData(validationResult.data);
+        setAnalysisData(analysis);
 
-      // Convert to output format
-      const converted = convertToFormat(parsedData, outputFormat);
-      setOutput(converted);
+        // Convert to output format
+        const converted = convertToFormat(validationResult.data, outputFormat);
+        setOutput(converted);
 
-      // Save to history
-      const historyEntry = {
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        inputFormat: actualInputFormat,
-        outputFormat,
-        input: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
-        output: converted.substring(0, 100) + (converted.length > 100 ? '...' : ''),
-        valid: true
-      };
-      saveHistory(historyEntry);
+        // Perform schema validation if enabled
+        if (schemaValidation.enabled && schemaValidation.schema) {
+          try {
+            const schemaResult = validateWithSchema(
+              validationResult.data, 
+              schemaValidation.schema,
+              input,
+              validationResult.detectedFormat || inputFormat
+            );
+            setSchemaValidation(prev => ({ ...prev, results: schemaResult }));
+          } catch (schemaError) {
+            console.error('Schema validation error:', schemaError);
+            setSchemaValidation(prev => ({ 
+              ...prev, 
+              results: {
+                success: false,
+                data: null,
+                errors: [{ message: `Schema validation failed: ${schemaError.message}` }]
+              }
+            }));
+          }
+        } else {
+          setSchemaValidation(prev => ({ ...prev, results: null }));
+        }
 
-    } catch (err) {
+        // Save to history
+        const historyEntry = {
+          id: Date.now(),
+          timestamp: new Date().toISOString(),
+          inputFormat: validationResult.detectedFormat || inputFormat,
+          outputFormat,
+          input: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
+          output: converted.substring(0, 100) + (converted.length > 100 ? '...' : ''),
+          valid: true
+        };
+        saveHistory(historyEntry);
+
+      } catch (conversionErr) {
+        // Conversion error (e.g., TOML conversion limitations)
+        setIsValid(false);
+        setError(`Conversion Error: ${conversionErr.message}`);
+        setValidationErrors([]);
+        setOutput('');
+        setAnalysisData(null);
+        setIsMinified(false);
+      }
+    } else {
+      // Validation failed
       setIsValid(false);
-      setError(err.message);
+      setValidationErrors(validationResult.errors || []);
+      setError('');
       setOutput('');
       setAnalysisData(null);
       setDetectedFormat(null);
@@ -386,9 +470,11 @@ const DataConverterTool = () => {
     setOutput('');
     setIsValid(null);
     setError('');
+    setValidationErrors([]);
     setAnalysisData(null);
     setDetectedFormat(null);
     setIsMinified(false);
+    setSchemaValidation(prev => ({ ...prev, results: null }));
   };
 
   // Copy to clipboard
@@ -510,46 +596,7 @@ const DataConverterTool = () => {
     }
   }, [outputFormat, indentSize, useSpaces, sortKeys, yamlFlowStyle]);
 
-  // Sample data for different formats
-  const sampleData = {
-    json: `{
-  "name": "John Doe",
-  "age": 30,
-  "email": "john.doe@example.com",
-  "address": {
-    "street": "123 Main St",
-    "city": "Anytown",
-    "zipCode": "12345"
-  },
-  "hobbies": ["reading", "coding", "hiking"],
-  "isActive": true,
-  "lastLogin": null
-}`,
-    yaml: `name: John Doe
-age: 30
-email: john.doe@example.com
-address:
-  street: 123 Main St
-  city: Anytown
-  zipCode: "12345"
-hobbies:
-  - reading
-  - coding
-  - hiking
-isActive: true
-lastLogin: null`,
-    toml: `name = "John Doe"
-age = 30
-email = "john.doe@example.com"
-isActive = true
-lastLogin = ""
-hobbies = ["reading", "coding", "hiking"]
 
-[address]
-street = "123 Main St"
-city = "Anytown"
-zipCode = "12345"`
-  };
 
   return (
     <Container size="xl" py="xl">
@@ -695,6 +742,35 @@ zipCode = "12345"`
               {format}
             </Button>
           ))}
+          <Button
+            size="xs"
+            variant="light"
+            color="blue"
+            onClick={() => {
+              // Use a simple user profile for schema demo
+              const userSample = `{
+  "name": "Alex Johnson",
+  "email": "alex.johnson@example.com",
+  "age": 28,
+  "website": "https://alexjohnson.dev",
+  "phone": "+1-555-123-4567",
+  "birthDate": "1995-08-22",
+  "isActive": true
+}`;
+              setInput(userSample);
+              setSchemaValidation(prev => ({ 
+                ...prev, 
+                enabled: true, 
+                selectedSchema: 'user',
+                schema: commonSchemas.user
+              }));
+              setActiveTab('schema');
+            }}
+            style={{ fontSize: '10px', height: '24px', padding: '0 8px' }}
+            radius="xl"
+          >
+            SCHEMA DEMO
+          </Button>
         </Group>
 
         {/* Main Content */}
@@ -705,6 +781,9 @@ zipCode = "12345"`
             </Tabs.Tab>
             <Tabs.Tab value="analysis" leftSection={<IconInfoCircle size={16} />}>
               Analysis
+            </Tabs.Tab>
+            <Tabs.Tab value="schema" leftSection={<IconCheck size={16} />}>
+              Schema Validation
             </Tabs.Tab>
           </Tabs.List>
 
@@ -762,6 +841,8 @@ zipCode = "12345"`
                         borderRadius: '8px',
                         backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
                         resize: 'none',
+                        overflowX: 'auto',
+                        whiteSpace: 'pre',
                         '&:focus': {
                           borderColor: 'var(--mantine-color-blue-5)',
                           boxShadow: '0 0 0 2px var(--mantine-color-blue-1)'
@@ -813,11 +894,11 @@ zipCode = "12345"`
                       </Card>
                     )}
                     
-                    {error && (
+                    {(error || validationErrors.length > 0) && (
                       <Alert 
                         color="red" 
                         icon={<IconAlertCircle size={20} />}
-                        title="Parsing Error"
+                        title={validationErrors.length > 0 ? "Validation Errors" : "Parsing Error"}
                         radius="md"
                         mt="xs"
                         styles={{
@@ -825,22 +906,97 @@ zipCode = "12345"`
                           title: { fontSize: '16px', fontWeight: 600 }
                         }}
                       >
-                        <Stack gap="xs">
-                          <Text size="sm">
-                            There's an issue with your input data. Please check the format and try again.
-                          </Text>
-                          <Code 
-                            block 
-                            color="red"
-                            style={{ 
-                              backgroundColor: 'var(--mantine-color-red-0)',
-                              border: '1px solid var(--mantine-color-red-2)',
-                              padding: '8px',
-                              borderRadius: '4px'
-                            }}
-                          >
-                            {error}
-                          </Code>
+                        <Stack gap="md">
+                          {error && (
+                            <>
+                              <Text size="sm">
+                                There's an issue with your input data. Please check the format and try again.
+                              </Text>
+                              <Code 
+                                block 
+                                color="red"
+                                style={{ 
+                                  backgroundColor: 'var(--mantine-color-red-0)',
+                                  border: '1px solid var(--mantine-color-red-2)',
+                                  padding: '8px',
+                                  borderRadius: '4px'
+                                }}
+                              >
+                                {error}
+                              </Code>
+                            </>
+                          )}
+                          
+                          {validationErrors.map((validationError, index) => {
+                            const formattedError = formatErrorForDisplay(validationError, input);
+                            return (
+                              <div key={index}>
+                                <Group gap="xs" mb="xs">
+                                  {validationError.format && (
+                                    <Badge color="red" size="sm" variant="light">
+                                      {validationError.format}
+                                    </Badge>
+                                  )}
+                                  {formattedError.line && (
+                                    <Badge color="orange" size="sm" variant="light">
+                                      Line {formattedError.line}
+                                      {formattedError.column && `:${formattedError.column}`}
+                                    </Badge>
+                                  )}
+                                </Group>
+                                
+                                <Text size="sm" mb="xs">
+                                  {formattedError.message}
+                                </Text>
+                                
+                                {formattedError.context && (
+                                  <Code 
+                                    block 
+                                    color="red"
+                                    style={{ 
+                                      backgroundColor: 'var(--mantine-color-red-0)',
+                                      border: '1px solid var(--mantine-color-red-2)',
+                                      padding: '8px',
+                                      borderRadius: '4px',
+                                      fontFamily: 'Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                      fontSize: '12px',
+                                      lineHeight: 1.4,
+                                      whiteSpace: 'pre'
+                                    }}
+                                  >
+                                    {formattedError.context}
+                                  </Code>
+                                )}
+                                
+                                {formattedError.suggestions && formattedError.suggestions.length > 0 && (
+                                  <div style={{ marginTop: '8px' }}>
+                                    <Text size="xs" fw={600} c="blue" mb="xs">
+                                      💡 Suggestions:
+                                    </Text>
+                                    <Stack gap="xs">
+                                      {formattedError.suggestions.map((suggestion, suggestionIndex) => (
+                                        <Text 
+                                          key={suggestionIndex} 
+                                          size="xs" 
+                                          c="dimmed"
+                                          style={{ 
+                                            paddingLeft: '12px',
+                                            borderLeft: '2px solid var(--mantine-color-blue-3)'
+                                          }}
+                                        >
+                                          • {suggestion}
+                                        </Text>
+                                      ))}
+                                    </Stack>
+                                  </div>
+                                )}
+                                
+                                {index < validationErrors.length - 1 && (
+                                  <Divider my="md" />
+                                )}
+                              </div>
+                            );
+                          })}
                         </Stack>
                       </Alert>
                     )}
@@ -1023,6 +1179,209 @@ zipCode = "12345"`
                 <Text c="dimmed">Enter valid data to see analysis</Text>
               </Paper>
             )}
+          </Tabs.Panel>
+
+          <Tabs.Panel value="schema" pt="md">
+            <Grid gutter="lg">
+              <Grid.Col span={{ base: 12, md: 6 }}>
+                <Card withBorder>
+                  <Title order={4} mb="md">Schema Configuration</Title>
+                  <Stack gap="md">
+                                         <Switch
+                       label="Enable Schema Validation"
+                       description="Validate data against a JSON schema"
+                       checked={schemaValidation.enabled}
+                       onChange={(event) => {
+                         const checked = event.currentTarget.checked;
+                         setSchemaValidation(prev => ({ 
+                           ...prev, 
+                           enabled: checked 
+                         }));
+                       }}
+                     />
+                    
+                    {schemaValidation.enabled && (
+                      <>
+                        <Select
+                          label="Common Schemas"
+                          description="Choose from predefined schemas or use custom"
+                          value={schemaValidation.selectedSchema}
+                          onChange={(value) => {
+                            setSchemaValidation(prev => ({ 
+                              ...prev, 
+                              selectedSchema: value,
+                              schema: value === 'custom' ? null : commonSchemas[value]
+                            }));
+                          }}
+                          data={[
+                            { value: 'user', label: 'User Profile' },
+                            { value: 'product', label: 'Product Data' },
+                            { value: 'config', label: 'Configuration' },
+                            { value: 'custom', label: 'Custom Schema' }
+                          ]}
+                        />
+                        
+                        {schemaValidation.selectedSchema === 'custom' && (
+                          <Textarea
+                            label="Custom JSON Schema"
+                            description="Enter your JSON schema definition"
+                            placeholder={`{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "email": { "type": "string", "format": "email" }
+  },
+  "required": ["name", "email"]
+}`}
+                            value={schemaValidation.customSchema}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setSchemaValidation(prev => ({ 
+                                ...prev, 
+                                customSchema: value
+                              }));
+                              
+                              // Try to parse custom schema
+                              try {
+                                const parsed = JSON.parse(value);
+                                setSchemaValidation(prev => ({ 
+                                  ...prev, 
+                                  schema: parsed
+                                }));
+                              } catch (err) {
+                                setSchemaValidation(prev => ({ 
+                                  ...prev, 
+                                  schema: null
+                                }));
+                              }
+                            }}
+                            autosize
+                            minRows={8}
+                            styles={{
+                              input: {
+                                fontFamily: 'Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                fontSize: '14px'
+                              }
+                            }}
+                          />
+                        )}
+                        
+                        {schemaValidation.selectedSchema !== 'custom' && (
+                          <Card withBorder p="sm" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
+                            <Text size="sm" fw={600} mb="xs">Schema Preview:</Text>
+                            <Code block style={{ fontSize: '12px', maxHeight: '200px', overflow: 'auto' }}>
+                              {JSON.stringify(commonSchemas[schemaValidation.selectedSchema], null, 2)}
+                            </Code>
+                          </Card>
+                        )}
+                      </>
+                    )}
+                  </Stack>
+                </Card>
+              </Grid.Col>
+              
+              <Grid.Col span={{ base: 12, md: 6 }}>
+                <Card withBorder>
+                  <Title order={4} mb="md">Validation Results</Title>
+                  {!schemaValidation.enabled ? (
+                    <Paper p="xl" ta="center">
+                      <Text c="dimmed">Enable schema validation to see results</Text>
+                    </Paper>
+                  ) : !schemaValidation.schema ? (
+                    <Paper p="xl" ta="center">
+                      <Text c="dimmed">Configure a schema to validate against</Text>
+                    </Paper>
+                  ) : !input.trim() ? (
+                    <Paper p="xl" ta="center">
+                      <Text c="dimmed">Enter data to validate</Text>
+                    </Paper>
+                  ) : schemaValidation.results ? (
+                    <Stack gap="md">
+                      <Group justify="space-between">
+                        <Badge 
+                          color={schemaValidation.results.success ? 'green' : 'red'} 
+                          size="lg"
+                          leftSection={schemaValidation.results.success ? <IconCheck size={14} /> : <IconX size={14} />}
+                        >
+                          {schemaValidation.results.success ? 'Valid' : 'Invalid'}
+                        </Badge>
+                        {schemaValidation.results.errors && (
+                          <Text size="sm" c="dimmed">
+                            {schemaValidation.results.errors.length} error(s)
+                          </Text>
+                        )}
+                      </Group>
+                      
+                      {schemaValidation.results.validatedFields && (
+                        <div>
+                          <Text size="sm" fw={600} mb="xs">Field Validation:</Text>
+                          <Stack gap="xs">
+                            {schemaValidation.results.validatedFields.map((field, index) => (
+                              <Group key={index} justify="space-between">
+                                <Group gap="xs">
+                                  <Text size="sm">{field.name}</Text>
+                                  <Badge size="xs" variant="light">
+                                    {field.type}
+                                    {field.format && `:${field.format}`}
+                                  </Badge>
+                                  {field.required && (
+                                    <Badge size="xs" color="orange" variant="light">
+                                      required
+                                    </Badge>
+                                  )}
+                                </Group>
+                                <Badge 
+                                  size="xs" 
+                                  color={field.valid ? 'green' : 'red'}
+                                  variant={field.valid ? 'light' : 'filled'}
+                                >
+                                  {field.present ? (field.valid ? 'valid' : 'invalid') : 'missing'}
+                                </Badge>
+                              </Group>
+                            ))}
+                          </Stack>
+                        </div>
+                      )}
+                      
+                      {schemaValidation.results.errors && schemaValidation.results.errors.length > 0 && (
+                        <div>
+                          <Text size="sm" fw={600} mb="xs" c="red">Validation Errors:</Text>
+                          <Stack gap="sm">
+                            {schemaValidation.results.errors.map((error, index) => (
+                              <Alert key={index} color="red" variant="light">
+                                <Text size="sm" mb="xs">{error.message}</Text>
+                                {error.suggestions && error.suggestions.length > 0 && (
+                                  <Stack gap="xs">
+                                    <Text size="xs" fw={600} c="blue">Suggestions:</Text>
+                                    {error.suggestions.map((suggestion, suggestionIndex) => (
+                                      <Text 
+                                        key={suggestionIndex} 
+                                        size="xs" 
+                                        c="dimmed"
+                                        style={{ 
+                                          paddingLeft: '12px',
+                                          borderLeft: '2px solid var(--mantine-color-blue-3)'
+                                        }}
+                                      >
+                                        • {suggestion}
+                                      </Text>
+                                    ))}
+                                  </Stack>
+                                )}
+                              </Alert>
+                            ))}
+                          </Stack>
+                        </div>
+                      )}
+                    </Stack>
+                  ) : (
+                    <Paper p="xl" ta="center">
+                      <Text c="dimmed">Processing validation...</Text>
+                    </Paper>
+                  )}
+                </Card>
+              </Grid.Col>
+            </Grid>
           </Tabs.Panel>
         </Tabs>
 

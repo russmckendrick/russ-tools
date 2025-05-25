@@ -1,0 +1,60 @@
+# Server Configuration File
+title = "Production Web Server Config"
+version = "2.1.0"
+last_updated = 2024-01-15T10:30:00Z
+
+[server]
+host = "api.mycompany.com"
+port = 8443
+ssl_enabled = true
+max_connections = 1000
+timeout_seconds = 30
+debug_mode = false
+
+[database]
+type = "postgresql"
+host = "db-cluster.internal"
+port = 5432
+name = "production_db"
+username = "app_user"
+pool_size = 20
+ssl_mode = "require"
+
+[redis]
+host = "redis-cluster.internal"
+port = 6379
+password = "secure_redis_password"
+db_index = 0
+max_connections = 50
+
+[logging]
+level = "info"
+format = "json"
+output = "/var/log/app/server.log"
+max_file_size = "100MB"
+max_files = 10
+compress_old_files = true
+
+[security]
+cors_origins = [
+  "https://mycompany.com",
+  "https://app.mycompany.com",
+  "https://admin.mycompany.com"
+]
+rate_limit_requests = 1000
+rate_limit_window = "1h"
+jwt_secret_key = "your-super-secret-jwt-key-here"
+session_timeout = "24h"
+
+[monitoring]
+enabled = true
+metrics_endpoint = "/metrics"
+health_check_endpoint = "/health"
+alert_email = "devops@mycompany.com"
+
+[features]
+user_registration = true
+email_verification = true
+two_factor_auth = false
+api_versioning = true
+caching = true 
