@@ -24,7 +24,9 @@ import {
   Switch,
   Progress,
   ScrollArea,
-  Center
+  Center,
+  Image,
+  Box
 } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
 import { useLocalStorage } from '@mantine/hooks';
@@ -76,6 +78,8 @@ const Base64Tool = () => {
   const [batchMode, setBatchMode] = useState(false);
   const [batchResults, setBatchResults] = useState([]);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [inputImagePreview, setInputImagePreview] = useState(null);
+  const [outputImagePreview, setOutputImagePreview] = useState(null);
 
   // Get input from URL parameters
   const { input: urlInput } = useParams();
@@ -99,16 +103,20 @@ const Base64Tool = () => {
 
   // Effect to auto-detect Base64 content
   useEffect(() => {
-    if (inputText.trim()) {
+    if (inputText.trim() && !selectedFile) { // Only auto-detect if no file is selected
       const detected = detectBase64(inputText.trim());
       setIsValidBase64(detected);
       if (detected && mode === 'encode') {
         setMode('decode');
       }
+    } else if (inputText.trim() && selectedFile) {
+      // If we have a file, just check if it's valid base64 but don't auto-switch mode
+      const detected = detectBase64(inputText.trim());
+      setIsValidBase64(detected);
     } else {
       setIsValidBase64(null);
     }
-  }, [inputText]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [inputText, selectedFile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Helper function to detect if text is Base64
   const detectBase64 = (text) => {
@@ -138,6 +146,63 @@ const Base64Tool = () => {
       }
     }
     return 'other';
+  };
+
+  // Helper function to check if a string is a valid Base64 image
+  const isBase64Image = (base64String) => {
+    if (!base64String) return false;
+    
+    // Check if it starts with data URL prefix
+    if (base64String.startsWith('data:image/')) {
+      return true;
+    }
+    
+    // Check if it's a raw base64 that could be an image
+    try {
+      // Try to create a data URL and see if it's a valid image format
+      const cleanBase64 = base64String.replace(/\s/g, '');
+      if (cleanBase64.length > 100) { // Images are typically larger
+        // Check if it starts with common image file signatures in base64
+        const imageSignatures = [
+          '/9j/', // JPEG
+          'iVBORw0KGgo', // PNG
+          'R0lGODlh', // GIF
+          'UklGR', // WebP
+          'PHN2Zw', // SVG (starts with <svg)
+        ];
+        
+        return imageSignatures.some(sig => cleanBase64.startsWith(sig));
+      }
+    } catch (error) {
+      return false;
+    }
+    
+    return false;
+  };
+
+  // Helper function to create image preview URL
+  const createImagePreviewUrl = (base64String, mimeType = null) => {
+    try {
+      if (base64String.startsWith('data:')) {
+        return base64String;
+      }
+      
+      // If no mime type provided, try to detect from base64 signature
+      let detectedMimeType = mimeType;
+      if (!detectedMimeType) {
+        const cleanBase64 = base64String.replace(/\s/g, '');
+        if (cleanBase64.startsWith('/9j/')) detectedMimeType = 'image/jpeg';
+        else if (cleanBase64.startsWith('iVBORw0KGgo')) detectedMimeType = 'image/png';
+        else if (cleanBase64.startsWith('R0lGODlh')) detectedMimeType = 'image/gif';
+        else if (cleanBase64.startsWith('UklGR')) detectedMimeType = 'image/webp';
+        else if (cleanBase64.startsWith('PHN2Zw')) detectedMimeType = 'image/svg+xml';
+        else detectedMimeType = 'image/png'; // Default fallback
+      }
+      
+      return `data:${detectedMimeType};base64,${base64String.replace(/\s/g, '')}`;
+    } catch (error) {
+      return null;
+    }
   };
 
   // Helper function to add operation to history
@@ -217,27 +282,48 @@ const Base64Tool = () => {
 
   // File processing functions
   const handleFileSelect = async (file) => {
-    if (!file) return;
+    if (!file) {
+      setInputImagePreview(null);
+      return;
+    }
     
     setSelectedFile(file);
     setLoading(true);
     setError(null);
+    setInputImagePreview(null);
     
     try {
       const fileType = getFileType(file.name);
       
-      if (fileType === 'text' || file.size < 1024 * 1024) { // Show preview for text files or files < 1MB
-        const text = await file.text();
-        setFileContent(text);
-        setInputText(text);
-      } else {
-        // For binary files, read as base64
+      if (fileType === 'image') {
+        // For images, create preview and read as base64
+        const imageUrl = URL.createObjectURL(file);
+        setInputImagePreview(imageUrl);
+        
         const reader = new FileReader();
         reader.onload = (e) => {
           const base64 = e.target.result.split(',')[1]; // Remove data URL prefix
           setFileContent(base64);
           setInputText(base64);
-          setMode('decode'); // Assume we want to decode file content
+          // Don't change mode automatically - let user decide
+        };
+        reader.readAsDataURL(file);
+      } else if (fileType === 'text' || file.size < 1024 * 1024) { // Show preview for text files or files < 1MB
+        const text = await file.text();
+        setFileContent(text);
+        setInputText(text);
+        // For text files, default to encode mode
+        if (mode === 'decode') {
+          setMode('encode');
+        }
+      } else {
+        // For other binary files, read as base64
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64 = e.target.result.split(',')[1]; // Remove data URL prefix
+          setFileContent(base64);
+          setInputText(base64);
+          // Don't change mode automatically - let user decide
         };
         reader.readAsDataURL(file);
       }
@@ -258,6 +344,7 @@ const Base64Tool = () => {
     setLoading(true);
     setError(null);
     setOutputText('');
+    setOutputImagePreview(null);
 
     try {
       let result;
@@ -266,6 +353,14 @@ const Base64Tool = () => {
         result = encodeBase64(input, type);
       } else {
         result = decodeBase64(input, type);
+        
+        // Check if the input Base64 could be an image and create preview
+        if (isBase64Image(input)) {
+          const imageUrl = createImagePreviewUrl(input);
+          if (imageUrl) {
+            setOutputImagePreview(imageUrl);
+          }
+        }
       }
       
       setOutputText(result);
@@ -425,6 +520,8 @@ const Base64Tool = () => {
     setError(null);
     setBatchResults([]);
     setProcessingProgress(0);
+    setInputImagePreview(null);
+    setOutputImagePreview(null);
   };
 
   return (
@@ -571,11 +668,15 @@ const Base64Tool = () => {
                 Input {batchMode && '(One per line)'}
               </Text>
               <Group>
-                {isValidBase64 !== null && (
+                {selectedFile ? (
+                  <Badge color="blue" size="sm">
+                    File Loaded: {getFileType(selectedFile.name)}
+                  </Badge>
+                ) : isValidBase64 !== null ? (
                   <Badge color={isValidBase64 ? 'green' : 'orange'} size="sm">
                     {isValidBase64 ? 'Valid Base64' : 'Not Base64'}
                   </Badge>
-                )}
+                ) : null}
                 <ActionIcon
                   size="sm"
                   variant="light"
@@ -587,24 +688,43 @@ const Base64Tool = () => {
               </Group>
             </Group>
             
-            <Textarea
-              placeholder={batchMode ? 
-                "Enter multiple lines to process in batch...\nLine 1\nLine 2\nLine 3" :
-                mode === 'encode' ? 
-                  "Enter text to encode..." : 
-                  "Enter Base64 text to decode..."
-              }
-              value={inputText}
-              onChange={(event) => setInputText(event.currentTarget.value)}
-              minRows={8}
-              maxRows={12}
-              autosize
-            />
-            
-            {inputText && (
-              <Text size="xs" color="dimmed" mt="xs">
-                {inputText.length} characters
-              </Text>
+            {inputImagePreview ? (
+              <Box>
+                <Text size="sm" fw={500} mb="xs">Image Preview:</Text>
+                <Image
+                  src={inputImagePreview}
+                  alt="Input image preview"
+                  fit="contain"
+                  h={200}
+                  radius="md"
+                  withPlaceholder
+                />
+                <Text size="xs" color="dimmed" mt="xs">
+                  Image loaded • {inputText.length} characters in Base64
+                </Text>
+              </Box>
+            ) : (
+              <>
+                <Textarea
+                  placeholder={batchMode ? 
+                    "Enter multiple lines to process in batch...\nLine 1\nLine 2\nLine 3" :
+                    mode === 'encode' ? 
+                      "Enter text to encode..." : 
+                      "Enter Base64 text to decode..."
+                  }
+                  value={inputText}
+                  onChange={(event) => setInputText(event.currentTarget.value)}
+                  minRows={8}
+                  maxRows={12}
+                  autosize
+                />
+                
+                {inputText && (
+                  <Text size="xs" color="dimmed" mt="xs">
+                    {inputText.length} characters
+                  </Text>
+                )}
+              </>
             )}
           </Card>
         </Grid.Col>
@@ -662,6 +782,21 @@ const Base64Tool = () => {
                   ))}
                 </Stack>
               </ScrollArea>
+            ) : outputImagePreview ? (
+              <Box>
+                <Text size="sm" fw={500} mb="xs">Decoded Image:</Text>
+                <Image
+                  src={outputImagePreview}
+                  alt="Decoded image"
+                  fit="contain"
+                  h={200}
+                  radius="md"
+                  withPlaceholder
+                />
+                <Text size="xs" color="dimmed" mt="xs">
+                  Image decoded successfully • {outputText.length} characters
+                </Text>
+              </Box>
             ) : (
               <Textarea
                 placeholder="Output will appear here..."
@@ -673,7 +808,7 @@ const Base64Tool = () => {
               />
             )}
             
-            {outputText && (
+            {outputText && !outputImagePreview && (
               <Text size="xs" color="dimmed" mt="xs">
                 {outputText.length} characters
               </Text>
