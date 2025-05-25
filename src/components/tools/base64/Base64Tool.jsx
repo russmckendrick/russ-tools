@@ -34,8 +34,7 @@ import {
   IconPhoto,
   IconFile,
   IconCheck,
-  IconX,
-  IconArrowsExchange
+  IconX
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import Base64Icon from './Base64Icon';
@@ -343,30 +342,49 @@ const Base64Tool = () => {
         const imageUrl = URL.createObjectURL(file);
         setInputImagePreview(imageUrl);
         
+        // Switch to encode mode for actual image files
+        setMode('encode');
+        
         const reader = new FileReader();
         reader.onload = (e) => {
           const base64 = e.target.result.split(',')[1]; // Remove data URL prefix
           setFileContent(base64);
           setInputText(base64);
-          // Don't change mode automatically - let user decide
         };
         reader.readAsDataURL(file);
       } else if (fileType === 'text' || file.size < 1024 * 1024) { // Show preview for text files or files < 1MB
         const text = await file.text();
         setFileContent(text);
         setInputText(text);
-        // For text files, default to encode mode
-        if (mode === 'decode') {
+        
+        // Check if the text file contains Base64 data
+        const trimmedText = text.trim();
+        const isBase64Content = detectBase64(trimmedText);
+        
+        if (isBase64Content) {
+          // Switch to decode mode for Base64 content
+          setMode('decode');
+          
+          // Check if it's a Base64 image and show preview
+          if (isBase64Image(trimmedText)) {
+            const imageUrl = createImagePreviewUrl(trimmedText);
+            if (imageUrl) {
+              setInputImagePreview(imageUrl);
+            }
+          }
+        } else {
+          // For regular text files, switch to encode mode
           setMode('encode');
         }
       } else {
-        // For other binary files, read as base64
+        // For other binary files, read as base64 and switch to encode mode
+        setMode('encode');
+        
         const reader = new FileReader();
         reader.onload = (e) => {
           const base64 = e.target.result.split(',')[1]; // Remove data URL prefix
           setFileContent(base64);
           setInputText(base64);
-          // Don't change mode automatically - let user decide
         };
         reader.readAsDataURL(file);
       }
@@ -484,13 +502,7 @@ const Base64Tool = () => {
     processBase64Operation(inputText, mode, encodingType);
   };
 
-  const handleSwapMode = () => {
-    setMode(mode === 'encode' ? 'decode' : 'encode');
-    if (outputText) {
-      setInputText(outputText);
-      setOutputText('');
-    }
-  };
+  // Swap mode function removed - now using toggle switch
 
   // History functions removed for performance
 
@@ -594,35 +606,29 @@ const Base64Tool = () => {
       {/* Controls */}
       <Card shadow="sm" padding="lg" radius="md" withBorder mb="lg">
         <Grid>
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <Select
-              label="Operation"
-              value={mode}
-              onChange={setMode}
-              data={[
-                { value: 'encode', label: 'Encode to Base64' },
-                { value: 'decode', label: 'Decode from Base64' }
-              ]}
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Switch
+              label={mode === 'encode' ? 'Encode to Base64' : 'Decode from Base64'}
+              description={mode === 'encode' ? 'Convert text/files to Base64' : 'Convert Base64 back to original format'}
+              checked={mode === 'decode'}
+              onChange={(event) => setMode(event.currentTarget.checked ? 'decode' : 'encode')}
+              size="lg"
+              thumbIcon={
+                mode === 'encode' ? (
+                  <IconUpload size={12} />
+                ) : (
+                  <IconDownload size={12} />
+                )
+              }
             />
           </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 5 }}>
+          <Grid.Col span={{ base: 12, md: 6 }}>
             <Select
               label="Encoding Type"
               value={encodingType}
               onChange={setEncodingType}
               data={ENCODING_MODES}
             />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 3 }}>
-            <Button
-              fullWidth
-              leftSection={<IconArrowsExchange size={16} />}
-              onClick={handleSwapMode}
-              variant="light"
-              style={{ marginTop: 25 }}
-            >
-              Swap
-            </Button>
           </Grid.Col>
         </Grid>
       </Card>
@@ -723,6 +729,15 @@ const Base64Tool = () => {
                   title="Paste from clipboard"
                 >
                   <IconClipboard size={14} />
+                </ActionIcon>
+                <ActionIcon
+                  size="sm"
+                  variant="light"
+                  color="red"
+                  onClick={clearAll}
+                  title="Clear all"
+                >
+                  <IconTrash size={14} />
                 </ActionIcon>
               </Group>
             </Group>
@@ -859,14 +874,6 @@ const Base64Tool = () => {
           size="lg"
         >
           {mode === 'encode' ? 'Encode' : 'Decode'}
-        </Button>
-        
-        <Button
-          variant="light"
-          leftSection={<IconTrash size={16} />}
-          onClick={clearAll}
-        >
-          Clear All
         </Button>
       </Group>
 
