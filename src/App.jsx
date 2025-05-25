@@ -9,6 +9,8 @@ import CronBuilderTool from './components/tools/cron/CronBuilderTool';
 import SSLCheckerTool from './components/tools/ssl-checker/SSLCheckerTool';
 import DNSLookupTool from './components/tools/dns-lookup/DNSLookupTool';
 import WHOISLookupTool from './components/tools/whois/WHOISLookupTool';
+import DataConverterTool from './components/tools/data-converter/DataConverterTool';
+import Base64Tool from './components/tools/base64/Base64Tool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -63,6 +65,13 @@ export default function App() {
               {/* WHOIS Lookup Tool route */}
               <Route path="whois-lookup" element={<WHOISLookupTool />} />
               <Route path="whois-lookup/:query" element={<WHOISLookupTool />} />
+
+              {/* JSON Formatter Tool route */}
+                              <Route path="data-converter" element={<DataConverterTool />} />
+
+              {/* Base64 Encoder/Decoder Tool route */}
+              <Route path="base64" element={<Base64Tool />} />
+              <Route path="base64/:input" element={<Base64Tool />} />
 
               {/* Add more routes here as needed */}
             </Route>

@@ -20,6 +20,10 @@ export function PageTitle() {
       title = 'DNS Lookup Tool - russ.tools';
     } else if (normalizedPath === '/whois-lookup') {
       title = 'WHOIS Lookup Tool - russ.tools';
+    } else if (normalizedPath === '/data-converter') {
+              title = 'Data Converter - russ.tools';
+    } else if (normalizedPath === '/base64') {
+      title = 'Base64 Encoder/Decoder - russ.tools';
     } else if (normalizedPath === '/cron') {
       title = 'Cron Builder Tool - russ.tools';
     }

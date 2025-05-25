@@ -15,5 +15,9 @@ export default defineConfig({
   // Ensure JSON files are properly handled
   json: {
     stringify: true
+  },
+  // Add global polyfill for Node.js libraries
+  define: {
+    global: 'globalThis',
   }
 })

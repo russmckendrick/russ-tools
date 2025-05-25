@@ -1,0 +1,58 @@
+# E-commerce Product Catalog
+products:
+  - id: PROD-2024-001
+    name: "Wireless Bluetooth Headphones"
+    category: Electronics
+    brand: AudioTech
+    price: 129.99
+    currency: USD
+    inStock: true
+    quantity: 45
+    ratings:
+      average: 4.7
+      count: 1284
+    features:
+      - "Active Noise Cancellation"
+      - "30-hour battery life"
+      - "Quick charge (15min = 3hrs)"
+      - "Multipoint connectivity"
+    dimensions:
+      width: 190
+      height: 165
+      depth: 85
+      weight: 250
+    colors:
+      - Black
+      - Silver
+      - Navy Blue
+    
+  - id: PROD-2024-002
+    name: "Smart Fitness Watch"
+    category: Wearables
+    brand: FitTrack
+    price: 249.99
+    currency: USD
+    inStock: false
+    quantity: 0
+    ratings:
+      average: 4.3
+      count: 892
+    features:
+      - "Heart rate monitoring"
+      - "GPS tracking"
+      - "Sleep analysis"
+      - "Water resistant (50m)"
+    dimensions:
+      width: 44
+      height: 38
+      depth: 10.7
+      weight: 32
+    colors:
+      - Space Gray
+      - Rose Gold
+
+store_info:
+  name: "TechGadgets Plus"
+  established: 2019
+  locations: 12
+  online_only: false 

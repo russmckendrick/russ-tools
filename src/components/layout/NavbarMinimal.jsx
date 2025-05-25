@@ -33,6 +33,8 @@ import { useDisclosure } from '@mantine/hooks';
 import classes from './HeaderMegaMenu.module.css';
 import DNSIcon from '../tools/dns-lookup/DNSIcon';
 import WHOISIcon from '../tools/whois/WHOISIcon';
+import JSONIcon from '../tools/data-converter/JSONIcon';
+import Base64Icon from '../tools/base64/Base64Icon';
 
 const mockdata = [
   {
@@ -70,6 +72,18 @@ const mockdata = [
     title: 'WHOIS Lookup Tool',
     description: "Get detailed information about domains and IP addresses",
     link: "/whois-lookup/",
+  },
+  {
+    icon: JSONIcon,
+          title: 'Data Converter',
+      description: "Convert between JSON, YAML, and TOML formats",
+    link: "/data-converter/",
+  },
+  {
+    icon: Base64Icon,
+    title: 'Base64 Encoder/Decoder',
+    description: "Encode and decode text and files using Base64",
+    link: "/base64/",
   },
   {
     icon: IconBrandGithub,
