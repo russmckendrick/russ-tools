@@ -11,6 +11,7 @@ import DNSLookupTool from './components/tools/dns-lookup/DNSLookupTool';
 import WHOISLookupTool from './components/tools/whois/WHOISLookupTool';
 import DataConverterTool from './components/tools/data-converter/DataConverterTool';
 import Base64Tool from './components/tools/base64/Base64Tool';
+import JWTTool from './components/tools/jwt/JWTTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -72,6 +73,10 @@ export default function App() {
               {/* Base64 Encoder/Decoder Tool route */}
               <Route path="base64" element={<Base64Tool />} />
               <Route path="base64/:input" element={<Base64Tool />} />
+
+              {/* JWT Decoder/Validator Tool route */}
+              <Route path="jwt" element={<JWTTool />} />
+              <Route path="jwt/:token" element={<JWTTool />} />
 
               {/* Add more routes here as needed */}
             </Route>
