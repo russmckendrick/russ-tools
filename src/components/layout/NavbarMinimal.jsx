@@ -54,7 +54,7 @@ const mockdata = [
   },
   {
     icon: IconClock,
-    title: 'Cron Expression Builder',
+    title: 'CRON Expression Builder',
     description: "Build and validate cron job expressions",
     link: "/cron/",
     color: "orange",

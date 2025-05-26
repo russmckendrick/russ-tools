@@ -27,7 +27,7 @@ export function PageTitle() {
     } else if (normalizedPath === '/jwt') {
       title = 'JWT Decoder/Validator - russ.tools';
     } else if (normalizedPath === '/cron') {
-      title = 'Cron Builder Tool - russ.tools';
+      title = 'CRON Expression Builder - russ.tools';
     }
 
     document.title = title;

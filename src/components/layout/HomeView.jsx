@@ -28,6 +28,15 @@ export default function HomeView() {
       path: '/azure-naming'
     },
     {
+      id: 'cron-builder',
+      title: 'CRON Expression Builder',
+      description: 'Build and validate cron job expressions with an intuitive interface. Generate scheduling patterns for automated tasks and system jobs.',
+      icon: IconClock,
+      iconColor: 'orange',
+      badges: ['Schedule Builder', 'Expression Validator', 'Human Readable'],
+      path: '/cron'
+    },
+    {
       id: 'ssl-checker',
       title: 'SSL Certificate Checker',
       description: 'Analyze and validate SSL certificates for any domain. Get detailed security analysis, certificate information, and vulnerability testing using industry-standard SSL Labs API.',
@@ -71,15 +80,6 @@ export default function HomeView() {
       iconColor: 'teal',
       badges: ['Multiple Variants', 'File Support', 'Batch Processing'],
       path: '/base64'
-    },
-    {
-      id: 'cron-builder',
-      title: 'Cron Expression Builder',
-      description: 'Build and validate cron job expressions with an intuitive interface. Generate scheduling patterns for automated tasks and system jobs.',
-      icon: IconClock,
-      iconColor: 'orange',
-      badges: ['Schedule Builder', 'Expression Validator', 'Human Readable'],
-      path: '/cron'
     },
     {
       id: 'jwt',

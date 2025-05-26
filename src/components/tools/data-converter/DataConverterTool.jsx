@@ -714,7 +714,7 @@ const DataConverterTool = () => {
             </ThemeIcon>
             <div>
               <Title order={2} fw={600}>
-                Data Format Converter
+                Data Converter
               </Title>
               <Text size="sm" c="dimmed">
                 Convert between JSON, YAML, and TOML formats with validation and formatting
