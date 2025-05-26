@@ -610,21 +610,24 @@ const Base64Tool = () => {
   };
 
   return (
-    <Paper shadow="sm" radius="md" p="xl" withBorder>
+    <Paper p="xl" radius="lg" withBorder>
       <LoadingOverlay visible={loading} />
       
-      {/* Header */}
-      <Group mb="lg">
-        <ThemeIcon size="xl" radius="md" variant="light">
-          <Base64Icon size={28} />
-        </ThemeIcon>
-        <div>
-          <Title order={2}>Base64 Encoder/Decoder</Title>
-          <Text size="sm" color="dimmed">
-            Encode and decode text and files using Base64 encoding with multiple variants
-          </Text>
-        </div>
-      </Group>
+      <Stack gap="xl">
+        {/* Header */}
+        <Group gap="md">
+          <ThemeIcon size={48} radius="md" color="teal" variant="light">
+            <Base64Icon size={28} />
+          </ThemeIcon>
+          <div>
+            <Title order={2} fw={600}>
+              Base64 Encoder/Decoder
+            </Title>
+            <Text size="sm" c="dimmed">
+              Encode and decode text and files using Base64 encoding with multiple variants
+            </Text>
+          </div>
+        </Group>
 
       {/* Controls */}
       <Card shadow="sm" padding="lg" radius="md" withBorder mb="lg">
@@ -913,7 +916,8 @@ const Base64Tool = () => {
         </Alert>
       )}
 
-      {/* History section removed for performance with large files */}
+        {/* History section removed for performance with large files */}
+      </Stack>
     </Paper>
   );
 };

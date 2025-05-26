@@ -20,7 +20,8 @@ import {
   ActionIcon,
   Tooltip,
   LoadingOverlay,
-  Divider
+  Divider,
+  useMantineColorScheme
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import { useParams, Link } from 'react-router-dom';
@@ -65,6 +66,7 @@ const DNSLookupTool = () => {
   const [lookupResults, setLookupResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { colorScheme } = useMantineColorScheme();
 
   // Get domain from URL parameters
   const { domain: urlDomain } = useParams();
@@ -408,18 +410,20 @@ const DNSLookupTool = () => {
   };
 
   return (
-    <Paper shadow="xs" p="xl" radius="md" style={{ maxWidth: 1200, margin: '0 auto' }}>
+    <Paper p="xl" radius="lg" withBorder>
       <LoadingOverlay visible={loading} overlayProps={{ radius: 'sm', blur: 2 }} />
       
-      <Stack spacing="lg">
+      <Stack gap="xl">
         {/* Header */}
-        <Group align="center" spacing="md">
-          <ThemeIcon size="lg" radius="md" variant="light" color="blue">
+        <Group gap="md">
+          <ThemeIcon size={48} radius="md" variant="light" color="indigo">
             <DNSIcon size={28} />
           </ThemeIcon>
           <div>
-            <Title order={2}>DNS Lookup Tool</Title>
-            <Text size="sm" color="dimmed">
+            <Title order={2} fw={600}>
+              DNS Lookup Tool
+            </Title>
+            <Text size="sm" c="dimmed">
               Perform DNS queries for various record types using different DNS providers
             </Text>
           </div>
@@ -519,7 +523,7 @@ const DNSLookupTool = () => {
                     {lookupResults.Answer.map((record, index) => (
                       <div key={index} style={{ 
                         padding: 'var(--mantine-spacing-sm)', 
-                        backgroundColor: 'var(--mantine-color-gray-0)', 
+                        backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)', 
                         borderRadius: 'var(--mantine-radius-sm)' 
                       }}>
                         <DNSRecordDisplay record={record} />
@@ -539,23 +543,23 @@ const DNSLookupTool = () => {
                 <Text size="lg" fw={500} mb="md">Query Details</Text>
                 <Grid>
                   <Grid.Col span={{ base: 12, md: 6 }}>
-                    <Text size="sm" color="dimmed">Domain</Text>
+                    <Text size="sm" c="dimmed">Domain</Text>
                     <Text fw={500}>{lookupResults.domain}</Text>
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
-                    <Text size="sm" color="dimmed">Record Type</Text>
+                    <Text size="sm" c="dimmed">Record Type</Text>
                     <Text fw={500}>{lookupResults.recordType}</Text>
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
-                    <Text size="sm" color="dimmed">DNS Provider</Text>
+                    <Text size="sm" c="dimmed">DNS Provider</Text>
                     <Text fw={500}>{DNS_PROVIDERS.find(p => p.value === lookupResults.provider)?.label}</Text>
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
-                    <Text size="sm" color="dimmed">Status Code</Text>
+                    <Text size="sm" c="dimmed">Status Code</Text>
                     <Text fw={500}>{lookupResults.statusCode}</Text>
                   </Grid.Col>
                   <Grid.Col span={12}>
-                    <Text size="sm" color="dimmed">Query Time</Text>
+                    <Text size="sm" c="dimmed">Query Time</Text>
                     <Text fw={500}>{new Date(lookupResults.timestamp).toLocaleString()}</Text>
                   </Grid.Col>
                 </Grid>
@@ -618,7 +622,7 @@ const DNSLookupTool = () => {
                   }
                   bullet={<DNSIcon size={12} />}
                 >
-                  <Text size="xs" color="dimmed">
+                  <Text size="xs" c="dimmed">
                     {new Date(item.timestamp).toLocaleString()} • {item.recordCount} records
                   </Text>
                   <Button

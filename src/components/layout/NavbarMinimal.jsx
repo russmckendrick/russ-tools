@@ -43,60 +43,70 @@ const mockdata = [
     title: 'Network Designer',
     description: "Plan your cloud network and subnets",
     link: "/network-designer/",
+    color: "blue",
   },
   {
     icon: IconBrandAzure,
     title: 'Azure Resource Naming Tool',
     description: "Generate and validate Azure resource names",
     link: "/azure-naming/",
+    color: "cyan",
   },
   {
     icon: IconClock,
     title: 'Cron Expression Builder',
     description: "Build and validate cron job expressions",
     link: "/cron/",
+    color: "orange",
   },
   {
     icon: IconShield,
     title: 'SSL Certificate Checker',
     description: "Analyze and validate SSL certificates",
     link: "/ssl-checker/",
+    color: "green",
   },
   {
     icon: DNSIcon,
     title: 'DNS Lookup Tool',
     description: "Perform DNS queries for various record types",
     link: "/dns-lookup/",
+    color: "indigo",
   },
   {
     icon: WHOISIcon,
     title: 'WHOIS Lookup Tool',
     description: "Get detailed information about domains and IP addresses",
     link: "/whois-lookup/",
+    color: "violet",
   },
   {
     icon: JSONIcon,
-          title: 'Data Converter',
-      description: "Convert between JSON, YAML, and TOML formats",
+    title: 'Data Converter',
+    description: "Convert between JSON, YAML, and TOML formats",
     link: "/data-converter/",
+    color: "yellow",
   },
   {
     icon: Base64Icon,
     title: 'Base64 Encoder/Decoder',
     description: "Encode and decode text and files using Base64",
     link: "/base64/",
+    color: "teal",
   },
   {
     icon: JWTIcon,
     title: 'JWT Decoder/Validator',
     description: "Decode JWT tokens client-side without external services",
     link: "/jwt/",
+    color: "red",
   },
   {
     icon: IconBrandGithub,
     title: 'Source Code',
     description: "View the source code on GitHub",
     link: "https://github.com/russmckendrick/russ-tools",
+    color: "gray",
   },
 ];
 
@@ -128,18 +138,18 @@ export function NavbarMinimal() {
       <UnstyledButton className={classes.subLink}>
         <Group wrap="nowrap" align="flex-start">
           <ThemeIcon size={34} variant="default" radius="md">
-          <item.icon size={22} color={theme.colors.blue[6]} />
-        </ThemeIcon>
-        <div>
-          <Text size="sm" fw={500}>
-            {item.title}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {item.description}
-          </Text>
-        </div>
-      </Group>
-    </UnstyledButton>
+            <item.icon size={22} color={theme.colors[item.color][6]} />
+          </ThemeIcon>
+          <div>
+            <Text size="sm" fw={500}>
+              {item.title}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {item.description}
+            </Text>
+          </div>
+        </Group>
+      </UnstyledButton>
     </a>
   ));
 
