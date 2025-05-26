@@ -49,15 +49,18 @@ import Prism from 'prismjs';
 import 'prismjs/components/prism-json';
 import '../../../styles/prism-theme.css';
 import WHOISIcon from './WHOISIcon';
+import { useTLDs } from '../../../utils';
 
 const WHOISLookupTool = () => {
   const [query, setQuery] = useState('');
   const [lookupResults, setLookupResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [tldList, setTldList] = useState([]);
   const [autocompleteData, setAutocompleteData] = useState([]);
   const { colorScheme } = useMantineColorScheme();
+  
+  // Use TLD utilities hook
+  const { tldList, generateSuggestions, isReady: tldReady } = useTLDs();
 
   // Get query from URL parameters
   const { query: urlQuery } = useParams();
@@ -76,82 +79,15 @@ const WHOISLookupTool = () => {
   // Cache duration in milliseconds (30 minutes for WHOIS)
   const CACHE_DURATION = 30 * 60 * 1000;
 
-  // Effect to load TLD list from RDAP registry
-  useEffect(() => {
-    const loadTLDs = async () => {
-      try {
-        // Try the main IANA RDAP bootstrap endpoint first
-        const response = await fetch('https://data.iana.org/rdap/dns.json');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.services) {
-            // Extract TLDs from RDAP services
-            const tlds = [];
-            data.services.forEach(service => {
-              const [tldArray] = service;
-              tlds.push(...tldArray);
-            });
-            setTldList(tlds.sort());
-            console.log(`📋 Loaded ${tlds.length} TLDs from IANA RDAP`);
-            return;
-          }
-        }
-      } catch (error) {
-        console.log('Primary RDAP endpoint failed:', error);
-      }
-
-      // Fallback to comprehensive TLD list
-      console.log('📋 Using fallback TLD list');
-      setTldList([
-        // Generic TLDs
-        'com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'name',
-        'mobi', 'coop', 'museum', 'aero', 'pro', 'jobs', 'travel', 'cat', 'tel',
-        
-        // New gTLDs
-        'app', 'blog', 'cloud', 'dev', 'tech', 'io', 'ai', 'co', 'me', 'tv',
-        'fm', 'am', 'pm', 'ly', 'gl', 'ag', 'cc', 'ws', 'tk', 'ml', 'ga', 'cf',
-        
-        // Country codes (major ones)
-        'us', 'uk', 'ca', 'au', 'de', 'fr', 'it', 'es', 'nl', 'be', 'ch', 'at',
-        'se', 'no', 'dk', 'fi', 'ie', 'pt', 'gr', 'pl', 'cz', 'hu', 'ro', 'bg',
-        'hr', 'si', 'sk', 'lt', 'lv', 'ee', 'ru', 'ua', 'by', 'md', 'rs', 'me',
-        'ba', 'mk', 'al', 'tr', 'cy', 'mt', 'is', 'fo', 'gl', 'li', 'mc', 'sm',
-        'va', 'ad', 'lu', 'jp', 'kr', 'cn', 'hk', 'tw', 'sg', 'my', 'th', 'vn',
-        'ph', 'id', 'in', 'bd', 'pk', 'lk', 'np', 'bt', 'mv', 'af', 'ir', 'iq',
-        'sa', 'ae', 'qa', 'kw', 'bh', 'om', 'ye', 'jo', 'sy', 'lb', 'il', 'ps',
-        'eg', 'ly', 'tn', 'dz', 'ma', 'sd', 'et', 'ke', 'tz', 'ug', 'rw', 'bi',
-        'cd', 'cg', 'cm', 'cf', 'td', 'ne', 'ng', 'gh', 'ci', 'bf', 'ml', 'sn',
-        'gm', 'gw', 'gn', 'sl', 'lr', 'mr', 'mz', 'zm', 'zw', 'bw', 'na', 'sz',
-        'ls', 'za', 'mg', 'mu', 'sc', 'km', 'dj', 'so', 'er', 'br', 'ar', 'cl',
-        'pe', 'ec', 'co', 've', 'gy', 'sr', 'uy', 'py', 'bo', 'mx', 'gt', 'bz',
-        'sv', 'hn', 'ni', 'cr', 'pa', 'cu', 'jm', 'ht', 'do', 'pr', 'bb', 'tt',
-        'vc', 'lc', 'gd', 'ag', 'dm', 'kn', 'bs', 'tc', 'vg', 'vi', 'ky', 'bm'
-      ].sort());
-    };
-    
-    loadTLDs();
-  }, []);
-
   // Effect to update autocomplete data when query changes
   useEffect(() => {
-    if (query.includes('.') && query.length > 1 && tldList.length > 0) {
-      const parts = query.split('.');
-      const lastPart = parts[parts.length - 1].toLowerCase();
-      const domainBase = parts.slice(0, -1).join('.');
-      
-      if (domainBase && lastPart.length > 0) {
-        const suggestions = tldList
-          .filter(tld => tld && tld.toLowerCase().startsWith(lastPart))
-          .slice(0, 10)
-          .map(tld => `${domainBase}.${tld}`);
-        setAutocompleteData(suggestions);
-      } else {
-        setAutocompleteData([]);
-      }
+    if (tldReady) {
+      const suggestions = generateSuggestions(query, 10);
+      setAutocompleteData(suggestions);
     } else {
       setAutocompleteData([]);
     }
-  }, [query, tldList]);
+  }, [query, tldReady, generateSuggestions]);
 
   // Effect to handle URL query parameter
   useEffect(() => {

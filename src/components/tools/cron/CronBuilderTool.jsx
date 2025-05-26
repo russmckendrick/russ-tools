@@ -76,7 +76,7 @@ const CronBuilderTool = () => {
           </ThemeIcon>
           <div>
             <Title order={2} fw={600}>
-              Cron Job Expression Builder/Validator
+              CRON Expression Builder
             </Title>
             <Text size="sm" c="dimmed">
               Build and validate cron expressions with ease

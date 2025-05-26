@@ -31,3 +31,14 @@ export function longToIp(long) {
 }
 
 export { getSubnetBgColorHex } from './getSubnetBgColorHex';
+export { 
+  loadTLDs, 
+  generateDomainSuggestions, 
+  generateSubdomainSuggestions,
+  isValidTLD, 
+  extractTLD, 
+  extractRootDomain,
+  isDomainLike, 
+  useTLDs, 
+  tldUtils 
+} from './tldUtils';
