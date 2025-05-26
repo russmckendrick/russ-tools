@@ -660,18 +660,20 @@ const WHOISLookupTool = () => {
   };
 
   return (
-    <Paper shadow="xs" p="xl" radius="md" style={{ maxWidth: 1200, margin: '0 auto' }}>
+    <Paper p="xl" radius="lg" withBorder>
       <LoadingOverlay visible={loading} overlayProps={{ radius: 'sm', blur: 2 }} />
       
-      <Stack spacing="lg">
+      <Stack gap="xl">
         {/* Header */}
-        <Group align="center" spacing="md">
-          <ThemeIcon size="lg" radius="md" variant="light" color="violet">
+        <Group gap="md">
+          <ThemeIcon size={48} radius="md" variant="light" color="violet">
             <WHOISIcon size={28} />
           </ThemeIcon>
           <div>
-            <Title order={2}>WHOIS Lookup Tool</Title>
-            <Text size="sm" color="dimmed">
+            <Title order={2} fw={600}>
+              WHOIS Lookup Tool
+            </Title>
+            <Text size="sm" c="dimmed">
               Get detailed information about domains and IP addresses
             </Text>
           </div>

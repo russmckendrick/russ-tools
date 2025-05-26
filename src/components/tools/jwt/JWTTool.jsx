@@ -283,7 +283,7 @@ const JWTTool = () => {
       <Stack gap="xl">
         {/* Header */}
         <Group gap="md">
-          <ThemeIcon size={48} radius="md" color="orange" variant="light">
+          <ThemeIcon size={48} radius="md" color="red" variant="light">
             <JWTIcon size={28} />
           </ThemeIcon>
           <div>

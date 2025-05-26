@@ -14,7 +14,9 @@ import {
   Modal,
   Grid,
   Space,
-  Box
+  Box,
+  ThemeIcon,
+  useMantineColorScheme
 } from '@mantine/core';
 import {
   IconNetwork,
@@ -66,6 +68,7 @@ function parseInput(ipAddress, maskInput) {
 
 const NetworkDesignerTool = () => {
   const [activeTab, setActiveTab] = useState('setup');
+  const { colorScheme } = useMantineColorScheme();
   
   // Use Mantine's useLocalStorage hook for automatic persistence
   const [networks, setNetworks] = useLocalStorage({
@@ -432,9 +435,9 @@ const NetworkDesignerTool = () => {
           />
         )
       ) : (
-        <Paper p="xl" withBorder radius="md" bg="var(--mantine-color-gray-0)">
+        <Paper p="xl" withBorder radius="md" bg={colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)'}>
           <Stack align="center" gap="md">
-            <IconNetwork size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
+            <IconNetwork size={48} style={{ color: colorScheme === 'dark' ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-5)' }} />
             <Title order={3} ta="center" c="dimmed">No Network Selected</Title>
             <Text ta="center" c="dimmed" size="sm">
               Create a new network or select an existing one to get started
@@ -455,9 +458,9 @@ const NetworkDesignerTool = () => {
   const renderDesignTab = () => {
     if (!current?.parentNetwork) {
       return (
-        <Paper p="xl" withBorder radius="md" bg="var(--mantine-color-gray-0)">
+        <Paper p="xl" withBorder radius="md" bg={colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)'}>
           <Stack align="center" gap="md">
-            <IconSubtask size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
+            <IconSubtask size={48} style={{ color: colorScheme === 'dark' ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-5)' }} />
             <Title order={3} ta="center" c="dimmed">Configure Parent Network First</Title>
             <Text ta="center" c="dimmed" size="sm">
               Set up your parent network in the Network Setup tab before designing subnets
@@ -513,9 +516,9 @@ const NetworkDesignerTool = () => {
   const renderVisualizationTab = () => {
     if (!current?.parentNetwork) {
       return (
-        <Paper p="xl" withBorder radius="md" bg="var(--mantine-color-gray-0)">
+        <Paper p="xl" withBorder radius="md" bg={colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)'}>
           <Stack align="center" gap="md">
-            <IconChartDots3 size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
+            <IconChartDots3 size={48} style={{ color: colorScheme === 'dark' ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-5)' }} />
             <Title order={3} ta="center" c="dimmed">No Network to Visualize</Title>
             <Text ta="center" c="dimmed" size="sm">
               Set up your parent network and add subnets to see visualizations
@@ -544,9 +547,9 @@ const NetworkDesignerTool = () => {
   const renderExportTab = () => {
     if (!current?.parentNetwork) {
       return (
-        <Paper p="xl" withBorder radius="md" bg="var(--mantine-color-gray-0)">
+        <Paper p="xl" withBorder radius="md" bg={colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)'}>
           <Stack align="center" gap="md">
-            <IconDownload size={48} style={{ color: 'var(--mantine-color-gray-5)' }} />
+            <IconDownload size={48} style={{ color: colorScheme === 'dark' ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-5)' }} />
             <Title order={3} ta="center" c="dimmed">No Network to Export</Title>
             <Text ta="center" c="dimmed" size="sm">
               Configure your network design before exporting
@@ -588,25 +591,28 @@ const NetworkDesignerTool = () => {
   };
 
   return (
-    <Container size="xl" py="lg">
-      {/* Header */}
-      <Paper p="lg" withBorder radius="md" mb="lg">
-        <Group gap="md" align="flex-start">
-          <IconNetwork size={32} style={{ color: 'var(--mantine-color-blue-6)', marginTop: 4 }} />
-          <div style={{ flex: 1 }}>
-            <Title order={2} mb="xs">Network Designer</Title>
-            <Text size="sm" c="dimmed" mb="md">
+    <Paper p="xl" radius="lg" withBorder>
+      <Stack gap="xl">
+        {/* Header */}
+        <Group gap="md">
+          <ThemeIcon size={48} radius="md" color="blue" variant="light">
+            <IconNetwork size={28} />
+          </ThemeIcon>
+          <div>
+            <Title order={2} fw={600}>
+              Network Designer
+            </Title>
+            <Text size="sm" c="dimmed">
               Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, 
               and export configurations for Azure, AWS, or VMware environments.
             </Text>
-            <Group gap="xs">
-              <Badge variant="light" color="blue">Subnet Planning</Badge>
-              <Badge variant="light" color="green">Visual Diagrams</Badge>
-              <Badge variant="light" color="orange">Terraform Export</Badge>
+            <Group gap="xs" mt="xs">
+              <Badge variant="light" color="blue" size="sm">Subnet Planning</Badge>
+              <Badge variant="light" color="green" size="sm">Visual Diagrams</Badge>
+              <Badge variant="light" color="orange" size="sm">Terraform Export</Badge>
             </Group>
           </div>
         </Group>
-      </Paper>
 
       {/* Tabs */}
       <Tabs value={activeTab} onChange={setActiveTab}>
@@ -676,7 +682,8 @@ const NetworkDesignerTool = () => {
           </Group>
         </Stack>
       </Modal>
-    </Container>
+      </Stack>
+    </Paper>
   );
 };
 

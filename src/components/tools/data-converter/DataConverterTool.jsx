@@ -23,7 +23,8 @@ import {
   CopyButton,
   Modal,
   ScrollArea,
-  SegmentedControl
+  SegmentedControl,
+  ThemeIcon
 } from '@mantine/core';
 import {
   IconFileText,
@@ -53,6 +54,7 @@ import '../../../styles/prism-theme.css';
 import yaml from 'js-yaml';
 import TOML from '@iarna/toml';
 import CompressIcon from './CompressIcon';
+import JSONIcon from './JSONIcon';
 import { 
   validateJSON, 
   validateYAML, 
@@ -702,18 +704,23 @@ const DataConverterTool = () => {
 
 
   return (
-    <Container size="xl" py="xl">
-      <Stack gap="lg">
+    <Paper p="xl" radius="lg" withBorder>
+      <Stack gap="xl">
         {/* Header */}
         <Group justify="space-between" align="flex-start">
-          <div>
-            <Title order={1} size="h2" mb="xs">
-              Data Format Converter
-            </Title>
-            <Text c="dimmed">
-              Convert between JSON, YAML, and TOML formats with validation and formatting
-            </Text>
-          </div>
+          <Group gap="md">
+            <ThemeIcon size={48} radius="md" color="yellow" variant="light">
+              <JSONIcon size={28} />
+            </ThemeIcon>
+            <div>
+              <Title order={2} fw={600}>
+                Data Format Converter
+              </Title>
+              <Text size="sm" c="dimmed">
+                Convert between JSON, YAML, and TOML formats with validation and formatting
+              </Text>
+            </div>
+          </Group>
           
           <Group gap="xs">
             <Tooltip label="Clear All">
@@ -1612,7 +1619,7 @@ const DataConverterTool = () => {
           </ScrollArea>
         </Modal>
       </Stack>
-    </Container>
+    </Paper>
   );
 };
 

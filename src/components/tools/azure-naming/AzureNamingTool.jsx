@@ -32,28 +32,18 @@ const AzureNamingTool = () => {
   const { environmentOptions, regionDropdownOptions, isLoading } = useAzureNamingContext();
 
   return (
-    <Paper
-      shadow="md"
-      radius="md"
-      p="xl"
-      withBorder
-      style={{
-        maxWidth: 1200,
-        width: '100%',
-        margin: '20px auto',
-      }}
-    >
+    <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
-        <Group justify="center" gap="md">
-          <ThemeIcon size={42} radius="md" color="blue" variant="gradient" gradient={{ from: 'blue', to: 'cyan', deg: 90 }}>
-            <IconBrandAzure size={24} />
+        <Group gap="md">
+          <ThemeIcon size={48} radius="md" color="cyan" variant="light">
+            <IconBrandAzure size={28} />
           </ThemeIcon>
           <div>
-            <Title order={2} style={{ fontWeight: 700, letterSpacing: -0.5, margin: 0 }}>
+            <Title order={2} fw={600}>
               Azure Resource Naming Tool
             </Title>
-            <Text size="sm" c="dimmed" mt={2}>
+            <Text size="sm" c="dimmed">
               Generate consistent, compliant Azure resource names following best practices
             </Text>
           </div>
