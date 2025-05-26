@@ -11,14 +11,27 @@ import {
   Select,
   Badge,
   Tooltip,
-  ActionIcon
+  ActionIcon,
+  Autocomplete
 } from '@mantine/core';
 import { IconWorld, IconSearch, IconAlertCircle, IconClock, IconShieldCheck, IconShieldX, IconX } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import { useTLDs } from '../../../utils';
 
 const DomainInput = ({ onSubmit, loading, error, domainHistory = [], removeDomainFromHistory, initialDomain = '' }) => {
   const [domain, setDomain] = useState(initialDomain);
   const [validationError, setValidationError] = useState('');
+  const [autocompleteData, setAutocompleteData] = useState([]);
+  
+  // Use TLD utilities hook for domain autocomplete (with error handling)
+  let tldHookResult = {};
+  try {
+    tldHookResult = useTLDs() || {};
+  } catch (error) {
+    console.error('Error loading TLD utilities:', error);
+    tldHookResult = {};
+  }
+  const { generateSubdomainSuggestions, isReady: tldReady } = tldHookResult;
 
   // Update domain when initialDomain prop changes
   useEffect(() => {
@@ -26,6 +39,21 @@ const DomainInput = ({ onSubmit, loading, error, domainHistory = [], removeDomai
       setDomain(initialDomain);
     }
   }, [initialDomain]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Effect to update autocomplete data when domain changes
+  useEffect(() => {
+    if (tldReady && generateSubdomainSuggestions) {
+      try {
+        const suggestions = generateSubdomainSuggestions(domain, 10);
+        setAutocompleteData(Array.isArray(suggestions) ? suggestions : []);
+      } catch (error) {
+        console.error('Error generating domain suggestions:', error);
+        setAutocompleteData([]);
+      }
+    } else {
+      setAutocompleteData([]);
+    }
+  }, [domain, tldReady]); // Removed generateSubdomainSuggestions to prevent infinite loop
 
   const validateDomain = (domainToValidate) => {
     if (!domainToValidate.trim()) {
@@ -66,8 +94,7 @@ const DomainInput = ({ onSubmit, loading, error, domainHistory = [], removeDomai
     onSubmit(domain);
   };
 
-  const handleDomainChange = (event) => {
-    const newDomain = event.currentTarget.value;
+  const handleDomainChange = (newDomain) => {
     setDomain(newDomain);
     
     // Clear validation error when user starts typing
@@ -228,11 +255,11 @@ const DomainInput = ({ onSubmit, loading, error, domainHistory = [], removeDomai
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
             <Group gap="md" align="flex-end" wrap="nowrap">
-              <TextInput
+              <Autocomplete
                 value={domain}
                 onChange={handleDomainChange}
                 onKeyDown={handleKeyPress}
-                placeholder="Enter domain name (e.g., example.com)"
+                placeholder="Enter domain name (e.g., example.com or mail.example.com)"
                 leftSection={<IconWorld size={16} />}
                 size="lg"
                 style={{ flex: 1 }}
@@ -240,6 +267,8 @@ const DomainInput = ({ onSubmit, loading, error, domainHistory = [], removeDomai
                 disabled={loading}
                 description="Enter just the domain name - no need for https:// or paths"
                 radius="md"
+                data={autocompleteData || []}
+                limit={10}
               />
               <Button 
                 type="submit"

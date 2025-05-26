@@ -21,6 +21,7 @@ import {
   Tooltip,
   LoadingOverlay,
   Divider,
+  Autocomplete,
   useMantineColorScheme
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
@@ -38,6 +39,7 @@ import {
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import DNSIcon from './DNSIcon';
+import { useTLDs } from '../../../utils';
 
 const DNS_RECORD_TYPES = [
   { value: 'A', label: 'A Record (IPv4)' },
@@ -66,7 +68,18 @@ const DNSLookupTool = () => {
   const [lookupResults, setLookupResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [autocompleteData, setAutocompleteData] = useState([]);
   const { colorScheme } = useMantineColorScheme();
+  
+  // Use TLD utilities hook for domain autocomplete (with error handling)
+  let tldHookResult = {};
+  try {
+    tldHookResult = useTLDs() || {};
+  } catch (error) {
+    console.error('Error loading TLD utilities:', error);
+    tldHookResult = {};
+  }
+  const { generateSubdomainSuggestions, isReady: tldReady } = tldHookResult;
 
   // Get domain from URL parameters
   const { domain: urlDomain } = useParams();
@@ -84,6 +97,21 @@ const DNSLookupTool = () => {
 
   // Cache duration in milliseconds (5 minutes for DNS)
   const CACHE_DURATION = 5 * 60 * 1000;
+
+  // Effect to update autocomplete data when domain changes
+  useEffect(() => {
+    if (tldReady && generateSubdomainSuggestions) {
+      try {
+        const suggestions = generateSubdomainSuggestions(domain, 10);
+        setAutocompleteData(Array.isArray(suggestions) ? suggestions : []);
+      } catch (error) {
+        console.error('Error generating domain suggestions:', error);
+        setAutocompleteData([]);
+      }
+    } else {
+      setAutocompleteData([]);
+    }
+  }, [domain, tldReady]); // Removed generateSubdomainSuggestions to prevent infinite loop
 
   // Effect to handle URL domain parameter
   useEffect(() => {
@@ -433,13 +461,15 @@ const DNSLookupTool = () => {
         <Card shadow="sm" padding="lg" radius="md" withBorder>
           <Grid>
             <Grid.Col span={{ base: 12, md: 4 }}>
-              <TextInput
+              <Autocomplete
                 label="Domain Name"
-                placeholder="example.com"
+                placeholder="example.com or mail.example.com"
                 value={domain}
-                onChange={(event) => setDomain(event.currentTarget.value)}
+                onChange={setDomain}
                 onKeyPress={(event) => event.key === 'Enter' && handleLookup()}
                 leftSection={<IconWorld size={16} />}
+                data={autocompleteData || []}
+                limit={10}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 3 }}>
