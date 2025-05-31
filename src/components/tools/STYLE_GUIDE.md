@@ -53,6 +53,7 @@ This style guide ensures consistent design and user experience across all tools 
 - DNS Lookup: `indigo` (with DNSIcon)
 - JWT: `red` (with JWTIcon)
 - Network Designer: `blue` (with IconNetwork)
+- Password Generator: `violet` (with IconKey)
 - SSL Checker: `green` (with IconShield)
 - WHOIS: `violet` (with WHOISIcon)
 

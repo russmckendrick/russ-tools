@@ -12,6 +12,7 @@ import WHOISLookupTool from './components/tools/whois/WHOISLookupTool';
 import DataConverterTool from './components/tools/data-converter/DataConverterTool';
 import Base64Tool from './components/tools/base64/Base64Tool';
 import JWTTool from './components/tools/jwt/JWTTool';
+import PasswordGeneratorTool from './components/tools/password-generator/PasswordGeneratorTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -77,6 +78,9 @@ export default function App() {
               {/* JWT Decoder/Validator Tool route */}
               <Route path="jwt" element={<JWTTool />} />
               <Route path="jwt/:token" element={<JWTTool />} />
+
+              {/* Password Generator Tool route */}
+              <Route path="password-generator" element={<PasswordGeneratorTool />} />
 
               {/* Add more routes here as needed */}
             </Route>

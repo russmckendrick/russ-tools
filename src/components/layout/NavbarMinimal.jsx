@@ -36,6 +36,7 @@ import WHOISIcon from '../tools/whois/WHOISIcon';
 import JSONIcon from '../tools/data-converter/JSONIcon';
 import Base64Icon from '../tools/base64/Base64Icon';
 import JWTIcon from '../tools/jwt/JWTIcon';
+import PasswordIcon from '../tools/password-generator/PasswordIcon';
 
 const mockdata = [
   {
@@ -100,6 +101,13 @@ const mockdata = [
     description: "Decode JWT tokens client-side without external services",
     link: "/jwt/",
     color: "red",
+  },
+  {
+    icon: PasswordIcon,
+    title: 'Password Generator',
+    description: "Generate secure, random passwords with customizable options",
+    link: "/password-generator/",
+    color: "violet",
   },
   {
     icon: IconBrandGithub,

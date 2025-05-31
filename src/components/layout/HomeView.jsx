@@ -6,6 +6,7 @@ import WHOISIcon from '../tools/whois/WHOISIcon';
 import JSONIcon from '../tools/data-converter/JSONIcon';
 import Base64Icon from '../tools/base64/Base64Icon';
 import JWTIcon from '../tools/jwt/JWTIcon';
+import PasswordIcon from '../tools/password-generator/PasswordIcon';
 
 export default function HomeView() {
   const tools = [
@@ -89,6 +90,15 @@ export default function HomeView() {
       iconColor: 'red',
       badges: ['100% Client-Side', 'Privacy First', 'Security Analysis'],
       path: '/jwt'
+    },
+    {
+      id: 'password-generator',
+      title: 'Password Generator',
+      description: 'Generate secure, random passwords with customizable length and character types. Features strength analysis, bulk generation, and secure download options for password management.',
+      icon: PasswordIcon,
+      iconColor: 'violet',
+      badges: ['Cryptographically Secure', 'Bulk Generation', 'Strength Analysis'],
+      path: '/password-generator'
     }
   ];
 
