@@ -1,0 +1,198 @@
+{
+  "m365Admin": {
+    "name": "Microsoft 365 Admin Center",
+    "url": "https://admin.microsoft.com/adminportal/home#/homepage",
+    "urlWithTenant": "https://admin.microsoft.com/Partner/BeginClientSession.aspx?CTID={tenantId}&CSDEST=o365admincenter",
+    "description": "Main Microsoft 365 administration",
+    "category": "Admin Centers"
+  },
+  "azureAD": {
+    "name": "Microsoft Entra ID",
+    "url": "https://aad.portal.azure.com/",
+    "urlWithDomain": "https://aad.portal.azure.com/{domain}",
+    "description": "Azure Active Directory management",
+    "category": "Admin Centers"
+  },
+  "exchange": {
+    "name": "Exchange Admin Center",
+    "url": "https://admin.exchange.microsoft.com/#/",
+    "urlWithDomain": "https://admin.exchange.microsoft.com/?rfr=Admin_o365&exsvurl=1&delegatedOrg={domain}",
+    "description": "Exchange Online management",
+    "category": "Admin Centers"
+  },
+  "sharepoint": {
+    "name": "SharePoint Admin Center",
+    "url": "https://admin.microsoft.com/sharepoint",
+    "urlWithTenant": "https://admin.microsoft.com/Partner/beginclientsession.aspx?CTID={tenantId}&CSDEST=SharePoint",
+    "description": "SharePoint Online management",
+    "category": "Admin Centers"
+  },
+  "teams": {
+    "name": "Teams Admin Center",
+    "url": "https://admin.teams.microsoft.com/",
+    "urlWithDomain": "https://admin.teams.microsoft.com/?delegatedOrg={domain}",
+    "description": "Microsoft Teams management",
+    "category": "Admin Centers"
+  },
+  "intune": {
+    "name": "Microsoft Intune",
+    "url": "https://endpoint.microsoft.com/",
+    "urlWithDomain": "https://endpoint.microsoft.com/{domain}",
+    "description": "Device management and security",
+    "category": "Admin Centers"
+  },
+  "security": {
+    "name": "Microsoft 365 Security",
+    "url": "https://security.microsoft.com/",
+    "urlWithTenant": "https://security.microsoft.com/?tid={tenantId}",
+    "description": "Security dashboard and management",
+    "category": "Security"
+  },
+  "compliance": {
+    "name": "Microsoft 365 Compliance",
+    "url": "https://compliance.microsoft.com/",
+    "urlWithTenant": "https://compliance.microsoft.com/?tid={tenantId}",
+    "description": "Compliance center and policies",
+    "category": "Security"
+  },
+  "defender": {
+    "name": "Microsoft 365 Defender",
+    "url": "https://security.microsoft.com/homepage",
+    "urlWithTenant": "https://security.microsoft.com/?tid={tenantId}",
+    "description": "Advanced threat protection",
+    "category": "Security"
+  },
+  "defenderCloudApps": {
+    "name": "Microsoft Defender for Cloud Apps",
+    "url": "https://portal.cloudappsecurity.com/",
+    "urlWithTenant": "https://portal.cloudappsecurity.com/oauth2/authorize?CTID={tenantId}",
+    "description": "Cloud app security and protection",
+    "category": "Security"
+  },
+  "securityCopilot": {
+    "name": "Microsoft Security Copilot",
+    "url": "https://securitycopilot.microsoft.com/",
+    "urlWithTenant": "https://securitycopilot.microsoft.com/?tenantId={tenantId}",
+    "description": "AI-powered security assistant",
+    "category": "Security"
+  },
+  "users": {
+    "name": "Active Users",
+    "url": "https://admin.microsoft.com/adminportal/home#/users",
+    "description": "Manage Microsoft 365 users",
+    "category": "Users"
+  },
+  "groups": {
+    "name": "Groups",
+    "url": "https://admin.microsoft.com/adminportal/home#/groups",
+    "description": "Manage Microsoft 365 groups",
+    "category": "Users"
+  },
+  "licenses": {
+    "name": "Licenses",
+    "url": "https://admin.microsoft.com/adminportal/home#/licenses",
+    "description": "Manage licenses and subscriptions",
+    "category": "Management"
+  },
+  "reports": {
+    "name": "Reports",
+    "url": "https://admin.microsoft.com/adminportal/home#/reports/usage/overview",
+    "description": "Usage and activity reports",
+    "category": "Management"
+  },
+  "serviceHealth": {
+    "name": "Service Health",
+    "url": "https://admin.microsoft.com/adminportal/home#/servicehealth",
+    "description": "Service status and health",
+    "category": "Management"
+  },
+  "lighthouse": {
+    "name": "Microsoft 365 Lighthouse",
+    "url": "https://lighthouse.microsoft.com/",
+    "description": "Multi-tenant management for MSPs",
+    "category": "Management"
+  },
+  "planner": {
+    "name": "Microsoft 365 Planner",
+    "url": "https://tasks.office.com/",
+    "urlWithTenant": "https://portal.office.com/Partner/BeginClientSession.aspx?CTID={tenantId}&CSDEST=o365admincenter",
+    "description": "Task and project planning",
+    "category": "Management"
+  },
+  "sway": {
+    "name": "Sway",
+    "url": "https://sway.office.com/",
+    "urlWithTenant": "https://portal.office.com/Partner/BeginClientSession.aspx?CTID={tenantId}&CSDEST=o365admincenter",
+    "description": "Digital storytelling app",
+    "category": "Management"
+  },
+  "dragonCopilot": {
+    "name": "Microsoft Dragon Copilot",
+    "url": "https://admin.healthplatform.microsoft.com/",
+    "urlWithTenant": "https://admin.healthplatform.microsoft.com/{tenantId}",
+    "description": "Healthcare AI assistant",
+    "category": "Management"
+  },
+  "m365Apps": {
+    "name": "Microsoft 365 Apps Admin Center",
+    "url": "https://config.office.com/",
+    "description": "Configure Microsoft 365 Apps",
+    "category": "Admin Centers"
+  },
+  "purview": {
+    "name": "Microsoft Purview",
+    "url": "https://purview.microsoft.com/",
+    "urlWithTenant": "https://purview.microsoft.com/homepage?tid={tenantId}",
+    "description": "Data governance and compliance",
+    "category": "Security"
+  },
+  "streamAdmin": {
+    "name": "Microsoft Stream Admin Center",
+    "url": "https://web.microsoftstream.com/admin",
+    "description": "Stream video management",
+    "category": "Admin Centers"
+  },
+  "teamsRoomsPro": {
+    "name": "Teams Rooms Pro Management",
+    "url": "https://portal.rooms.microsoft.com/",
+    "description": "Teams Rooms device management",
+    "category": "Admin Centers"
+  },
+  "myStaff": {
+    "name": "My Staff (Preview)",
+    "url": "https://mystaff.microsoft.com/",
+    "description": "Frontline worker management",
+    "category": "Users"
+  },
+  "powerPages": {
+    "name": "Power Pages",
+    "url": "https://make.powerpages.microsoft.com/",
+    "description": "Low-code business websites",
+    "category": "Management"
+  },
+  "phoneNumberService": {
+    "name": "Phone Number Service Center",
+    "url": "https://pstnsd.powerappsportals.com/",
+    "description": "Manage phone numbers for Teams",
+    "category": "Admin Centers"
+  },
+  "yammerAdmin": {
+    "name": "Yammer Admin",
+    "url": "https://www.yammer.com/office365/admin",
+    "description": "Yammer community management",
+    "category": "Admin Centers"
+  },
+  "myApps": {
+    "name": "My Applications (My Apps)",
+    "url": "https://myapps.microsoft.com/",
+    "description": "User application portal",
+    "category": "Users"
+  },
+  "myAccess": {
+    "name": "My Access",
+    "url": "https://myaccess.microsoft.com/",
+    "urlWithTenant": "https://myaccess.microsoft.com/{tenantId}",
+    "description": "Access request management",
+    "category": "Users"
+  }
+} 

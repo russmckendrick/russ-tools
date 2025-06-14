@@ -7,6 +7,7 @@ import JSONIcon from '../tools/data-converter/JSONIcon';
 import Base64Icon from '../tools/base64/Base64Icon';
 import JWTIcon from '../tools/jwt/JWTIcon';
 import PasswordIcon from '../tools/password-generator/PasswordIcon';
+import MicrosoftPortalsIcon from '../tools/microsoft-portals/MicrosoftPortalsIcon';
 
 export default function HomeView() {
   const tools = [
@@ -99,6 +100,15 @@ export default function HomeView() {
       iconColor: 'violet',
       badges: ['Cryptographically Secure', 'Bulk Generation', 'Strength Analysis'],
       path: '/password-generator'
+    },
+    {
+      id: 'microsoft-portals',
+      title: 'Microsoft Portal Links',
+      description: 'Generate deep links to various Microsoft portals based on domain/tenant information. Discover tenant details and create direct links to Azure, Microsoft 365, and Power Platform portals.',
+      icon: MicrosoftPortalsIcon,
+      iconColor: 'indigo',
+      badges: ['Tenant Discovery', 'Deep Links', 'Multi-Portal'],
+      path: '/microsoft-portals'
     }
   ];
 
