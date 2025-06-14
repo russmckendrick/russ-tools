@@ -2,18 +2,8 @@ name = "microsoft-tenant-lookup"
 main = "cloudflare-worker-microsoft-tenant.js"
 compatibility_date = "2024-01-01"
 
-# Development environment (default)
-[vars]
-ALLOWED_ORIGINS = "http://localhost:5173,https://localhost:5173"
-
-# Production environment
-[env.production]
-name = "microsoft-tenant-lookup"
-
-[env.production.vars]
-ALLOWED_ORIGINS = "https://www.russ.tools,https://russ.tools"
-
 # Microsoft Graph API credentials (set these as secrets for production)
 # Use: npx wrangler secret put GRAPH_CLIENT_ID --config wrangler-microsoft-tenant.toml
 # Use: npx wrangler secret put GRAPH_CLIENT_SECRET --config wrangler-microsoft-tenant.toml  
 # Use: npx wrangler secret put GRAPH_TENANT_ID --config wrangler-microsoft-tenant.toml 
+# Use: npx wrangler secret put ALLOWED_ORIGINS --config wrangler-microsoft-tenant.toml 
