@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Paper,
   Stack,
@@ -29,7 +29,9 @@ import {
   IconExternalLink,
   IconAlertCircle,
   IconFilter,
-  IconClearAll
+  IconClearAll,
+  IconStar,
+  IconStarFilled
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
@@ -58,6 +60,22 @@ const MicrosoftPortalsTool = () => {
     key: 'microsoft-portals-cache',
     defaultValue: {}
   });
+
+  // Favorites storage
+  const [favorites, setFavorites] = useLocalStorage({
+    key: 'microsoft-portals-favorites',
+    defaultValue: []
+  });
+
+  // Ref to prevent rapid multiple calls
+  const toggleInProgress = useRef(false);
+
+  // Initialize favorites from localStorage after component mounts
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Cache duration (10 minutes)
   const CACHE_DURATION = 10 * 60 * 1000;
@@ -179,13 +197,23 @@ const MicrosoftPortalsTool = () => {
           description: portal.description,
           category: portal.category,
           url: portal.url,
-          requiresTenant: portal.requiresTenant || false
+          requiresTenant: portal.requiresTenant || false,
+          isFavorite: isClient && favorites.includes(`${sectionKey}-${portalKey}`)
         });
       });
     });
     
-    return flattened;
-  }, [portalLinks]);
+    // Sort by favorites first (maintaining favorite order), then alphabetically
+    return flattened.sort((a, b) => {
+      if (a.isFavorite && !b.isFavorite) return -1;
+      if (!a.isFavorite && b.isFavorite) return 1;
+      if (a.isFavorite && b.isFavorite) {
+        // Maintain favorite order
+        return favorites.indexOf(a.key) - favorites.indexOf(b.key);
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [portalLinks, favorites, isClient]);
 
   // Filter portals based on search and category
   const filteredPortals = useMemo(() => {
@@ -201,8 +229,10 @@ const MicrosoftPortalsTool = () => {
       );
     }
 
-    // Filter by category
-    if (selectedCategory !== 'all') {
+    // Filter by category or favorites
+    if (selectedCategory === 'favorites') {
+      filtered = filtered.filter(portal => portal.isFavorite);
+    } else if (selectedCategory !== 'all') {
       filtered = filtered.filter(portal => 
         portal.category.toLowerCase() === selectedCategory.toLowerCase()
       );
@@ -216,6 +246,59 @@ const MicrosoftPortalsTool = () => {
     const cats = [...new Set(allPortals.map(portal => portal.category))].sort();
     return [{ value: 'all', label: 'All Categories' }, ...cats.map(cat => ({ value: cat.toLowerCase(), label: cat }))];
   }, [allPortals]);
+
+  // Get category counts for filter pills
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+    allPortals.forEach(portal => {
+      counts[portal.category] = (counts[portal.category] || 0) + 1;
+    });
+    return counts;
+  }, [allPortals]);
+
+  // Toggle favorite status
+  const toggleFavorite = (portalKey, portalName) => {
+    // Prevent rapid multiple calls
+    if (toggleInProgress.current) {
+      return;
+    }
+    
+    toggleInProgress.current = true;
+    
+    const isCurrentlyFavorite = favorites.includes(portalKey);
+    
+    let newFavorites;
+    if (isCurrentlyFavorite) {
+      newFavorites = favorites.filter(key => key !== portalKey);
+    } else {
+      newFavorites = [...favorites, portalKey];
+    }
+    
+    // Update favorites
+    setFavorites(newFavorites);
+    
+    // Show notification
+    setTimeout(() => {
+      if (isCurrentlyFavorite) {
+        notifications.show({
+          title: 'Removed from Favorites',
+          message: `${portalName} removed from favorites`,
+          color: 'orange'
+        });
+      } else {
+        notifications.show({
+          title: 'Added to Favorites',
+          message: `${portalName} added to favorites`,
+          color: 'yellow'
+        });
+      }
+      
+      // Reset the toggle lock after a short delay
+      setTimeout(() => {
+        toggleInProgress.current = false;
+      }, 100);
+    }, 0);
+  };
 
   // Copy to clipboard
   const copyToClipboard = (text, label) => {
@@ -349,6 +432,11 @@ const MicrosoftPortalsTool = () => {
           <Group justify="space-between" mb="md">
             <Text fw={500}>
               Portal Links ({filteredPortals.length})
+              {favorites.length > 0 && (
+                <Badge variant="light" color="yellow" size="sm" ml="xs">
+                  {favorites.length} favorited
+                </Badge>
+              )}
             </Text>
             {selectedCategory !== 'all' && (
               <Badge variant="light" color="blue">
@@ -357,38 +445,92 @@ const MicrosoftPortalsTool = () => {
             )}
           </Group>
 
-          <Table striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Portal Name</Table.Th>
-                <Table.Th>Description</Table.Th>
-                <Table.Th>Category</Table.Th>
-                <Table.Th width={100}>Actions</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {filteredPortals.map((portal) => (
-                <Table.Tr key={portal.key}>
-                  <Table.Td>
-                    <Group gap="xs">
-                      <Anchor
-                        href={portal.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        fw={500}
-                        size="sm"
-                      >
-                        {portal.name}
-                      </Anchor>
-                      {portal.requiresTenant && !tenantInfo && (
-                        <Tooltip label="Requires tenant lookup">
-                          <Badge size="xs" color="orange" variant="light">
-                            Tenant
-                          </Badge>
-                        </Tooltip>
-                      )}
-                    </Group>
-                  </Table.Td>
+          {/* Category Filter Pills */}
+          <Group gap="xs" mb="md">
+            <Chip
+              checked={selectedCategory === 'all'}
+              onChange={() => setSelectedCategory('all')}
+              variant="light"
+              size="sm"
+            >
+              All ({allPortals.length})
+            </Chip>
+            {favorites.length > 0 && (
+              <Chip
+                checked={selectedCategory === 'favorites'}
+                onChange={() => setSelectedCategory('favorites')}
+                variant="light"
+                size="sm"
+                color="yellow"
+              >
+                Favorites ({favorites.length})
+              </Chip>
+            )}
+            {Object.entries(categoryCounts)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 8)
+              .map(([category, count]) => (
+                <Chip
+                  key={category}
+                  checked={selectedCategory === category.toLowerCase()}
+                  onChange={() => setSelectedCategory(category.toLowerCase())}
+                  variant="light"
+                  size="sm"
+                >
+                  {category} ({count})
+                </Chip>
+              ))}
+          </Group>
+
+                      <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th width={40}></Table.Th>
+                  <Table.Th>Portal Name</Table.Th>
+                  <Table.Th>Description</Table.Th>
+                  <Table.Th>Category</Table.Th>
+                  <Table.Th width={100}>Actions</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+                          <Table.Tbody>
+                {filteredPortals.map((portal) => (
+                  <Table.Tr key={portal.key}>
+                    <Table.Td>
+                      <Tooltip label={portal.isFavorite ? "Remove from favorites" : "Add to favorites"}>
+                        <ActionIcon
+                          variant="subtle"
+                          size="sm"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleFavorite(portal.key, portal.name);
+                          }}
+                          color={portal.isFavorite ? "yellow" : "gray"}
+                        >
+                          {portal.isFavorite ? <IconStarFilled size={16} /> : <IconStar size={16} />}
+                        </ActionIcon>
+                      </Tooltip>
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap="xs">
+                        <Anchor
+                          href={portal.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          fw={500}
+                          size="sm"
+                        >
+                          {portal.name}
+                        </Anchor>
+                        {portal.requiresTenant && !tenantInfo && (
+                          <Tooltip label="Requires tenant lookup">
+                            <Badge size="xs" color="orange" variant="light">
+                              Tenant
+                            </Badge>
+                          </Tooltip>
+                        )}
+                      </Group>
+                    </Table.Td>
                   <Table.Td>
                     <Text size="sm" c="dimmed">
                       {portal.description}
