@@ -1,0 +1,533 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Paper,
+  Stack,
+  Title,
+  ThemeIcon,
+  Group,
+  Text,
+  TextInput,
+  Button,
+  Alert,
+  Badge,
+  Card,
+  LoadingOverlay,
+  Grid,
+  Code,
+  ActionIcon,
+  Tooltip,
+  useMantineColorScheme
+} from '@mantine/core';
+import { useLocalStorage } from '@mantine/hooks';
+import {
+  IconSearch,
+  IconInfoCircle,
+  IconCopy,
+  IconCheck,
+  IconExternalLink,
+  IconAlertCircle
+} from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
+import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
+import { getTenantId, isValidDomain, extractDomain } from './TenantLookup';
+
+const MicrosoftPortalsTool = () => {
+  const [domainInput, setDomainInput] = useState('');
+  const [tenantInfo, setTenantInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { colorScheme } = useMantineColorScheme();
+
+  // Local storage for lookup history
+  const [lookupHistory, setLookupHistory] = useLocalStorage({
+    key: 'microsoft-portals-history',
+    defaultValue: []
+  });
+
+  // Cache for tenant lookups
+  const [tenantCache, setTenantCache] = useLocalStorage({
+    key: 'microsoft-portals-cache',
+    defaultValue: {}
+  });
+
+  // Cache duration (10 minutes)
+  const CACHE_DURATION = 10 * 60 * 1000;
+
+  // Helper function to check if cached data is still valid
+  const isCacheValid = (cachedData) => {
+    if (!cachedData || !cachedData.timestamp) return false;
+    return (Date.now() - cachedData.timestamp) < CACHE_DURATION;
+  };
+
+  // Add lookup to history
+  const addToHistory = (domain, tenantData) => {
+    const historyItem = {
+      domain,
+      tenantId: tenantData.tenantId,
+      timestamp: Date.now()
+    };
+
+    const filteredHistory = lookupHistory.filter(item => item.domain !== domain);
+    const newHistory = [historyItem, ...filteredHistory].slice(0, 20);
+    setLookupHistory(newHistory);
+  };
+
+  // Cache tenant data
+  const cacheTenantData = (domain, data) => {
+    setTenantCache(prev => ({
+      ...prev,
+      [domain]: {
+        ...data,
+        timestamp: Date.now()
+      }
+    }));
+  };
+
+  // Perform tenant lookup
+  const handleLookup = async () => {
+    if (!domainInput.trim()) {
+      setError('Please enter a domain name');
+      return;
+    }
+
+    const domain = extractDomain(domainInput);
+    
+    if (!isValidDomain(domain)) {
+      setError('Please enter a valid domain name (e.g., contoso.com)');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setTenantInfo(null);
+
+    try {
+      // Check cache first
+      const cachedData = tenantCache[domain];
+      if (cachedData && isCacheValid(cachedData)) {
+        console.log(`📦 Using cached tenant data for: ${domain}`);
+        setTenantInfo(cachedData);
+        addToHistory(domain, cachedData);
+        setLoading(false);
+        return;
+      }
+
+      console.log(`🔍 Looking up tenant for domain: ${domain}`);
+      const tenantData = await getTenantId(domain);
+      
+      setTenantInfo(tenantData);
+      addToHistory(domain, tenantData);
+      cacheTenantData(domain, tenantData);
+      
+      notifications.show({
+        title: 'Tenant Found',
+        message: `Successfully found tenant information for ${domain}`,
+        color: 'green',
+        icon: <IconCheck size={16} />
+      });
+
+    } catch (err) {
+      console.error('Tenant lookup error:', err);
+      setError(err.message || 'Failed to lookup tenant information');
+      
+      notifications.show({
+        title: 'Lookup Failed',
+        message: err.message || 'Failed to lookup tenant information',
+        color: 'red',
+        icon: <IconAlertCircle size={16} />
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Enter key press
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleLookup();
+    }
+  };
+
+  // Copy to clipboard helper
+  const copyToClipboard = (text, label) => {
+    navigator.clipboard.writeText(text).then(() => {
+      notifications.show({
+        title: 'Copied',
+        message: `${label} copied to clipboard`,
+        color: 'blue',
+        icon: <IconCopy size={16} />
+      });
+    }).catch(() => {
+      notifications.show({
+        title: 'Copy Failed',
+        message: 'Unable to copy to clipboard',
+        color: 'red',
+        icon: <IconAlertCircle size={16} />
+      });
+    });
+  };
+
+  // Handle history item click
+  const handleHistoryClick = (historyItem) => {
+    setDomainInput(historyItem.domain);
+    const cachedData = tenantCache[historyItem.domain];
+    if (cachedData && isCacheValid(cachedData)) {
+      setTenantInfo(cachedData);
+      setError(null);
+    }
+  };
+
+  return (
+    <Paper p="xl" radius="lg" withBorder>
+      <Stack gap="xl">
+        {/* Header */}
+        <Group gap="md">
+          <ThemeIcon size={48} radius="md" variant="light" color="indigo">
+            <MicrosoftPortalsIcon size={28} />
+          </ThemeIcon>
+          <div style={{ flex: 1 }}>
+            <Title order={2} fw={600}>
+              Microsoft Portal Links
+            </Title>
+            <Text size="sm" c="dimmed">
+              Generate deep links to Microsoft portals using domain/tenant information
+            </Text>
+            <Badge variant="light" color="indigo" size="sm" mt="xs">
+              Phase 1: Tenant Discovery
+            </Badge>
+          </div>
+        </Group>
+
+        {/* Domain Input Section */}
+        <Card withBorder p="lg" radius="md">
+          <Stack gap="md">
+            <Group gap="xs">
+              <IconSearch size={16} />
+              <Text fw={500}>Domain Lookup</Text>
+            </Group>
+            
+            <Text size="sm" c="dimmed">
+              Enter a domain name or email address to discover the associated Microsoft tenant information.
+            </Text>
+
+            <Group gap="md">
+              <TextInput
+                placeholder="Enter domain (e.g., contoso.com) or email"
+                value={domainInput}
+                onChange={(event) => setDomainInput(event.currentTarget.value)}
+                onKeyPress={handleKeyPress}
+                style={{ flex: 1 }}
+                disabled={loading}
+              />
+              <Button
+                onClick={handleLookup}
+                loading={loading}
+                leftSection={<IconSearch size={16} />}
+                disabled={!domainInput.trim()}
+              >
+                Lookup
+              </Button>
+            </Group>
+
+            {error && (
+              <Alert color="red" icon={<IconAlertCircle size={16} />}>
+                {error}
+              </Alert>
+            )}
+          </Stack>
+        </Card>
+
+        {/* Tenant Information Display */}
+        {tenantInfo && (
+          <Card withBorder p="lg" radius="md">
+            <LoadingOverlay visible={loading} />
+            <Stack gap="md">
+              <Group gap="xs">
+                <IconInfoCircle size={16} />
+                <Text fw={500}>Tenant Information</Text>
+              </Group>
+
+              <Grid gutter="md">
+                <Grid.Col span={{ base: 12, md: 6 }}>
+                  <Stack gap="xs">
+                    <Text size="sm" fw={500}>Domain</Text>
+                    <Group gap="xs">
+                      <Code 
+                        block 
+                        style={{ 
+                          backgroundColor: colorScheme === 'dark' 
+                            ? 'var(--mantine-color-dark-6)' 
+                            : 'var(--mantine-color-gray-0)',
+                          flex: 1
+                        }}
+                      >
+                        {tenantInfo.domain}
+                      </Code>
+                      <Tooltip label="Copy domain">
+                        <ActionIcon 
+                          variant="light" 
+                          onClick={() => copyToClipboard(tenantInfo.domain, 'Domain')}
+                        >
+                          <IconCopy size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Group>
+                  </Stack>
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, md: 6 }}>
+                  <Stack gap="xs">
+                    <Text size="sm" fw={500}>Tenant ID</Text>
+                    <Group gap="xs">
+                      <Code 
+                        block 
+                        style={{ 
+                          backgroundColor: colorScheme === 'dark' 
+                            ? 'var(--mantine-color-dark-6)' 
+                            : 'var(--mantine-color-gray-0)',
+                          flex: 1
+                        }}
+                      >
+                        {tenantInfo.tenantId}
+                      </Code>
+                      <Tooltip label="Copy tenant ID">
+                        <ActionIcon 
+                          variant="light" 
+                          onClick={() => copyToClipboard(tenantInfo.tenantId, 'Tenant ID')}
+                        >
+                          <IconCopy size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Group>
+                  </Stack>
+                </Grid.Col>
+
+                {tenantInfo.displayName && (
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <Stack gap="xs">
+                      <Text size="sm" fw={500}>Organization Name</Text>
+                      <Code 
+                        block 
+                        style={{ 
+                          backgroundColor: colorScheme === 'dark' 
+                            ? 'var(--mantine-color-dark-6)' 
+                            : 'var(--mantine-color-gray-0)'
+                        }}
+                      >
+                        {tenantInfo.displayName}
+                      </Code>
+                    </Stack>
+                  </Grid.Col>
+                )}
+
+                {tenantInfo.method && (
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <Stack gap="xs">
+                      <Text size="sm" fw={500}>Lookup Method</Text>
+                      <Badge variant="light" color="blue">
+                        {tenantInfo.method}
+                      </Badge>
+                    </Stack>
+                  </Grid.Col>
+                )}
+
+                {/* Additional Tenant Information */}
+                {tenantInfo.tenantType && (
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <Stack gap="xs">
+                      <Text size="sm" fw={500}>Tenant Type</Text>
+                      <Badge variant="light" color="green">
+                        {tenantInfo.tenantType}
+                      </Badge>
+                    </Stack>
+                  </Grid.Col>
+                )}
+
+                {tenantInfo.tenantCategory && (
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <Stack gap="xs">
+                      <Text size="sm" fw={500}>Category</Text>
+                      <Badge variant="light" color="violet">
+                        {tenantInfo.tenantCategory}
+                      </Badge>
+                    </Stack>
+                  </Grid.Col>
+                )}
+
+                {tenantInfo.isCloudOnly !== undefined && (
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <Stack gap="xs">
+                      <Text size="sm" fw={500}>Identity Type</Text>
+                      <Badge variant="light" color={tenantInfo.isCloudOnly ? "blue" : "orange"}>
+                        {tenantInfo.isCloudOnly ? "Cloud-only" : "Federated"}
+                      </Badge>
+                    </Stack>
+                  </Grid.Col>
+                )}
+
+                {tenantInfo.defaultDomainName && tenantInfo.defaultDomainName !== tenantInfo.domain && (
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <Stack gap="xs">
+                      <Text size="sm" fw={500}>Default Domain</Text>
+                      <Code 
+                        block 
+                        style={{ 
+                          backgroundColor: colorScheme === 'dark' 
+                            ? 'var(--mantine-color-dark-6)' 
+                            : 'var(--mantine-color-gray-0)'
+                        }}
+                      >
+                        {tenantInfo.defaultDomainName}
+                      </Code>
+                    </Stack>
+                  </Grid.Col>
+                )}
+
+                {tenantInfo.federationBrandName && (
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <Stack gap="xs">
+                      <Text size="sm" fw={500}>Federation Brand</Text>
+                      <Code 
+                        block 
+                        style={{ 
+                          backgroundColor: colorScheme === 'dark' 
+                            ? 'var(--mantine-color-dark-6)' 
+                            : 'var(--mantine-color-gray-0)'
+                        }}
+                      >
+                        {tenantInfo.federationBrandName}
+                      </Code>
+                    </Stack>
+                  </Grid.Col>
+                )}
+
+                {tenantInfo.issuer && (
+                  <Grid.Col span={12}>
+                    <Stack gap="xs">
+                      <Text size="sm" fw={500}>OpenID Connect Issuer</Text>
+                      <Group gap="xs">
+                        <Code 
+                          block 
+                          style={{ 
+                            backgroundColor: colorScheme === 'dark' 
+                              ? 'var(--mantine-color-dark-6)' 
+                              : 'var(--mantine-color-gray-0)',
+                            flex: 1
+                          }}
+                        >
+                          {tenantInfo.issuer}
+                        </Code>
+                        <Tooltip label="Copy issuer URL">
+                          <ActionIcon 
+                            variant="light" 
+                            onClick={() => copyToClipboard(tenantInfo.issuer, 'Issuer URL')}
+                          >
+                            <IconCopy size={16} />
+                          </ActionIcon>
+                        </Tooltip>
+                        <Tooltip label="Open in new tab">
+                          <ActionIcon 
+                            variant="light" 
+                            onClick={() => window.open(tenantInfo.issuer, '_blank')}
+                          >
+                            <IconExternalLink size={16} />
+                          </ActionIcon>
+                        </Tooltip>
+                      </Group>
+                    </Stack>
+                  </Grid.Col>
+                )}
+              </Grid>
+
+              {/* Verified Domains Section */}
+              {tenantInfo.verifiedDomains && tenantInfo.verifiedDomains.length > 0 && (
+                <Stack gap="xs">
+                  <Text size="sm" fw={500}>Verified Domains</Text>
+                  <Grid gutter="xs">
+                    {tenantInfo.verifiedDomains.map((domain, index) => (
+                      <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
+                        <Group gap="xs">
+                          <Badge 
+                            variant="light" 
+                            color={domain.isDefault ? "blue" : domain.isInitial ? "green" : "gray"}
+                            size="sm"
+                          >
+                            {domain.name}
+                          </Badge>
+                          {domain.isDefault && <Text size="xs" c="dimmed">(Default)</Text>}
+                          {domain.isInitial && <Text size="xs" c="dimmed">(Initial)</Text>}
+                        </Group>
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </Stack>
+              )}
+
+              {/* Assigned Plans Section */}
+              {tenantInfo.assignedPlans && tenantInfo.assignedPlans.length > 0 && (
+                <Stack gap="xs">
+                  <Text size="sm" fw={500}>Active Services</Text>
+                  <Grid gutter="xs">
+                    {tenantInfo.assignedPlans.slice(0, 8).map((plan, index) => (
+                      <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
+                        <Badge variant="light" color="teal" size="sm">
+                          {plan.service}
+                        </Badge>
+                      </Grid.Col>
+                    ))}
+                    {tenantInfo.assignedPlans.length > 8 && (
+                      <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+                        <Text size="xs" c="dimmed">
+                          +{tenantInfo.assignedPlans.length - 8} more services
+                        </Text>
+                      </Grid.Col>
+                    )}
+                  </Grid>
+                </Stack>
+              )}
+
+              <Alert color="blue" icon={<IconInfoCircle size={16} />}>
+                Tenant discovered successfully! Portal link generation will be available in Phase 2.
+              </Alert>
+
+              {tenantInfo.method === 'Microsoft Graph API' && !tenantInfo.createdDateTime && (
+                <Alert color="yellow" icon={<IconInfoCircle size={16} />}>
+                  <Text size="sm">
+                    <strong>Enhanced Information Available:</strong> Additional details like creation date, 
+                    verified domains, active services, and geographic information can be obtained with 
+                    Organization.Read.All permissions.
+                  </Text>
+                </Alert>
+              )}
+            </Stack>
+          </Card>
+        )}
+
+        {/* Recent Lookups */}
+        {lookupHistory.length > 0 && (
+          <Card withBorder p="lg" radius="md">
+            <Stack gap="md">
+              <Text fw={500}>Recent Lookups</Text>
+              <Grid gutter="xs">
+                {lookupHistory.slice(0, 6).map((item, index) => (
+                  <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
+                    <Button
+                      variant="light"
+                      size="sm"
+                      onClick={() => handleHistoryClick(item)}
+                      style={{ width: '100%' }}
+                    >
+                      {item.domain}
+                    </Button>
+                  </Grid.Col>
+                ))}
+              </Grid>
+            </Stack>
+          </Card>
+        )}
+      </Stack>
+    </Paper>
+  );
+};
+
+export default MicrosoftPortalsTool; 

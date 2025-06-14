@@ -13,6 +13,7 @@ import DataConverterTool from './components/tools/data-converter/DataConverterTo
 import Base64Tool from './components/tools/base64/Base64Tool';
 import JWTTool from './components/tools/jwt/JWTTool';
 import PasswordGeneratorTool from './components/tools/password-generator/PasswordGeneratorTool';
+import MicrosoftPortalsTool from './components/tools/microsoft-portals/MicrosoftPortalsTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -81,6 +82,9 @@ export default function App() {
 
               {/* Password Generator Tool route */}
               <Route path="password-generator" element={<PasswordGeneratorTool />} />
+
+              {/* Microsoft Portals Tool route */}
+              <Route path="microsoft-portals" element={<MicrosoftPortalsTool />} />
 
               {/* Add more routes here as needed */}
             </Route>
