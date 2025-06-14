@@ -29,12 +29,14 @@ import {
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
-import { getTenantId, isValidDomain, extractDomain } from './TenantLookup';
+import { getTenantId, getAdditionalTenantInfo, isValidDomain, extractDomain } from './TenantLookup';
 
 const MicrosoftPortalsTool = () => {
   const [domainInput, setDomainInput] = useState('');
   const [tenantInfo, setTenantInfo] = useState(null);
+  const [additionalInfo, setAdditionalInfo] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingPhase2, setLoadingPhase2] = useState(false);
   const [error, setError] = useState(null);
   const { colorScheme } = useMantineColorScheme();
 
@@ -138,6 +140,44 @@ const MicrosoftPortalsTool = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle enhanced reconnaissance lookup
+  const handlePhase2Lookup = async () => {
+    if (!tenantInfo || !tenantInfo.tenantId || !tenantInfo.domain) {
+      setError('Initial tenant lookup must be completed first');
+      return;
+    }
+
+    setLoadingPhase2(true);
+    setError(null);
+
+    try {
+      console.log(`🔍 Enhanced Reconnaissance: Gathering maximum information for ${tenantInfo.domain}`);
+      const additionalData = await getAdditionalTenantInfo(tenantInfo.tenantId, tenantInfo.domain);
+      
+      setAdditionalInfo(additionalData);
+      
+      notifications.show({
+        title: 'Enhanced Reconnaissance Complete',
+        message: `Maximum tenant information gathered for ${tenantInfo.domain}`,
+        color: 'green',
+        icon: <IconCheck size={16} />
+      });
+
+    } catch (err) {
+      console.error('Enhanced reconnaissance error:', err);
+      setError(err.message || 'Failed to gather enhanced tenant information');
+      
+      notifications.show({
+        title: 'Enhanced Reconnaissance Failed',
+        message: err.message || 'Failed to gather enhanced tenant information',
+        color: 'red',
+        icon: <IconAlertCircle size={16} />
+      });
+    } finally {
+      setLoadingPhase2(false);
     }
   };
 
@@ -486,19 +526,283 @@ const MicrosoftPortalsTool = () => {
                 </Stack>
               )}
 
-              <Alert color="blue" icon={<IconInfoCircle size={16} />}>
-                Tenant discovered successfully! Portal link generation will be available in Phase 2.
-              </Alert>
+              {/* Enhanced Reconnaissance Section */}
+              <Stack gap="md">
+                <Group justify="space-between" align="center">
+                  <div>
+                    <Text fw={500}>Enhanced Reconnaissance</Text>
+                    <Text size="sm" c="dimmed">
+                      Gather maximum tenant information using public APIs
+                    </Text>
+                  </div>
+                  <Button
+                    onClick={handlePhase2Lookup}
+                    loading={loadingPhase2}
+                    leftSection={<IconSearch size={16} />}
+                    variant="light"
+                    color="indigo"
+                  >
+                    {additionalInfo ? 'Refresh Data' : 'Gather More Info'}
+                  </Button>
+                </Group>
 
-              {tenantInfo.method === 'Microsoft Graph API' && !tenantInfo.createdDateTime && (
-                <Alert color="yellow" icon={<IconInfoCircle size={16} />}>
+                {additionalInfo && !additionalInfo.error && (
+                  <Alert color="green" icon={<IconCheck size={16} />}>
+                    Enhanced reconnaissance completed! Maximum tenant information gathered using public APIs.
+                  </Alert>
+                )}
+
+                {additionalInfo?.error && (
+                  <Alert color="yellow" icon={<IconAlertCircle size={16} />}>
+                    Enhanced reconnaissance partially completed: {additionalInfo.error}
+                  </Alert>
+                )}
+              </Stack>
+
+              {!additionalInfo && (
+                <Alert color="blue" icon={<IconInfoCircle size={16} />}>
                   <Text size="sm">
-                    <strong>Enhanced Information Available:</strong> Additional details like creation date, 
-                    verified domains, active services, and geographic information can be obtained with 
-                    Organization.Read.All permissions.
+                    <strong>Phase 1: Tenant Discovery Complete!</strong> Click "Gather More Info" to perform 
+                    enhanced reconnaissance using additional public APIs (OpenID config, user realm, DNS analysis, etc.).
                   </Text>
                 </Alert>
               )}
+            </Stack>
+          </Card>
+        )}
+
+        {/* Enhanced Reconnaissance Data Display */}
+        {additionalInfo && !additionalInfo.error && (
+          <Card withBorder p="lg" radius="md">
+            <LoadingOverlay visible={loadingPhase2} />
+            <Stack gap="md">
+              <Group gap="xs">
+                <IconInfoCircle size={16} />
+                <Text fw={500}>Enhanced Reconnaissance Data</Text>
+                <Badge variant="light" color="indigo" size="sm">
+                  Public APIs
+                </Badge>
+              </Group>
+
+              {/* OpenID Configuration */}
+              {additionalInfo.openIdConfig && (
+                <Stack gap="xs">
+                  <Text size="sm" fw={500}>OpenID Connect Configuration</Text>
+                  <Grid gutter="md">
+                    {additionalInfo.openIdConfig.authorization_endpoint && (
+                      <Grid.Col span={12}>
+                        <Stack gap="xs">
+                          <Text size="xs" fw={500} c="dimmed">Authorization Endpoint</Text>
+                          <Group gap="xs">
+                            <Code 
+                              block 
+                              style={{ 
+                                backgroundColor: colorScheme === 'dark' 
+                                  ? 'var(--mantine-color-dark-6)' 
+                                  : 'var(--mantine-color-gray-0)',
+                                flex: 1,
+                                fontSize: '11px'
+                              }}
+                            >
+                              {additionalInfo.openIdConfig.authorization_endpoint}
+                            </Code>
+                            <Tooltip label="Copy authorization endpoint">
+                              <ActionIcon 
+                                variant="light" 
+                                size="sm"
+                                onClick={() => copyToClipboard(additionalInfo.openIdConfig.authorization_endpoint, 'Authorization Endpoint')}
+                              >
+                                <IconCopy size={14} />
+                              </ActionIcon>
+                            </Tooltip>
+                          </Group>
+                        </Stack>
+                      </Grid.Col>
+                    )}
+
+                    {additionalInfo.openIdConfig.token_endpoint && (
+                      <Grid.Col span={12}>
+                        <Stack gap="xs">
+                          <Text size="xs" fw={500} c="dimmed">Token Endpoint</Text>
+                          <Group gap="xs">
+                            <Code 
+                              block 
+                              style={{ 
+                                backgroundColor: colorScheme === 'dark' 
+                                  ? 'var(--mantine-color-dark-6)' 
+                                  : 'var(--mantine-color-gray-0)',
+                                flex: 1,
+                                fontSize: '11px'
+                              }}
+                            >
+                              {additionalInfo.openIdConfig.token_endpoint}
+                            </Code>
+                            <Tooltip label="Copy token endpoint">
+                              <ActionIcon 
+                                variant="light" 
+                                size="sm"
+                                onClick={() => copyToClipboard(additionalInfo.openIdConfig.token_endpoint, 'Token Endpoint')}
+                              >
+                                <IconCopy size={14} />
+                              </ActionIcon>
+                            </Tooltip>
+                          </Group>
+                        </Stack>
+                      </Grid.Col>
+                    )}
+                  </Grid>
+                </Stack>
+              )}
+
+              {/* User Realm Information */}
+              {additionalInfo.userRealm && (
+                <Stack gap="xs">
+                  <Text size="sm" fw={500}>User Realm Information</Text>
+                  <Grid gutter="md">
+                    {additionalInfo.userRealm.NameSpaceType && (
+                      <Grid.Col span={{ base: 12, md: 6 }}>
+                        <Stack gap="xs">
+                          <Text size="xs" fw={500} c="dimmed">Authentication Type</Text>
+                          <Badge variant="light" color={additionalInfo.userRealm.NameSpaceType === 'Managed' ? 'blue' : 'orange'}>
+                            {additionalInfo.userRealm.NameSpaceType}
+                          </Badge>
+                        </Stack>
+                      </Grid.Col>
+                    )}
+
+                    {additionalInfo.userRealm.FederationBrandName && (
+                      <Grid.Col span={{ base: 12, md: 6 }}>
+                        <Stack gap="xs">
+                          <Text size="xs" fw={500} c="dimmed">Federation Brand</Text>
+                          <Code 
+                            style={{ 
+                              backgroundColor: colorScheme === 'dark' 
+                                ? 'var(--mantine-color-dark-6)' 
+                                : 'var(--mantine-color-gray-0)'
+                            }}
+                          >
+                            {additionalInfo.userRealm.FederationBrandName}
+                          </Code>
+                        </Stack>
+                      </Grid.Col>
+                    )}
+
+                    {additionalInfo.userRealm.AuthURL && (
+                      <Grid.Col span={12}>
+                        <Stack gap="xs">
+                          <Text size="xs" fw={500} c="dimmed">Federation Auth URL</Text>
+                          <Group gap="xs">
+                            <Code 
+                              block 
+                              style={{ 
+                                backgroundColor: colorScheme === 'dark' 
+                                  ? 'var(--mantine-color-dark-6)' 
+                                  : 'var(--mantine-color-gray-0)',
+                                flex: 1,
+                                fontSize: '11px'
+                              }}
+                            >
+                              {additionalInfo.userRealm.AuthURL}
+                            </Code>
+                            <Tooltip label="Copy auth URL">
+                              <ActionIcon 
+                                variant="light" 
+                                size="sm"
+                                onClick={() => copyToClipboard(additionalInfo.userRealm.AuthURL, 'Auth URL')}
+                              >
+                                <IconCopy size={14} />
+                              </ActionIcon>
+                            </Tooltip>
+                          </Group>
+                        </Stack>
+                      </Grid.Col>
+                    )}
+                  </Grid>
+                </Stack>
+              )}
+
+              {/* DNS Information */}
+              {additionalInfo.dnsInfo && (
+                <Stack gap="xs">
+                  <Text size="sm" fw={500}>DNS Analysis</Text>
+                  <Grid gutter="md">
+                    {additionalInfo.dnsInfo.hasExchangeOnline !== undefined && (
+                      <Grid.Col span={{ base: 12, md: 4 }}>
+                        <Stack gap="xs">
+                          <Text size="xs" fw={500} c="dimmed">Exchange Online</Text>
+                          <Badge variant="light" color={additionalInfo.dnsInfo.hasExchangeOnline ? 'green' : 'gray'}>
+                            {additionalInfo.dnsInfo.hasExchangeOnline ? 'Detected' : 'Not Detected'}
+                          </Badge>
+                        </Stack>
+                      </Grid.Col>
+                    )}
+
+                    {additionalInfo.dnsInfo.hasOffice365SPF !== undefined && (
+                      <Grid.Col span={{ base: 12, md: 4 }}>
+                        <Stack gap="xs">
+                          <Text size="xs" fw={500} c="dimmed">Office 365 SPF</Text>
+                          <Badge variant="light" color={additionalInfo.dnsInfo.hasOffice365SPF ? 'green' : 'gray'}>
+                            {additionalInfo.dnsInfo.hasOffice365SPF ? 'Configured' : 'Not Found'}
+                          </Badge>
+                        </Stack>
+                      </Grid.Col>
+                    )}
+
+                    {additionalInfo.dnsInfo.mxRecords && additionalInfo.dnsInfo.mxRecords.length > 0 && (
+                      <Grid.Col span={12}>
+                        <Stack gap="xs">
+                          <Text size="xs" fw={500} c="dimmed">MX Records</Text>
+                          <Stack gap="xs">
+                            {additionalInfo.dnsInfo.mxRecords.slice(0, 3).map((mx, index) => (
+                              <Code 
+                                key={index}
+                                size="xs"
+                                style={{ 
+                                  backgroundColor: colorScheme === 'dark' 
+                                    ? 'var(--mantine-color-dark-6)' 
+                                    : 'var(--mantine-color-gray-0)'
+                                }}
+                              >
+                                {mx.priority} {mx.exchange}
+                              </Code>
+                            ))}
+                          </Stack>
+                        </Stack>
+                      </Grid.Col>
+                    )}
+                  </Grid>
+                </Stack>
+              )}
+
+              {/* Tenant Domains */}
+              {additionalInfo.tenantDomains && additionalInfo.tenantDomains.length > 0 && (
+                <Stack gap="xs">
+                  <Text size="sm" fw={500}>All Tenant Domains</Text>
+                  <Grid gutter="xs">
+                    {additionalInfo.tenantDomains.map((domain, index) => (
+                      <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
+                        <Group gap="xs">
+                          <Badge 
+                            variant="light" 
+                            color={domain.type === 'Federated' ? 'orange' : 'blue'}
+                            size="sm"
+                          >
+                            {domain.name}
+                          </Badge>
+                          <Text size="xs" c="dimmed">({domain.type})</Text>
+                        </Group>
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </Stack>
+              )}
+
+              <Alert color="indigo" icon={<IconInfoCircle size={16} />}>
+                <Text size="sm">
+                  <strong>Enhanced Reconnaissance Complete:</strong> Maximum tenant information gathered using public APIs. 
+                  This data is publicly available and doesn't require authentication or special permissions.
+                </Text>
+              </Alert>
             </Stack>
           </Card>
         )}
