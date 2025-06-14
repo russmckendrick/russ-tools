@@ -1,0 +1,82 @@
+{
+  "m365Admin": {
+    "name": "Microsoft 365 Admin Center",
+    "url": "https://admin.microsoft.com/adminportal/home#/homepage",
+    "description": "Main Microsoft 365 administration",
+    "category": "Admin Centers"
+  },
+  "azureAD": {
+    "name": "Azure AD Admin Center",
+    "url": "https://aad.portal.azure.com/",
+    "urlWithTenant": "https://aad.portal.azure.com/#@{tenantId}/blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview",
+    "description": "Azure Active Directory management",
+    "category": "Admin Centers"
+  },
+  "exchange": {
+    "name": "Exchange Admin Center",
+    "url": "https://admin.exchange.microsoft.com/#/",
+    "description": "Exchange Online management",
+    "category": "Admin Centers"
+  },
+  "sharepoint": {
+    "name": "SharePoint Admin Center",
+    "url": "https://admin.microsoft.com/sharepoint",
+    "urlWithDomain": "https://{domain}-admin.sharepoint.com/",
+    "description": "SharePoint Online management",
+    "category": "Admin Centers"
+  },
+  "teams": {
+    "name": "Teams Admin Center",
+    "url": "https://admin.teams.microsoft.com/",
+    "description": "Microsoft Teams management",
+    "category": "Admin Centers"
+  },
+  "security": {
+    "name": "Microsoft 365 Security",
+    "url": "https://security.microsoft.com/",
+    "description": "Security dashboard and management",
+    "category": "Security"
+  },
+  "compliance": {
+    "name": "Microsoft 365 Compliance",
+    "url": "https://compliance.microsoft.com/",
+    "description": "Compliance center and policies",
+    "category": "Security"
+  },
+  "defender": {
+    "name": "Microsoft 365 Defender",
+    "url": "https://security.microsoft.com/homepage",
+    "description": "Advanced threat protection",
+    "category": "Security"
+  },
+  "users": {
+    "name": "Active Users",
+    "url": "https://admin.microsoft.com/adminportal/home#/users",
+    "description": "Manage Microsoft 365 users",
+    "category": "Users"
+  },
+  "groups": {
+    "name": "Groups",
+    "url": "https://admin.microsoft.com/adminportal/home#/groups",
+    "description": "Manage Microsoft 365 groups",
+    "category": "Users"
+  },
+  "licenses": {
+    "name": "Licenses",
+    "url": "https://admin.microsoft.com/adminportal/home#/licenses",
+    "description": "Manage licenses and subscriptions",
+    "category": "Management"
+  },
+  "reports": {
+    "name": "Reports",
+    "url": "https://admin.microsoft.com/adminportal/home#/reports/usage/overview",
+    "description": "Usage and activity reports",
+    "category": "Management"
+  },
+  "serviceHealth": {
+    "name": "Service Health",
+    "url": "https://admin.microsoft.com/adminportal/home#/servicehealth",
+    "description": "Service status and health",
+    "category": "Management"
+  }
+} 

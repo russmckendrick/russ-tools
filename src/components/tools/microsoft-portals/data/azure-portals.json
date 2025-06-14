@@ -1,0 +1,110 @@
+{
+  "home": {
+    "name": "Azure Portal Home",
+    "description": "Main Azure portal dashboard",
+    "category": "General",
+    "path": ""
+  },
+  "allResources": {
+    "name": "All Resources",
+    "description": "View all Azure resources",
+    "category": "Resources",
+    "path": "/blade/HubsExtension/BrowseAll"
+  },
+  "resourceGroups": {
+    "name": "Resource Groups",
+    "description": "Manage resource groups",
+    "category": "Resources",
+    "path": "/blade/HubsExtension/BrowseResourceGroups"
+  },
+  "subscriptions": {
+    "name": "Subscriptions",
+    "description": "View and manage subscriptions",
+    "category": "Management",
+    "path": "/blade/Microsoft_Azure_Billing/SubscriptionsBlade"
+  },
+  "activeDirectory": {
+    "name": "Azure Active Directory",
+    "description": "Azure AD management",
+    "category": "Identity",
+    "path": "/blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview"
+  },
+  "users": {
+    "name": "Users",
+    "description": "Manage Azure AD users",
+    "category": "Identity",
+    "path": "/blade/Microsoft_AAD_IAM/UsersManagementMenuBlade/AllUsers"
+  },
+  "groups": {
+    "name": "Groups",
+    "description": "Manage Azure AD groups",
+    "category": "Identity",
+    "path": "/blade/Microsoft_AAD_IAM/GroupsManagementMenuBlade/AllGroups"
+  },
+  "securityCenter": {
+    "name": "Microsoft Defender for Cloud",
+    "description": "Security recommendations and alerts",
+    "category": "Security",
+    "path": "/blade/Microsoft_Azure_Security/SecurityMenuBlade/0"
+  },
+  "keyVault": {
+    "name": "Key Vaults",
+    "description": "Manage Key Vaults",
+    "category": "Security",
+    "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.KeyVault%2Fvaults"
+  },
+  "monitor": {
+    "name": "Azure Monitor",
+    "description": "Monitoring and diagnostics",
+    "category": "Monitoring",
+    "path": "/blade/Microsoft_Azure_Monitoring/AzureMonitoringBrowseBlade/overview"
+  },
+  "logAnalytics": {
+    "name": "Log Analytics",
+    "description": "Log Analytics workspaces",
+    "category": "Monitoring",
+    "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.OperationalInsights%2Fworkspaces"
+  },
+  "virtualMachines": {
+    "name": "Virtual Machines",
+    "description": "Manage virtual machines",
+    "category": "Compute",
+    "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Compute%2FVirtualMachines"
+  },
+  "appServices": {
+    "name": "App Services",
+    "description": "Web apps and API apps",
+    "category": "Compute",
+    "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Web%2Fsites"
+  },
+  "storageAccounts": {
+    "name": "Storage Accounts",
+    "description": "Manage storage accounts",
+    "category": "Storage",
+    "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts"
+  },
+  "virtualNetworks": {
+    "name": "Virtual Networks",
+    "description": "Manage virtual networks",
+    "category": "Networking",
+    "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Network%2FvirtualNetworks"
+  },
+  "loadBalancers": {
+    "name": "Load Balancers",
+    "description": "Manage load balancers",
+    "category": "Networking",
+    "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Network%2FloadBalancers"
+  },
+  "costManagement": {
+    "name": "Cost Management",
+    "description": "Cost analysis and budgets",
+    "category": "Management",
+    "path": "/blade/Microsoft_Azure_CostManagement/Menu/overview"
+  },
+  "marketplace": {
+    "name": "Marketplace",
+    "description": "Azure Marketplace",
+    "category": "General",
+    "path": "/blade/Microsoft_Azure_Marketplace/MarketplaceOffersBlade/selectedMenuItemId/home"
+  }
+} 

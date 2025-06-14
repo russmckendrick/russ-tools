@@ -1,0 +1,54 @@
+{
+  "graphExplorer": {
+    "name": "Graph Explorer",
+    "url": "https://developer.microsoft.com/en-us/graph/graph-explorer",
+    "description": "Test Microsoft Graph APIs",
+    "category": "Developer"
+  },
+  "azureDevOps": {
+    "name": "Azure DevOps",
+    "url": "https://dev.azure.com/",
+    "description": "DevOps services and repositories",
+    "category": "Developer"
+  },
+  "vscodeWeb": {
+    "name": "VS Code for Web",
+    "url": "https://vscode.dev/",
+    "description": "Visual Studio Code in browser",
+    "category": "Developer"
+  },
+  "cloudShell": {
+    "name": "Azure Cloud Shell",
+    "url": "https://shell.azure.com/",
+    "description": "Browser-based shell experience",
+    "category": "Developer"
+  },
+  "armTemplates": {
+    "name": "ARM Template Deployment",
+    "url": "https://portal.azure.com/#create/Microsoft.Template",
+    "urlWithTenant": "https://portal.azure.com/#@{tenantId}/create/Microsoft.Template",
+    "description": "Deploy ARM templates",
+    "category": "Developer"
+  },
+  "apiManagement": {
+    "name": "API Management",
+    "url": "https://portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/Microsoft.ApiManagement%2Fservice",
+    "urlWithTenant": "https://portal.azure.com/#@{tenantId}/blade/HubsExtension/BrowseResource/resourceType/Microsoft.ApiManagement%2Fservice",
+    "description": "Manage APIs and gateways",
+    "category": "Developer"
+  },
+  "functions": {
+    "name": "Azure Functions",
+    "url": "https://portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/Microsoft.Web%2Fsites/kind/functionapp",
+    "urlWithTenant": "https://portal.azure.com/#@{tenantId}/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Web%2Fsites/kind/functionapp",
+    "description": "Serverless compute functions",
+    "category": "Developer"
+  },
+  "logicApps": {
+    "name": "Logic Apps",
+    "url": "https://portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/Microsoft.Logic%2Fworkflows",
+    "urlWithTenant": "https://portal.azure.com/#@{tenantId}/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Logic%2Fworkflows",
+    "description": "Workflow automation",
+    "category": "Developer"
+  }
+} 

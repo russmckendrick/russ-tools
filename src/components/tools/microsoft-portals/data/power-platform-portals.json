@@ -1,0 +1,68 @@
+{
+  "powerPlatformAdmin": {
+    "name": "Power Platform Admin Center",
+    "url": "https://admin.powerplatform.microsoft.com/",
+    "description": "Power Platform administration",
+    "category": "Admin Centers"
+  },
+  "powerApps": {
+    "name": "Power Apps",
+    "url": "https://make.powerapps.com/",
+    "description": "Create and manage Power Apps",
+    "category": "Power Platform"
+  },
+  "powerAppsAdmin": {
+    "name": "Power Apps Admin",
+    "url": "https://admin.powerapps.com/",
+    "description": "Power Apps administration",
+    "category": "Power Platform"
+  },
+  "powerAutomate": {
+    "name": "Power Automate",
+    "url": "https://make.powerautomate.com/",
+    "description": "Create and manage flows",
+    "category": "Power Platform"
+  },
+  "powerBI": {
+    "name": "Power BI Service",
+    "url": "https://app.powerbi.com/",
+    "description": "Power BI dashboards and reports",
+    "category": "Power Platform"
+  },
+  "powerBIAdmin": {
+    "name": "Power BI Admin Portal",
+    "url": "https://app.powerbi.com/admin-portal/usageMetrics?noSignUpCheck=1",
+    "description": "Power BI administration",
+    "category": "Power Platform"
+  },
+  "powerVirtualAgents": {
+    "name": "Power Virtual Agents",
+    "url": "https://web.powerva.microsoft.com/",
+    "description": "Create and manage chatbots",
+    "category": "Power Platform"
+  },
+  "dynamics365": {
+    "name": "Dynamics 365 Home",
+    "url": "https://home.dynamics.com/",
+    "description": "Dynamics 365 applications",
+    "category": "Dynamics 365"
+  },
+  "dynamicsAdmin": {
+    "name": "Dynamics 365 Admin Center",
+    "url": "https://admin.services.crm.dynamics.com/",
+    "description": "Dynamics 365 administration",
+    "category": "Dynamics 365"
+  },
+  "customerEngagement": {
+    "name": "Customer Engagement Apps",
+    "url": "https://make.powerapps.com/environments",
+    "description": "Customer engagement applications",
+    "category": "Dynamics 365"
+  },
+  "financeOperations": {
+    "name": "Finance & Operations",
+    "url": "https://diag.lcs.dynamics.com/",
+    "description": "Lifecycle Services portal",
+    "category": "Dynamics 365"
+  }
+} 
