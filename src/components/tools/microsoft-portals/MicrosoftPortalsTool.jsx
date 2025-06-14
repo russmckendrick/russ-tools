@@ -165,18 +165,13 @@ const MicrosoftPortalsTool = () => {
     }
   }, [searchInput]);
 
-  // Get all available portals (default set when no tenant is found)
-  const getDefaultPortals = () => {
-    const links = generateAllPortalLinks(null);
-    return links;
-  };
-
-  // Flatten portal links for display
+  // Flatten portal links for display (only when portalLinks exist)
   const allPortals = useMemo(() => {
-    const links = portalLinks || getDefaultPortals();
+    if (!portalLinks) return [];
+    
     const flattened = [];
     
-    Object.entries(links).forEach(([sectionKey, section]) => {
+    Object.entries(portalLinks).forEach(([sectionKey, section]) => {
       Object.entries(section).forEach(([portalKey, portal]) => {
         flattened.push({
           key: `${sectionKey}-${portalKey}`,
@@ -348,97 +343,121 @@ const MicrosoftPortalsTool = () => {
         </Stack>
       </Paper>
 
-      {/* Portal Links Table */}
-      <Paper withBorder radius="lg" p="md">
-        <Group justify="space-between" mb="md">
-          <Text fw={500}>
-            Portal Links ({filteredPortals.length})
-          </Text>
-          {selectedCategory !== 'all' && (
-            <Badge variant="light" color="blue">
-              {categories.find(c => c.value === selectedCategory)?.label}
-            </Badge>
-          )}
-        </Group>
+      {/* Portal Links Table - Only show when portalLinks exist */}
+      {portalLinks && (
+        <Paper withBorder radius="lg" p="md">
+          <Group justify="space-between" mb="md">
+            <Text fw={500}>
+              Portal Links ({filteredPortals.length})
+            </Text>
+            {selectedCategory !== 'all' && (
+              <Badge variant="light" color="blue">
+                {categories.find(c => c.value === selectedCategory)?.label}
+              </Badge>
+            )}
+          </Group>
 
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Portal Name</Table.Th>
-              <Table.Th>Description</Table.Th>
-              <Table.Th>Category</Table.Th>
-              <Table.Th width={100}>Actions</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {filteredPortals.map((portal) => (
-              <Table.Tr key={portal.key}>
-                <Table.Td>
-                  <Group gap="xs">
-                    <Anchor
-                      href={portal.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      fw={500}
-                      size="sm"
-                    >
-                      {portal.name}
-                    </Anchor>
-                    {portal.requiresTenant && !tenantInfo && (
-                      <Tooltip label="Requires tenant lookup">
-                        <Badge size="xs" color="orange" variant="light">
-                          Tenant
-                        </Badge>
-                      </Tooltip>
-                    )}
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="sm" c="dimmed">
-                    {portal.description}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Badge size="sm" variant="light" color="gray">
-                    {portal.category}
-                  </Badge>
-                </Table.Td>
-                <Table.Td>
-                  <Group gap="xs">
-                    <Tooltip label="Copy URL">
-                      <ActionIcon
-                        variant="light"
-                        size="sm"
-                        onClick={() => copyToClipboard(portal.url, portal.name)}
-                      >
-                        <IconCopy size={14} />
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Open in new tab">
-                      <ActionIcon
-                        variant="light"
-                        size="sm"
-                        component="a"
+          <Table striped highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Portal Name</Table.Th>
+                <Table.Th>Description</Table.Th>
+                <Table.Th>Category</Table.Th>
+                <Table.Th width={100}>Actions</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {filteredPortals.map((portal) => (
+                <Table.Tr key={portal.key}>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <Anchor
                         href={portal.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        fw={500}
+                        size="sm"
                       >
-                        <IconExternalLink size={14} />
-                      </ActionIcon>
-                    </Tooltip>
-                  </Group>
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
+                        {portal.name}
+                      </Anchor>
+                      {portal.requiresTenant && !tenantInfo && (
+                        <Tooltip label="Requires tenant lookup">
+                          <Badge size="xs" color="orange" variant="light">
+                            Tenant
+                          </Badge>
+                        </Tooltip>
+                      )}
+                    </Group>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm" c="dimmed">
+                      {portal.description}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Badge size="sm" variant="light" color="gray">
+                      {portal.category}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <Tooltip label="Copy URL">
+                        <ActionIcon
+                          variant="light"
+                          size="sm"
+                          onClick={() => copyToClipboard(portal.url, portal.name)}
+                        >
+                          <IconCopy size={14} />
+                        </ActionIcon>
+                      </Tooltip>
+                      <Tooltip label="Open in new tab">
+                        <ActionIcon
+                          variant="light"
+                          size="sm"
+                          component="a"
+                          href={portal.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <IconExternalLink size={14} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
 
-        {filteredPortals.length === 0 && (
-          <Text ta="center" c="dimmed" py="xl">
-            No portals found matching your search criteria
-          </Text>
-        )}
-      </Paper>
+          {filteredPortals.length === 0 && (
+            <Text ta="center" c="dimmed" py="xl">
+              No portals found matching your search criteria
+            </Text>
+          )}
+        </Paper>
+      )}
+
+      {/* Instructions when no domain has been entered */}
+      {!portalLinks && !loading && (
+        <Paper withBorder radius="lg" p="xl">
+          <Stack gap="md" align="center">
+            <ThemeIcon size={64} radius="md" variant="light" color="blue">
+              <IconSearch size={32} />
+            </ThemeIcon>
+            <div style={{ textAlign: 'center' }}>
+              <Text fw={500} size="lg" mb="xs">
+                Enter a Domain to Get Started
+              </Text>
+              <Text size="sm" c="dimmed" mb="md">
+                Enter a domain name (e.g., contoso.com) in the search box above to discover Microsoft tenant information and generate personalized portal links.
+              </Text>
+              <Text size="xs" c="dimmed">
+                You can also search for specific portals once links are generated.
+              </Text>
+            </div>
+          </Stack>
+        </Paper>
+      )}
     </Container>
   );
 };
