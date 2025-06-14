@@ -16,7 +16,8 @@ import {
   Code,
   ActionIcon,
   Tooltip,
-  useMantineColorScheme
+  useMantineColorScheme,
+  Tabs
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import {
@@ -25,17 +26,23 @@ import {
   IconCopy,
   IconCheck,
   IconExternalLink,
-  IconAlertCircle
+  IconAlertCircle,
+  IconLink,
+  IconHistory
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
 import { getTenantId, isValidDomain, extractDomain } from './TenantLookup';
+import { generateAllPortalLinks } from './PortalLinkGenerator';
+import PortalCategories from './PortalCategories';
 
 const MicrosoftPortalsTool = () => {
   const [domainInput, setDomainInput] = useState('');
   const [tenantInfo, setTenantInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [portalLinks, setPortalLinks] = useState(null);
+  const [activeTab, setActiveTab] = useState('lookup');
   const { colorScheme } = useMantineColorScheme();
 
   // Local storage for lookup history
@@ -108,6 +115,12 @@ const MicrosoftPortalsTool = () => {
         console.log(`📦 Using cached tenant data for: ${domain}`);
         setTenantInfo(cachedData);
         addToHistory(domain, cachedData);
+        
+        // Generate portal links for cached data
+        const links = generateAllPortalLinks(cachedData);
+        setPortalLinks(links);
+        setActiveTab('portals');
+        
         setLoading(false);
         return;
       }
@@ -118,6 +131,13 @@ const MicrosoftPortalsTool = () => {
       setTenantInfo(tenantData);
       addToHistory(domain, tenantData);
       cacheTenantData(domain, tenantData);
+      
+      // Generate portal links
+      const links = generateAllPortalLinks(tenantData);
+      setPortalLinks(links);
+      
+      // Switch to portal links tab
+      setActiveTab('portals');
       
       notifications.show({
         title: 'Tenant Found',
@@ -176,6 +196,11 @@ const MicrosoftPortalsTool = () => {
     if (cachedData && isCacheValid(cachedData)) {
       setTenantInfo(cachedData);
       setError(null);
+      
+      // Generate portal links for history item
+      const links = generateAllPortalLinks(cachedData);
+      setPortalLinks(links);
+      setActiveTab('portals');
     }
   };
 
@@ -195,12 +220,49 @@ const MicrosoftPortalsTool = () => {
               Generate deep links to Microsoft portals using domain/tenant information
             </Text>
             <Badge variant="light" color="indigo" size="sm" mt="xs">
-              Phase 1: Tenant Discovery
+              Phase 2: Portal Link Generator
             </Badge>
           </div>
         </Group>
 
-        {/* Domain Input Section */}
+        {/* Tabbed Interface */}
+        <Tabs value={activeTab} onChange={setActiveTab} variant="pills">
+          <Tabs.List grow>
+            <Tabs.Tab value="lookup" leftSection={<IconSearch size={16} />}>
+              Tenant Lookup
+            </Tabs.Tab>
+            <Tabs.Tab 
+              value="portals" 
+              leftSection={<IconLink size={16} />}
+              disabled={!tenantInfo}
+            >
+              Portal Links
+              {portalLinks && (
+                <Badge variant="light" color="blue" size="xs" ml="xs">
+                  {Object.keys(portalLinks).reduce((total, section) => 
+                    total + Object.keys(portalLinks[section]).length, 0
+                  )}
+                </Badge>
+              )}
+            </Tabs.Tab>
+            <Tabs.Tab 
+              value="history" 
+              leftSection={<IconHistory size={16} />}
+              disabled={lookupHistory.length === 0}
+            >
+              History
+              {lookupHistory.length > 0 && (
+                <Badge variant="light" color="gray" size="xs" ml="xs">
+                  {lookupHistory.length}
+                </Badge>
+              )}
+            </Tabs.Tab>
+          </Tabs.List>
+
+          {/* Tenant Lookup Tab */}
+          <Tabs.Panel value="lookup" pt="lg">
+            <Stack gap="lg">
+              {/* Domain Input Section */}
         <Card withBorder p="lg" radius="md">
           <Stack gap="md">
             <Group gap="xs">
@@ -733,28 +795,63 @@ const MicrosoftPortalsTool = () => {
           </Card>
         )}
 
-        {/* Recent Lookups */}
-        {lookupHistory.length > 0 && (
-          <Card withBorder p="lg" radius="md">
-            <Stack gap="md">
-              <Text fw={500}>Recent Lookups</Text>
-              <Grid gutter="xs">
-                {lookupHistory.slice(0, 6).map((item, index) => (
-                  <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
-                    <Button
-                      variant="light"
-                      size="sm"
-                      onClick={() => handleHistoryClick(item)}
-                      style={{ width: '100%' }}
-                    >
-                      {item.domain}
-                    </Button>
-                  </Grid.Col>
-                ))}
-              </Grid>
             </Stack>
-          </Card>
-        )}
+          </Tabs.Panel>
+
+          {/* Portal Links Tab */}
+          <Tabs.Panel value="portals" pt="lg">
+            <Stack gap="lg">
+              {tenantInfo && portalLinks ? (
+                <PortalCategories 
+                  links={portalLinks}
+                  tenantInfo={tenantInfo}
+                />
+              ) : (
+                <Alert icon={<IconInfoCircle size={16} />} title="No Portal Links" color="blue" variant="light">
+                  Perform a tenant lookup first to generate Microsoft portal links.
+                </Alert>
+              )}
+            </Stack>
+          </Tabs.Panel>
+
+          {/* History Tab */}
+          <Tabs.Panel value="history" pt="lg">
+            <Stack gap="lg">
+              <Alert icon={<IconHistory size={16} />} title="Lookup History" color="green" variant="light">
+                Your recent tenant lookups are cached for quick access
+              </Alert>
+              
+              {lookupHistory.length > 0 ? (
+                <Grid gutter="md">
+                  {lookupHistory.map((item, index) => (
+                    <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
+                      <Card withBorder p="md" radius="md" style={{ cursor: 'pointer' }} onClick={() => handleHistoryClick(item)}>
+                        <Stack gap="xs">
+                          <Group justify="space-between">
+                            <Text fw={500} size="sm">{item.domain}</Text>
+                            <Badge variant="light" color="blue" size="xs">
+                              {new Date(item.timestamp).toLocaleDateString()}
+                            </Badge>
+                          </Group>
+                          <Text size="xs" c="dimmed" lineClamp={1}>
+                            Tenant ID: {item.tenantId}
+                          </Text>
+                          <Button variant="light" size="xs" fullWidth>
+                            Load Tenant
+                          </Button>
+                        </Stack>
+                      </Card>
+                    </Grid.Col>
+                  ))}
+                </Grid>
+              ) : (
+                <Alert icon={<IconInfoCircle size={16} />} title="No History" color="gray" variant="light">
+                  No recent tenant lookups found. Perform a lookup to see it here.
+                </Alert>
+              )}
+            </Stack>
+          </Tabs.Panel>
+        </Tabs>
       </Stack>
     </Paper>
   );
