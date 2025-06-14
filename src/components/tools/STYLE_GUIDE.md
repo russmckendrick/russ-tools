@@ -52,6 +52,7 @@ This style guide ensures consistent design and user experience across all tools 
 - Data Converter: `yellow` (with JSONIcon)
 - DNS Lookup: `indigo` (with DNSIcon)
 - JWT: `red` (with JWTIcon)
+- Microsoft Portals: `indigo` (with MicrosoftPortalsIcon)
 - Network Designer: `blue` (with IconNetwork)
 - Password Generator: `violet` (with IconKey)
 - SSL Checker: `green` (with IconShield)
@@ -201,10 +202,63 @@ const { colorScheme } = useMantineColorScheme();
 6. **User Experience**: Intuitive interactions and helpful feedback
 7. **Dark Mode**: Full support for both light and dark themes with proper color adaptation
 
+## Tool-Specific Implementation Examples
+
+### Microsoft Portals Tool
+The Microsoft Portals tool demonstrates several advanced patterns:
+
+#### Data-Driven Architecture
+- Portal data stored in JSON files (`/data/*.json`)
+- Separation of data from presentation logic
+- Easy maintenance and updates without code changes
+
+#### CSP Partner Features
+- Tenant ID and domain-based URL generation
+- Partner Centre integration URLs
+- Delegated administration support
+
+#### Advanced UI Patterns
+- Tabbed interface for portal categories
+- Search and filter functionality
+- Clipboard integration for generated links
+- Responsive grid layout for portal cards
+
+#### URL Generation Logic
+```javascript
+// Example of conditional URL generation
+if (portal.urlWithTenant && tenantId) {
+  url = portal.urlWithTenant.replace('{tenantId}', tenantId);
+} else if (portal.urlWithDomain && domain) {
+  url = portal.urlWithDomain.replace('{domain}', domain);
+} else {
+  url = portal.url;
+}
+```
+
+#### Component Structure
+```
+microsoft-portals/
+├── MicrosoftPortalsTool.jsx (main component)
+├── TenantLookup.jsx (domain resolution)
+├── PortalLinkGenerator.jsx (URL builders)
+├── PortalGrid.jsx (link display)
+├── PortalCategories.jsx (tabbed organization)
+├── MicrosoftPortalsIcon.jsx (custom icon)
+└── data/
+    ├── azure-portals.json
+    ├── m365-portals.json
+    ├── power-platform-portals.json
+    ├── advanced-portals.json
+    └── README.md
+```
+
 ## Implementation Notes
 
 - Always use Mantine's design tokens for spacing, colors, and typography
 - Maintain consistent prop patterns across similar components
 - Test all tools in both light and dark themes
 - Ensure proper keyboard navigation
-- Use semantic HTML structure where possible 
+- Use semantic HTML structure where possible
+- Consider data-driven approaches for complex tools with many options
+- Implement proper error handling for external API calls
+- Use JSON files for configuration data that changes frequently 

@@ -37,6 +37,7 @@ import JSONIcon from '../tools/data-converter/JSONIcon';
 import Base64Icon from '../tools/base64/Base64Icon';
 import JWTIcon from '../tools/jwt/JWTIcon';
 import PasswordIcon from '../tools/password-generator/PasswordIcon';
+import MicrosoftPortalsIcon from '../tools/microsoft-portals/MicrosoftPortalsIcon';
 
 const mockdata = [
   {
@@ -108,6 +109,13 @@ const mockdata = [
     description: "Generate secure, random passwords with customizable options",
     link: "/password-generator/",
     color: "violet",
+  },
+  {
+    icon: MicrosoftPortalsIcon,
+    title: 'Microsoft Portal Links',
+    description: "Generate deep links to Microsoft portals using tenant information",
+    link: "/microsoft-portals/",
+    color: "indigo",
   },
   {
     icon: IconBrandGithub,
