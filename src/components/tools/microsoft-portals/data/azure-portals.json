@@ -2,26 +2,26 @@
   "home": {
     "name": "Azure Portal Home",
     "description": "Main Azure portal dashboard",
-    "category": "General",
+    "category": "Admin Centers",
     "path": "",
     "urlWithDomain": "https://portal.azure.com/{domain}"
   },
   "allResources": {
     "name": "All Resources",
     "description": "View all Azure resources",
-    "category": "Resources",
+    "category": "Azure",
     "path": "/blade/HubsExtension/BrowseAll"
   },
   "resourceGroups": {
     "name": "Resource Groups",
     "description": "Manage resource groups",
-    "category": "Resources",
+    "category": "Azure",
     "path": "/blade/HubsExtension/BrowseResourceGroups"
   },
   "subscriptions": {
     "name": "Subscriptions",
     "description": "View and manage subscriptions",
-    "category": "Management",
+    "category": "Azure",
     "path": "/blade/Microsoft_Azure_Billing/SubscriptionsBlade"
   },
   "activeDirectory": {
@@ -51,31 +51,31 @@
   "keyVault": {
     "name": "Key Vaults",
     "description": "Manage Key Vaults",
-    "category": "Security",
+    "category": "Azure",
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.KeyVault%2Fvaults"
   },
   "monitor": {
     "name": "Azure Monitor",
     "description": "Monitoring and diagnostics",
-    "category": "Monitoring",
+    "category": "Azure",
     "path": "/blade/Microsoft_Azure_Monitoring/AzureMonitoringBrowseBlade/overview"
   },
   "logAnalytics": {
     "name": "Log Analytics",
     "description": "Log Analytics workspaces",
-    "category": "Monitoring",
+    "category": "Azure",
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.OperationalInsights%2Fworkspaces"
   },
   "virtualMachines": {
     "name": "Virtual Machines",
     "description": "Manage virtual machines",
-    "category": "Compute",
+    "category": "Azure",
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Compute%2FVirtualMachines"
   },
   "appServices": {
     "name": "App Services",
     "description": "Web apps and API apps",
-    "category": "Compute",
+    "category": "Azure",
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Web%2Fsites"
   },
   "storageAccounts": {
@@ -87,25 +87,25 @@
   "virtualNetworks": {
     "name": "Virtual Networks",
     "description": "Manage virtual networks",
-    "category": "Networking",
+    "category": "Azure",
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Network%2FvirtualNetworks"
   },
   "loadBalancers": {
     "name": "Load Balancers",
     "description": "Manage load balancers",
-    "category": "Networking",
+    "category": "Azure",
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Network%2FloadBalancers"
   },
   "costManagement": {
     "name": "Cost Management",
     "description": "Cost analysis and budgets",
-    "category": "Management",
+    "category": "Azure",
     "path": "/blade/Microsoft_Azure_CostManagement/Menu/overview"
   },
   "marketplace": {
     "name": "Marketplace",
     "description": "Azure Marketplace",
-    "category": "General",
+    "category": "Azure",
     "path": "/blade/Microsoft_Azure_Marketplace/MarketplaceOffersBlade/selectedMenuItemId/home"
   },
   "entraAdmin": {
@@ -125,21 +125,21 @@
   "cloudShell": {
     "name": "Azure Cloud Shell",
     "description": "Browser-based shell experience",
-    "category": "Developer",
+    "category": "Azure",
     "path": "",
     "url": "https://shell.azure.com/"
   },
   "cosmosDB": {
     "name": "Azure Cosmos DB",
     "description": "NoSQL database service portal",
-    "category": "Storage",
+    "category": "Azure",
     "path": "",
     "url": "https://cosmos.azure.com/"
   },
   "dataFactory": {
     "name": "Azure Data Factory",
     "description": "Data integration service",
-    "category": "Developer",
+    "category": "Azure",
     "path": "",
     "url": "https://adf.azure.com/"
   },
