@@ -85,6 +85,7 @@ export default function App() {
 
               {/* Microsoft Portals Tool route */}
               <Route path="microsoft-portals" element={<MicrosoftPortalsTool />} />
+              <Route path="microsoft-portals/:domain" element={<MicrosoftPortalsTool />} />
 
               {/* Add more routes here as needed */}
             </Route>

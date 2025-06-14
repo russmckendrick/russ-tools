@@ -20,6 +20,7 @@ import {
   Tabs
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
+import { useParams } from 'react-router-dom';
 import {
   IconSearch,
   IconInfoCircle,
@@ -44,6 +45,9 @@ const MicrosoftPortalsTool = () => {
   const [portalLinks, setPortalLinks] = useState(null);
   const [activeTab, setActiveTab] = useState('lookup');
   const { colorScheme } = useMantineColorScheme();
+
+  // Get domain from URL parameters
+  const { domain: urlDomain } = useParams();
 
   // Local storage for lookup history
   const [lookupHistory, setLookupHistory] = useLocalStorage({
@@ -90,14 +94,24 @@ const MicrosoftPortalsTool = () => {
     }));
   };
 
-  // Perform tenant lookup
-  const handleLookup = async () => {
-    if (!domainInput.trim()) {
-      setError('Please enter a domain name');
-      return;
+  // Effect to handle URL domain parameter
+  useEffect(() => {
+    if (urlDomain && urlDomain.trim()) {
+      // Decode URL component in case domain contains special characters
+      const decodedDomain = decodeURIComponent(urlDomain);
+      console.log(`🔗 Domain from URL: ${decodedDomain}`);
+      
+      // Set the domain in the input field
+      setDomainInput(decodedDomain);
+      
+      // Automatically start the tenant lookup
+      handleDomainLookup(decodedDomain);
     }
+  }, [urlDomain]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const domain = extractDomain(domainInput);
+  // Perform tenant lookup (extracted to be reusable)
+  const handleDomainLookup = async (domainToLookup) => {
+    const domain = extractDomain(domainToLookup || domainInput);
     
     if (!isValidDomain(domain)) {
       setError('Please enter a valid domain name (e.g., contoso.com)');
@@ -159,6 +173,16 @@ const MicrosoftPortalsTool = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Perform tenant lookup
+  const handleLookup = async () => {
+    if (!domainInput.trim()) {
+      setError('Please enter a domain name');
+      return;
+    }
+
+    await handleDomainLookup(domainInput);
   };
 
 
