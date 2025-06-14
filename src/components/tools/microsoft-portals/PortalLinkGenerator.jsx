@@ -11,7 +11,7 @@ import advancedPortalsData from './data/advanced-portals.json';
  */
 
 // Azure Portal Deep Link Generators
-export const generateAzurePortalLinks = (tenantId, options = {}) => {
+export const generateAzurePortalLinks = (tenantId, domain, options = {}) => {
   const baseUrl = 'https://portal.azure.com';
   const tenantParam = tenantId ? `?feature.customportal=false&Microsoft_Azure_Marketplace=true#@${tenantId}` : '';
   
@@ -20,9 +20,18 @@ export const generateAzurePortalLinks = (tenantId, options = {}) => {
   // Process each portal from the JSON data
   Object.keys(azurePortalsData).forEach(key => {
     const portal = azurePortalsData[key];
+    let url;
+    
+    // Handle domain-specific URLs for CSP partners (like portal.azure.com/domain)
+    if (portal.urlWithDomain && domain) {
+      url = portal.urlWithDomain.replace('{domain}', domain);
+    } else {
+      url = `${baseUrl}/${tenantParam}${portal.path}`;
+    }
+    
     links[key] = {
       name: portal.name,
-      url: `${baseUrl}/${tenantParam}${portal.path}`,
+      url: url,
       description: portal.description,
       category: portal.category
     };
@@ -40,12 +49,11 @@ export const generateM365AdminLinks = (tenantId, domain) => {
     const portal = m365PortalsData[key];
     let url = portal.url;
     
-    // Handle special URL cases
+    // Handle special URL cases - prioritize tenant-specific URLs for CSP partners
     if (portal.urlWithTenant && tenantId) {
       url = portal.urlWithTenant.replace('{tenantId}', tenantId);
     } else if (portal.urlWithDomain && domain) {
-      const domainPrefix = domain.split('.')[0];
-      url = portal.urlWithDomain.replace('{domain}', domainPrefix);
+      url = portal.urlWithDomain.replace('{domain}', domain);
     }
     
     links[key] = {
@@ -66,9 +74,18 @@ export const generatePowerPlatformLinks = (tenantId, domain) => {
   // Process each portal from the JSON data
   Object.keys(powerPlatformPortalsData).forEach(key => {
     const portal = powerPlatformPortalsData[key];
+    let url = portal.url;
+    
+    // Handle tenant-specific URLs
+    if (portal.urlWithTenant && tenantId) {
+      url = portal.urlWithTenant.replace('{tenantId}', tenantId);
+    } else if (portal.urlWithDomain && domain) {
+      url = portal.urlWithDomain.replace('{domain}', domain);
+    }
+    
     links[key] = {
       name: portal.name,
-      url: portal.url,
+      url: url,
       description: portal.description,
       category: portal.category
     };
@@ -89,6 +106,12 @@ export const generateAdvancedPortalLinks = (tenantId, domain) => {
     // Handle tenant-specific URLs
     if (portal.urlWithTenant && tenantId) {
       url = portal.urlWithTenant.replace('{tenantId}', tenantId);
+    } else if (portal.urlWithDomain && domain) {
+      url = portal.urlWithDomain.replace('{domain}', domain);
+    } else if (portal.urlWithDomainOnMicrosoft && domain) {
+      // Special case for URLs that need .onmicrosoft.com format
+      const domainPrefix = domain.includes('.') ? domain.split('.')[0] : domain;
+      url = portal.urlWithDomainOnMicrosoft.replace('{domain}', domainPrefix);
     }
     
     links[key] = {
@@ -102,6 +125,8 @@ export const generateAdvancedPortalLinks = (tenantId, domain) => {
   return links;
 };
 
+
+
 // Main function to generate all portal links
 export const generateAllPortalLinks = (tenantInfo) => {
   if (!tenantInfo) return {};
@@ -109,7 +134,7 @@ export const generateAllPortalLinks = (tenantInfo) => {
   const { tenantId, domain } = tenantInfo;
   
   return {
-    azure: generateAzurePortalLinks(tenantId),
+    azure: generateAzurePortalLinks(tenantId, domain),
     m365: generateM365AdminLinks(tenantId, domain),
     powerPlatform: generatePowerPlatformLinks(tenantId, domain),
     advanced: generateAdvancedPortalLinks(tenantId, domain)

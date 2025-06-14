@@ -3,7 +3,8 @@
     "name": "Azure Portal Home",
     "description": "Main Azure portal dashboard",
     "category": "General",
-    "path": ""
+    "path": "",
+    "urlWithDomain": "https://portal.azure.com/{domain}"
   },
   "allResources": {
     "name": "All Resources",

@@ -1,6 +1,6 @@
 # Microsoft Portals Data
 
-This directory contains JSON files that define the portal links for the Microsoft Portals Tool.
+This directory contains JSON files that define the portal links for the Microsoft Portals Tool, specifically designed for CSP (Cloud Solution Provider) partners.
 
 ## File Structure
 
@@ -29,13 +29,22 @@ This directory contains JSON files that define the portal links for the Microsof
   "portalKey": {
     "name": "Display Name", 
     "url": "https://portal.url.com",
-    "urlWithTenant": "https://portal.url.com/#@{tenantId}/path", // Optional
-    "urlWithDomain": "https://{domain}-admin.portal.com/", // Optional
+    "urlWithTenant": "https://portal.url.com/?tenantId={tenantId}", // Optional - for tenant-specific URLs
+    "urlWithDomain": "https://portal.url.com/{domain}", // Optional - for domain-specific URLs
     "description": "Portal description",
     "category": "Category Name"
   }
 }
 ```
+
+## CSP Partner Features
+
+This tool is specifically designed for CSP partners and includes:
+
+- **Partner Centre URLs**: Direct links to manage customer tenants via Partner Centre
+- **Tenant-specific URLs**: Automatic tenant ID substitution for customer access
+- **Domain-specific URLs**: Support for customer domain-based URLs
+- **Delegated Administration**: Links that work with delegated admin privileges
 
 ## Categories
 

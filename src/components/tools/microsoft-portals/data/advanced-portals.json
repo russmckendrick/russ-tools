@@ -50,5 +50,26 @@
     "urlWithTenant": "https://portal.azure.com/#@{tenantId}/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Logic%2Fworkflows",
     "description": "Workflow automation",
     "category": "Developer"
+  },
+  "visualStudioMarketplace": {
+    "name": "Visual Studio Marketplace",
+    "url": "https://marketplace.visualstudio.com/",
+    "urlWithTenant": "https://app.vsaex.visualstudio.com/integrationredirect/cspPartnerSignin?tenantId={tenantId}&replyto=https://marketplace.visualstudio.com",
+    "description": "Visual Studio extensions and tools",
+    "category": "Developer"
+  },
+  "visualStudioSubscriptions": {
+    "name": "Visual Studio Subscriptions",
+    "url": "https://manage.visualstudio.com/",
+    "urlWithTenant": "https://app.vsaex.visualstudio.com/integrationredirect/cspPartnerSignin?tenantId={tenantId}&replyto=https://manage.visualstudio.com/Subscribers?act_id=2",
+    "description": "Manage Visual Studio subscriptions",
+    "category": "Developer"
+  },
+  "azureIoTCentral": {
+    "name": "Azure IoT Central",
+    "url": "https://apps.azureiotcentral.com/",
+    "urlWithDomainOnMicrosoft": "https://apps.azureiotcentral-ppe.com/myapps?tenant={domain}.onmicrosoft.com",
+    "description": "IoT application platform",
+    "category": "Developer"
   }
 } 

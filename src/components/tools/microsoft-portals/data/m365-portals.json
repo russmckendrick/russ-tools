@@ -2,51 +2,78 @@
   "m365Admin": {
     "name": "Microsoft 365 Admin Center",
     "url": "https://admin.microsoft.com/adminportal/home#/homepage",
+    "urlWithTenant": "https://admin.microsoft.com/Partner/BeginClientSession.aspx?CTID={tenantId}&CSDEST=o365admincenter",
     "description": "Main Microsoft 365 administration",
     "category": "Admin Centers"
   },
   "azureAD": {
-    "name": "Azure AD Admin Center",
+    "name": "Microsoft Entra ID",
     "url": "https://aad.portal.azure.com/",
-    "urlWithTenant": "https://aad.portal.azure.com/#@{tenantId}/blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview",
+    "urlWithDomain": "https://aad.portal.azure.com/{domain}",
     "description": "Azure Active Directory management",
     "category": "Admin Centers"
   },
   "exchange": {
     "name": "Exchange Admin Center",
     "url": "https://admin.exchange.microsoft.com/#/",
+    "urlWithDomain": "https://admin.exchange.microsoft.com/?rfr=Admin_o365&exsvurl=1&delegatedOrg={domain}",
     "description": "Exchange Online management",
     "category": "Admin Centers"
   },
   "sharepoint": {
     "name": "SharePoint Admin Center",
     "url": "https://admin.microsoft.com/sharepoint",
-    "urlWithDomain": "https://{domain}-admin.sharepoint.com/",
+    "urlWithTenant": "https://admin.microsoft.com/Partner/beginclientsession.aspx?CTID={tenantId}&CSDEST=SharePoint",
     "description": "SharePoint Online management",
     "category": "Admin Centers"
   },
   "teams": {
     "name": "Teams Admin Center",
     "url": "https://admin.teams.microsoft.com/",
+    "urlWithDomain": "https://admin.teams.microsoft.com/?delegatedOrg={domain}",
     "description": "Microsoft Teams management",
+    "category": "Admin Centers"
+  },
+  "intune": {
+    "name": "Microsoft Intune",
+    "url": "https://endpoint.microsoft.com/",
+    "urlWithDomain": "https://endpoint.microsoft.com/{domain}",
+    "description": "Device management and security",
     "category": "Admin Centers"
   },
   "security": {
     "name": "Microsoft 365 Security",
     "url": "https://security.microsoft.com/",
+    "urlWithTenant": "https://security.microsoft.com/?tid={tenantId}",
     "description": "Security dashboard and management",
     "category": "Security"
   },
   "compliance": {
     "name": "Microsoft 365 Compliance",
     "url": "https://compliance.microsoft.com/",
+    "urlWithTenant": "https://compliance.microsoft.com/?tid={tenantId}",
     "description": "Compliance center and policies",
     "category": "Security"
   },
   "defender": {
     "name": "Microsoft 365 Defender",
     "url": "https://security.microsoft.com/homepage",
+    "urlWithTenant": "https://security.microsoft.com/?tid={tenantId}",
     "description": "Advanced threat protection",
+    "category": "Security"
+  },
+  "defenderCloudApps": {
+    "name": "Microsoft Defender for Cloud Apps",
+    "url": "https://portal.cloudappsecurity.com/",
+    "urlWithTenant": "https://portal.cloudappsecurity.com/oauth2/authorize?CTID={tenantId}",
+    "description": "Cloud app security and protection",
+    "category": "Security"
+  },
+  "securityCopilot": {
+    "name": "Microsoft Security Copilot",
+    "url": "https://securitycopilot.microsoft.com/",
+    "urlWithTenant": "https://securitycopilot.microsoft.com/?tenantId={tenantId}",
+    "description": "AI-powered security assistant",
     "category": "Security"
   },
   "users": {
@@ -77,6 +104,33 @@
     "name": "Service Health",
     "url": "https://admin.microsoft.com/adminportal/home#/servicehealth",
     "description": "Service status and health",
+    "category": "Management"
+  },
+  "lighthouse": {
+    "name": "Microsoft 365 Lighthouse",
+    "url": "https://lighthouse.microsoft.com/",
+    "description": "Multi-tenant management for MSPs",
+    "category": "Management"
+  },
+  "planner": {
+    "name": "Microsoft 365 Planner",
+    "url": "https://tasks.office.com/",
+    "urlWithTenant": "https://portal.office.com/Partner/BeginClientSession.aspx?CTID={tenantId}&CSDEST=o365admincenter",
+    "description": "Task and project planning",
+    "category": "Management"
+  },
+  "sway": {
+    "name": "Sway",
+    "url": "https://sway.office.com/",
+    "urlWithTenant": "https://portal.office.com/Partner/BeginClientSession.aspx?CTID={tenantId}&CSDEST=o365admincenter",
+    "description": "Digital storytelling app",
+    "category": "Management"
+  },
+  "dragonCopilot": {
+    "name": "Microsoft Dragon Copilot",
+    "url": "https://admin.healthplatform.microsoft.com/",
+    "urlWithTenant": "https://admin.healthplatform.microsoft.com/{tenantId}",
+    "description": "Healthcare AI assistant",
     "category": "Management"
   }
 } 

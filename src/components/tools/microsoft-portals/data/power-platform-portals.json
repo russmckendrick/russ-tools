@@ -2,6 +2,7 @@
   "powerPlatformAdmin": {
     "name": "Power Platform Admin Center",
     "url": "https://admin.powerplatform.microsoft.com/",
+    "urlWithTenant": "https://admin.powerplatform.microsoft.com/account/login/{tenantId}",
     "description": "Power Platform administration",
     "category": "Admin Centers"
   },
@@ -32,6 +33,7 @@
   "powerBIAdmin": {
     "name": "Power BI Admin Portal",
     "url": "https://app.powerbi.com/admin-portal/usageMetrics?noSignUpCheck=1",
+    "urlWithTenant": "https://app.powerbi.com/admin-portal?ctid={tenantId}",
     "description": "Power BI administration",
     "category": "Power Platform"
   },
@@ -59,10 +61,18 @@
     "description": "Customer engagement applications",
     "category": "Dynamics 365"
   },
-  "financeOperations": {
-    "name": "Finance & Operations",
-    "url": "https://diag.lcs.dynamics.com/",
-    "description": "Lifecycle Services portal",
+  "businessCentral": {
+    "name": "Dynamics 365 Business Central",
+    "url": "https://businesscentral.dynamics.com/",
+    "urlWithTenant": "https://businesscentral.dynamics.com/{tenantId}/admin",
+    "description": "Business Central administration",
+    "category": "Dynamics 365"
+  },
+  "lifecycleServices": {
+    "name": "Lifecycle Services",
+    "url": "https://lcs.dynamics.com/",
+    "urlWithTenant": "https://lcs.dynamics.com/Logon/Adlogon?ctid={tenantId}",
+    "description": "Dynamics 365 Lifecycle Services portal",
     "category": "Dynamics 365"
   }
 } 
