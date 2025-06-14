@@ -137,9 +137,8 @@ export const generateAdvancedPortalLinks = (tenantId, domain) => {
 
 // Main function to generate all portal links
 export const generateAllPortalLinks = (tenantInfo) => {
-  if (!tenantInfo) return {};
-  
-  const { tenantId, domain } = tenantInfo;
+  const tenantId = tenantInfo?.tenantId || null;
+  const domain = tenantInfo?.domain || null;
   
   return {
     azure: generateAzurePortalLinks(tenantId, domain),
