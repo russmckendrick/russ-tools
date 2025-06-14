@@ -22,10 +22,18 @@ export const generateAzurePortalLinks = (tenantId, domain, options = {}) => {
     const portal = azurePortalsData[key];
     let url;
     
-    // Handle domain-specific URLs for CSP partners (like portal.azure.com/domain)
-    if (portal.urlWithDomain && domain) {
+    // Handle different URL patterns
+    if (portal.url) {
+      // Direct URL (like standalone services)
+      url = portal.url;
+    } else if (portal.urlWithDomain && domain) {
+      // Domain-specific URLs for CSP partners
       url = portal.urlWithDomain.replace('{domain}', domain);
+    } else if (portal.urlWithTenant && tenantId) {
+      // Tenant-specific URLs
+      url = portal.urlWithTenant.replace('{tenantId}', tenantId);
     } else {
+      // Standard Azure portal paths
       url = `${baseUrl}/${tenantParam}${portal.path}`;
     }
     

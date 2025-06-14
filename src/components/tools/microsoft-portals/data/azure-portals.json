@@ -107,5 +107,90 @@
     "description": "Azure Marketplace",
     "category": "General",
     "path": "/blade/Microsoft_Azure_Marketplace/MarketplaceOffersBlade/selectedMenuItemId/home"
+  },
+  "entraAdmin": {
+    "name": "Microsoft Entra Admin Center",
+    "description": "Modern identity management portal",
+    "category": "Identity",
+    "path": "",
+    "urlWithDomain": "https://entra.microsoft.com/{domain}/#home",
+    "urlWithTenant": "https://entra.microsoft.com/{tenantId}/#home"
+  },
+  "allServices": {
+    "name": "All Services",
+    "description": "Browse all Azure services",
+    "category": "General",
+    "path": "/#allservices"
+  },
+  "cloudShell": {
+    "name": "Azure Cloud Shell",
+    "description": "Browser-based shell experience",
+    "category": "Developer",
+    "path": "",
+    "url": "https://shell.azure.com/"
+  },
+  "cosmosDB": {
+    "name": "Azure Cosmos DB",
+    "description": "NoSQL database service portal",
+    "category": "Storage",
+    "path": "",
+    "url": "https://cosmos.azure.com/"
+  },
+  "dataFactory": {
+    "name": "Azure Data Factory",
+    "description": "Data integration service",
+    "category": "Developer",
+    "path": "",
+    "url": "https://adf.azure.com/"
+  },
+  "synapseAnalytics": {
+    "name": "Azure Synapse Analytics",
+    "description": "Analytics service portal",
+    "category": "Developer",
+    "path": "",
+    "url": "https://web.azuresynapse.net/"
+  },
+  "resourceExplorer": {
+    "name": "Azure Resource Explorer",
+    "description": "Browse Azure resources via REST API",
+    "category": "Developer",
+    "path": "",
+    "url": "https://resources.azure.com/"
+  },
+  "backupCenter": {
+    "name": "Azure Backup Center",
+    "description": "Centralized backup management",
+    "category": "Management",
+    "path": "/blade/Microsoft_Azure_DataProtection/BackupCenterMenuBlade/overview"
+  },
+  "privilegedIdentityManagement": {
+    "name": "Privileged Identity Management",
+    "description": "PIM for privileged access management",
+    "category": "Security",
+    "path": "/blade/Microsoft_Azure_PIMCommon/CommonMenuBlade/quickStart"
+  },
+  "sentinel": {
+    "name": "Microsoft Sentinel",
+    "description": "Cloud-native SIEM and SOAR",
+    "category": "Security",
+    "path": "/blade/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade"
+  },
+  "virtualDesktop": {
+    "name": "Azure Virtual Desktop",
+    "description": "Virtual desktop infrastructure",
+    "category": "Compute",
+    "path": "/view/Microsoft_Azure_WVD/WvdManagerMenuBlade/~/overview"
+  },
+  "updateManager": {
+    "name": "Azure Update Manager",
+    "description": "Centralized update management",
+    "category": "Management",
+    "path": "/view/Microsoft_Azure_Automation/UpdateCenterMenuBlade/~/gettingstarted"
+  },
+  "universalPrint": {
+    "name": "Azure Universal Print",
+    "description": "Cloud-based print solution",
+    "category": "Management",
+    "path": "/blade/Universal_Print/MainMenuBlade/Overview"
   }
 } 

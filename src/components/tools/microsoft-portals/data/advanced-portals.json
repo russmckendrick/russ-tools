@@ -71,5 +71,47 @@
     "urlWithDomainOnMicrosoft": "https://apps.azureiotcentral-ppe.com/myapps?tenant={domain}.onmicrosoft.com",
     "description": "IoT application platform",
     "category": "Developer"
+  },
+  "microsoftSetup": {
+    "name": "Microsoft Setup",
+    "url": "https://setup.cloud.microsoft/",
+    "description": "Guided setup for Microsoft services",
+    "category": "Management"
+  },
+  "remoteConnectivityAnalyzer": {
+    "name": "Remote Connectivity Analyzer",
+    "url": "https://testconnectivity.microsoft.com/",
+    "description": "Test connectivity to Microsoft services",
+    "category": "Developer"
+  },
+  "serviceTrustPortal": {
+    "name": "Service Trust Portal",
+    "url": "https://servicetrust.microsoft.com/",
+    "description": "Microsoft compliance and trust information",
+    "category": "Security"
+  },
+  "volumeLicensingCenter": {
+    "name": "Volume Licensing Central",
+    "url": "https://vlcentral.microsoft.com/",
+    "description": "Volume licensing management",
+    "category": "Management"
+  },
+  "windows365": {
+    "name": "Windows 365",
+    "url": "https://windows365.microsoft.com/",
+    "description": "Cloud PC service",
+    "category": "Compute"
+  },
+  "azurePass": {
+    "name": "Azure Pass",
+    "url": "https://www.microsoftazurepass.com/",
+    "description": "Activate Azure subscription with pass codes",
+    "category": "Management"
+  },
+  "customerDigitalExperiences": {
+    "name": "Customer Digital Experiences",
+    "url": "https://cdx.transform.microsoft.com/",
+    "description": "Microsoft product demos and experiences",
+    "category": "Management"
   }
 } 

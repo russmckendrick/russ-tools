@@ -132,5 +132,67 @@
     "urlWithTenant": "https://admin.healthplatform.microsoft.com/{tenantId}",
     "description": "Healthcare AI assistant",
     "category": "Management"
+  },
+  "m365Apps": {
+    "name": "Microsoft 365 Apps Admin Center",
+    "url": "https://config.office.com/",
+    "description": "Configure Microsoft 365 Apps",
+    "category": "Admin Centers"
+  },
+  "purview": {
+    "name": "Microsoft Purview",
+    "url": "https://purview.microsoft.com/",
+    "urlWithTenant": "https://purview.microsoft.com/homepage?tid={tenantId}",
+    "description": "Data governance and compliance",
+    "category": "Security"
+  },
+  "streamAdmin": {
+    "name": "Microsoft Stream Admin Center",
+    "url": "https://web.microsoftstream.com/admin",
+    "description": "Stream video management",
+    "category": "Admin Centers"
+  },
+  "teamsRoomsPro": {
+    "name": "Teams Rooms Pro Management",
+    "url": "https://portal.rooms.microsoft.com/",
+    "description": "Teams Rooms device management",
+    "category": "Admin Centers"
+  },
+  "myStaff": {
+    "name": "My Staff (Preview)",
+    "url": "https://mystaff.microsoft.com/",
+    "description": "Frontline worker management",
+    "category": "Users"
+  },
+  "powerPages": {
+    "name": "Power Pages",
+    "url": "https://make.powerpages.microsoft.com/",
+    "description": "Low-code business websites",
+    "category": "Management"
+  },
+  "phoneNumberService": {
+    "name": "Phone Number Service Center",
+    "url": "https://pstnsd.powerappsportals.com/",
+    "description": "Manage phone numbers for Teams",
+    "category": "Admin Centers"
+  },
+  "yammerAdmin": {
+    "name": "Yammer Admin",
+    "url": "https://www.yammer.com/office365/admin",
+    "description": "Yammer community management",
+    "category": "Admin Centers"
+  },
+  "myApps": {
+    "name": "My Applications (My Apps)",
+    "url": "https://myapps.microsoft.com/",
+    "description": "User application portal",
+    "category": "Users"
+  },
+  "myAccess": {
+    "name": "My Access",
+    "url": "https://myaccess.microsoft.com/",
+    "urlWithTenant": "https://myaccess.microsoft.com/{tenantId}",
+    "description": "Access request management",
+    "category": "Users"
   }
 } 
