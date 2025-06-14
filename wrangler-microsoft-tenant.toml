@@ -11,7 +11,7 @@ ALLOWED_ORIGINS = "http://localhost:5173,https://localhost:5173"
 name = "microsoft-tenant-lookup"
 
 [env.production.vars]
-ALLOWED_ORIGINS = "https://tools.russ.cloud,https://russ.tools"
+ALLOWED_ORIGINS = "https://www.russ.tools,https://russ.tools"
 
 # Microsoft Graph API credentials (set these as secrets for production)
 # Use: npx wrangler secret put GRAPH_CLIENT_ID --config wrangler-microsoft-tenant.toml
