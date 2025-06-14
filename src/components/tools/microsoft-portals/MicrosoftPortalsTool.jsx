@@ -29,14 +29,12 @@ import {
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
-import { getTenantId, getAdditionalTenantInfo, isValidDomain, extractDomain } from './TenantLookup';
+import { getTenantId, isValidDomain, extractDomain } from './TenantLookup';
 
 const MicrosoftPortalsTool = () => {
   const [domainInput, setDomainInput] = useState('');
   const [tenantInfo, setTenantInfo] = useState(null);
-  const [additionalInfo, setAdditionalInfo] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loadingPhase2, setLoadingPhase2] = useState(false);
   const [error, setError] = useState(null);
   const { colorScheme } = useMantineColorScheme();
 
@@ -143,43 +141,7 @@ const MicrosoftPortalsTool = () => {
     }
   };
 
-  // Handle enhanced reconnaissance lookup
-  const handlePhase2Lookup = async () => {
-    if (!tenantInfo || !tenantInfo.tenantId || !tenantInfo.domain) {
-      setError('Initial tenant lookup must be completed first');
-      return;
-    }
 
-    setLoadingPhase2(true);
-    setError(null);
-
-    try {
-      console.log(`🔍 Enhanced Reconnaissance: Gathering maximum information for ${tenantInfo.domain}`);
-      const additionalData = await getAdditionalTenantInfo(tenantInfo.tenantId, tenantInfo.domain);
-      
-      setAdditionalInfo(additionalData);
-      
-      notifications.show({
-        title: 'Enhanced Reconnaissance Complete',
-        message: `Maximum tenant information gathered for ${tenantInfo.domain}`,
-        color: 'green',
-        icon: <IconCheck size={16} />
-      });
-
-    } catch (err) {
-      console.error('Enhanced reconnaissance error:', err);
-      setError(err.message || 'Failed to gather enhanced tenant information');
-      
-      notifications.show({
-        title: 'Enhanced Reconnaissance Failed',
-        message: err.message || 'Failed to gather enhanced tenant information',
-        color: 'red',
-        icon: <IconAlertCircle size={16} />
-      });
-    } finally {
-      setLoadingPhase2(false);
-    }
-  };
 
   // Handle Enter key press
   const handleKeyPress = (event) => {
@@ -526,70 +488,34 @@ const MicrosoftPortalsTool = () => {
                 </Stack>
               )}
 
-              {/* Enhanced Reconnaissance Section */}
-              <Stack gap="md">
-                <Group justify="space-between" align="center">
-                  <div>
-                    <Text fw={500}>Enhanced Reconnaissance</Text>
-                    <Text size="sm" c="dimmed">
-                      Gather maximum tenant information using public APIs
-                    </Text>
-                  </div>
-                  <Button
-                    onClick={handlePhase2Lookup}
-                    loading={loadingPhase2}
-                    leftSection={<IconSearch size={16} />}
-                    variant="light"
-                    color="indigo"
-                  >
-                    {additionalInfo ? 'Refresh Data' : 'Gather More Info'}
-                  </Button>
-                </Group>
-
-                {additionalInfo && !additionalInfo.error && (
-                  <Alert color="green" icon={<IconCheck size={16} />}>
-                    Enhanced reconnaissance completed! Maximum tenant information gathered using public APIs.
-                  </Alert>
-                )}
-
-                {additionalInfo?.error && (
-                  <Alert color="yellow" icon={<IconAlertCircle size={16} />}>
-                    Enhanced reconnaissance partially completed: {additionalInfo.error}
-                  </Alert>
-                )}
-              </Stack>
-
-              {!additionalInfo && (
-                <Alert color="blue" icon={<IconInfoCircle size={16} />}>
-                  <Text size="sm">
-                    <strong>Phase 1: Tenant Discovery Complete!</strong> Click "Gather More Info" to perform 
-                    enhanced reconnaissance using additional public APIs (OpenID config, user realm, DNS analysis, etc.).
-                  </Text>
-                </Alert>
-              )}
+              <Alert color="green" icon={<IconCheck size={16} />}>
+                <Text size="sm">
+                  <strong>Tenant Discovery Complete!</strong> All available public information has been gathered 
+                  including OpenID configuration, user realm details, DNS analysis, and federation metadata.
+                </Text>
+              </Alert>
             </Stack>
           </Card>
         )}
 
-        {/* Enhanced Reconnaissance Data Display */}
-        {additionalInfo && !additionalInfo.error && (
+        {/* Comprehensive Tenant Data Display */}
+        {tenantInfo && (tenantInfo.openIdConfig || tenantInfo.userRealm || tenantInfo.dnsInfo) && (
           <Card withBorder p="lg" radius="md">
-            <LoadingOverlay visible={loadingPhase2} />
             <Stack gap="md">
               <Group gap="xs">
                 <IconInfoCircle size={16} />
-                <Text fw={500}>Enhanced Reconnaissance Data</Text>
+                <Text fw={500}>Comprehensive Tenant Analysis</Text>
                 <Badge variant="light" color="indigo" size="sm">
                   Public APIs
                 </Badge>
               </Group>
 
               {/* OpenID Configuration */}
-              {additionalInfo.openIdConfig && (
+              {tenantInfo.openIdConfig && (
                 <Stack gap="xs">
                   <Text size="sm" fw={500}>OpenID Connect Configuration</Text>
                   <Grid gutter="md">
-                    {additionalInfo.openIdConfig.authorization_endpoint && (
+                    {tenantInfo.openIdConfig.authorization_endpoint && (
                       <Grid.Col span={12}>
                         <Stack gap="xs">
                           <Text size="xs" fw={500} c="dimmed">Authorization Endpoint</Text>
@@ -604,13 +530,13 @@ const MicrosoftPortalsTool = () => {
                                 fontSize: '11px'
                               }}
                             >
-                              {additionalInfo.openIdConfig.authorization_endpoint}
+                              {tenantInfo.openIdConfig.authorization_endpoint}
                             </Code>
                             <Tooltip label="Copy authorization endpoint">
                               <ActionIcon 
                                 variant="light" 
                                 size="sm"
-                                onClick={() => copyToClipboard(additionalInfo.openIdConfig.authorization_endpoint, 'Authorization Endpoint')}
+                                onClick={() => copyToClipboard(tenantInfo.openIdConfig.authorization_endpoint, 'Authorization Endpoint')}
                               >
                                 <IconCopy size={14} />
                               </ActionIcon>
@@ -620,7 +546,7 @@ const MicrosoftPortalsTool = () => {
                       </Grid.Col>
                     )}
 
-                    {additionalInfo.openIdConfig.token_endpoint && (
+                    {tenantInfo.openIdConfig.token_endpoint && (
                       <Grid.Col span={12}>
                         <Stack gap="xs">
                           <Text size="xs" fw={500} c="dimmed">Token Endpoint</Text>
@@ -635,13 +561,13 @@ const MicrosoftPortalsTool = () => {
                                 fontSize: '11px'
                               }}
                             >
-                              {additionalInfo.openIdConfig.token_endpoint}
+                              {tenantInfo.openIdConfig.token_endpoint}
                             </Code>
                             <Tooltip label="Copy token endpoint">
                               <ActionIcon 
                                 variant="light" 
                                 size="sm"
-                                onClick={() => copyToClipboard(additionalInfo.openIdConfig.token_endpoint, 'Token Endpoint')}
+                                onClick={() => copyToClipboard(tenantInfo.openIdConfig.token_endpoint, 'Token Endpoint')}
                               >
                                 <IconCopy size={14} />
                               </ActionIcon>
@@ -655,22 +581,22 @@ const MicrosoftPortalsTool = () => {
               )}
 
               {/* User Realm Information */}
-              {additionalInfo.userRealm && (
+              {tenantInfo.userRealm && (
                 <Stack gap="xs">
                   <Text size="sm" fw={500}>User Realm Information</Text>
                   <Grid gutter="md">
-                    {additionalInfo.userRealm.NameSpaceType && (
+                    {tenantInfo.userRealm.NameSpaceType && (
                       <Grid.Col span={{ base: 12, md: 6 }}>
                         <Stack gap="xs">
                           <Text size="xs" fw={500} c="dimmed">Authentication Type</Text>
-                          <Badge variant="light" color={additionalInfo.userRealm.NameSpaceType === 'Managed' ? 'blue' : 'orange'}>
-                            {additionalInfo.userRealm.NameSpaceType}
+                          <Badge variant="light" color={tenantInfo.userRealm.NameSpaceType === 'Managed' ? 'blue' : 'orange'}>
+                            {tenantInfo.userRealm.NameSpaceType}
                           </Badge>
                         </Stack>
                       </Grid.Col>
                     )}
 
-                    {additionalInfo.userRealm.FederationBrandName && (
+                    {tenantInfo.userRealm.FederationBrandName && (
                       <Grid.Col span={{ base: 12, md: 6 }}>
                         <Stack gap="xs">
                           <Text size="xs" fw={500} c="dimmed">Federation Brand</Text>
@@ -681,13 +607,13 @@ const MicrosoftPortalsTool = () => {
                                 : 'var(--mantine-color-gray-0)'
                             }}
                           >
-                            {additionalInfo.userRealm.FederationBrandName}
+                            {tenantInfo.userRealm.FederationBrandName}
                           </Code>
                         </Stack>
                       </Grid.Col>
                     )}
 
-                    {additionalInfo.userRealm.AuthURL && (
+                    {tenantInfo.userRealm.AuthURL && (
                       <Grid.Col span={12}>
                         <Stack gap="xs">
                           <Text size="xs" fw={500} c="dimmed">Federation Auth URL</Text>
@@ -702,13 +628,13 @@ const MicrosoftPortalsTool = () => {
                                 fontSize: '11px'
                               }}
                             >
-                              {additionalInfo.userRealm.AuthURL}
+                              {tenantInfo.userRealm.AuthURL}
                             </Code>
                             <Tooltip label="Copy auth URL">
                               <ActionIcon 
                                 variant="light" 
                                 size="sm"
-                                onClick={() => copyToClipboard(additionalInfo.userRealm.AuthURL, 'Auth URL')}
+                                onClick={() => copyToClipboard(tenantInfo.userRealm.AuthURL, 'Auth URL')}
                               >
                                 <IconCopy size={14} />
                               </ActionIcon>
@@ -722,38 +648,38 @@ const MicrosoftPortalsTool = () => {
               )}
 
               {/* DNS Information */}
-              {additionalInfo.dnsInfo && (
+              {tenantInfo.dnsInfo && (
                 <Stack gap="xs">
                   <Text size="sm" fw={500}>DNS Analysis</Text>
                   <Grid gutter="md">
-                    {additionalInfo.dnsInfo.hasExchangeOnline !== undefined && (
+                    {tenantInfo.dnsInfo.hasExchangeOnline !== undefined && (
                       <Grid.Col span={{ base: 12, md: 4 }}>
                         <Stack gap="xs">
                           <Text size="xs" fw={500} c="dimmed">Exchange Online</Text>
-                          <Badge variant="light" color={additionalInfo.dnsInfo.hasExchangeOnline ? 'green' : 'gray'}>
-                            {additionalInfo.dnsInfo.hasExchangeOnline ? 'Detected' : 'Not Detected'}
+                          <Badge variant="light" color={tenantInfo.dnsInfo.hasExchangeOnline ? 'green' : 'gray'}>
+                            {tenantInfo.dnsInfo.hasExchangeOnline ? 'Detected' : 'Not Detected'}
                           </Badge>
                         </Stack>
                       </Grid.Col>
                     )}
 
-                    {additionalInfo.dnsInfo.hasOffice365SPF !== undefined && (
+                    {tenantInfo.dnsInfo.hasOffice365SPF !== undefined && (
                       <Grid.Col span={{ base: 12, md: 4 }}>
                         <Stack gap="xs">
                           <Text size="xs" fw={500} c="dimmed">Office 365 SPF</Text>
-                          <Badge variant="light" color={additionalInfo.dnsInfo.hasOffice365SPF ? 'green' : 'gray'}>
-                            {additionalInfo.dnsInfo.hasOffice365SPF ? 'Configured' : 'Not Found'}
+                          <Badge variant="light" color={tenantInfo.dnsInfo.hasOffice365SPF ? 'green' : 'gray'}>
+                            {tenantInfo.dnsInfo.hasOffice365SPF ? 'Configured' : 'Not Found'}
                           </Badge>
                         </Stack>
                       </Grid.Col>
                     )}
 
-                    {additionalInfo.dnsInfo.mxRecords && additionalInfo.dnsInfo.mxRecords.length > 0 && (
+                    {tenantInfo.dnsInfo.mxRecords && tenantInfo.dnsInfo.mxRecords.length > 0 && (
                       <Grid.Col span={12}>
                         <Stack gap="xs">
                           <Text size="xs" fw={500} c="dimmed">MX Records</Text>
                           <Stack gap="xs">
-                            {additionalInfo.dnsInfo.mxRecords.slice(0, 3).map((mx, index) => (
+                            {tenantInfo.dnsInfo.mxRecords.slice(0, 3).map((mx, index) => (
                               <Code 
                                 key={index}
                                 size="xs"
@@ -775,11 +701,11 @@ const MicrosoftPortalsTool = () => {
               )}
 
               {/* Tenant Domains */}
-              {additionalInfo.tenantDomains && additionalInfo.tenantDomains.length > 0 && (
+              {tenantInfo.tenantDomains && tenantInfo.tenantDomains.length > 0 && (
                 <Stack gap="xs">
                   <Text size="sm" fw={500}>All Tenant Domains</Text>
                   <Grid gutter="xs">
-                    {additionalInfo.tenantDomains.map((domain, index) => (
+                    {tenantInfo.tenantDomains.map((domain, index) => (
                       <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
                         <Group gap="xs">
                           <Badge 
@@ -799,7 +725,7 @@ const MicrosoftPortalsTool = () => {
 
               <Alert color="indigo" icon={<IconInfoCircle size={16} />}>
                 <Text size="sm">
-                  <strong>Enhanced Reconnaissance Complete:</strong> Maximum tenant information gathered using public APIs. 
+                  <strong>Comprehensive Analysis Complete:</strong> All available tenant information gathered using public APIs. 
                   This data is publicly available and doesn't require authentication or special permissions.
                 </Text>
               </Alert>

@@ -2,6 +2,7 @@
  * Cloudflare Worker for Microsoft Tenant Lookups
  * Handles domain to tenant ID resolution for Microsoft 365/Azure tenants
  * Provides CORS-enabled API for client-side applications
+ * Gathers ALL available public information in a single request
  * 
  * Environment Variables:
  * - ALLOWED_ORIGINS: Comma-separated list of allowed CORS origins (required)
@@ -53,6 +54,56 @@ const TENANT_APIS = [
     url: (domain) => `https://odc.officeapps.live.com/odc/v2.1/federationprovider?domain=${domain}`,
     parser: parseFederationResponse,
     requiresAuth: false
+  }
+];
+
+// Additional reconnaissance APIs for enhanced information gathering
+const ENHANCED_APIS = [
+  {
+    name: 'OpenID Configuration by Tenant ID',
+    url: (tenantId) => `https://login.microsoftonline.com/${tenantId}/.well-known/openid_configuration`,
+    parser: parseOpenIdConfigResponse,
+    requiresAuth: false
+  },
+  {
+    name: 'User Realm by Domain',
+    url: (domain) => `https://login.microsoftonline.com/GetUserRealm.srf?login=admin@${domain}`,
+    parser: parseUserRealmResponse,
+    requiresAuth: false
+  },
+  {
+    name: 'Autodiscover Service',
+    url: (domain) => `https://autodiscover-s.outlook.com/autodiscover/autodiscover.svc`,
+    parser: parseAutodiscoverResponse,
+    requiresAuth: false,
+    method: 'POST',
+    body: (domain) => `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:exm="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:ext="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:a="http://www.w3.org/2005/08/addressing" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Header>
+    <a:Action soap:mustUnderstand="1">http://schemas.microsoft.com/exchange/2010/Autodiscover/Autodiscover/GetDomainSettings</a:Action>
+    <a:To soap:mustUnderstand="1">https://autodiscover-s.outlook.com/autodiscover/autodiscover.svc</a:To>
+    <a:ReplyTo>
+      <a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>
+    </a:ReplyTo>
+  </soap:Header>
+  <soap:Body>
+    <GetDomainSettingsRequestMessage xmlns="http://schemas.microsoft.com/exchange/2010/Autodiscover">
+      <Request>
+        <Domains>
+          <Domain>${domain}</Domain>
+        </Domains>
+        <RequestedSettings>
+          <Setting>ExternalEwsUrl</Setting>
+          <Setting>ExternalEwsVersion</Setting>
+        </RequestedSettings>
+      </Request>
+    </GetDomainSettingsRequestMessage>
+  </soap:Body>
+</soap:Envelope>`,
+    headers: {
+      'Content-Type': 'text/xml; charset=utf-8',
+      'SOAPAction': 'http://schemas.microsoft.com/exchange/2010/Autodiscover/Autodiscover/GetDomainSettings'
+    }
   }
 ];
 
@@ -110,6 +161,74 @@ async function getGraphAccessToken(env) {
     console.error('Error getting Graph access token:', error);
     return null;
   }
+}
+
+// Perform DNS lookups for additional information
+async function performDNSAnalysis(domain) {
+  const dnsInfo = {
+    hasExchangeOnline: false,
+    hasOffice365SPF: false,
+    mxRecords: [],
+    txtRecords: []
+  };
+
+  try {
+    // Use Cloudflare's DNS over HTTPS API
+    const dohBase = 'https://cloudflare-dns.com/dns-query';
+    
+    // Check MX records
+    try {
+      const mxResponse = await fetch(`${dohBase}?name=${domain}&type=MX`, {
+        headers: { 'Accept': 'application/dns-json' }
+      });
+      
+      if (mxResponse.ok) {
+        const mxData = await mxResponse.json();
+        if (mxData.Answer) {
+          dnsInfo.mxRecords = mxData.Answer.map(record => {
+            const parts = record.data.split(' ');
+            return {
+              priority: parseInt(parts[0]),
+              exchange: parts[1]
+            };
+          });
+          
+          // Check for Exchange Online
+          dnsInfo.hasExchangeOnline = dnsInfo.mxRecords.some(mx => 
+            mx.exchange.includes('mail.protection.outlook.com')
+          );
+        }
+      }
+    } catch (error) {
+      console.log('MX lookup failed:', error.message);
+    }
+
+    // Check TXT records for SPF
+    try {
+      const txtResponse = await fetch(`${dohBase}?name=${domain}&type=TXT`, {
+        headers: { 'Accept': 'application/dns-json' }
+      });
+      
+      if (txtResponse.ok) {
+        const txtData = await txtResponse.json();
+        if (txtData.Answer) {
+          dnsInfo.txtRecords = txtData.Answer.map(record => record.data);
+          
+          // Check for Office 365 SPF
+          dnsInfo.hasOffice365SPF = dnsInfo.txtRecords.some(txt => 
+            txt.includes('include:spf.protection.outlook.com')
+          );
+        }
+      }
+    } catch (error) {
+      console.log('TXT lookup failed:', error.message);
+    }
+
+  } catch (error) {
+    console.log('DNS analysis failed:', error.message);
+  }
+
+  return dnsInfo;
 }
 
 export default {
@@ -197,10 +316,10 @@ async function handleRequest(request, env) {
       });
     }
 
-    console.log(`🔍 Looking up Microsoft tenant for domain: ${cleanDomain}`);
+    console.log(`🔍 Performing comprehensive tenant lookup for domain: ${cleanDomain}`);
 
-    // Perform tenant lookup
-    const tenantInfo = await performTenantLookup(cleanDomain, env);
+    // Perform comprehensive tenant lookup with all available information
+    const tenantInfo = await performComprehensiveTenantLookup(cleanDomain, env);
 
     return new Response(JSON.stringify(tenantInfo), {
       status: 200,
@@ -248,26 +367,37 @@ function isValidDomain(input) {
   return domainRegex.test(trimmed);
 }
 
-// Main tenant lookup function
-async function performTenantLookup(domain, env) {
+// Comprehensive tenant lookup function that gathers ALL available information
+async function performComprehensiveTenantLookup(domain, env) {
+  console.log(`🔍 Starting comprehensive lookup for ${domain}`);
+  
+  // Initialize result object
+  let result = {
+    success: false,
+    domain: domain,
+    timestamp: Date.now()
+  };
+
   // Check known tenants first
   if (KNOWN_TENANTS[domain]) {
     const knownTenant = KNOWN_TENANTS[domain];
     console.log(`✅ Found known tenant for ${domain}: ${knownTenant.tenantId}`);
-    return {
+    result = {
+      ...result,
       success: true,
       tenantId: knownTenant.tenantId,
-      domain: domain,
       displayName: knownTenant.displayName,
-      method: knownTenant.method,
-      timestamp: Date.now()
+      method: knownTenant.method
     };
   }
 
   // Get Graph API access token if needed
   let graphToken = null;
   
-  // Try each API in sequence
+  // Collect all tenant information from various APIs
+  const apiResults = {};
+  
+  // Try each primary API
   for (const api of TENANT_APIS) {
     try {
       console.log(`🔄 Trying ${api.name} for ${domain}`);
@@ -287,7 +417,8 @@ async function performTenantLookup(domain, env) {
         method: api.method || 'GET',
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'Microsoft-Tenant-Lookup-Worker/1.0'
+          'User-Agent': 'Microsoft-Tenant-Lookup-Worker/1.0',
+          ...(api.headers || {})
         }
       };
 
@@ -299,7 +430,9 @@ async function performTenantLookup(domain, env) {
       // Add body for POST requests
       if (api.method === 'POST' && api.body) {
         fetchOptions.body = api.body(domain);
-        fetchOptions.headers['Content-Type'] = 'application/json';
+        if (!api.headers || !api.headers['Content-Type']) {
+          fetchOptions.headers['Content-Type'] = 'application/json';
+        }
       }
       
       const response = await fetch(api.url(domain), fetchOptions);
@@ -308,22 +441,19 @@ async function performTenantLookup(domain, env) {
         const data = await response.json();
         const parsed = api.parser(data, domain);
         
-        if (parsed && (parsed.tenantId || parsed.domain)) {
-          console.log(`✅ Successfully found tenant info via ${api.name}`);
+        if (parsed) {
+          console.log(`✅ Got data from ${api.name}`);
+          apiResults[api.name] = parsed;
           
-          const result = {
-            success: true,
-            ...parsed,
-            method: api.name,
-            timestamp: Date.now()
-          };
-          
-          // Add note if tenant ID is missing
-          if (!parsed.tenantId) {
-            result.note = "Tenant confirmed to exist. Tenant ID requires additional lookup via Microsoft Graph API or admin access.";
+          // If this is our first successful result, use it as the base
+          if (!result.success && (parsed.tenantId || parsed.domain)) {
+            result = {
+              ...result,
+              success: true,
+              ...parsed,
+              method: api.name
+            };
           }
-          
-          return result;
         }
       } else {
         console.log(`⚠️ ${api.name} returned status ${response.status} for ${domain}`);
@@ -332,6 +462,91 @@ async function performTenantLookup(domain, env) {
     } catch (error) {
       console.log(`❌ ${api.name} failed for ${domain}:`, error.message);
     }
+  }
+
+  // If we have a tenant ID, gather additional information
+  if (result.tenantId) {
+    console.log(`🔍 Gathering additional information for tenant ${result.tenantId}`);
+    
+    // Get OpenID configuration using tenant ID
+    try {
+      const openIdUrl = `https://login.microsoftonline.com/${result.tenantId}/.well-known/openid_configuration`;
+      const openIdResponse = await fetch(openIdUrl);
+      
+      if (openIdResponse.ok) {
+        const openIdData = await openIdResponse.json();
+        apiResults['OpenID Configuration'] = {
+          issuer: openIdData.issuer,
+          authorization_endpoint: openIdData.authorization_endpoint,
+          token_endpoint: openIdData.token_endpoint,
+          userinfo_endpoint: openIdData.userinfo_endpoint,
+          jwks_uri: openIdData.jwks_uri,
+          response_types_supported: openIdData.response_types_supported,
+          subject_types_supported: openIdData.subject_types_supported,
+          id_token_signing_alg_values_supported: openIdData.id_token_signing_alg_values_supported
+        };
+        console.log(`✅ Got OpenID configuration for tenant ${result.tenantId}`);
+      }
+    } catch (error) {
+      console.log(`❌ OpenID configuration lookup failed:`, error.message);
+    }
+
+    // Get detailed user realm information
+    try {
+      const userRealmUrl = `https://login.microsoftonline.com/GetUserRealm.srf?login=admin@${domain}`;
+      const userRealmResponse = await fetch(userRealmUrl);
+      
+      if (userRealmResponse.ok) {
+        const userRealmData = await userRealmResponse.json();
+        apiResults['User Realm Details'] = {
+          NameSpaceType: userRealmData.NameSpaceType,
+          FederationBrandName: userRealmData.FederationBrandName,
+          CloudInstanceName: userRealmData.CloudInstanceName,
+          DomainName: userRealmData.DomainName,
+          AuthURL: userRealmData.AuthURL,
+          ConsumerDomain: userRealmData.ConsumerDomain
+        };
+        console.log(`✅ Got user realm details for ${domain}`);
+      }
+    } catch (error) {
+      console.log(`❌ User realm lookup failed:`, error.message);
+    }
+  }
+
+  // Perform DNS analysis
+  console.log(`🔍 Performing DNS analysis for ${domain}`);
+  const dnsInfo = await performDNSAnalysis(domain);
+  if (dnsInfo.mxRecords.length > 0 || dnsInfo.txtRecords.length > 0) {
+    apiResults['DNS Analysis'] = dnsInfo;
+    console.log(`✅ Got DNS information for ${domain}`);
+  }
+
+  // Compile comprehensive result
+  if (result.success) {
+    result.apiResults = apiResults;
+    result.openIdConfig = apiResults['OpenID Configuration'];
+    result.userRealm = apiResults['User Realm Details'];
+    result.dnsInfo = apiResults['DNS Analysis'];
+    
+    // Add computed fields
+    if (!result.tenantType && result.tenantId) {
+      result.tenantType = "AAD";
+    }
+    
+    if (result.userRealm?.NameSpaceType) {
+      result.isCloudOnly = result.userRealm.NameSpaceType === 'Managed';
+    }
+    
+    if (!result.tenantCategory) {
+      if (domain.includes('.onmicrosoft.com')) {
+        result.tenantCategory = "Microsoft 365 Tenant";
+      } else {
+        result.tenantCategory = "Custom Domain";
+      }
+    }
+
+    console.log(`✅ Comprehensive lookup completed for ${domain}`);
+    return result;
   }
 
   // If all methods fail
@@ -436,8 +651,6 @@ function parseGraphApiResponse(data, domain) {
   return null;
 }
 
-
-
 // Parse GetCredentialType API response  
 function parseGetCredentialTypeResponse(data, domain) {
   if (!data) return null;
@@ -454,6 +667,37 @@ function parseGetCredentialTypeResponse(data, domain) {
     };
   }
   
+  return null;
+}
+
+// Additional parsers for enhanced APIs
+function parseOpenIdConfigResponse(data, tenantId) {
+  if (!data || !data.issuer) return null;
+  
+  return {
+    issuer: data.issuer,
+    authorization_endpoint: data.authorization_endpoint,
+    token_endpoint: data.token_endpoint,
+    userinfo_endpoint: data.userinfo_endpoint,
+    jwks_uri: data.jwks_uri
+  };
+}
+
+function parseUserRealmResponse(data, domain) {
+  if (!data) return null;
+  
+  return {
+    NameSpaceType: data.NameSpaceType,
+    FederationBrandName: data.FederationBrandName,
+    CloudInstanceName: data.CloudInstanceName,
+    DomainName: data.DomainName,
+    AuthURL: data.AuthURL
+  };
+}
+
+function parseAutodiscoverResponse(data, domain) {
+  // This would parse XML response from autodiscover
+  // For now, return null as it's complex to implement
   return null;
 }
 

@@ -110,70 +110,7 @@ This could mean:
 Try testing with a known Microsoft domain like 'microsoft.com' or 'outlook.com' to verify the tool is working.`);
 };
 
-/**
- * Get additional tenant information using public APIs (Enhanced Reconnaissance)
- * @param {string} tenantId - Tenant ID to lookup
- * @param {string} domain - Domain name for additional lookups
- * @returns {Promise<Object>} Additional tenant information
- */
-export const getAdditionalTenantInfo = async (tenantId, domain) => {
-  if (!tenantId || !domain) {
-    throw new Error('Tenant ID and domain are required for enhanced reconnaissance');
-  }
 
-  console.log(`🔍 Enhanced Reconnaissance: Gathering maximum tenant information for ${tenantId}`);
-
-      try {
-      // Use Cloudflare Worker for enhanced reconnaissance
-      const workerUrl = `https://microsoft-tenant-lookup.russ-mckendricks-account.workers.dev/enhanced?tenantId=${encodeURIComponent(tenantId)}&domain=${encodeURIComponent(domain)}`;
-      
-      const response = await fetch(workerUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (data.success) {
-          return {
-            // OpenID Configuration data
-            openIdConfig: data.openIdConfig,
-            
-            // User Realm information
-            userRealm: data.userRealm,
-            
-            // DNS information
-            dnsInfo: data.dnsInfo,
-            
-            // Tenant domains (if available)
-            tenantDomains: data.tenantDomains,
-            
-            // Additional metadata
-            additionalInfo: data.additionalInfo,
-            
-            method: 'Enhanced Reconnaissance: Public API analysis',
-            timestamp: data.timestamp
-          };
-        } else {
-          throw new Error(data.error || 'Enhanced reconnaissance failed');
-        }
-      } else {
-        throw new Error(`Enhanced reconnaissance worker returned status ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Enhanced reconnaissance failed:', error);
-      
-      // Return partial information if available
-      return {
-        error: error.message,
-        method: 'Enhanced Reconnaissance: Partial information (error occurred)',
-        timestamp: Date.now()
-      };
-    }
-};
 
 /**
  * Validate if a string looks like a domain
