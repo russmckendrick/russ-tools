@@ -52,6 +52,8 @@ const MicrosoftPortalsTool = () => {
   const [selectedTag, setSelectedTag] = useState(null);
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
   const [domainToRemove, setDomainToRemove] = useState(null);
+  const [tagsModalOpen, setTagsModalOpen] = useState(false);
+  const [tagSearchTerm, setTagSearchTerm] = useState('');
 
   // Get domain from URL parameters
   const { domain: urlDomain } = useParams();
@@ -577,6 +579,18 @@ const MicrosoftPortalsTool = () => {
                   {category} ({count})
                 </Chip>
               ))}
+            
+            {/* Tags Cloud - Always last */}
+            <Chip
+              checked={false}
+              variant="light"
+              size="sm"
+              color="indigo"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setTagsModalOpen(true)}
+            >
+              Tags ({allTags.length})
+            </Chip>
           </Group>
 
           <Table striped highlightOnHover>
@@ -745,6 +759,133 @@ const MicrosoftPortalsTool = () => {
           </Stack>
         </Paper>
       )}
+
+      {/* Tags Modal */}
+      <Modal
+        opened={tagsModalOpen}
+        onClose={() => {
+          setTagsModalOpen(false);
+          setTagSearchTerm('');
+        }}
+        title="Browse All Tags"
+        size="lg"
+        centered
+      >
+        <Stack gap="md">
+          {/* Search and Status */}
+          <Group gap="md">
+            <TextInput
+              placeholder="Search tags..."
+              value={tagSearchTerm}
+              onChange={(event) => setTagSearchTerm(event.currentTarget.value)}
+              leftSection={<IconSearch size={16} />}
+              style={{ flex: 1 }}
+              size="sm"
+            />
+            <Text size="sm" c="dimmed">
+              {selectedTag ? `Selected: "${selectedTag}"` : 'No tag selected'}
+            </Text>
+          </Group>
+
+          {/* Filtered Tags Display */}
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <Stack gap="xs">
+              {(() => {
+                // Filter tags based on search term
+                const filteredTags = allTags.filter(tag => 
+                  tag.toLowerCase().includes(tagSearchTerm.toLowerCase())
+                );
+
+                // Group tags by first letter for better organization
+                const groupedTags = filteredTags.reduce((groups, tag) => {
+                  const firstLetter = tag.charAt(0).toUpperCase();
+                  if (!groups[firstLetter]) {
+                    groups[firstLetter] = [];
+                  }
+                  groups[firstLetter].push(tag);
+                  return groups;
+                }, {});
+
+                return Object.keys(groupedTags)
+                  .sort()
+                  .map(letter => (
+                    <div key={letter}>
+                      <Text size="xs" fw={600} c="dimmed" mb="xs" mt="sm">
+                        {letter}
+                      </Text>
+                      <Group gap="xs">
+                        {groupedTags[letter].map((tag) => {
+                          // Count how many portals have this tag
+                          const tagCount = allPortals.filter(portal => 
+                            portal.tags && portal.tags.includes(tag)
+                          ).length;
+                          
+                          return (
+                            <Badge
+                              key={tag}
+                              size="sm"
+                              variant={selectedTag === tag ? "filled" : "light"}
+                              color={getCategoryColor(tag)}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => {
+                                setSelectedTag(selectedTag === tag ? null : tag);
+                                setSelectedCategory('all');
+                                setTagsModalOpen(false);
+                                setTagSearchTerm('');
+                              }}
+                            >
+                              {tag} ({tagCount})
+                            </Badge>
+                          );
+                        })}
+                      </Group>
+                    </div>
+                  ));
+              })()}
+            </Stack>
+          </div>
+
+          {/* Footer */}
+          <Group justify="space-between" pt="md" style={{ borderTop: '1px solid #e9ecef' }}>
+            <Text size="xs" c="dimmed">
+              {(() => {
+                const filteredCount = allTags.filter(tag => 
+                  tag.toLowerCase().includes(tagSearchTerm.toLowerCase())
+                ).length;
+                return tagSearchTerm 
+                  ? `${filteredCount} of ${allTags.length} tags shown`
+                  : `${allTags.length} tags available`;
+              })()}
+            </Text>
+            <Group gap="xs">
+              {selectedTag && (
+                <Button
+                  size="sm"
+                  variant="light"
+                  color="gray"
+                  onClick={() => {
+                    clearSelectedTag();
+                    setTagsModalOpen(false);
+                    setTagSearchTerm('');
+                  }}
+                >
+                  Clear Filter
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="light"
+                onClick={() => {
+                  setTagsModalOpen(false);
+                  setTagSearchTerm('');
+                }}
+              >
+                Close
+              </Button>
+            </Group>
+          </Group>
+        </Stack>
+      </Modal>
 
       {/* Remove Domain Confirmation Modal */}
       <Modal
