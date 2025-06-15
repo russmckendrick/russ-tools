@@ -1,12 +1,7 @@
 import {
-  IconBrandAzure,
   IconChevronDown,
   IconSun,
   IconMoonStars,
-  IconNetwork,
-  IconBrandGithub,
-  IconClock,
-  IconShield,
 } from '@tabler/icons-react';
 import {
   Anchor,
@@ -31,108 +26,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import classes from './HeaderMegaMenu.module.css';
-import DNSIcon from '../tools/dns-lookup/DNSIcon';
-import WHOISIcon from '../tools/whois/WHOISIcon';
-import JSONIcon from '../tools/data-converter/JSONIcon';
-import Base64Icon from '../tools/base64/Base64Icon';
-import JWTIcon from '../tools/jwt/JWTIcon';
-import PasswordIcon from '../tools/password-generator/PasswordIcon';
-import MicrosoftPortalsIcon from '../tools/microsoft-portals/MicrosoftPortalsIcon';
-import TenantLookupIcon from '../tools/tenant-lookup/TenantLookupIcon';
-
-const mockdata = [
-  {
-    icon: IconNetwork,
-    title: 'Network Designer',
-    description: "Plan your cloud network and subnets",
-    link: "/network-designer/",
-    color: "blue",
-  },
-  {
-    icon: IconBrandAzure,
-    title: 'Azure Resource Naming Tool',
-    description: "Generate and validate Azure resource names",
-    link: "/azure-naming/",
-    color: "cyan",
-  },
-  {
-    icon: IconClock,
-    title: 'CRON Expression Builder',
-    description: "Build and validate cron job expressions",
-    link: "/cron/",
-    color: "orange",
-  },
-  {
-    icon: IconShield,
-    title: 'SSL Certificate Checker',
-    description: "Analyze and validate SSL certificates",
-    link: "/ssl-checker/",
-    color: "green",
-  },
-  {
-    icon: DNSIcon,
-    title: 'DNS Lookup Tool',
-    description: "Perform DNS queries for various record types",
-    link: "/dns-lookup/",
-    color: "indigo",
-  },
-  {
-    icon: WHOISIcon,
-    title: 'WHOIS Lookup Tool',
-    description: "Get detailed information about domains and IP addresses",
-    link: "/whois-lookup/",
-    color: "violet",
-  },
-  {
-    icon: JSONIcon,
-    title: 'Data Converter',
-    description: "Convert between JSON, YAML, and TOML formats",
-    link: "/data-converter/",
-    color: "yellow",
-  },
-  {
-    icon: Base64Icon,
-    title: 'Base64 Encoder/Decoder',
-    description: "Encode and decode text and files using Base64",
-    link: "/base64/",
-    color: "teal",
-  },
-  {
-    icon: JWTIcon,
-    title: 'JWT Decoder/Validator',
-    description: "Decode JWT tokens client-side without external services",
-    link: "/jwt/",
-    color: "red",
-  },
-  {
-    icon: PasswordIcon,
-    title: 'Password Generator',
-    description: "Generate secure, random passwords with customizable options",
-    link: "/password-generator/",
-    color: "violet",
-  },
-  {
-    icon: MicrosoftPortalsIcon,
-          title: 'Microsoft Portals (GDAP)',
-      description: "Generate deep links to Microsoft portals using tenant information",
-    link: "/microsoft-portals/",
-    color: "indigo",
-  },
-  {
-    icon: TenantLookupIcon,
-    title: 'Microsoft Tenant Lookup',
-    description: "Discover Microsoft tenant information for any domain",
-    link: "/tenant-lookup/",
-    color: "blue",
-  },
-  {
-    icon: IconBrandGithub,
-    title: 'Source Code',
-    description: "View the source code on GitHub",
-    link: "https://github.com/russmckendrick/russ-tools",
-    color: "gray",
-  },
-];
+import { getNavbarTools } from '../../utils/toolsUtils';
 
 function ThemeToggle({ size = 36, ...props }) {
   const { setColorScheme } = useMantineColorScheme();
@@ -157,6 +51,7 @@ export function NavbarMinimal() {
   const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
   const theme = useMantineTheme();
 
+  const mockdata = getNavbarTools();
   const links = mockdata.map((item) => (
     <a href={item.link} key={item.title}>
       <UnstyledButton className={classes.subLink}>
