@@ -60,6 +60,10 @@ const JWTTool = () => {
   const [error, setError] = useState(null);
   const [tokenAnalysis, setTokenAnalysis] = useState(null);
 
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'jwt');
+  const seoData = generateToolSEO(toolConfig);
+
   // Example JWT tokens for testing
   const exampleTokens = {
     basic: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
