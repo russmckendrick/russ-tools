@@ -6,7 +6,7 @@ routes = [
   { pattern = "tenant.russ.tools", custom_domain = true }
 ]
 
-# Use: npx wrangler secret put GRAPH_CLIENT_ID --config wrangler-microsoft-tenant.toml
-# Use: npx wrangler secret put GRAPH_CLIENT_SECRET --config wrangler-microsoft-tenant.toml  
-# Use: npx wrangler secret put GRAPH_TENANT_ID --config wrangler-microsoft-tenant.toml 
-# Use: npx wrangler secret put ALLOWED_ORIGINS --config wrangler-microsoft-tenant.toml 
+# Use: npx wrangler secret put GRAPH_CLIENT_ID --config wrangler-tenant.toml
+# Use: npx wrangler secret put GRAPH_CLIENT_SECRET --config wrangler-tenant.toml 
+# Use: npx wrangler secret put GRAPH_TENANT_ID --config wrangler-tenant.toml
+# Use: npx wrangler secret put ALLOWED_ORIGINS --config wrangler-tenant.toml 

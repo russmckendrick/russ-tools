@@ -38,8 +38,7 @@
     "timeout": 10000,
     "retries": 2,
     "headers": {
-      "Accept": "application/json",
-      "User-Agent": "RussTools/1.0"
+      "Accept": "application/json"
     }
   }
 } 

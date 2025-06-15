@@ -102,6 +102,17 @@ export async function apiFetch(url, options = {}, retries = null) {
     } catch (error) {
       lastError = error;
       
+      // Don't retry CORS errors or network errors
+      if (error.name === 'TypeError' && error.message.includes('CORS')) {
+        console.error('CORS error detected, not retrying:', error.message);
+        break;
+      }
+      
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        console.error('Network error detected, not retrying:', error.message);
+        break;
+      }
+      
       // Don't retry on the last attempt
       if (attempt === maxRetries) {
         break;
