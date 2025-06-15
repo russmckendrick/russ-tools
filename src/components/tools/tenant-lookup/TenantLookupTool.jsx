@@ -90,8 +90,7 @@ const TenantLookupTool = () => {
         method: 'GET',
         headers: {
           ...tenantConfig.headers,
-          'Accept': 'application/json',
-          'Origin': window.location.origin
+          'Accept': 'application/json'
         }
       });
 
@@ -108,7 +107,15 @@ const TenantLookupTool = () => {
       }
     } catch (err) {
       console.error('Tenant lookup error:', err);
-      setError(`Network error: ${err.message}`);
+      
+      // Provide more helpful error messages for common issues
+      if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
+        setError('Unable to connect to the tenant lookup service. This may be due to CORS restrictions or network connectivity issues.');
+      } else if (err.message.includes('CORS')) {
+        setError('Cross-origin request blocked. The tenant lookup service may need to be configured to allow requests from this domain.');
+      } else {
+        setError(`Network error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }

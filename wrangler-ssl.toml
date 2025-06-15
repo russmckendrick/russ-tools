@@ -6,4 +6,6 @@ routes = [
   { pattern = "ssl.russ.tools", custom_domain = true }
 ]
 
-# Use: npx wrangler secret put ALLOWED_ORIGINS --config wrangler-microsoft-tenant.toml 
+
+
+# Use: npx wrangler secret put ALLOWED_ORIGINS --config wrangler-ssl.toml
