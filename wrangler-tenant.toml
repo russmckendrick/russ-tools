@@ -1,8 +1,11 @@
 name = "microsoft-tenant-lookup"
-main = "cloudflare-worker-microsoft-tenant.js"
+main = "cloudflare-worker/tenant.js"
 compatibility_date = "2024-01-01"
 
-# Microsoft Graph API credentials (set these as secrets for production)
+routes = [
+  { pattern = "tenant.russ.tools", custom_domain = true }
+]
+
 # Use: npx wrangler secret put GRAPH_CLIENT_ID --config wrangler-microsoft-tenant.toml
 # Use: npx wrangler secret put GRAPH_CLIENT_SECRET --config wrangler-microsoft-tenant.toml  
 # Use: npx wrangler secret put GRAPH_TENANT_ID --config wrangler-microsoft-tenant.toml 
