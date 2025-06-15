@@ -48,6 +48,7 @@ import { useMantineColorScheme } from '@mantine/core';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-json';
 import '../../../styles/prism-theme.css';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
 import WHOISIcon from './WHOISIcon';
 import { useTLDs } from '../../../utils';
 
@@ -151,8 +152,12 @@ const WHOISLookupTool = () => {
 
       console.log(`🔍 Performing WHOIS lookup for: ${cleanQuery}`);
 
-      const response = await fetch(`https://whois.russ.tools?query=${encodeURIComponent(cleanQuery)}`, {
+      const whoisConfig = getApiEndpoint('whois');
+      const apiUrl = buildApiUrl(whoisConfig.url, { query: cleanQuery });
+
+      const response = await apiFetch(apiUrl, {
         headers: {
+          ...whoisConfig.headers,
           'Accept': 'application/json'
         }
       });

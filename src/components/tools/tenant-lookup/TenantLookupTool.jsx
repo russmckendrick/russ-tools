@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Container, 
   Title, 
   Text, 
   TextInput, 
@@ -36,6 +35,7 @@ import {
   IconExternalLink
 } from '@tabler/icons-react';
 import { useParams, Link } from 'react-router-dom';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
 import TenantLookupIcon from './TenantLookupIcon';
 
 const TenantLookupTool = () => {
@@ -83,11 +83,13 @@ const TenantLookupTool = () => {
     setResult(null);
 
     try {
-      const workerUrl = `https://tenant.russ.tools/?domain=${encodeURIComponent(cleanDomain)}`;
+      const tenantConfig = getApiEndpoint('tenant');
+      const apiUrl = buildApiUrl(tenantConfig.url, { domain: cleanDomain });
       
-      const response = await fetch(workerUrl, {
+      const response = await apiFetch(apiUrl, {
         method: 'GET',
         headers: {
+          ...tenantConfig.headers,
           'Accept': 'application/json',
           'Origin': window.location.origin
         }
@@ -359,25 +361,24 @@ const TenantLookupTool = () => {
   };
 
   return (
-    <Container size="lg" py="xl">
-      <Paper p="xl" radius="lg" withBorder>
-        <Stack gap="xl">
-          {/* Header */}
-          <Group gap="md">
-            <ThemeIcon size={48} radius="md" variant="light" color="blue">
-              <TenantLookupIcon size={28} />
-            </ThemeIcon>
-            <div>
-              <Title order={2} fw={600}>Microsoft Tenant Lookup</Title>
-              <Text size="sm" c="dimmed">
-                Discover Microsoft tenant information for any domain. Get tenant ID, organization details, 
-                DNS configuration, and authentication settings.
-              </Text>
-              <Badge variant="light" size="sm" mt="xs" color="blue">
-                API Integration
-              </Badge>
-            </div>
-          </Group>
+    <Paper p="xl" radius="lg" withBorder>
+      <Stack gap="xl">
+        {/* Header */}
+        <Group gap="md">
+          <ThemeIcon size={48} radius="md" variant="light" color="blue">
+            <TenantLookupIcon size={28} />
+          </ThemeIcon>
+          <div>
+            <Title order={2} fw={600}>Microsoft Tenant Lookup</Title>
+            <Text size="sm" c="dimmed">
+              Discover Microsoft tenant information for any domain. Get tenant ID, organization details, 
+              DNS configuration, and authentication settings.
+            </Text>
+            <Badge variant="light" size="sm" mt="xs" color="blue">
+              API Integration
+            </Badge>
+          </div>
+        </Group>
 
         {/* Search Form */}
         <Card withBorder radius="md" p="lg">
@@ -481,9 +482,8 @@ const TenantLookupTool = () => {
             </Text>
           </Stack>
         </Card>
-        </Stack>
-      </Paper>
-    </Container>
+      </Stack>
+    </Paper>
   );
 };
 

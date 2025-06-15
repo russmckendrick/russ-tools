@@ -1,4 +1,5 @@
 import React from 'react';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
 
 /**
  * Utility functions for Microsoft tenant lookup
@@ -24,14 +25,15 @@ export const getTenantId = async (domain) => {
 
   console.log(`🔍 Looking up tenant for domain: ${cleanDomain}`);
 
-  // Use Cloudflare Worker for tenant lookup (bypasses CORS issues)
+  // Use configured tenant API for lookup (bypasses CORS issues)
   try {
-    // TODO: Replace with your actual Cloudflare Worker URL once deployed
-    const workerUrl = `https://tenant.russ.tools/?domain=${encodeURIComponent(cleanDomain)}`;
+    const tenantConfig = getApiEndpoint('tenant');
+    const apiUrl = buildApiUrl(tenantConfig.url, { domain: cleanDomain });
     
-    const response = await fetch(workerUrl, {
+    const response = await apiFetch(apiUrl, {
       method: 'GET',
       headers: {
+        ...tenantConfig.headers,
         'Accept': 'application/json',
       }
     });

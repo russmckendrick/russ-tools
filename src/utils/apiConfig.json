@@ -1,0 +1,45 @@
+{
+  "endpoints": {
+    "tenant": {
+      "url": "https://tenant.russ.tools/",
+      "description": "Microsoft Tenant Lookup API",
+      "timeout": 10000,
+      "retries": 2
+    },
+    "ssl": {
+      "url": "https://ssl.russ.tools/",
+      "description": "SSL Certificate Checker API",
+      "timeout": 15000,
+      "retries": 2
+    },
+    "whois": {
+      "url": "https://whois.russ.tools/",
+      "description": "WHOIS Lookup API",
+      "timeout": 10000,
+      "retries": 2
+    },
+    "dns": {
+      "google": "https://dns.google/resolve",
+      "cloudflare": "https://cloudflare-dns.com/dns-query",
+      "opendns": "https://dns.google/resolve",
+      "description": "DNS over HTTPS providers (OpenDNS falls back to Google as it lacks public DoH JSON API)",
+      "timeout": 8000,
+      "retries": 1
+    },
+    "external": {
+      "hackertarget_ssl": "https://api.hackertarget.com/sslcheck/",
+      "azure_portal": "https://portal.azure.com",
+      "description": "External third-party APIs",
+      "timeout": 10000,
+      "retries": 1
+    }
+  },
+  "defaults": {
+    "timeout": 10000,
+    "retries": 2,
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "RussTools/1.0"
+    }
+  }
+} 

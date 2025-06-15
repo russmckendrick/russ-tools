@@ -13,6 +13,7 @@ import {
 import { useLocalStorage } from '@mantine/hooks';
 import { useParams } from 'react-router-dom';
 import { IconShield, IconShieldCheck, IconWorldWww, IconInfoCircle, IconCertificate } from '@tabler/icons-react';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
 import DomainInput from './DomainInput';
 import SSLCertificateDisplay from './SSLCertificateDisplay';
 import SSLValidationInfo from './SSLValidationInfo';
@@ -176,29 +177,27 @@ const SSLCheckerTool = () => {
 
   // Try using a public SSL checking service (when available)
   const checkWithSSLAPI = async (domainToCheck) => {
-    // Primary: Use Cloudflare Worker (when deployed)
-    const WORKER_URL = 'https://ssl-checker.russ.tools'; // Update this with your actual worker URL
+    // Primary: Use configured SSL API endpoint
+    const sslConfig = getApiEndpoint('ssl');
     
     try {
-      console.log(`🚀 Trying Cloudflare Worker for ${domainToCheck}`);
+      console.log(`🚀 Trying SSL API for ${domainToCheck}`);
       
-      const response = await fetch(`${WORKER_URL}?domain=${encodeURIComponent(domainToCheck)}`, {
+      const apiUrl = buildApiUrl(sslConfig.url, { domain: domainToCheck });
+      const response = await apiFetch(apiUrl, {
         method: 'GET',
         headers: {
+          ...sslConfig.headers,
           'Accept': 'application/json'
         }
       });
       
-      if (!response.ok) {
-        throw new Error(`Worker request failed: ${response.status}`);
-      }
-      
       const result = await response.json();
-      console.log(`✅ Cloudflare Worker succeeded for ${domainToCheck}:`, result);
+      console.log(`✅ SSL API succeeded for ${domainToCheck}:`, result);
       return result;
       
-    } catch (workerError) {
-      console.log(`❌ Cloudflare Worker failed: ${workerError.message}`);
+    } catch (apiError) {
+      console.log(`❌ SSL API failed: ${apiError.message}`);
       console.log(`🔄 Falling back to direct API calls...`);
       
       // Fallback to direct client-side APIs
@@ -208,11 +207,14 @@ const SSLCheckerTool = () => {
 
   // Fallback: Direct client-side API calls
   const checkWithDirectAPIs = async (domainToCheck) => {
+    // Get external API configuration
+    const externalConfig = getApiEndpoint('external');
+    
     // Client-side SSL checking services (as fallback)
     const clientSideAPIs = [
       {
         name: 'HackerTarget SSL Check',
-        url: `https://api.hackertarget.com/sslcheck/?q=${domainToCheck}`,
+        url: buildApiUrl(externalConfig.hackertarget_ssl, { q: domainToCheck }),
         transform: (data) => {
           const lines = data.split('\n').filter(line => line.trim());
           const certInfo = {};

@@ -38,6 +38,7 @@ import {
   IconExternalLink
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
 import DNSIcon from './DNSIcon';
 import { useTLDs } from '../../../utils';
 
@@ -181,51 +182,58 @@ const DNSLookupTool = () => {
 
       console.log(`🔍 Performing DNS lookup for: ${cleanDomain} (${type}) via ${provider}`);
 
+      let dnsConfig;
       let dohUrl;
-      let requestConfig = {};
 
-      // Set up DNS over HTTPS URL and config based on provider
+      // Set up DNS over HTTPS URL based on provider
       switch (provider) {
         case 'google':
-          dohUrl = 'https://dns.google/resolve';
+          dnsConfig = getApiEndpoint('dns', 'google');
+          dohUrl = dnsConfig.url;
           break;
         case 'cloudflare':
-          dohUrl = 'https://cloudflare-dns.com/dns-query';
-          requestConfig = {
-            headers: {
-              'Accept': 'application/dns-json'
-            }
-          };
+          dnsConfig = getApiEndpoint('dns', 'cloudflare');
+          dohUrl = dnsConfig.url;
           break;
         case 'opendns':
           // OpenDNS doesn't have a public DoH JSON API, fallback to Google
-          dohUrl = 'https://dns.google/resolve';
+          dnsConfig = getApiEndpoint('dns', 'opendns');
+          dohUrl = dnsConfig.url;
           console.log('📝 OpenDNS DoH not available, using Google DNS as fallback');
           break;
         default:
-          dohUrl = 'https://dns.google/resolve';
+          dnsConfig = getApiEndpoint('dns', 'google');
+          dohUrl = dnsConfig.url;
       }
 
-      const params = new URLSearchParams({
+      const apiUrl = buildApiUrl(dohUrl, {
         name: cleanDomain,
         type: type,
         cd: false, // Don't check DNSSEC
         ct: 'application/dns-json'
       });
 
-      const response = await fetch(`${dohUrl}?${params}`, {
+      const response = await apiFetch(apiUrl, {
         headers: {
+          ...dnsConfig.headers,
           'Accept': 'application/dns-json'
-        },
-        ...requestConfig
+        }
       });
 
       if (!response.ok) {
         // Try fallback to Google DNS if other providers fail
         if (provider !== 'google') {
           console.log(`⚠️ ${provider} failed, falling back to Google DNS`);
-          const fallbackResponse = await fetch(`https://dns.google/resolve?${params}`, {
+          const fallbackConfig = getApiEndpoint('dns', 'google');
+          const fallbackUrl = buildApiUrl(fallbackConfig.url, {
+            name: cleanDomain,
+            type: type,
+            cd: false,
+            ct: 'application/dns-json'
+          });
+          const fallbackResponse = await apiFetch(fallbackUrl, {
             headers: {
+              ...fallbackConfig.headers,
               'Accept': 'application/dns-json'
             }
           });
