@@ -1,7 +1,5 @@
-import { Helmet } from 'react-helmet-async';
-
 /**
- * SEO Head component for managing dynamic meta tags
+ * SEO Head component for managing dynamic meta tags using React 19's native metadata support
  * @param {Object} props - SEO configuration object
  */
 export default function SEOHead({ 
@@ -14,7 +12,7 @@ export default function SEOHead({
   structuredData 
 }) {
   return (
-    <Helmet>
+    <>
       {/* Primary Meta Tags */}
       <title>{title}</title>
       <meta name="title" content={title} />
@@ -52,6 +50,6 @@ export default function SEOHead({
           {JSON.stringify(structuredData)}
         </script>
       )}
-    </Helmet>
+    </>
   );
 } 
