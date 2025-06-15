@@ -292,9 +292,30 @@ const MicrosoftPortalsTool = () => {
     return Array.from(tags).sort();
   }, [allPortals]);
 
-  // Category color mapping
+  // Hash function to generate consistent colors for tags
+  const hashStringToColor = (str) => {
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    // Available Mantine colors (excluding gray and dark for better visibility)
+    const colors = [
+      'blue', 'indigo', 'violet', 'grape', 'pink', 'red', 'orange', 
+      'yellow', 'lime', 'green', 'teal', 'cyan'
+    ];
+    
+    // Use absolute value and modulo to get consistent color index
+    const colorIndex = Math.abs(hash) % colors.length;
+    return colors[colorIndex];
+  };
+
+  // Category color mapping (for categories, fallback to hash for tags)
   const getCategoryColor = (category) => {
-    const colorMap = {
+    const categoryColorMap = {
       'Azure': 'blue',
       'M365': 'indigo',
       'Power Platform': 'grape',
@@ -315,7 +336,9 @@ const MicrosoftPortalsTool = () => {
       'Database': 'violet',
       'IoT': 'orange'
     };
-    return colorMap[category] || 'gray';
+    
+    // If it's a known category, use the mapped color, otherwise use hash-based color
+    return categoryColorMap[category] || hashStringToColor(category);
   };
 
   // Toggle favorite status
@@ -400,7 +423,7 @@ const MicrosoftPortalsTool = () => {
           </ThemeIcon>
           <div style={{ flex: 1 }}>
             <Title order={2} fw={600}>
-              Microsoft Portal Links
+              Microsoft Portals (GDAP)
             </Title>
             <Text size="sm" c="dimmed">
               Search portals or enter a domain to generate tenant-specific links

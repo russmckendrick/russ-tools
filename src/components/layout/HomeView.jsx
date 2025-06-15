@@ -103,7 +103,7 @@ export default function HomeView() {
     },
     {
       id: 'microsoft-portals',
-      title: 'Microsoft Portal Links',
+      title: 'Microsoft Portals (GDAP)',
       description: 'Generate deep links to various Microsoft portals based on domain/tenant information. Discover tenant details and create direct links to Azure, Microsoft 365, and Power Platform portals.',
       icon: MicrosoftPortalsIcon,
       iconColor: 'indigo',

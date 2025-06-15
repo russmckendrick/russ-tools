@@ -112,8 +112,8 @@ const mockdata = [
   },
   {
     icon: MicrosoftPortalsIcon,
-    title: 'Microsoft Portal Links',
-    description: "Generate deep links to Microsoft portals using tenant information",
+          title: 'Microsoft Portals (GDAP)',
+      description: "Generate deep links to Microsoft portals using tenant information",
     link: "/microsoft-portals/",
     color: "indigo",
   },

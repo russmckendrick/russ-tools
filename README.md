@@ -12,6 +12,8 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 - 🔄 Base64 Encoder/Decoder
 - 📜 Data Converter
 - 🔐 JWT Decoder/Validator
+- 🔒 Password Generator
+- 🏢 Microsoft Portals (GDAP)
 
 ## 🧰 Tools Overview
 
@@ -25,6 +27,8 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 | 🔄 **Base64 Encoder/Decoder** | Encode and decode text and files using Base64 encoding with support for standard, URL-safe, and MIME variants. Handles large files and image previews. |
 | 📜 **Data Converter** | Convert data between JSON, YAML, and TOML formats. Features auto-detection, validation, formatting options (indentation, sorting), and schema validation. |
 | 🔐 **JWT Decoder/Validator** | Decode, analyze, and validate JSON Web Tokens (JWT) entirely in your browser. Features signature validation, claims inspection, and security analysis. |
+| 🔒 **Password Generator** | Generate cryptographically secure passwords with advanced customization options. Features entropy analysis, strength assessment, bulk generation, and detailed security feedback. |
+| 🏢 **Microsoft Portals (GDAP)** | Generate tenant-specific deep links to Microsoft portals for GDAP scenarios. Discover tenant information and create direct links to Azure, Microsoft 365, Power Platform, and other Microsoft admin portals. |
 
 ---
 
@@ -373,6 +377,176 @@ Due to browser security constraints:
 - **Public Key Algorithms Only:** RSA and ECDSA validation supported
 - **Symmetric Key Limitation:** HMAC secrets cannot be safely handled in browsers
 
+---
+
+## 🔒 Password Generator
+
+The Password Generator creates cryptographically secure passwords with advanced customization options and comprehensive security analysis. It provides enterprise-grade password generation with detailed entropy calculations, strength assessments, and security recommendations to help users create truly secure passwords.
+
+### ✨ Why Use This Tool?
+- 🛡️ **Cryptographically Secure** - Uses browser's secure random number generation
+- 📊 **Advanced Analytics** - Detailed entropy analysis and strength assessment
+- ⚡ **Bulk Generation** - Generate multiple passwords simultaneously
+- 🎯 **Highly Customizable** - Extensive options for character sets and exclusions
+- 🔍 **Security Feedback** - Real-time recommendations and vulnerability analysis
+- 💾 **Export Capabilities** - Download passwords securely for offline storage
+
+### 🔑 Key Features
+
+- 🔐 **Advanced Password Generation:**
+  - Configurable length (1-128 characters)
+  - Multiple character sets (uppercase, lowercase, numbers, symbols)
+  - Exclude similar characters (i, l, 1, L, o, 0, O) for readability
+  - Exclude ambiguous characters for better compatibility
+  - Guaranteed inclusion of selected character types
+
+- 📈 **Comprehensive Security Analysis:**
+  - Real-time entropy calculation (bits of randomness)
+  - Detailed strength assessment (Very Weak to Excellent)
+  - Time-to-crack estimates using modern attack scenarios
+  - Character set size analysis and recommendations
+  - Visual strength indicators with color coding
+
+- 🎯 **Smart Security Feedback:**
+  - Real-time recommendations for improving password strength
+  - Warnings about weak configurations
+  - Best practice suggestions for length and complexity
+  - Character variety analysis and optimization tips
+
+- 📊 **Bulk Password Generation:**
+  - Generate 1-100 passwords at once
+  - Timestamp tracking for generation history
+  - Individual copy-to-clipboard for each password
+  - Bulk download as secure text file with metadata
+
+- 💾 **Export & Management:**
+  - Download passwords as formatted text file
+  - Includes generation metadata and security notices
+  - Clear all passwords with confirmation
+  - Copy individual passwords to clipboard
+
+- 🔍 **Educational Features:**
+  - Detailed explanation of entropy and password strength
+  - Visual representation of possible combinations
+  - Time-to-crack scenarios with realistic attack models
+  - Security best practices and recommendations
+
+#### 🎯 Example Use Cases
+- **Enterprise Security:** Generate secure passwords for business accounts
+- **Personal Security:** Create strong passwords for personal use
+- **Bulk Account Creation:** Generate multiple passwords for system administration
+- **Security Training:** Understand password strength and entropy concepts
+- **Compliance Requirements:** Meet organizational password complexity standards
+
+#### 🔒 Security Features
+- **Client-Side Generation:** All passwords generated locally in your browser
+- **Secure Random Numbers:** Uses cryptographically secure browser APIs
+- **No Network Transmission:** Passwords never leave your device
+- **Memory Safety:** Passwords cleared from memory when possible
+- **Export Security:** Downloaded files include security warnings and best practices
+
+#### 📊 Advanced Analytics
+The tool provides detailed security metrics including:
+- **Entropy Calculation:** Precise bits of randomness measurement
+- **Combination Analysis:** Total possible password combinations
+- **Attack Modeling:** Time estimates based on modern GPU capabilities
+- **Strength Grading:** Industry-standard security level assessment
+- **Character Analysis:** Detailed breakdown of character set effectiveness
+
+---
+
+## 🏢 Microsoft Portals (GDAP)
+
+The Microsoft Portals (GDAP) tool is designed for Managed Service Providers (MSPs) and partners who need to quickly access Microsoft admin portals for their clients' tenants. It automatically discovers tenant information from domain names and generates direct, tenant-specific links to over 90 Microsoft portals including Azure, Microsoft 365, Power Platform, and specialized admin centers.
+
+### ✨ Why Use This Tool?
+- 🚀 **GDAP Optimized** - Perfect for Granular Delegated Admin Privileges scenarios
+- ⚡ **Instant Access** - Generate tenant-specific portal links in seconds
+- 🎯 **Comprehensive Coverage** - 90+ Microsoft portals across all service areas
+- 🏷️ **Smart Tagging** - 240+ tags for precise portal discovery and filtering
+- 💾 **Recent Domains** - Quick access to frequently used client tenants
+- 🔍 **Advanced Search** - Search by portal name, description, or tags
+
+### 🔑 Key Features
+
+- 🌐 **Tenant Discovery:**
+  - Automatic tenant ID lookup from domain names
+  - Support for custom domains and onmicrosoft.com domains
+  - Intelligent caching to reduce lookup times
+  - Recent domain history with quick access
+
+- 🏢 **Comprehensive Portal Coverage:**
+  - **Azure Portals:** Azure Portal, Cost Management, Security Center, etc.
+  - **Microsoft 365:** Admin Center, Exchange, SharePoint, Teams, etc.
+  - **Power Platform:** Power Apps, Power BI, Power Automate admin centers
+  - **Security & Compliance:** Defender, Purview, Compliance Center
+  - **Developer Tools:** Azure DevOps, App Registrations, API Management
+
+- 🏷️ **Advanced Tagging & Filtering:**
+  - 240+ descriptive tags for precise portal discovery
+  - Hash-based consistent color coding for visual organization
+  - Clickable tags for instant filtering
+  - Category-based organization (Azure, M365, Security, etc.)
+
+- 🔍 **Smart Search & Discovery:**
+  - Real-time search across portal names, descriptions, and tags
+  - Tag-based filtering with visual feedback
+  - Browse all tags modal with alphabetical organization
+  - Search within tags for quick discovery
+
+- 💾 **User Experience Features:**
+  - Recent domains with removal capability
+  - Favorites system for frequently used portals
+  - Copy portal URLs to clipboard
+  - Direct portal opening in new tabs
+  - Responsive design for desktop and mobile
+
+#### 🎯 Example Use Cases
+- **MSP Client Management:** Quickly access client tenant admin portals
+- **Multi-Tenant Administration:** Switch between different customer tenants
+- **Portal Discovery:** Find specific Microsoft admin portals by functionality
+- **GDAP Workflows:** Streamline delegated admin access patterns
+- **Training & Documentation:** Discover available Microsoft admin interfaces
+
+#### 🔒 Privacy & Security Features
+- **Client-Side Processing:** Tenant lookups use secure APIs
+- **No Data Storage:** Domain information cached locally only
+- **Secure Connections:** All API calls use HTTPS
+- **Privacy-Focused:** No tracking or logging of tenant information
+
+### Microsoft Portals (GDAP)
+
+Visit [https://www.russ.tools/microsoft-portals](https://www.russ.tools/microsoft-portals) and:
+
+1. 🌐 **Enter Domain:**
+   - Type any domain name (e.g., contoso.com, client.onmicrosoft.com)
+   - The tool automatically discovers tenant information
+   - Recent domains appear for quick access
+
+2. 🔍 **Discover Portals:**
+   - Browse 90+ Microsoft portals organized by category
+   - Use the search box to find specific portals by name or description
+   - Click on tags to filter portals by functionality
+
+3. 🏷️ **Filter by Tags:**
+   - Click any tag to filter portals instantly
+   - Use the "Browse All Tags" button to explore 240+ available tags
+   - Search within tags for quick discovery
+
+4. ⭐ **Manage Favorites:**
+   - Star frequently used portals for quick access
+   - Favorites are saved locally and persist across sessions
+
+5. 🚀 **Access Portals:**
+   - Copy portal URLs to clipboard for sharing
+   - Open portals directly in new tabs with tenant context
+   - All links are tenant-specific and ready to use
+
+6. 💾 **Recent Domains:**
+   - Quick access to recently looked up domains
+   - Remove domains from history with the X button
+   - Domains are cached locally for faster subsequent lookups
+
 ### JWT Decoder/Validator
 
 Visit [https://www.russ.tools/jwt](https://www.russ.tools/jwt) and:
@@ -570,6 +744,38 @@ Visit [https://www.russ.tools/jwt](https://www.russ.tools/jwt) and:
    - Share tokens via URL parameters for collaboration.
    - Use on mobile devices with responsive design.
    - Learn about JWT security with built-in educational content.
+
+### Password Generator
+
+Visit [https://www.russ.tools/password-generator](https://www.russ.tools/password-generator) and:
+
+1. 🔧 **Configure Settings:**
+   - Set password length (1-128 characters, recommended 16+)
+   - Choose character types: uppercase, lowercase, numbers, symbols
+   - Optionally exclude similar or ambiguous characters for better readability
+   - Set the number of passwords to generate (1-100)
+
+2. 📊 **Review Security Analysis:**
+   - **Strength Meter:** Visual indicator from Very Weak to Excellent
+   - **Entropy Analysis:** Bits of randomness and character set size
+   - **Time to Crack:** Realistic estimates based on modern attack capabilities
+   - **Security Feedback:** Real-time recommendations for improvement
+
+3. 🔐 **Generate Passwords:**
+   - Click "Generate Passwords" to create secure passwords
+   - Each password includes timestamp and individual copy button
+   - Real-time strength analysis updates as you change settings
+
+4. 💾 **Manage Results:**
+   - Copy individual passwords to clipboard with one click
+   - Download all passwords as a secure text file with metadata
+   - Clear all passwords when finished for security
+
+5. 🎓 **Learn About Security:**
+   - Understand entropy and password strength concepts
+   - See detailed breakdown of possible combinations
+   - Learn about modern password attack scenarios
+   - Get recommendations for enterprise-grade security
 
 ---
 
