@@ -83,7 +83,7 @@ const TenantLookupTool = () => {
     setResult(null);
 
     try {
-      const workerUrl = `https://microsoft-tenant-lookup.russ-mckendricks-account.workers.dev/?domain=${encodeURIComponent(cleanDomain)}`;
+      const workerUrl = `https://tenant.russ.tools/?domain=${encodeURIComponent(cleanDomain)}`;
       
       const response = await fetch(workerUrl, {
         method: 'GET',
