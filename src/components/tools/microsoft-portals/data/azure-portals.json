@@ -2,7 +2,8 @@
   "home": {
     "name": "Azure Portal Home",
     "description": "Main Azure portal dashboard",
-    "category": "Admin Centers",
+    "category": "Azure",
+    "tags": ["Dashboard", "Home", "Overview"],
     "path": "",
     "urlWithDomain": "https://portal.azure.com/{domain}"
   },
@@ -10,108 +11,126 @@
     "name": "All Resources",
     "description": "View all Azure resources",
     "category": "Azure",
+    "tags": ["Resources", "Management", "Overview"],
     "path": "/blade/HubsExtension/BrowseAll"
   },
   "resourceGroups": {
     "name": "Resource Groups",
     "description": "Manage resource groups",
     "category": "Azure",
+    "tags": ["Resources", "Management", "Organization"],
     "path": "/blade/HubsExtension/BrowseResourceGroups"
   },
   "subscriptions": {
     "name": "Subscriptions",
     "description": "View and manage subscriptions",
     "category": "Azure",
+    "tags": ["Billing", "Management", "Subscriptions"],
     "path": "/blade/Microsoft_Azure_Billing/SubscriptionsBlade"
   },
   "activeDirectory": {
     "name": "Azure Active Directory",
     "description": "Azure AD management",
-    "category": "Identity",
+    "category": "Azure",
+    "tags": ["Identity", "Authentication", "Users", "Groups"],
     "path": "/blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview"
   },
   "users": {
     "name": "Users",
     "description": "Manage Azure AD users",
-    "category": "Identity",
+    "category": "Azure",
+    "tags": ["Users", "Identity", "Management"],
     "path": "/blade/Microsoft_AAD_IAM/UsersManagementMenuBlade/AllUsers"
   },
   "groups": {
     "name": "Groups",
     "description": "Manage Azure AD groups",
-    "category": "Identity",
+    "category": "Azure",
+    "tags": ["Groups", "Identity", "Management"],
     "path": "/blade/Microsoft_AAD_IAM/GroupsManagementMenuBlade/AllGroups"
   },
   "securityCenter": {
     "name": "Microsoft Defender for Cloud",
     "description": "Security recommendations and alerts",
-    "category": "Security",
+    "category": "Azure",
+    "tags": ["Security", "Defender", "Monitoring", "Alerts"],
     "path": "/blade/Microsoft_Azure_Security/SecurityMenuBlade/0"
   },
   "keyVault": {
     "name": "Key Vaults",
     "description": "Manage Key Vaults",
     "category": "Azure",
+    "tags": ["Security", "Keys", "Secrets", "Certificates"],
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.KeyVault%2Fvaults"
   },
   "monitor": {
     "name": "Azure Monitor",
     "description": "Monitoring and diagnostics",
     "category": "Azure",
+    "tags": ["Monitoring", "Diagnostics", "Metrics", "Logs"],
     "path": "/blade/Microsoft_Azure_Monitoring/AzureMonitoringBrowseBlade/overview"
   },
   "logAnalytics": {
     "name": "Log Analytics",
     "description": "Log Analytics workspaces",
     "category": "Azure",
+    "tags": ["Logs", "Analytics", "Monitoring", "Queries"],
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.OperationalInsights%2Fworkspaces"
   },
   "virtualMachines": {
     "name": "Virtual Machines",
     "description": "Manage virtual machines",
     "category": "Azure",
+    "tags": ["Compute", "Virtual Machines", "Infrastructure"],
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Compute%2FVirtualMachines"
   },
   "appServices": {
     "name": "App Services",
     "description": "Web apps and API apps",
     "category": "Azure",
+    "tags": ["Web Apps", "APIs", "Hosting", "PaaS"],
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Web%2Fsites"
   },
   "storageAccounts": {
     "name": "Storage Accounts",
     "description": "Manage storage accounts",
-    "category": "Storage",
+    "category": "Azure",
+    "tags": ["Storage", "Data", "Files", "Blobs"],
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts"
   },
   "virtualNetworks": {
     "name": "Virtual Networks",
     "description": "Manage virtual networks",
     "category": "Azure",
+    "tags": ["Networking", "VNet", "Infrastructure", "Connectivity"],
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Network%2FvirtualNetworks"
   },
   "loadBalancers": {
     "name": "Load Balancers",
     "description": "Manage load balancers",
     "category": "Azure",
+    "tags": ["Networking", "Load Balancing", "Traffic", "High Availability"],
     "path": "/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Network%2FloadBalancers"
   },
   "costManagement": {
     "name": "Cost Management",
     "description": "Cost analysis and budgets",
     "category": "Azure",
+    "tags": ["Cost", "Billing", "Budgets", "Analytics"],
     "path": "/blade/Microsoft_Azure_CostManagement/Menu/overview"
   },
   "marketplace": {
     "name": "Marketplace",
     "description": "Azure Marketplace",
     "category": "Azure",
+    "tags": ["Marketplace", "Solutions", "Templates", "Services"],
     "path": "/blade/Microsoft_Azure_Marketplace/MarketplaceOffersBlade/selectedMenuItemId/home"
   },
   "entraAdmin": {
     "name": "Microsoft Entra Admin Center",
     "description": "Modern identity management portal",
-    "category": "Identity",
+    "category": "Azure",
+    "tags": ["Identity", "Entra", "Admin Center", "Modern"],
     "path": "",
     "urlWithDomain": "https://entra.microsoft.com/{domain}/#home",
     "urlWithTenant": "https://entra.microsoft.com/{tenantId}/#home"
@@ -119,13 +138,15 @@
   "allServices": {
     "name": "All Services",
     "description": "Browse all Azure services",
-    "category": "General",
+    "category": "Azure",
+    "tags": ["Services", "Browse", "Directory", "All"],
     "path": "/#allservices"
   },
   "cloudShell": {
     "name": "Azure Cloud Shell",
     "description": "Browser-based shell experience",
     "category": "Azure",
+    "tags": ["Shell", "CLI", "PowerShell", "Developer Tools"],
     "path": "",
     "url": "https://shell.azure.com/"
   },
@@ -133,6 +154,7 @@
     "name": "Azure Cosmos DB",
     "description": "NoSQL database service portal",
     "category": "Azure",
+    "tags": ["Database", "NoSQL", "Cosmos DB", "Data"],
     "path": "",
     "url": "https://cosmos.azure.com/"
   },
@@ -140,57 +162,66 @@
     "name": "Azure Data Factory",
     "description": "Data integration service",
     "category": "Azure",
+    "tags": ["Data", "ETL", "Integration", "Pipelines"],
     "path": "",
     "url": "https://adf.azure.com/"
   },
   "synapseAnalytics": {
     "name": "Azure Synapse Analytics",
     "description": "Analytics service portal",
-    "category": "Developer",
+    "category": "Azure",
+    "tags": ["Analytics", "Data Warehouse", "Big Data", "SQL"],
     "path": "",
     "url": "https://web.azuresynapse.net/"
   },
   "resourceExplorer": {
     "name": "Azure Resource Explorer",
     "description": "Browse Azure resources via REST API",
-    "category": "Developer",
+    "category": "Azure",
+    "tags": ["Developer Tools", "API", "Resources", "REST"],
     "path": "",
     "url": "https://resources.azure.com/"
   },
   "backupCenter": {
     "name": "Azure Backup Center",
     "description": "Centralized backup management",
-    "category": "Management",
+    "category": "Azure",
+    "tags": ["Backup", "Recovery", "Data Protection", "Management"],
     "path": "/blade/Microsoft_Azure_DataProtection/BackupCenterMenuBlade/overview"
   },
   "privilegedIdentityManagement": {
     "name": "Privileged Identity Management",
     "description": "PIM for privileged access management",
-    "category": "Security",
+    "category": "Azure",
+    "tags": ["Security", "PIM", "Privileged Access", "Identity"],
     "path": "/blade/Microsoft_Azure_PIMCommon/CommonMenuBlade/quickStart"
   },
   "sentinel": {
     "name": "Microsoft Sentinel",
     "description": "Cloud-native SIEM and SOAR",
-    "category": "Security",
+    "category": "Azure",
+    "tags": ["Security", "SIEM", "SOAR", "Threat Detection"],
     "path": "/blade/Microsoft_Azure_Security_Insights/WorkspaceSelectorBlade"
   },
   "virtualDesktop": {
     "name": "Azure Virtual Desktop",
     "description": "Virtual desktop infrastructure",
-    "category": "Compute",
+    "category": "Azure",
+    "tags": ["Virtual Desktop", "VDI", "Remote Access", "Windows"],
     "path": "/view/Microsoft_Azure_WVD/WvdManagerMenuBlade/~/overview"
   },
   "updateManager": {
     "name": "Azure Update Manager",
     "description": "Centralized update management",
-    "category": "Management",
+    "category": "Azure",
+    "tags": ["Updates", "Patch Management", "Maintenance", "Automation"],
     "path": "/view/Microsoft_Azure_Automation/UpdateCenterMenuBlade/~/gettingstarted"
   },
   "universalPrint": {
     "name": "Azure Universal Print",
     "description": "Cloud-based print solution",
-    "category": "Management",
+    "category": "Azure",
+    "tags": ["Printing", "Cloud Print", "Management", "Universal Print"],
     "path": "/blade/Universal_Print/MainMenuBlade/Overview"
   }
 } 

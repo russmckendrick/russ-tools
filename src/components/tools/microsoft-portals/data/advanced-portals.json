@@ -3,115 +3,133 @@
     "name": "Graph Explorer",
     "url": "https://developer.microsoft.com/en-us/graph/graph-explorer",
     "description": "Test Microsoft Graph APIs",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "API", "Graph", "Testing", "Microsoft Graph"]
   },
   "azureDevOps": {
     "name": "Azure DevOps",
     "url": "https://dev.azure.com/",
     "description": "DevOps services and repositories",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "DevOps", "CI/CD", "Repositories", "Azure DevOps"]
   },
   "vscodeWeb": {
     "name": "VS Code for Web",
     "url": "https://vscode.dev/",
     "description": "Visual Studio Code in browser",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "IDE", "Code Editor", "VS Code", "Web"]
   },
   "cloudShell": {
     "name": "Azure Cloud Shell",
     "url": "https://shell.azure.com/",
     "description": "Browser-based shell experience",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "Shell", "CLI", "PowerShell", "Cloud Shell"]
   },
   "armTemplates": {
     "name": "ARM Template Deployment",
     "url": "https://portal.azure.com/#create/Microsoft.Template",
     "urlWithTenant": "https://portal.azure.com/#@{tenantId}/create/Microsoft.Template",
     "description": "Deploy ARM templates",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "ARM Templates", "Infrastructure as Code", "Deployment"]
   },
   "apiManagement": {
     "name": "API Management",
     "url": "https://portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/Microsoft.ApiManagement%2Fservice",
     "urlWithTenant": "https://portal.azure.com/#@{tenantId}/blade/HubsExtension/BrowseResource/resourceType/Microsoft.ApiManagement%2Fservice",
     "description": "Manage APIs and gateways",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "API Management", "Gateways", "APIs", "Integration"]
   },
   "functions": {
     "name": "Azure Functions",
     "url": "https://portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/Microsoft.Web%2Fsites/kind/functionapp",
     "urlWithTenant": "https://portal.azure.com/#@{tenantId}/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Web%2Fsites/kind/functionapp",
     "description": "Serverless compute functions",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "Serverless", "Functions", "Compute", "Azure Functions"]
   },
   "logicApps": {
     "name": "Logic Apps",
     "url": "https://portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/Microsoft.Logic%2Fworkflows",
     "urlWithTenant": "https://portal.azure.com/#@{tenantId}/blade/HubsExtension/BrowseResource/resourceType/Microsoft.Logic%2Fworkflows",
     "description": "Workflow automation",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "Logic Apps", "Workflows", "Automation", "Integration"]
   },
   "visualStudioMarketplace": {
     "name": "Visual Studio Marketplace",
     "url": "https://marketplace.visualstudio.com/",
     "urlWithTenant": "https://app.vsaex.visualstudio.com/integrationredirect/cspPartnerSignin?tenantId={tenantId}&replyto=https://marketplace.visualstudio.com",
     "description": "Visual Studio extensions and tools",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "Marketplace", "Extensions", "Visual Studio", "Tools"]
   },
   "visualStudioSubscriptions": {
     "name": "Visual Studio Subscriptions",
     "url": "https://manage.visualstudio.com/",
     "urlWithTenant": "https://app.vsaex.visualstudio.com/integrationredirect/cspPartnerSignin?tenantId={tenantId}&replyto=https://manage.visualstudio.com/Subscribers?act_id=2",
     "description": "Manage Visual Studio subscriptions",
-    "category": "Developer"
+    "category": "M365",
+    "tags": ["Management", "Subscriptions", "Visual Studio", "Licensing"]
   },
   "azureIoTCentral": {
     "name": "Azure IoT Central",
     "url": "https://apps.azureiotcentral.com/",
     "urlWithDomainOnMicrosoft": "https://apps.azureiotcentral-ppe.com/myapps?tenant={domain}.onmicrosoft.com",
     "description": "IoT application platform",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["IoT", "Internet of Things", "Device Management", "Applications"]
   },
   "microsoftSetup": {
     "name": "Microsoft Setup",
     "url": "https://setup.cloud.microsoft/",
     "description": "Guided setup for Microsoft services",
-    "category": "Management"
+    "category": "M365",
+    "tags": ["Management", "Setup", "Configuration", "Guided Setup"]
   },
   "remoteConnectivityAnalyzer": {
     "name": "Remote Connectivity Analyzer",
     "url": "https://testconnectivity.microsoft.com/",
     "description": "Test connectivity to Microsoft services",
-    "category": "Developer"
+    "category": "Developer",
+    "tags": ["Developer", "Testing", "Connectivity", "Troubleshooting", "Network"]
   },
   "serviceTrustPortal": {
     "name": "Service Trust Portal",
     "url": "https://servicetrust.microsoft.com/",
     "description": "Microsoft compliance and trust information",
-    "category": "Security"
+    "category": "M365",
+    "tags": ["Security", "Compliance", "Trust", "Audit", "Documentation"]
   },
   "volumeLicensingCenter": {
     "name": "Volume Licensing Central",
     "url": "https://vlcentral.microsoft.com/",
     "description": "Volume licensing management",
-    "category": "Management"
+    "category": "M365",
+    "tags": ["Management", "Licensing", "Volume Licensing", "Enterprise"]
   },
   "windows365": {
     "name": "Windows 365",
     "url": "https://windows365.microsoft.com/",
     "description": "Cloud PC service",
-    "category": "Compute"
+    "category": "M365",
+    "tags": ["Compute", "Cloud PC", "Virtual Desktop", "Windows 365"]
   },
   "azurePass": {
     "name": "Azure Pass",
     "url": "https://www.microsoftazurepass.com/",
     "description": "Activate Azure subscription with pass codes",
-    "category": "Management"
+    "category": "Azure",
+    "tags": ["Management", "Azure Pass", "Subscriptions", "Activation"]
   },
   "customerDigitalExperiences": {
     "name": "Customer Digital Experiences",
     "url": "https://cdx.transform.microsoft.com/",
     "description": "Microsoft product demos and experiences",
-    "category": "Management"
+    "category": "M365",
+    "tags": ["Management", "Demos", "Customer Experience", "Product Showcase"]
   }
 } 

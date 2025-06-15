@@ -4,75 +4,87 @@
     "url": "https://admin.powerplatform.microsoft.com/",
     "urlWithTenant": "https://admin.powerplatform.microsoft.com/account/login/{tenantId}",
     "description": "Power Platform administration",
-    "category": "Admin Centers"
+    "category": "Power Platform",
+    "tags": ["Admin Centers", "Power Platform", "Management", "Administration"]
   },
   "powerApps": {
     "name": "Power Apps",
     "url": "https://make.powerapps.com/",
     "description": "Create and manage Power Apps",
-    "category": "Power Platform"
+    "category": "Power Platform",
+    "tags": ["Power Platform", "Low-code", "Apps", "Development", "Canvas Apps"]
   },
   "powerAppsAdmin": {
     "name": "Power Apps Admin",
     "url": "https://admin.powerapps.com/",
     "description": "Power Apps administration",
-    "category": "Power Platform"
+    "category": "Power Platform",
+    "tags": ["Power Platform", "Admin", "Management", "Apps Administration"]
   },
   "powerAutomate": {
     "name": "Power Automate",
     "url": "https://make.powerautomate.com/",
     "description": "Create and manage flows",
-    "category": "Power Platform"
+    "category": "Power Platform",
+    "tags": ["Power Platform", "Automation", "Workflows", "Flows", "Process Automation"]
   },
   "powerBI": {
     "name": "Power BI Service",
     "url": "https://app.powerbi.com/",
     "description": "Power BI dashboards and reports",
-    "category": "Power Platform"
+    "category": "Power Platform",
+    "tags": ["Power Platform", "Business Intelligence", "Analytics", "Dashboards", "Reports"]
   },
   "powerBIAdmin": {
     "name": "Power BI Admin Portal",
     "url": "https://app.powerbi.com/admin-portal/usageMetrics?noSignUpCheck=1",
     "urlWithTenant": "https://app.powerbi.com/admin-portal?ctid={tenantId}",
     "description": "Power BI administration",
-    "category": "Power Platform"
+    "category": "Power Platform",
+    "tags": ["Power Platform", "Admin", "Power BI", "Analytics Administration", "Governance"]
   },
   "powerVirtualAgents": {
     "name": "Power Virtual Agents",
     "url": "https://web.powerva.microsoft.com/",
     "description": "Create and manage chatbots",
-    "category": "Power Platform"
+    "category": "Power Platform",
+    "tags": ["Power Platform", "Chatbots", "AI", "Virtual Agents", "Conversational AI"]
   },
   "dynamics365": {
     "name": "Dynamics 365 Home",
     "url": "https://home.dynamics.com/",
     "description": "Dynamics 365 applications",
-    "category": "Dynamics 365"
+    "category": "Dynamics 365",
+    "tags": ["Dynamics 365", "CRM", "ERP", "Business Applications", "Customer Engagement"]
   },
   "dynamicsAdmin": {
     "name": "Dynamics 365 Admin Center",
     "url": "https://admin.services.crm.dynamics.com/",
     "description": "Dynamics 365 administration",
-    "category": "Dynamics 365"
+    "category": "Dynamics 365",
+    "tags": ["Dynamics 365", "Admin Centers", "CRM Administration", "Environment Management"]
   },
   "customerEngagement": {
     "name": "Customer Engagement Apps",
     "url": "https://make.powerapps.com/environments",
     "description": "Customer engagement applications",
-    "category": "Dynamics 365"
+    "category": "Dynamics 365",
+    "tags": ["Dynamics 365", "Customer Engagement", "CRM", "Sales", "Service"]
   },
   "businessCentral": {
     "name": "Dynamics 365 Business Central",
     "url": "https://businesscentral.dynamics.com/",
     "urlWithTenant": "https://businesscentral.dynamics.com/{tenantId}/admin",
     "description": "Business Central administration",
-    "category": "Dynamics 365"
+    "category": "Dynamics 365",
+    "tags": ["Dynamics 365", "Business Central", "ERP", "Finance", "Operations"]
   },
   "lifecycleServices": {
     "name": "Lifecycle Services",
     "url": "https://lcs.dynamics.com/",
     "urlWithTenant": "https://lcs.dynamics.com/Logon/Adlogon?ctid={tenantId}",
     "description": "Dynamics 365 Lifecycle Services portal",
-    "category": "Dynamics 365"
+    "category": "Dynamics 365",
+    "tags": ["Dynamics 365", "Lifecycle Services", "Implementation", "Project Management", "ALM"]
   }
 } 
