@@ -8,6 +8,7 @@ import Base64Icon from '../tools/base64/Base64Icon';
 import JWTIcon from '../tools/jwt/JWTIcon';
 import PasswordIcon from '../tools/password-generator/PasswordIcon';
 import MicrosoftPortalsIcon from '../tools/microsoft-portals/MicrosoftPortalsIcon';
+import TenantLookupIcon from '../tools/tenant-lookup/TenantLookupIcon';
 
 export default function HomeView() {
   const tools = [
@@ -109,6 +110,15 @@ export default function HomeView() {
       iconColor: 'indigo',
       badges: ['Tenant Discovery', 'Deep Links', 'Multi-Portal'],
       path: '/microsoft-portals'
+    },
+    {
+      id: 'tenant-lookup',
+      title: 'Microsoft Tenant Lookup',
+      description: 'Discover Microsoft tenant information for any domain. Get tenant ID, organization details, DNS configuration, and authentication settings using multiple Microsoft APIs.',
+      icon: TenantLookupIcon,
+      iconColor: 'blue',
+      badges: ['Tenant Discovery', 'DNS Analysis', 'API Integration'],
+      path: '/tenant-lookup'
     }
   ];
 

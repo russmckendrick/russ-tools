@@ -38,6 +38,7 @@ import Base64Icon from '../tools/base64/Base64Icon';
 import JWTIcon from '../tools/jwt/JWTIcon';
 import PasswordIcon from '../tools/password-generator/PasswordIcon';
 import MicrosoftPortalsIcon from '../tools/microsoft-portals/MicrosoftPortalsIcon';
+import TenantLookupIcon from '../tools/tenant-lookup/TenantLookupIcon';
 
 const mockdata = [
   {
@@ -116,6 +117,13 @@ const mockdata = [
       description: "Generate deep links to Microsoft portals using tenant information",
     link: "/microsoft-portals/",
     color: "indigo",
+  },
+  {
+    icon: TenantLookupIcon,
+    title: 'Microsoft Tenant Lookup',
+    description: "Discover Microsoft tenant information for any domain",
+    link: "/tenant-lookup/",
+    color: "blue",
   },
   {
     icon: IconBrandGithub,

@@ -14,6 +14,7 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 - 🔐 JWT Decoder/Validator
 - 🔒 Password Generator
 - 🏢 Microsoft Portals (GDAP)
+- 🔍 Microsoft Tenant Lookup
 
 ## 🧰 Tools Overview
 
@@ -29,6 +30,97 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 | 🔐 **JWT Decoder/Validator** | Decode, analyze, and validate JSON Web Tokens (JWT) entirely in your browser. Features signature validation, claims inspection, and security analysis. |
 | 🔒 **Password Generator** | Generate cryptographically secure passwords with advanced customization options. Features entropy analysis, strength assessment, bulk generation, and detailed security feedback. |
 | 🏢 **Microsoft Portals (GDAP)** | Generate tenant-specific deep links to Microsoft portals for GDAP scenarios. Discover tenant information and create direct links to Azure, Microsoft 365, Power Platform, and other Microsoft admin portals. |
+| 🔍 **Microsoft Tenant Lookup** | Discover comprehensive Microsoft tenant information for any domain. Get tenant ID, organization details, DNS configuration, and authentication settings using multiple Microsoft APIs with detailed analysis. |
+
+---
+
+## 🔍 Microsoft Tenant Lookup
+
+The Microsoft Tenant Lookup tool provides comprehensive tenant discovery and analysis for any Microsoft domain. It leverages multiple Microsoft APIs to deliver detailed tenant information, DNS configuration analysis, and authentication settings discovery, making it an essential tool for IT professionals, MSPs, and security analysts working with Microsoft environments.
+
+### ✨ Why Use This Tool?
+- 🔍 **Comprehensive Analysis** - Uses multiple Microsoft APIs for complete tenant discovery
+- ⚡ **Instant Results** - Real-time tenant information lookup with detailed breakdown
+- 🌐 **DNS Integration** - Analyzes DNS configuration including Exchange Online and Office 365 SPF
+- 🛡️ **Security Focused** - Identifies tenant type, authentication methods, and federation settings
+- 🔗 **GDAP Integration** - Direct links to Microsoft Portals tool for admin access
+- 📊 **Professional Display** - Structured presentation of all tenant data with copy functionality
+
+### 🔑 Key Features
+
+- 🏢 **Tenant Discovery:**
+  - Automatic tenant ID lookup from domain names or email addresses
+  - Support for custom domains and onmicrosoft.com domains
+  - Organization display name and federation brand detection
+  - Tenant type identification (AAD, B2C, etc.)
+
+- 📊 **Comprehensive Analysis:**
+  - Default domain name and tenant category identification
+  - Cloud-only vs hybrid environment detection
+  - Authentication method and API source tracking
+  - Real-time validation and error handling
+
+- 🌐 **DNS Configuration Analysis:**
+  - Exchange Online presence detection
+  - Office 365 SPF record validation
+  - MX record analysis and mail routing information
+  - Complete TXT record enumeration with collapsible display
+
+- 🔐 **User Realm Information:**
+  - Namespace type identification (Managed/Federated)
+  - Cloud instance and federation details
+  - Authentication endpoint discovery
+  - Federation brand name resolution
+
+- 🛠️ **Professional Features:**
+  - URL parameter support for direct domain lookup
+  - Copy tenant ID and full JSON data to clipboard
+  - Timestamp tracking for lookup history
+  - Integration with Microsoft Portals (GDAP) tool
+  - Mobile-responsive design with dark mode support
+
+#### 🎯 Example Use Cases
+- **MSP Client Onboarding:** Discover tenant information during client setup
+- **Security Assessment:** Analyze tenant configuration and authentication methods
+- **Domain Migration:** Verify tenant settings during domain transitions
+- **GDAP Setup:** Gather tenant details for Granular Delegated Admin Privileges
+- **Troubleshooting:** Diagnose authentication and DNS configuration issues
+
+#### 🔒 Privacy & Security Features
+- **Server-Side Processing:** All API calls handled through secure Cloudflare Worker
+- **No Data Storage:** Tenant information not logged or permanently stored
+- **CORS Protection:** Restricted to authorized origins only
+- **Secure Connections:** All lookups use HTTPS with proper error handling
+
+### Microsoft Tenant Lookup
+
+Visit [https://www.russ.tools/tenant-lookup](https://www.russ.tools/tenant-lookup) and:
+
+1. 🌐 **Enter Domain or Email:**
+   - Type any domain name (e.g., contoso.com, client.onmicrosoft.com)
+   - Or enter an email address (user@domain.com) - domain will be extracted automatically
+   - Tool supports URL parameters: `/tenant-lookup/domain.com`
+
+2. 🔍 **Analyze Tenant:**
+   - Click "Lookup Tenant" to start comprehensive analysis
+   - Real-time progress updates during API queries
+   - Multiple Microsoft APIs queried for complete information
+
+3. 📊 **Review Results:**
+   - **Tenant Information:** ID, display name, type, and category
+   - **DNS Analysis:** Exchange Online, SPF records, MX records, and TXT records
+   - **User Realm:** Authentication type, cloud instance, and federation details
+   - **Metadata:** Lookup timestamp and API method used
+
+4. 🔗 **Access Related Tools:**
+   - Direct link to Microsoft Portals (GDAP) tool with pre-filled domain
+   - Copy tenant ID or complete JSON data to clipboard
+   - Export functionality for documentation and analysis
+
+5. 🛠️ **Advanced Features:**
+   - Collapsible TXT record display for large DNS configurations
+   - Color-coded badges for tenant types and statuses
+   - Responsive design works on desktop and mobile devices
 
 ---
 
@@ -744,6 +836,37 @@ Visit [https://www.russ.tools/jwt](https://www.russ.tools/jwt) and:
    - Share tokens via URL parameters for collaboration.
    - Use on mobile devices with responsive design.
    - Learn about JWT security with built-in educational content.
+
+### Microsoft Tenant Lookup
+
+Visit [https://www.russ.tools/tenant-lookup](https://www.russ.tools/tenant-lookup) and:
+
+1. 🌐 **Enter Domain or Email:**
+   - Type any domain name (e.g., contoso.com, client.onmicrosoft.com)
+   - Or enter an email address (user@domain.com) - domain will be extracted automatically
+   - Tool supports URL parameters: `/tenant-lookup/domain.com` for direct access
+
+2. 🔍 **Analyze Tenant:**
+   - Click "Lookup Tenant" to start comprehensive analysis
+   - Real-time progress updates during multiple Microsoft API queries
+   - Automatic fallback mechanisms ensure reliable results
+
+3. 📊 **Review Comprehensive Results:**
+   - **Tenant Information:** ID, display name, type, category, and federation details
+   - **DNS Analysis:** Exchange Online detection, SPF records, MX records, and complete TXT record enumeration
+   - **User Realm Details:** Authentication type, cloud instance, and federation configuration
+   - **Metadata:** Lookup timestamp, API methods used, and data source tracking
+
+4. 🔗 **Access Related Tools:**
+   - Direct link to Microsoft Portals (GDAP) tool with pre-filled domain for admin portal access
+   - Copy tenant ID or complete JSON data to clipboard for documentation
+   - Export functionality for security analysis and compliance reporting
+
+5. 🛠️ **Advanced Features:**
+   - Collapsible TXT record display for domains with extensive DNS configurations
+   - Color-coded badges for quick identification of tenant types and statuses
+   - Mobile-responsive design with full dark mode support
+   - URL parameter support for integration with other tools and workflows
 
 ### Password Generator
 

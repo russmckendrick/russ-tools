@@ -14,6 +14,7 @@ import Base64Tool from './components/tools/base64/Base64Tool';
 import JWTTool from './components/tools/jwt/JWTTool';
 import PasswordGeneratorTool from './components/tools/password-generator/PasswordGeneratorTool';
 import MicrosoftPortalsTool from './components/tools/microsoft-portals/MicrosoftPortalsTool';
+import TenantLookupTool from './components/tools/tenant-lookup/TenantLookupTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/ClearAllStorage';
 
@@ -86,6 +87,10 @@ export default function App() {
               {/* Microsoft Portals Tool route */}
               <Route path="microsoft-portals" element={<MicrosoftPortalsTool />} />
               <Route path="microsoft-portals/:domain" element={<MicrosoftPortalsTool />} />
+
+              {/* Microsoft Tenant Lookup Tool route */}
+              <Route path="tenant-lookup" element={<TenantLookupTool />} />
+              <Route path="tenant-lookup/:domain" element={<TenantLookupTool />} />
 
               {/* Add more routes here as needed */}
             </Route>
