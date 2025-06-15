@@ -1,6 +1,7 @@
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { Layout } from './components/layout/Layout';
 import NetworkDesignerTool from './components/tools/network-designer/NetworkDesignerTool';
 import { AzureNamingProvider } from './components/tools/azure-naming/context/AzureNamingContext';
@@ -26,22 +27,23 @@ import ClearAllStorage from './components/common/ClearAllStorage';
  */
 export default function App() {
   return (
-    <MantineProvider
-      withGlobalStyles
-      withNormalizeCSS
-      theme={{
-        primaryColor: 'blue',
-        globalStyles: (theme) => ({
-          body: {
-            backgroundColor: theme.colors.gray[9],
-            color: theme.black,
-          },
-        }),
-      }}
-    >
-      <Notifications />
-      <AzureNamingProvider>
-        <BrowserRouter>
+    <HelmetProvider>
+      <MantineProvider
+        withGlobalStyles
+        withNormalizeCSS
+        theme={{
+          primaryColor: 'blue',
+          globalStyles: (theme) => ({
+            body: {
+              backgroundColor: theme.colors.gray[9],
+              color: theme.black,
+            },
+          }),
+        }}
+      >
+        <Notifications />
+        <AzureNamingProvider>
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<Layout />}>
               {/* Default route - now points to HomeView */}
@@ -95,8 +97,9 @@ export default function App() {
               {/* Add more routes here as needed */}
             </Route>
           </Routes>
-        </BrowserRouter>
-      </AzureNamingProvider>
-    </MantineProvider>
+          </BrowserRouter>
+        </AzureNamingProvider>
+      </MantineProvider>
+    </HelmetProvider>
   );
 }

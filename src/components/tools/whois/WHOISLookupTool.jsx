@@ -26,6 +26,9 @@ import {
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import { useParams } from 'react-router-dom';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 import {
   IconWorld,
   IconInfoCircle,
@@ -59,6 +62,10 @@ const WHOISLookupTool = () => {
   const [error, setError] = useState(null);
   const [autocompleteData, setAutocompleteData] = useState([]);
   const { colorScheme } = useMantineColorScheme();
+
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'whois-lookup');
+  const seoData = generateToolSEO(toolConfig);
   
   // Use TLD utilities hook
   const { tldList, generateSuggestions, isReady: tldReady } = useTLDs();
@@ -601,7 +608,9 @@ const WHOISLookupTool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <LoadingOverlay visible={loading} overlayProps={{ radius: 'sm', blur: 2 }} />
       
       <Stack gap="xl">
@@ -818,6 +827,7 @@ const WHOISLookupTool = () => {
         )}
       </Stack>
     </Paper>
+    </>
   );
 };
 

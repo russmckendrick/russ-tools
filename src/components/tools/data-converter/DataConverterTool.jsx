@@ -66,8 +66,15 @@ import {
   ValidationError
 } from './validation';
 import { loadSampleData } from './samples';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 
 const DataConverterTool = () => {
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'data-converter');
+  const seoData = generateToolSEO(toolConfig);
+
   // Format color scheme
   const formatColors = {
     json: 'blue',
@@ -701,10 +708,10 @@ const DataConverterTool = () => {
     }
   }, [outputFormat, indentSize, useSpaces, sortKeys]);
 
-
-
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
         <Group justify="space-between" align="flex-start">
@@ -1620,6 +1627,7 @@ const DataConverterTool = () => {
         </Modal>
       </Stack>
     </Paper>
+    </>
   );
 };
 

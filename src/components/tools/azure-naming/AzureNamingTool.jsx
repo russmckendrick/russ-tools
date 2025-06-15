@@ -13,6 +13,9 @@ import {
   Button
 } from '@mantine/core';
 import { IconBrandAzure, IconEdit, IconHistory, IconInfoCircle } from '@tabler/icons-react';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 import { useAzureNaming } from './hooks/useAzureNaming';
 import { useAzureNamingContext } from './context/AzureNamingContext';
 import ResourceTypeSelector from './ResourceTypeSelector';
@@ -31,8 +34,14 @@ const AzureNamingTool = () => {
   } = useAzureNaming();
   const { environmentOptions, regionDropdownOptions, isLoading } = useAzureNamingContext();
 
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'azure-naming');
+  const seoData = generateToolSEO(toolConfig);
+
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
         <Group gap="md">
@@ -158,6 +167,7 @@ const AzureNamingTool = () => {
         </Tabs>
       </Stack>
     </Paper>
+    </>
   );
 };
 

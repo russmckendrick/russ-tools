@@ -18,6 +18,9 @@ import {
   Badge
 } from '@mantine/core';
 import { IconClock, IconCopy, IconCheck, IconInfoCircle } from '@tabler/icons-react';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 import { useClipboard } from '@mantine/hooks';
 import CronFieldSelector from './CronFieldSelector';
 import CronExpressionInput from './CronExpressionInput';
@@ -35,6 +38,10 @@ const defaultFields = {
 const CronBuilderTool = () => {
   const [fields, setFields] = useState(defaultFields);
   const clipboard = useClipboard({ timeout: 2000 });
+
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'cron-builder');
+  const seoData = generateToolSEO(toolConfig);
 
   // Build cron string from fields
   const cronString = `${fields.minute} ${fields.hour} ${fields.dayOfMonth} ${fields.month} ${fields.dayOfWeek}`;
@@ -67,7 +74,9 @@ const CronBuilderTool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
         <Group gap="md">
@@ -183,6 +192,7 @@ const CronBuilderTool = () => {
         </Tabs>
       </Stack>
     </Paper>
+    </>
   );
 };
 

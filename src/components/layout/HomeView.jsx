@@ -1,12 +1,17 @@
 import { Card, Group, Text, Title, Grid, Stack, Badge, ThemeIcon, Paper, Container } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { getHomeViewTools } from '../../utils/toolsUtils';
+import SEOHead from '../common/SEOHead';
+import { generateHomeSEO } from '../../utils/seoUtils';
 
 export default function HomeView() {
   const tools = getHomeViewTools();
+  const seoData = generateHomeSEO();
 
   return (
-    <Container size="lg" py="xl">
+    <>
+      <SEOHead {...seoData} />
+      <Container size="lg" py="xl">
       <Stack gap="xl">
         {/* Header */}
         <Stack gap="md" align="center" ta="center">
@@ -100,5 +105,6 @@ export default function HomeView() {
         </Stack>
       </Stack>
     </Container>
+    </>
   );
 }

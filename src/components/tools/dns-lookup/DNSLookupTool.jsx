@@ -26,6 +26,9 @@ import {
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import { useParams, Link } from 'react-router-dom';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 import {
   IconWorld,
   IconInfoCircle,
@@ -71,6 +74,10 @@ const DNSLookupTool = () => {
   const [error, setError] = useState(null);
   const [autocompleteData, setAutocompleteData] = useState([]);
   const { colorScheme } = useMantineColorScheme();
+
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'dns-lookup');
+  const seoData = generateToolSEO(toolConfig);
   
   // Use TLD utilities hook for domain autocomplete (with error handling)
   let tldHookResult = {};
@@ -446,7 +453,9 @@ const DNSLookupTool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <LoadingOverlay visible={loading} overlayProps={{ radius: 'sm', blur: 2 }} />
       
       <Stack gap="xl">
@@ -679,6 +688,7 @@ const DNSLookupTool = () => {
         )}
       </Stack>
     </Paper>
+    </>
   );
 };
 
