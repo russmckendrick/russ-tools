@@ -20,7 +20,9 @@ import {
   Progress,
   ScrollArea,
   Image,
-  Box
+  Box,
+  Tabs,
+  Tooltip
 } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
 import { useParams } from 'react-router-dom';
@@ -34,10 +36,15 @@ import {
   IconPhoto,
   IconFile,
   IconCheck,
-  IconX
+  IconX,
+  IconInfoCircle,
+  IconRefresh
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import Base64Icon from './Base64Icon';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 
 const ENCODING_MODES = [
   { value: 'standard', label: 'Standard Base64', description: 'RFC 4648 standard encoding' },
@@ -66,6 +73,10 @@ const Base64Tool = () => {
   // Batch mode removed - not needed for image processing
   const [inputImagePreview, setInputImagePreview] = useState(null);
   const [outputImagePreview, setOutputImagePreview] = useState(null);
+
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'base64');
+  const seoData = generateToolSEO(toolConfig);
 
   // Get input from URL parameters
   const { input: urlInput } = useParams();
@@ -610,7 +621,9 @@ const Base64Tool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <LoadingOverlay visible={loading} />
       
       <Stack gap="xl">
@@ -919,6 +932,7 @@ const Base64Tool = () => {
         {/* History section removed for performance with large files */}
       </Stack>
     </Paper>
+    </>
   );
 };
 

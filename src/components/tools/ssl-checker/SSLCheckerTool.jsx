@@ -13,6 +13,9 @@ import {
 import { useLocalStorage } from '@mantine/hooks';
 import { useParams } from 'react-router-dom';
 import { IconShield, IconShieldCheck, IconWorldWww, IconInfoCircle, IconCertificate } from '@tabler/icons-react';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import DomainInput from './DomainInput';
 import SSLCertificateDisplay from './SSLCertificateDisplay';
@@ -24,6 +27,10 @@ const SSLCheckerTool = () => {
   const [certificateData, setCertificateData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'ssl-checker');
+  const seoData = generateToolSEO(toolConfig);
 
   // Get domain from URL parameters
   const { domain: urlDomain } = useParams();
@@ -444,7 +451,9 @@ const SSLCheckerTool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
         <Group gap="md">
@@ -523,6 +532,7 @@ const SSLCheckerTool = () => {
         </Tabs>
       </Stack>
     </Paper>
+    </>
   );
 };
 

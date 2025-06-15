@@ -16,8 +16,10 @@ import {
   JsonInput,
   Tabs,
   Code,
-  Table,
-  Switch
+  Switch,
+  Tooltip,
+  Divider,
+  Select
 } from '@mantine/core';
 import { useParams } from 'react-router-dom';
 import {
@@ -30,12 +32,21 @@ import {
   IconShield,
   IconClock,
   IconUser,
-  IconFingerprint
+  IconFingerprint,
+  IconInfoCircle,
+  IconDownload,
+  IconUpload,
+  IconRefresh,
+  IconKey,
+  IconLock
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { jwtDecode } from 'jwt-decode';
 import { jwtVerify, importJWK, importSPKI, importPKCS8 } from 'jose';
 import JWTIcon from './JWTIcon';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 
 const JWTTool = () => {
   const [jwtToken, setJwtToken] = useState('');
@@ -48,6 +59,10 @@ const JWTTool = () => {
   const [validateSignature, setValidateSignature] = useState(false);
   const [error, setError] = useState(null);
   const [tokenAnalysis, setTokenAnalysis] = useState(null);
+
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'jwt');
+  const seoData = generateToolSEO(toolConfig);
 
   // Example JWT tokens for testing
   const exampleTokens = {
@@ -279,7 +294,9 @@ const JWTTool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
         <Group gap="md">
@@ -688,6 +705,7 @@ const JWTTool = () => {
         )}
       </Stack>
     </Paper>
+    </>
   );
 };
 

@@ -18,6 +18,9 @@ import {
   ThemeIcon,
   useMantineColorScheme
 } from '@mantine/core';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 import {
   IconNetwork,
   IconSubtask,
@@ -69,6 +72,10 @@ function parseInput(ipAddress, maskInput) {
 const NetworkDesignerTool = () => {
   const [activeTab, setActiveTab] = useState('setup');
   const { colorScheme } = useMantineColorScheme();
+
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'network-designer');
+  const seoData = generateToolSEO(toolConfig);
   
   // Use Mantine's useLocalStorage hook for automatic persistence
   const [networks, setNetworks] = useLocalStorage({
@@ -591,7 +598,9 @@ const NetworkDesignerTool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
         <Group gap="md">
@@ -684,6 +693,7 @@ const NetworkDesignerTool = () => {
       </Modal>
       </Stack>
     </Paper>
+    </>
   );
 };
 

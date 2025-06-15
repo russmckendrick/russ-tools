@@ -40,8 +40,15 @@ import { notifications } from '@mantine/notifications';
 import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
 import { getTenantId, isValidDomain, extractDomain } from './TenantLookup';
 import { generateAllPortalLinks } from './PortalLinkGenerator';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 
 const MicrosoftPortalsTool = () => {
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'microsoft-portals');
+  const seoData = generateToolSEO(toolConfig);
+
   const [searchInput, setSearchInput] = useState('');
   const [tenantInfo, setTenantInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -411,7 +418,9 @@ const MicrosoftPortalsTool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <LoadingOverlay visible={loading} overlayProps={{ radius: 'sm', blur: 2 }} />
       
       <Stack gap="xl">
@@ -940,6 +949,7 @@ const MicrosoftPortalsTool = () => {
       </Modal>
       </Stack>
     </Paper>
+    </>
   );
 };
 

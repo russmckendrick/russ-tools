@@ -42,59 +42,59 @@ export default function App() {
       <Notifications />
       <AzureNamingProvider>
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              {/* Default route - now points to HomeView */}
-              <Route index element={<HomeView />} />
-              
-              {/* Network Designer route */}
-              <Route path="network-designer" element={<NetworkDesignerTool />} />
-              
-              {/* Azure Naming Tool route */}
-              <Route path="azure-naming" element={<AzureNamingTool />} />
-              
-              {/* Hidden route for clearing all local storage */}
-              <Route path="delete" element={<ClearAllStorage />} />
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            {/* Default route - now points to HomeView */}
+            <Route index element={<HomeView />} />
+            
+            {/* Network Designer route */}
+            <Route path="network-designer" element={<NetworkDesignerTool />} />
+            
+            {/* Azure Naming Tool route */}
+            <Route path="azure-naming" element={<AzureNamingTool />} />
+            
+            {/* Hidden route for clearing all local storage */}
+            <Route path="delete" element={<ClearAllStorage />} />
 
-              {/* Cron Builder Tool route */}
-              <Route path="cron" element={<CronBuilderTool />} />
+            {/* Cron Builder Tool route */}
+            <Route path="cron" element={<CronBuilderTool />} />
 
-              {/* SSL Checker Tool route */}
-              <Route path="ssl-checker" element={<SSLCheckerTool />} />
-              <Route path="ssl-checker/:domain" element={<SSLCheckerTool />} />
+            {/* SSL Checker Tool route */}
+            <Route path="ssl-checker" element={<SSLCheckerTool />} />
+            <Route path="ssl-checker/:domain" element={<SSLCheckerTool />} />
 
-              {/* DNS Lookup Tool route */}
-              <Route path="dns-lookup" element={<DNSLookupTool />} />
+            {/* DNS Lookup Tool route */}
+            <Route path="dns-lookup" element={<DNSLookupTool />} />
 
-              {/* WHOIS Lookup Tool route */}
-              <Route path="whois-lookup" element={<WHOISLookupTool />} />
-              <Route path="whois-lookup/:query" element={<WHOISLookupTool />} />
+            {/* WHOIS Lookup Tool route */}
+            <Route path="whois-lookup" element={<WHOISLookupTool />} />
+            <Route path="whois-lookup/:query" element={<WHOISLookupTool />} />
 
-              {/* JSON Formatter Tool route */}
-                              <Route path="data-converter" element={<DataConverterTool />} />
+            {/* JSON Formatter Tool route */}
+                            <Route path="data-converter" element={<DataConverterTool />} />
 
-              {/* Base64 Encoder/Decoder Tool route */}
-              <Route path="base64" element={<Base64Tool />} />
-              <Route path="base64/:input" element={<Base64Tool />} />
+            {/* Base64 Encoder/Decoder Tool route */}
+            <Route path="base64" element={<Base64Tool />} />
+            <Route path="base64/:input" element={<Base64Tool />} />
 
-              {/* JWT Decoder/Validator Tool route */}
-              <Route path="jwt" element={<JWTTool />} />
-              <Route path="jwt/:token" element={<JWTTool />} />
+            {/* JWT Decoder/Validator Tool route */}
+            <Route path="jwt" element={<JWTTool />} />
+            <Route path="jwt/:token" element={<JWTTool />} />
 
-              {/* Password Generator Tool route */}
-              <Route path="password-generator" element={<PasswordGeneratorTool />} />
+            {/* Password Generator Tool route */}
+            <Route path="password-generator" element={<PasswordGeneratorTool />} />
 
-              {/* Microsoft Portals Tool route */}
-              <Route path="microsoft-portals" element={<MicrosoftPortalsTool />} />
-              <Route path="microsoft-portals/:domain" element={<MicrosoftPortalsTool />} />
+            {/* Microsoft Portals Tool route */}
+            <Route path="microsoft-portals" element={<MicrosoftPortalsTool />} />
+            <Route path="microsoft-portals/:domain" element={<MicrosoftPortalsTool />} />
 
-              {/* Microsoft Tenant Lookup Tool route */}
-              <Route path="tenant-lookup" element={<TenantLookupTool />} />
-              <Route path="tenant-lookup/:domain" element={<TenantLookupTool />} />
+            {/* Microsoft Tenant Lookup Tool route */}
+            <Route path="tenant-lookup" element={<TenantLookupTool />} />
+            <Route path="tenant-lookup/:domain" element={<TenantLookupTool />} />
 
-              {/* Add more routes here as needed */}
-            </Route>
-          </Routes>
+            {/* Add more routes here as needed */}
+          </Route>
+        </Routes>
         </BrowserRouter>
       </AzureNamingProvider>
     </MantineProvider>
