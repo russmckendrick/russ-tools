@@ -42,3 +42,10 @@ export {
   useTLDs, 
   tldUtils 
 } from './tldUtils';
+export { 
+  getApiEndpoint, 
+  getAllApiEndpoints, 
+  getApiDefaults, 
+  buildApiUrl, 
+  apiFetch 
+} from './apiUtils';

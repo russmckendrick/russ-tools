@@ -15,7 +15,6 @@ import {
   Tooltip,
   Table,
   Anchor,
-  Container,
   Divider,
   Select,
   Chip,
@@ -412,16 +411,16 @@ const MicrosoftPortalsTool = () => {
   };
 
   return (
-    <Container size="xl" py="xl">
-      <LoadingOverlay visible={loading} />
+    <Paper p="xl" radius="lg" withBorder>
+      <LoadingOverlay visible={loading} overlayProps={{ radius: 'sm', blur: 2 }} />
       
-      {/* Header */}
-      <Paper p="xl" radius="lg" withBorder mb="xl">
-        <Group gap="md" mb="lg">
+      <Stack gap="xl">
+        {/* Header */}
+        <Group gap="md">
           <ThemeIcon size={48} radius="md" variant="light" color="indigo">
             <MicrosoftPortalsIcon size={28} />
           </ThemeIcon>
-          <div style={{ flex: 1 }}>
+          <div>
             <Title order={2} fw={600}>
               Microsoft Portals (GDAP)
             </Title>
@@ -432,67 +431,68 @@ const MicrosoftPortalsTool = () => {
         </Group>
 
         {/* Search and Clear */}
-        <Stack gap="md">
-          <Group gap="md">
-            <TextInput
-              placeholder="Search portals or enter domain (e.g., contoso.com)"
-              value={searchInput}
-              onChange={(event) => handleSearchChange(event.currentTarget.value)}
-              leftSection={<IconSearch size={16} />}
-              style={{ flex: 1 }}
-              size="md"
-            />
-            <Button
-              variant="light"
-              leftSection={<IconClearAll size={16} />}
-              onClick={clearAll}
-            >
-              Clear
-            </Button>
-          </Group>
-
-          {/* Error Banner */}
-          {error && (
-            <Alert color="orange" variant="light" icon={<IconAlertCircle size={16} />}>
-              {error} - Showing default portal links
-            </Alert>
-          )}
-
-          {/* Recent Lookups - Always show when available */}
-          {lookupHistory.length > 0 && (
-            <Group gap="xs">
-              <Text size="xs" c="dimmed">Recent:</Text>
-              {lookupHistory.slice(0, 5).map((item, index) => (
-                <Group key={index} gap={2}>
-                  <Badge
-                    size="sm"
-                    variant={tenantInfo?.domain === item.domain ? "filled" : "light"}
-                    color={tenantInfo?.domain === item.domain ? "blue" : "gray"}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => {
-                      setSearchInput(item.domain);
-                      handleDomainLookup(item.domain);
-                    }}
-                  >
-                    {item.domain}
-                  </Badge>
-                  <ActionIcon
-                    size="xs"
-                    variant="subtle"
-                    color="red"
-                    onClick={() => {
-                      setDomainToRemove(item.domain);
-                      setRemoveModalOpen(true);
-                    }}
-                  >
-                    <IconX size={10} />
-                  </ActionIcon>
-                </Group>
-              ))}
+        <Paper p="md" withBorder radius="md">
+          <Stack gap="md">
+            <Group gap="md">
+              <TextInput
+                placeholder="Search portals or enter domain (e.g., contoso.com)"
+                value={searchInput}
+                onChange={(event) => handleSearchChange(event.currentTarget.value)}
+                leftSection={<IconSearch size={16} />}
+                style={{ flex: 1 }}
+                size="md"
+              />
+              <Button
+                variant="light"
+                leftSection={<IconClearAll size={16} />}
+                onClick={clearAll}
+              >
+                Clear
+              </Button>
             </Group>
-          )}
-        </Stack>
-      </Paper>
+
+            {/* Error Banner */}
+            {error && (
+              <Alert color="orange" variant="light" icon={<IconAlertCircle size={16} />}>
+                {error} - Showing default portal links
+              </Alert>
+            )}
+
+            {/* Recent Lookups - Always show when available */}
+            {lookupHistory.length > 0 && (
+              <Group gap="xs">
+                <Text size="xs" c="dimmed">Recent:</Text>
+                {lookupHistory.slice(0, 5).map((item, index) => (
+                  <Group key={index} gap={2}>
+                    <Badge
+                      size="sm"
+                      variant={tenantInfo?.domain === item.domain ? "filled" : "light"}
+                      color={tenantInfo?.domain === item.domain ? "blue" : "gray"}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        setSearchInput(item.domain);
+                        handleDomainLookup(item.domain);
+                      }}
+                    >
+                      {item.domain}
+                    </Badge>
+                    <ActionIcon
+                      size="xs"
+                      variant="subtle"
+                      color="red"
+                      onClick={() => {
+                        setDomainToRemove(item.domain);
+                        setRemoveModalOpen(true);
+                      }}
+                    >
+                      <IconX size={10} />
+                    </ActionIcon>
+                  </Group>
+                ))}
+              </Group>
+            )}
+          </Stack>
+        </Paper>
 
       {/* Portal Links Table - Only show when portalLinks exist */}
       {portalLinks && (
@@ -938,7 +938,8 @@ const MicrosoftPortalsTool = () => {
           </Group>
         </Stack>
       </Modal>
-    </Container>
+      </Stack>
+    </Paper>
   );
 };
 
