@@ -13,8 +13,8 @@ import {
   Button
 } from '@mantine/core';
 import { IconBrandAzure, IconEdit, IconHistory, IconInfoCircle } from '@tabler/icons-react';
-import { useAzureNaming } from '../../../hooks/useAzureNaming';
-import { useAzureNamingContext } from '../../../context/AzureNamingContext';
+import { useAzureNaming } from './hooks/useAzureNaming';
+import { useAzureNamingContext } from './context/AzureNamingContext';
 import ResourceTypeSelector from './ResourceTypeSelector';
 import ValidationIndicator from './ValidationIndicator';
 import ResultsDisplay from './ResultsDisplay';

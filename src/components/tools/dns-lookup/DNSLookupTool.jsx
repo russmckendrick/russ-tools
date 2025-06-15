@@ -38,7 +38,7 @@ import {
   IconExternalLink
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import DNSIcon from './DNSIcon';
 import { useTLDs } from '../../../utils';
 

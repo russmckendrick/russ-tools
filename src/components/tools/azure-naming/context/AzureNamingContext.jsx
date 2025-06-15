@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { useLocalStorage } from '@mantine/hooks';
-import { devLog, devWarn, devError } from '../utils/devLog';
-import { RESOURCE_TYPES, generateResourceName } from '../utils/azure-naming/rules';
-import environments from '../environments.json';
-import { loadAzureRegionData } from '../utils/azure-naming/region-parser';
+import { devLog, devWarn, devError } from '../../../../utils/devLog';
+import { RESOURCE_TYPES, generateResourceName } from '../../../../utils/azure/rules';
+import environments from '../../../../data/environments.json';
+import { loadAzureRegionData } from '../../../../utils/azure/region-parser';
 
 // Log raw RESOURCE_TYPES values for debugging
 const rawResourceTypes = Object.values(RESOURCE_TYPES);

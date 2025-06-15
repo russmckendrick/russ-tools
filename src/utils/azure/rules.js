@@ -2,7 +2,7 @@
 
 // Import the region parser
 import { getRegionAbbreviation } from './region-parser';
-import environments from '../../../src/environments.json';
+import environments from '../../data/environments.json';
 import { RESOURCE_DEFINITIONS, getResourceDefinition } from './resource-definitions';
 
 // Export the resource definitions for external use

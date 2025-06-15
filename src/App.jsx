@@ -3,7 +3,7 @@ import { Notifications } from '@mantine/notifications';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import NetworkDesignerTool from './components/tools/network-designer/NetworkDesignerTool';
-import { AzureNamingProvider } from './context/AzureNamingContext';
+import { AzureNamingProvider } from './components/tools/azure-naming/context/AzureNamingContext';
 import AzureNamingTool from './components/tools/azure-naming/AzureNamingTool';
 import CronBuilderTool from './components/tools/cron/CronBuilderTool';
 import SSLCheckerTool from './components/tools/ssl-checker/SSLCheckerTool';
@@ -16,7 +16,7 @@ import PasswordGeneratorTool from './components/tools/password-generator/Passwor
 import MicrosoftPortalsTool from './components/tools/microsoft-portals/MicrosoftPortalsTool';
 import TenantLookupTool from './components/tools/tenant-lookup/TenantLookupTool';
 import HomeView from './components/layout/HomeView';
-import ClearAllStorage from './components/ClearAllStorage';
+import ClearAllStorage from './components/common/ClearAllStorage';
 
 /**
  * Main application component that sets up:

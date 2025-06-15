@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Paper, Text, Button, Table, SimpleGrid } from '@mantine/core';
 import { devError } from '../../../utils/devLog';
 import { IconCopy, IconCheck, IconDownload, IconDeviceFloppy } from '@tabler/icons-react';
-import { useAzureNamingContext } from '../../../context/AzureNamingContext';
+import { useAzureNamingContext } from './context/AzureNamingContext';
 import ExcelJS from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 

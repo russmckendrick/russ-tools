@@ -35,7 +35,7 @@ import {
   IconExternalLink
 } from '@tabler/icons-react';
 import { useParams, Link } from 'react-router-dom';
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import TenantLookupIcon from './TenantLookupIcon';
 
 const TenantLookupTool = () => {

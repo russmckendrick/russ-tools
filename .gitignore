@@ -24,4 +24,4 @@ package-lock.json
 *.sln
 *.sw?
 .windsurfrules
-.wrangler
+.wrangler.DS_Store

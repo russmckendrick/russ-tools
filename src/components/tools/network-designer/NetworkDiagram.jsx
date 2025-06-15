@@ -1,7 +1,7 @@
 import { Box, Paper, Title, Text, Button, Group, Stack, useMantineTheme, Modal, useMantineColorScheme } from '@mantine/core';
 import { devError } from '../../../utils/devLog';
 import { getSubnetBgColorHex } from '../../../utils';
-import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../../../utils/networkDiagramUtils';
+import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../../../utils/network/networkDiagramUtils';
 import { IconDownload, IconNetwork, IconSubtask, IconSpace, IconFileTypeSvg, IconFileTypePng } from '@tabler/icons-react';
 import { NetworkDiagramSVGExport } from './NetworkDiagramSVGExport';
 import { useRef, useState, useEffect } from 'react';

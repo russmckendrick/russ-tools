@@ -6,7 +6,7 @@ import '../../../styles/prism-theme.css';
 import { useComputedColorScheme } from '@mantine/core';
 
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform, IconServer } from '@tabler/icons-react';
-import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/terraformExport';
+import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/network/terraformExport';
 import { loadAzureRegions } from '../../../utils/regions/AzureRegions';
 import { loadAwsRegions } from '../../../utils/regions/AwsRegions';
 
