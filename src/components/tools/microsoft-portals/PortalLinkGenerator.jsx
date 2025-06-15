@@ -41,7 +41,8 @@ export const generateAzurePortalLinks = (tenantId, domain, options = {}) => {
       name: portal.name,
       url: url,
       description: portal.description,
-      category: portal.category
+      category: portal.category,
+      tags: portal.tags || [portal.category]
     };
   });
   
@@ -68,7 +69,8 @@ export const generateM365AdminLinks = (tenantId, domain) => {
       name: portal.name,
       url: url,
       description: portal.description,
-      category: portal.category
+      category: portal.category,
+      tags: portal.tags || [portal.category]
     };
   });
   
@@ -95,7 +97,8 @@ export const generatePowerPlatformLinks = (tenantId, domain) => {
       name: portal.name,
       url: url,
       description: portal.description,
-      category: portal.category
+      category: portal.category,
+      tags: portal.tags || [portal.category]
     };
   });
   
@@ -126,14 +129,13 @@ export const generateAdvancedPortalLinks = (tenantId, domain) => {
       name: portal.name,
       url: url,
       description: portal.description,
-      category: portal.category
+      category: portal.category,
+      tags: portal.tags || [portal.category]
     };
   });
   
   return links;
 };
-
-
 
 // Main function to generate all portal links
 export const generateAllPortalLinks = (tenantInfo) => {
@@ -198,7 +200,8 @@ export const searchLinks = (links, searchTerm) => {
       if (
         link.name.toLowerCase().includes(term) ||
         link.description.toLowerCase().includes(term) ||
-        link.category.toLowerCase().includes(term)
+        link.category.toLowerCase().includes(term) ||
+        (link.tags && link.tags.some(tag => tag.toLowerCase().includes(term)))
       ) {
         filtered[section][key] = link;
       }

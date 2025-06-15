@@ -19,7 +19,9 @@ import {
   Divider,
   Select,
   Chip,
-  SimpleGrid
+  SimpleGrid,
+  Modal,
+  Popover
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import { useParams } from 'react-router-dom';
@@ -31,7 +33,9 @@ import {
   IconFilter,
   IconClearAll,
   IconStar,
-  IconStarFilled
+  IconStarFilled,
+  IconX,
+  IconTrash
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
@@ -45,6 +49,9 @@ const MicrosoftPortalsTool = () => {
   const [error, setError] = useState(null);
   const [portalLinks, setPortalLinks] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedTag, setSelectedTag] = useState(null);
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
+  const [domainToRemove, setDomainToRemove] = useState(null);
 
   // Get domain from URL parameters
   const { domain: urlDomain } = useParams();
@@ -97,6 +104,19 @@ const MicrosoftPortalsTool = () => {
     const filteredHistory = lookupHistory.filter(item => item.domain !== domain);
     const newHistory = [historyItem, ...filteredHistory].slice(0, 10);
     setLookupHistory(newHistory);
+  };
+
+  // Remove domain from history
+  const removeDomainFromHistory = (domainToRemove) => {
+    const newHistory = lookupHistory.filter(item => item.domain !== domainToRemove);
+    setLookupHistory(newHistory);
+    setRemoveModalOpen(false);
+    setDomainToRemove(null);
+    notifications.show({
+      title: 'Removed from Recent',
+      message: `${domainToRemove} removed from recent domains`,
+      color: 'orange'
+    });
   };
 
   // Cache tenant data
@@ -196,6 +216,7 @@ const MicrosoftPortalsTool = () => {
           name: portal.name,
           description: portal.description,
           category: portal.category,
+          tags: portal.tags,
           url: portal.url,
           requiresTenant: portal.requiresTenant || false,
           isFavorite: isClient && favorites.includes(`${sectionKey}-${portalKey}`)
@@ -215,7 +236,7 @@ const MicrosoftPortalsTool = () => {
     });
   }, [portalLinks, favorites, isClient]);
 
-  // Filter portals based on search and category
+  // Filter portals based on search, category, and tags
   const filteredPortals = useMemo(() => {
     let filtered = allPortals;
 
@@ -225,7 +246,8 @@ const MicrosoftPortalsTool = () => {
       filtered = filtered.filter(portal => 
         portal.name.toLowerCase().includes(searchTerm) ||
         portal.description.toLowerCase().includes(searchTerm) ||
-        portal.category.toLowerCase().includes(searchTerm)
+        portal.category.toLowerCase().includes(searchTerm) ||
+        (portal.tags && portal.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
       );
     }
 
@@ -238,14 +260,15 @@ const MicrosoftPortalsTool = () => {
       );
     }
 
-    return filtered;
-  }, [allPortals, searchInput, selectedCategory]);
+    // Filter by selected tag
+    if (selectedTag) {
+      filtered = filtered.filter(portal => 
+        portal.tags && portal.tags.some(tag => tag.toLowerCase() === selectedTag.toLowerCase())
+      );
+    }
 
-  // Get unique categories
-  const categories = useMemo(() => {
-    const cats = [...new Set(allPortals.map(portal => portal.category))].sort();
-    return [{ value: 'all', label: 'All Categories' }, ...cats.map(cat => ({ value: cat.toLowerCase(), label: cat }))];
-  }, [allPortals]);
+    return filtered;
+  }, [allPortals, searchInput, selectedCategory, selectedTag]);
 
   // Get category counts for filter pills
   const categoryCounts = useMemo(() => {
@@ -255,6 +278,43 @@ const MicrosoftPortalsTool = () => {
     });
     return counts;
   }, [allPortals]);
+
+  // Get all unique tags
+  const allTags = useMemo(() => {
+    const tags = new Set();
+    allPortals.forEach(portal => {
+      if (portal.tags) {
+        portal.tags.forEach(tag => tags.add(tag));
+      }
+    });
+    return Array.from(tags).sort();
+  }, [allPortals]);
+
+  // Category color mapping
+  const getCategoryColor = (category) => {
+    const colorMap = {
+      'Azure': 'blue',
+      'M365': 'indigo',
+      'Power Platform': 'grape',
+      'Dynamics 365': 'violet',
+      'Admin Centers': 'cyan',
+      'Security': 'red',
+      'Developer': 'green',
+      'Identity': 'orange',
+      'Management': 'teal',
+      'Users': 'pink',
+      'Productivity': 'lime',
+      'Healthcare': 'yellow',
+      'Monitoring': 'dark',
+      'Compute': 'blue',
+      'Storage': 'indigo',
+      'Networking': 'cyan',
+      'Data': 'grape',
+      'Database': 'violet',
+      'IoT': 'orange'
+    };
+    return colorMap[category] || 'gray';
+  };
 
   // Toggle favorite status
   const toggleFavorite = (portalKey, portalName) => {
@@ -315,9 +375,15 @@ const MicrosoftPortalsTool = () => {
   const clearAll = () => {
     setSearchInput('');
     setSelectedCategory('all');
+    setSelectedTag(null);
     setTenantInfo(null);
     setPortalLinks(null);
     setError(null);
+  };
+
+  // Clear selected tag
+  const clearSelectedTag = () => {
+    setSelectedTag(null);
   };
 
   return (
@@ -340,7 +406,7 @@ const MicrosoftPortalsTool = () => {
           </div>
         </Group>
 
-        {/* Search and Filters */}
+        {/* Search and Clear */}
         <Stack gap="md">
           <Group gap="md">
             <TextInput
@@ -351,15 +417,6 @@ const MicrosoftPortalsTool = () => {
               style={{ flex: 1 }}
               size="md"
             />
-            <Select
-              placeholder="Category"
-              data={categories}
-              value={selectedCategory}
-              onChange={setSelectedCategory}
-              leftSection={<IconFilter size={16} />}
-              clearable={false}
-              w={200}
-            />
             <Button
               variant="light"
               leftSection={<IconClearAll size={16} />}
@@ -369,33 +426,6 @@ const MicrosoftPortalsTool = () => {
             </Button>
           </Group>
 
-          {/* Tenant Info Banner */}
-          {tenantInfo && (
-            <Alert color="green" variant="light">
-              <Group gap="md">
-                <div style={{ flex: 1 }}>
-                  <Text size="sm" fw={500}>
-                    Tenant Found: {tenantInfo.domain}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    Links below are personalized for your tenant
-                  </Text>
-                </div>
-                <Group gap="xs">
-                  <Tooltip label="Copy Tenant ID">
-                    <ActionIcon 
-                      variant="light" 
-                      size="sm"
-                      onClick={() => copyToClipboard(tenantInfo.tenantId, 'Tenant ID')}
-                    >
-                      <IconCopy size={14} />
-                    </ActionIcon>
-                  </Tooltip>
-                </Group>
-              </Group>
-            </Alert>
-          )}
-
           {/* Error Banner */}
           {error && (
             <Alert color="orange" variant="light" icon={<IconAlertCircle size={16} />}>
@@ -403,23 +433,36 @@ const MicrosoftPortalsTool = () => {
             </Alert>
           )}
 
-          {/* Recent Lookups */}
-          {lookupHistory.length > 0 && !tenantInfo && (
+          {/* Recent Lookups - Always show when available */}
+          {lookupHistory.length > 0 && (
             <Group gap="xs">
               <Text size="xs" c="dimmed">Recent:</Text>
               {lookupHistory.slice(0, 5).map((item, index) => (
-                <Chip
-                  key={index}
-                  size="xs"
-                  variant="light"
-                  onClick={() => {
-                    setSearchInput(item.domain);
-                    handleDomainLookup(item.domain);
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {item.domain}
-                </Chip>
+                <Group key={index} gap={2}>
+                  <Badge
+                    size="sm"
+                    variant={tenantInfo?.domain === item.domain ? "filled" : "light"}
+                    color={tenantInfo?.domain === item.domain ? "blue" : "gray"}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      setSearchInput(item.domain);
+                      handleDomainLookup(item.domain);
+                    }}
+                  >
+                    {item.domain}
+                  </Badge>
+                  <ActionIcon
+                    size="xs"
+                    variant="subtle"
+                    color="red"
+                    onClick={() => {
+                      setDomainToRemove(item.domain);
+                      setRemoveModalOpen(true);
+                    }}
+                  >
+                    <IconX size={10} />
+                  </ActionIcon>
+                </Group>
               ))}
             </Group>
           )}
@@ -430,26 +473,73 @@ const MicrosoftPortalsTool = () => {
       {portalLinks && (
         <Paper withBorder radius="lg" p="md">
           <Group justify="space-between" mb="md">
-            <Text fw={500}>
-              Portal Links ({filteredPortals.length})
-              {favorites.length > 0 && (
-                <Badge variant="light" color="yellow" size="sm" ml="xs">
-                  {favorites.length} favorited
-                </Badge>
+            <Group gap="md">
+              <Text fw={500}>
+                Portal Links ({filteredPortals.length})
+                {favorites.length > 0 && (
+                  <Badge variant="light" color="yellow" size="sm" ml="xs">
+                    {favorites.length} favorited
+                  </Badge>
+                )}
+              </Text>
+              
+              {/* Domain details moved here */}
+              {tenantInfo && (
+                <Group gap="xs">
+                  <Text size="sm" c="dimmed">•</Text>
+                  <Text size="sm" fw={500} c="green">
+                    {tenantInfo.domain}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    ({tenantInfo.tenantId})
+                  </Text>
+                  <Tooltip label="Copy Tenant ID">
+                    <ActionIcon 
+                      variant="subtle" 
+                      size="xs"
+                      onClick={() => copyToClipboard(tenantInfo.tenantId, 'Tenant ID')}
+                    >
+                      <IconCopy size={12} />
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
               )}
-            </Text>
-            {selectedCategory !== 'all' && (
-              <Badge variant="light" color="blue">
-                {categories.find(c => c.value === selectedCategory)?.label}
-              </Badge>
+            </Group>
+            
+            {(selectedCategory !== 'all' || selectedTag) && (
+              <Group gap="xs">
+                {selectedCategory !== 'all' && (
+                  <Badge variant="light" color={getCategoryColor(selectedCategory)}>
+                    {selectedCategory}
+                  </Badge>
+                )}
+                {selectedTag && (
+                  <Group gap={4}>
+                    <Badge variant="light" color="blue">
+                      Tag: {selectedTag}
+                    </Badge>
+                    <ActionIcon
+                      size="xs"
+                      variant="subtle"
+                      color="gray"
+                      onClick={clearSelectedTag}
+                    >
+                      <IconX size={10} />
+                    </ActionIcon>
+                  </Group>
+                )}
+              </Group>
             )}
           </Group>
 
-          {/* Category Filter Pills */}
+          {/* Category Filter Pills - Color coded */}
           <Group gap="xs" mb="md">
             <Chip
               checked={selectedCategory === 'all'}
-              onChange={() => setSelectedCategory('all')}
+              onChange={() => {
+                setSelectedCategory('all');
+                setSelectedTag(null);
+              }}
               variant="light"
               size="sm"
             >
@@ -458,7 +548,10 @@ const MicrosoftPortalsTool = () => {
             {favorites.length > 0 && (
               <Chip
                 checked={selectedCategory === 'favorites'}
-                onChange={() => setSelectedCategory('favorites')}
+                onChange={() => {
+                  setSelectedCategory('favorites');
+                  setSelectedTag(null);
+                }}
                 variant="light"
                 size="sm"
                 color="yellow"
@@ -473,73 +566,125 @@ const MicrosoftPortalsTool = () => {
                 <Chip
                   key={category}
                   checked={selectedCategory === category.toLowerCase()}
-                  onChange={() => setSelectedCategory(category.toLowerCase())}
+                  onChange={() => {
+                    setSelectedCategory(category.toLowerCase());
+                    setSelectedTag(null);
+                  }}
                   variant="light"
                   size="sm"
+                  color={getCategoryColor(category)}
                 >
                   {category} ({count})
                 </Chip>
               ))}
           </Group>
 
-                      <Table striped highlightOnHover>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th width={40}></Table.Th>
-                  <Table.Th>Portal Name</Table.Th>
-                  <Table.Th>Description</Table.Th>
-                  <Table.Th>Category</Table.Th>
-                  <Table.Th width={100}>Actions</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-                          <Table.Tbody>
-                {filteredPortals.map((portal) => (
-                  <Table.Tr key={portal.key}>
-                    <Table.Td>
-                      <Tooltip label={portal.isFavorite ? "Remove from favorites" : "Add to favorites"}>
-                        <ActionIcon
-                          variant="subtle"
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            toggleFavorite(portal.key, portal.name);
-                          }}
-                          color={portal.isFavorite ? "yellow" : "gray"}
-                        >
-                          {portal.isFavorite ? <IconStarFilled size={16} /> : <IconStar size={16} />}
-                        </ActionIcon>
-                      </Tooltip>
-                    </Table.Td>
-                    <Table.Td>
-                      <Group gap="xs">
-                        <Anchor
-                          href={portal.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          fw={500}
-                          size="sm"
-                        >
-                          {portal.name}
-                        </Anchor>
-                        {portal.requiresTenant && !tenantInfo && (
-                          <Tooltip label="Requires tenant lookup">
-                            <Badge size="xs" color="orange" variant="light">
-                              Tenant
-                            </Badge>
-                          </Tooltip>
-                        )}
-                      </Group>
-                    </Table.Td>
+          <Table striped highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th width={40}></Table.Th>
+                <Table.Th>Portal Name</Table.Th>
+                <Table.Th>Description</Table.Th>
+                <Table.Th>Tags</Table.Th>
+                <Table.Th width={100}>Actions</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {filteredPortals.map((portal) => (
+                <Table.Tr key={portal.key}>
+                  <Table.Td>
+                    <Tooltip label={portal.isFavorite ? "Remove from favorites" : "Add to favorites"}>
+                      <ActionIcon
+                        variant="subtle"
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleFavorite(portal.key, portal.name);
+                        }}
+                        color={portal.isFavorite ? "yellow" : "gray"}
+                      >
+                        {portal.isFavorite ? <IconStarFilled size={16} /> : <IconStar size={16} />}
+                      </ActionIcon>
+                    </Tooltip>
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <Anchor
+                        href={portal.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        fw={500}
+                        size="sm"
+                      >
+                        {portal.name}
+                      </Anchor>
+                      {portal.requiresTenant && !tenantInfo && (
+                        <Tooltip label="Requires tenant lookup">
+                          <Badge size="xs" color="orange" variant="light">
+                            Tenant
+                          </Badge>
+                        </Tooltip>
+                      )}
+                    </Group>
+                  </Table.Td>
                   <Table.Td>
                     <Text size="sm" c="dimmed">
                       {portal.description}
                     </Text>
                   </Table.Td>
                   <Table.Td>
-                    <Badge size="sm" variant="light" color="gray">
-                      {portal.category}
-                    </Badge>
+                    <Group gap="xs">
+                      {portal.tags && portal.tags.slice(0, 3).map((tag, index) => (
+                        <Badge
+                          key={index}
+                          size="xs"
+                          variant="light"
+                          color={getCategoryColor(tag)}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => {
+                            setSelectedTag(selectedTag === tag ? null : tag);
+                            setSelectedCategory('all');
+                          }}
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                      {portal.tags && portal.tags.length > 3 && (
+                        <Popover width={300} position="bottom" withArrow shadow="md">
+                          <Popover.Target>
+                            <Badge 
+                              size="xs" 
+                              variant="light" 
+                              color="gray"
+                              style={{ cursor: 'pointer' }}
+                            >
+                              +{portal.tags.length - 3}
+                            </Badge>
+                          </Popover.Target>
+                          <Popover.Dropdown>
+                            <Text size="xs" fw={500} mb="xs">All tags for {portal.name}:</Text>
+                            <Group gap="xs">
+                              {portal.tags.map((tag, index) => (
+                                <Badge
+                                  key={index}
+                                  size="xs"
+                                  variant="light"
+                                  color={getCategoryColor(tag)}
+                                  style={{ cursor: 'pointer' }}
+                                  onClick={() => {
+                                    setSelectedTag(selectedTag === tag ? null : tag);
+                                    setSelectedCategory('all');
+                                  }}
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </Group>
+                          </Popover.Dropdown>
+                        </Popover>
+                      )}
+                    </Group>
                   </Table.Td>
                   <Table.Td>
                     <Group gap="xs">
@@ -600,6 +745,35 @@ const MicrosoftPortalsTool = () => {
           </Stack>
         </Paper>
       )}
+
+      {/* Remove Domain Confirmation Modal */}
+      <Modal
+        opened={removeModalOpen}
+        onClose={() => setRemoveModalOpen(false)}
+        title="Remove from Recent"
+        size="sm"
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            Are you sure you want to remove <strong>{domainToRemove}</strong> from your recent domains?
+          </Text>
+          <Group justify="flex-end" gap="xs">
+            <Button
+              variant="light"
+              onClick={() => setRemoveModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              leftSection={<IconTrash size={16} />}
+              onClick={() => removeDomainFromHistory(domainToRemove)}
+            >
+              Remove
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Container>
   );
 };
