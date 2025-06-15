@@ -37,8 +37,15 @@ import {
 import { useParams, Link } from 'react-router-dom';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import TenantLookupIcon from './TenantLookupIcon';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 
 const TenantLookupTool = () => {
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'tenant-lookup');
+  const seoData = generateToolSEO(toolConfig);
+
   const { domain: urlDomain } = useParams();
   const { colorScheme } = useMantineColorScheme();
   const [domain, setDomain] = useState(urlDomain || '');
@@ -368,7 +375,9 @@ const TenantLookupTool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
         <Group gap="md">
@@ -491,6 +500,7 @@ const TenantLookupTool = () => {
         </Card>
       </Stack>
     </Paper>
+    </>
   );
 };
 

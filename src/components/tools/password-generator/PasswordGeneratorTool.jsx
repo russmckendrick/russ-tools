@@ -37,9 +37,16 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useMantineColorScheme } from '@mantine/core';
 import PasswordIcon from './PasswordIcon';
+import SEOHead from '../../common/SEOHead';
+import { generateToolSEO } from '../../../utils/seoUtils';
+import toolsConfig from '../../../utils/toolsConfig.json';
 
 const PasswordGeneratorTool = () => {
   const { colorScheme } = useMantineColorScheme();
+
+  // Get tool configuration for SEO
+  const toolConfig = toolsConfig.find(tool => tool.id === 'password-generator');
+  const seoData = generateToolSEO(toolConfig);
   
   // Password generation settings
   const [length, setLength] = useState(24);
@@ -435,7 +442,9 @@ Visit: https://russ.tools
   const strength = calculateStrength();
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <style>
         {`
           @keyframes shine {
@@ -875,6 +884,7 @@ Visit: https://russ.tools
         </Grid>
       </Stack>
     </Paper>
+    </>
   );
 };
 

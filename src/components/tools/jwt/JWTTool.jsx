@@ -294,7 +294,9 @@ const JWTTool = () => {
   };
 
   return (
-    <Paper p="xl" radius="lg" withBorder>
+    <>
+      <SEOHead {...seoData} />
+      <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
         <Group gap="md">
@@ -703,6 +705,7 @@ const JWTTool = () => {
         )}
       </Stack>
     </Paper>
+    </>
   );
 };
 
