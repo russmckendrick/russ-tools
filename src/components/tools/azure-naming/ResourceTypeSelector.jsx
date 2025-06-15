@@ -1,7 +1,7 @@
 import React from 'react';
 import { MultiSelect, Text, Group } from '@mantine/core';
 import { devLog } from '../../../utils/devLog';
-import { useAzureNamingContext } from '../../../context/AzureNamingContext';
+import { useAzureNamingContext } from './context/AzureNamingContext';
 import HelpTooltip from './HelpTooltip';
 
 const ResourceTypeSelector = ({ formState, updateFormState, validationState, showAsterisk }) => {

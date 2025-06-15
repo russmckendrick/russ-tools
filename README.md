@@ -5,6 +5,8 @@
 Russ Tools is a suite of modern, web-based tools for network and cloud professionals. It currently includes:
 
 - 🧮 Network Designer & Subnet Calculator
+- 🏢 Microsoft Portals (GDAP)
+- 🔍 Microsoft Tenant Lookup
 - 🛠 Azure Resource Naming Tool
 - 🔒 SSL Certificate Checker
 - 🕵️ DNS Lookup Tool
@@ -13,8 +15,6 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 - 📜 Data Converter
 - 🔐 JWT Decoder/Validator
 - 🔒 Password Generator
-- 🏢 Microsoft Portals (GDAP)
-- 🔍 Microsoft Tenant Lookup
 
 ## 🧰 Tools Overview
 

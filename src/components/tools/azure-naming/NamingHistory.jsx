@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Paper, Group, Text, Button, Divider, Stack, ScrollArea, Modal } from '@mantine/core';
-import { useAzureNamingContext } from '../../../context/AzureNamingContext';
+import { useAzureNamingContext } from './context/AzureNamingContext';
 
 const NamingHistory = () => {
   const { namingHistory, clearHistory, setFormState, setPendingLoad, resourceTypes, setNamingHistory } = useAzureNamingContext();

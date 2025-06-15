@@ -1,5 +1,5 @@
 import React from 'react';
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 
 /**
  * Utility functions for Microsoft tenant lookup

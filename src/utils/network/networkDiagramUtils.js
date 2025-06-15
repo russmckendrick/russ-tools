@@ -1,5 +1,5 @@
 import { Netmask } from 'netmask';
-import { ipToLong, longToIp } from './index';
+import { ipToLong, longToIp } from '../index';
 
 // Process subnets with consistent color assignment and sorting
 export function processSubnets(subnets) {

@@ -1,9 +1,9 @@
 name = "whois-lookup"
-main = "cloudflare-worker/whois.js"
+main = "../whois.js"
 compatibility_date = "2023-12-01"
 
 routes = [
   { pattern = "whois.russ.tools", custom_domain = true }
 ]
 
-# Use: npx wrangler secret put ALLOWED_ORIGINS --config wrangler-whois.toml
+# Use: npx wrangler secret put ALLOWED_ORIGINS --config cloudflare-worker/configs/wrangler-whois.toml

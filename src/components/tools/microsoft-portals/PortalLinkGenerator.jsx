@@ -1,5 +1,5 @@
 import React from 'react';
-import { getApiEndpoint } from '../../../utils/apiUtils';
+import { getApiEndpoint } from '../../../utils/api/apiUtils';
 
 // Import portal data from JSON files
 import azurePortalsData from './data/azure-portals.json';

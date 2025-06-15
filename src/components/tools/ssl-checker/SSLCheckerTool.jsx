@@ -13,7 +13,7 @@ import {
 import { useLocalStorage } from '@mantine/hooks';
 import { useParams } from 'react-router-dom';
 import { IconShield, IconShieldCheck, IconWorldWww, IconInfoCircle, IconCertificate } from '@tabler/icons-react';
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import DomainInput from './DomainInput';
 import SSLCertificateDisplay from './SSLCertificateDisplay';
 import SSLValidationInfo from './SSLValidationInfo';

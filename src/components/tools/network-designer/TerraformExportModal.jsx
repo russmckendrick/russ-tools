@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Modal, Tabs, Code, Group, ActionIcon, Tooltip, Text } from '@mantine/core';
 import { IconCopy, IconServer } from '@tabler/icons-react';
-import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/terraformExport';
+import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/network/terraformExport';
 
 export function TerraformExportModal({ opened, onClose, network, subnets }) {
   const [activeTab, setActiveTab] = useState('azure');

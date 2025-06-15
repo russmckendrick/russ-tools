@@ -30,7 +30,7 @@ export function longToIp(long) {
   return [24, 16, 8, 0].map(shift => (long >>> shift) & 255).join('.');
 }
 
-export { getSubnetBgColorHex } from './getSubnetBgColorHex';
+export { getSubnetBgColorHex } from './network/getSubnetBgColorHex';
 export { 
   loadTLDs, 
   generateDomainSuggestions, 
@@ -48,4 +48,4 @@ export {
   getApiDefaults, 
   buildApiUrl, 
   apiFetch 
-} from './apiUtils';
+} from './api/apiUtils';

@@ -33,7 +33,7 @@ function parseTerraformMap(mapString) {
  */
 export async function loadAzureRegionData() {
   try {
-    const response = await fetch('/assets/azure-name-regions.tf');
+    const response = await fetch('/data/azure/azure-name-regions.tf');
     if (!response.ok) throw new Error('Failed to load Azure regions file');
     const content = await response.text();
 

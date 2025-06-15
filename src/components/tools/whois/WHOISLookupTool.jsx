@@ -48,7 +48,7 @@ import { useMantineColorScheme } from '@mantine/core';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-json';
 import '../../../styles/prism-theme.css';
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
+import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import WHOISIcon from './WHOISIcon';
 import { useTLDs } from '../../../utils';
 

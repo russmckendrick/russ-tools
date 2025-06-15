@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextInput, Select, Group, Stack, Grid, Text, Paper, Slider, Switch } from '@mantine/core';
-import { useAzureNamingContext } from '../../../context/AzureNamingContext';
+import { useAzureNamingContext } from './context/AzureNamingContext';
 import HelpTooltip from './HelpTooltip';
 
 const NamingForm = ({ formState, updateFormState, validationState, generateName, column }) => {

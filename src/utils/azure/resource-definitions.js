@@ -1,6 +1,6 @@
 // Azure Resource Definitions Loader
-import resourceDefinitions from '../../../src/azure-naming/azure-name-resourceDefinition.json';
-import outOfDocsDefinitions from '../../../src/azure-naming/azure-name-resourceDefinition_out_of_docs.json';
+import resourceDefinitions from '../../data/azure/azure-name-resourceDefinition.json';
+import outOfDocsDefinitions from '../../data/azure/azure-name-resourceDefinition_out_of_docs.json';
 
 // Convert Go-style regex to JavaScript-compatible regex for validation (full string)
 function goRegexToJsValidation(str, fallback = /.*/) {
