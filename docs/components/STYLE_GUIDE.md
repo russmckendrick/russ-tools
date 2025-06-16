@@ -3,6 +3,15 @@
 ## Overview
 This style guide ensures consistent design and user experience across all tools in the RussTools application. All tools should follow these patterns for a cohesive look and feel.
 
+## Quick Reference
+
+### Essential Patterns
+- **Main Container**: `<Paper withBorder p="xl" radius="lg">`
+- **Icon Size**: `size={48}` for tool headers
+- **Color Prop**: Use `c="dimmed"` (not `color="dimmed"`)
+- **Dark Mode**: Always test both themes, use conditional styling
+- **SEO**: Include `<SEOHead {...seoData} />` in every tool
+
 ## Layout Structure
 
 ### Main Container
