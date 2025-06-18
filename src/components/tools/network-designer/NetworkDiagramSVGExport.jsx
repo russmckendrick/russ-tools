@@ -1,4 +1,6 @@
 import { useMantineTheme, useMantineColorScheme, Button, Modal } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { IconFileTypeSvg } from '@tabler/icons-react';
 import { devError } from '../../../utils/devLog';
 import { useRef, useState } from 'react';
 import { Netmask } from 'netmask';
@@ -145,11 +147,19 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = 
       const svgUrl = URL.createObjectURL(svgBlob);
       const downloadLink = document.createElement('a');
       downloadLink.href = svgUrl;
-      downloadLink.download = `${parentNetwork.name || 'network'}-diagram.svg`;
+      const filename = `${parentNetwork.name || 'network'}-diagram.svg`;
+      downloadLink.download = filename;
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
       URL.revokeObjectURL(svgUrl);
+      
+      notifications.show({
+        title: 'SVG Export Complete',
+        message: `Network diagram exported as ${filename}`,
+        color: 'green',
+        icon: <IconFileTypeSvg size={16} />
+      });
     } catch (err) {
       devError('SVG export error:', err);
       setErrorModal({

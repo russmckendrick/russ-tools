@@ -6,6 +6,7 @@ import '../../../styles/prism-theme.css';
 import { useComputedColorScheme } from '@mantine/core';
 
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform, IconServer } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/network/terraformExport';
 import { loadAzureRegions } from '../../../utils/regions/AzureRegions';
 import { loadAwsRegions } from '../../../utils/regions/AwsRegions';
@@ -144,6 +145,16 @@ export function TerraformExportSection({ network, subnets }) {
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
+    
+    const platformName = activeTab === 'azure' ? 'Azure' : 
+                        activeTab === 'aws' ? 'AWS' : 'vCloud Director';
+    
+    notifications.show({
+      title: 'Terraform Code Copied',
+      message: `${platformName} Terraform configuration copied to clipboard`,
+      color: 'green',
+      icon: <IconCopy size={16} />
+    });
   };
 
   return (
