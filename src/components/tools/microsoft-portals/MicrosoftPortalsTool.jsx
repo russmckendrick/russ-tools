@@ -447,14 +447,28 @@ const MicrosoftPortalsTool = () => {
                 placeholder="Search portals or enter domain (e.g., contoso.com)"
                 value={searchInput}
                 onChange={(event) => handleSearchChange(event.currentTarget.value)}
+                onKeyPress={(event) => {
+                  if (event.key === 'Enter') {
+                    handleDomainLookup(searchInput);
+                  }
+                }}
                 leftSection={<IconSearch size={16} />}
                 style={{ flex: 1 }}
                 size="md"
               />
               <Button
+                leftSection={<IconSearch size={16} />}
+                onClick={() => handleDomainLookup(searchInput)}
+                loading={loading}
+                size="md"
+              >
+                {loading ? 'Searching...' : 'Search'}
+              </Button>
+              <Button
                 variant="light"
                 leftSection={<IconClearAll size={16} />}
                 onClick={clearAll}
+                size="md"
               >
                 Clear
               </Button>
