@@ -76,9 +76,17 @@ export function NavbarMinimal() {
     <Box pb={0}>
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
-          <Text fw={700} size="xl">RussTools</Text>
+          <Text fw={700} size="xl" 
+                style={{
+                  background: 'linear-gradient(45deg, var(--mantine-color-blue-6), var(--mantine-color-cyan-5))',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}>
+            RussTools
+          </Text>
 
-          <Group h="100%" gap={0} visibleFrom="sm">
+          <Group h="100%" gap="xs" visibleFrom="sm">
             <a href="/" className={classes.link}>
               Home
             </a>
