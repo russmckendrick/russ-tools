@@ -93,13 +93,13 @@ const CronBuilderTool = () => {
           </div>
         </Group>
 
-        <Tabs defaultValue="builder" variant="pills" orientation="horizontal">
-          <Tabs.List grow>
-            <Tabs.Tab value="builder" leftSection={<IconClock size={16} />}>
-              Builder
+        <Tabs defaultValue="builder">
+          <Tabs.List mb="lg">
+            <Tabs.Tab value="builder" leftSection={<IconClock size={18} />}>
+              CRON Builder
             </Tabs.Tab>
-            <Tabs.Tab value="input" leftSection={<IconCopy size={16} />}>
-              Input/Validator
+            <Tabs.Tab value="input" leftSection={<IconCopy size={18} />}>
+              Expression Validator
             </Tabs.Tab>
           </Tabs.List>
 

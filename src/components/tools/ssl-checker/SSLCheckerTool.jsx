@@ -470,13 +470,13 @@ const SSLCheckerTool = () => {
           </div>
         </Group>
 
-        <Tabs defaultValue="checker" variant="pills" orientation="horizontal">
-          <Tabs.List grow>
-            <Tabs.Tab value="checker" leftSection={<IconShieldCheck size={16} />}>
+        <Tabs defaultValue="checker">
+          <Tabs.List mb="lg">
+            <Tabs.Tab value="checker" leftSection={<IconShieldCheck size={18} />}>
               Certificate Checker
             </Tabs.Tab>
-            <Tabs.Tab value="info" leftSection={<IconWorldWww size={16} />}>
-              About SSL
+            <Tabs.Tab value="info" leftSection={<IconWorldWww size={18} />}>
+              About SSL/TLS
             </Tabs.Tab>
           </Tabs.List>
 
