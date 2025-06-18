@@ -3,6 +3,7 @@ import { devError } from '../../../utils/devLog';
 import { getSubnetBgColorHex } from '../../../utils';
 import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../../../utils/network/networkDiagramUtils';
 import { IconDownload, IconNetwork, IconSubtask, IconSpace, IconFileTypeSvg, IconFileTypePng } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import { NetworkDiagramSVGExport } from './NetworkDiagramSVGExport';
 import { useRef, useState, useEffect } from 'react';
 import { Netmask } from 'netmask';
@@ -68,8 +69,16 @@ export function NetworkDiagram({ parentNetwork, subnets }) {
       const image = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = image;
-      link.download = `${parentNetwork.name || 'network'}-diagram.png`;
+      const filename = `${parentNetwork.name || 'network'}-diagram.png`;
+      link.download = filename;
       link.click();
+      
+      notifications.show({
+        title: 'PNG Export Complete',
+        message: `Network diagram exported as ${filename}`,
+        color: 'green',
+        icon: <IconFileTypePng size={16} />
+      });
     }).catch(err => {
       devError('PNG export error:', err);
       setErrorModal({

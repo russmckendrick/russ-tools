@@ -7,10 +7,11 @@ This style guide ensures consistent design and user experience across all tools 
 
 ### Essential Patterns
 - **Main Container**: `<Paper withBorder p="xl" radius="lg">`
-- **Icon Size**: `size={48}` for tool headers
+- **Icon Size**: `size={48}` for tool headers, `size={18}` for tab icons
 - **Color Prop**: Use `c="dimmed"` (not `color="dimmed"`)
 - **Dark Mode**: Always test both themes, use conditional styling
 - **SEO**: Include `<SEOHead {...seoData} />` in every tool
+- **Tabs**: Use default styling with `<Tabs.List mb="lg">` (avoid `variant="pills"`)
 
 ## Layout Structure
 
@@ -125,6 +126,12 @@ const { colorScheme } = useMantineColorScheme();
 - Ensure all interactive elements are visible in both themes
 - Verify that custom background colors adapt to theme changes
 
+#### Theme Configuration
+- App theme uses Inter font family with proper fallbacks
+- Default border radius is `md` for consistency
+- Avoid hardcoded theme colors in App.jsx global styles
+- Use CSS custom properties and `light-dark()` function for theme-aware styling
+
 ## Spacing
 
 ### Stack Gaps
@@ -154,6 +161,26 @@ const { colorScheme } = useMantineColorScheme();
 - Small informational badges: `size="sm"` or `size="xs"`
 - Consistent variant usage
 
+### Tabs
+- Use default Mantine tabs styling (no variant prop)
+- Standard pattern:
+  ```jsx
+  <Tabs defaultValue="tab1">
+    <Tabs.List mb="lg">
+      <Tabs.Tab value="tab1" leftSection={<IconName size={18} />}>
+        Tab Name
+      </Tabs.Tab>
+    </Tabs.List>
+    <Tabs.Panel value="tab1" pt="lg">
+      {/* Tab content */}
+    </Tabs.Panel>
+  </Tabs>
+  ```
+- Icon size: `size={18}` for tab icons
+- List spacing: `mb="lg"` for margin bottom
+- Panel spacing: `pt="lg"` for padding top
+- **Avoid**: `variant="pills"` and `grow` props for consistency
+
 ## Code Display
 
 ### Code Blocks
@@ -177,6 +204,41 @@ const { colorScheme } = useMantineColorScheme();
 - Consistent icon sizes across tools
 - Responsive text sizing
 - Appropriate spacing for different screen sizes
+
+## Animations and Transitions
+
+### Tool Cards (Home Page)
+- Use `.tool-card` class for hover animations
+- Smooth transform: `translateY(-2px)` on hover
+- Enhanced box shadows with theme awareness
+- CSS cubic-bezier timing: `cubic-bezier(0.4, 0, 0.2, 1)`
+
+### Interactive Elements
+- Standard transition timing: `0.15s ease` for buttons and links
+- Use `transform` for micro-interactions (e.g., `translateX(2px)`)
+- Respect `prefers-reduced-motion` setting
+
+### Navigation
+- Header includes subtle backdrop blur: `backdrop-filter: blur(8px)`
+- Semi-transparent background for modern glassmorphism effect
+
+## Brand Consistency
+
+### Logo and Branding
+- RussTools title uses gradient styling:
+  ```css
+  background: linear-gradient(45deg, var(--mantine-color-blue-6), var(--mantine-color-cyan-5));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  ```
+- Apply to both home page title and navigation header
+- Font weight: `fw={700}` for brand emphasis
+
+### Home Page Typography
+- Main title: `size="3rem"` with gradient effect
+- Description: `size="xl"` with increased line height `lh={1.5}`
+- Tool descriptions: Use `shortDescription` when available for brevity
 
 ## Accessibility
 

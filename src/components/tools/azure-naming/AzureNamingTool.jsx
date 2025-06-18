@@ -13,6 +13,7 @@ import {
   Button
 } from '@mantine/core';
 import { IconBrandAzure, IconEdit, IconHistory, IconInfoCircle } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
@@ -58,15 +59,15 @@ const AzureNamingTool = () => {
           </div>
         </Group>
 
-        <Tabs defaultValue="builder" variant="pills" orientation="horizontal">
-          <Tabs.List grow>
-            <Tabs.Tab value="builder" leftSection={<IconEdit size={16} />}>
+        <Tabs defaultValue="builder">
+          <Tabs.List mb="lg">
+            <Tabs.Tab value="builder" leftSection={<IconEdit size={18} />}>
               Name Builder
             </Tabs.Tab>
-            <Tabs.Tab value="results" leftSection={<IconBrandAzure size={16} />}>
+            <Tabs.Tab value="results" leftSection={<IconBrandAzure size={18} />}>
               Generated Names
             </Tabs.Tab>
-            <Tabs.Tab value="history" leftSection={<IconHistory size={16} />}>
+            <Tabs.Tab value="history" leftSection={<IconHistory size={18} />}>
               Saved Names
             </Tabs.Tab>
           </Tabs.List>

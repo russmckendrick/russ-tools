@@ -19,6 +19,14 @@
     "abbreviation": "qa",
     "displayName": "Quality Assurance"
   },
+  "preproduction": {
+    "abbreviation": "preprod",
+    "displayName": "Pre Production"
+  },
+  "shared":{
+    "abbreviation": "shared",
+    "displayName": "Shared"
+  },
   "production": {
     "abbreviation": "prod",
     "displayName": "Production"
@@ -30,9 +38,5 @@
   "sandbox": {
     "abbreviation": "sbx",
     "displayName": "Sandbox"
-  },
-  "preproduction": {
-    "abbreviation": "preprod",
-    "displayName": "Pre Production"
   }
 } 

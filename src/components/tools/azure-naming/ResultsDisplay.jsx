@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Paper, Text, Button, Table, SimpleGrid } from '@mantine/core';
 import { devError } from '../../../utils/devLog';
 import { IconCopy, IconCheck, IconDownload, IconDeviceFloppy } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import { useAzureNamingContext } from './context/AzureNamingContext';
 import ExcelJS from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,8 +25,22 @@ const ResultsDisplay = ({ formState, validationState }) => {
       await navigator.clipboard.writeText(textToCopy);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
+      
+      notifications.show({
+        title: 'Copied to Clipboard',
+        message: Array.isArray(validationState.generatedName) 
+          ? `Copied ${validationState.generatedName.length} generated names`
+          : 'Generated name copied successfully',
+        color: 'green',
+        icon: <IconCopy size={16} />
+      });
     } catch (err) {
       devError('Failed to copy text: ', err);
+      notifications.show({
+        title: 'Copy Failed',
+        message: 'Failed to copy to clipboard. Please try again.',
+        color: 'red'
+      });
     }
   };
 
@@ -90,6 +105,13 @@ const ResultsDisplay = ({ formState, validationState }) => {
     a.download = 'azure-resource-names.csv';
     a.click();
     URL.revokeObjectURL(url);
+    
+    notifications.show({
+      title: 'CSV Export Complete',
+      message: 'Azure resource names exported successfully',
+      color: 'green',
+      icon: <IconDownload size={16} />
+    });
   };
 
   const handleExportExcel = async () => {
@@ -150,6 +172,13 @@ const ResultsDisplay = ({ formState, validationState }) => {
     a.download = 'azure-resource-names.xlsx';
     a.click();
     URL.revokeObjectURL(url);
+    
+    notifications.show({
+      title: 'Excel Export Complete',
+      message: 'Azure resource names exported successfully',
+      color: 'green',
+      icon: <IconDownload size={16} />
+    });
   };
 
   const handleSave = () => {
@@ -168,6 +197,13 @@ const ResultsDisplay = ({ formState, validationState }) => {
       group,
       configuration: { ...formState },
       timestamp: Date.now()
+    });
+    
+    notifications.show({
+      title: 'Names Saved',
+      message: `Saved ${names.length} generated name${names.length > 1 ? 's' : ''} to history`,
+      color: 'blue',
+      icon: <IconDeviceFloppy size={16} />
     });
   };
 

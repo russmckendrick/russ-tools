@@ -19,8 +19,11 @@ import {
   Code,
   Collapse,
   ThemeIcon,
-  useMantineColorScheme
+  useMantineColorScheme,
+  Tabs,
+  Modal
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { 
   IconSearch, 
   IconCopy, 
@@ -32,9 +35,13 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconInfoCircle,
-  IconExternalLink
+  IconExternalLink,
+  IconDeviceFloppy,
+  IconHistory,
+  IconTrash
 } from '@tabler/icons-react';
 import { useParams, Link } from 'react-router-dom';
+import { useLocalStorage } from '@mantine/hooks';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import TenantLookupIcon from './TenantLookupIcon';
 import SEOHead from '../../common/SEOHead';
@@ -53,6 +60,13 @@ const TenantLookupTool = () => {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [showRawData, setShowRawData] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ opened: false, id: null });
+  
+  // Saved lookups storage
+  const [savedLookups, setSavedLookups] = useLocalStorage({
+    key: 'tenant-lookup-saved',
+    defaultValue: []
+  });
 
   // Auto-lookup if domain is provided in URL
   useEffect(() => {
@@ -106,11 +120,29 @@ const TenantLookupTool = () => {
         
         if (data.success) {
           setResult(data);
+          notifications.show({
+            title: 'Tenant Lookup Complete',
+            message: `Found tenant information for ${cleanDomain}`,
+            color: 'green',
+            icon: <IconBuilding size={16} />
+          });
         } else {
           setError(data.error || 'Tenant lookup failed');
+          notifications.show({
+            title: 'Tenant Lookup Failed',
+            message: data.error || 'Unable to find tenant information',
+            color: 'red',
+            icon: <IconAlertCircle size={16} />
+          });
         }
       } else {
         setError(`Request failed with status ${response.status}`);
+        notifications.show({
+          title: 'Lookup Request Failed',
+          message: `Server returned status ${response.status}`,
+          color: 'red',
+          icon: <IconAlertCircle size={16} />
+        });
       }
     } catch (err) {
       console.error('Tenant lookup error:', err);
@@ -123,6 +155,13 @@ const TenantLookupTool = () => {
       } else {
         setError(`Network error: ${err.message}`);
       }
+      
+      notifications.show({
+        title: 'Network Error',
+        message: 'Unable to connect to tenant lookup service',
+        color: 'red',
+        icon: <IconAlertCircle size={16} />
+      });
     } finally {
       setLoading(false);
     }
@@ -132,6 +171,68 @@ const TenantLookupTool = () => {
     if (event.key === 'Enter') {
       handleLookup();
     }
+  };
+
+  // Save current lookup result
+  const handleSaveLookup = () => {
+    if (!result) return;
+    
+    const savedLookup = {
+      id: Date.now().toString(),
+      domain: result.domain,
+      tenantId: result.tenantId,
+      displayName: result.displayName,
+      savedAt: Date.now(),
+      fullResult: result
+    };
+    
+    setSavedLookups(prev => [savedLookup, ...prev]);
+    
+    notifications.show({
+      title: 'Lookup Saved',
+      message: `Tenant information for ${result.domain} has been saved`,
+      color: 'green',
+      icon: <IconDeviceFloppy size={16} />
+    });
+  };
+
+  // Load saved lookup
+  const handleLoadLookup = (savedLookup) => {
+    setResult(savedLookup.fullResult);
+    setDomain(savedLookup.domain);
+    setError(null);
+    
+    notifications.show({
+      title: 'Lookup Loaded',
+      message: `Loaded saved tenant information for ${savedLookup.domain}`,
+      color: 'blue',
+      icon: <IconHistory size={16} />
+    });
+  };
+
+  // Delete saved lookup
+  const handleDeleteLookup = (id) => {
+    setSavedLookups(prev => prev.filter(lookup => lookup.id !== id));
+    setDeleteModal({ opened: false, id: null });
+    
+    notifications.show({
+      title: 'Lookup Deleted',
+      message: 'Saved tenant lookup has been removed',
+      color: 'orange',
+      icon: <IconTrash size={16} />
+    });
+  };
+
+  // Clear all saved lookups
+  const handleClearAllSaved = () => {
+    setSavedLookups([]);
+    
+    notifications.show({
+      title: 'All Lookups Cleared',
+      message: 'All saved tenant lookups have been removed',
+      color: 'orange',
+      icon: <IconTrash size={16} />
+    });
   };
 
   const formatTimestamp = (timestamp) => {
@@ -169,19 +270,23 @@ const TenantLookupTool = () => {
                   Tenant ID: {result.tenantId}
                 </Text>
               </div>
-              <CopyButton value={result.tenantId}>
-                {({ copied, copy }) => (
-                  <Tooltip label={copied ? 'Copied!' : 'Copy Tenant ID'}>
-                    <ActionIcon 
-                      color={copied ? 'teal' : 'gray'} 
-                      onClick={copy}
-                      variant="light"
-                    >
-                      {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-                    </ActionIcon>
-                  </Tooltip>
-                )}
-              </CopyButton>
+              <Tooltip label="Copy Tenant ID">
+                <ActionIcon 
+                  color="gray" 
+                  onClick={() => {
+                    navigator.clipboard.writeText(result.tenantId);
+                    notifications.show({
+                      title: 'Tenant ID Copied',
+                      message: 'Tenant ID has been copied to clipboard',
+                      color: 'green',
+                      icon: <IconCopy size={16} />
+                    });
+                  }}
+                  variant="light"
+                >
+                  <IconCopy size={16} />
+                </ActionIcon>
+              </Tooltip>
             </Group>
 
             <Grid>
@@ -356,18 +461,33 @@ const TenantLookupTool = () => {
                 Lookup completed at {formatTimestamp(result.timestamp)}
               </Text>
             </Group>
-            <CopyButton value={JSON.stringify(result, null, 2)}>
-              {({ copied, copy }) => (
-                <Button
-                  size="xs"
-                  variant="light"
-                  leftSection={copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
-                  onClick={copy}
-                >
-                  {copied ? 'Copied!' : 'Copy JSON'}
-                </Button>
-              )}
-            </CopyButton>
+            <Group gap="xs">
+              <Button
+                size="xs"
+                variant="light"
+                leftSection={<IconDeviceFloppy size={14} />}
+                onClick={handleSaveLookup}
+                color="blue"
+              >
+                Save Lookup
+              </Button>
+              <Button
+                size="xs"
+                variant="light"
+                leftSection={<IconCopy size={14} />}
+                onClick={() => {
+                  navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+                  notifications.show({
+                    title: 'JSON Data Copied',
+                    message: 'Complete tenant information copied as JSON',
+                    color: 'green',
+                    icon: <IconCopy size={16} />
+                  });
+                }}
+              >
+                Copy JSON
+              </Button>
+            </Group>
           </Group>
         </Paper>
       </Stack>
@@ -396,6 +516,19 @@ const TenantLookupTool = () => {
           </div>
         </Group>
 
+        <Tabs defaultValue="lookup">
+          <Tabs.List mb="lg">
+            <Tabs.Tab value="lookup" leftSection={<IconSearch size={18} />}>
+              Tenant Lookup
+            </Tabs.Tab>
+            <Tabs.Tab value="saved" leftSection={<IconHistory size={18} />}>
+              Saved Lookups
+            </Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="lookup" pt="lg">
+            <Stack gap="lg">
+        
         {/* Search Form */}
         <Card withBorder radius="md" p="lg">
           <Stack gap="md">
@@ -498,8 +631,112 @@ const TenantLookupTool = () => {
             </Text>
           </Stack>
         </Card>
+            </Stack>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="saved" pt="lg">
+            <Stack gap="lg">
+              {savedLookups.length === 0 ? (
+                <Card withBorder radius="md" p="xl">
+                  <Stack align="center" gap="md">
+                    <IconHistory size={48} color="gray" opacity={0.5} />
+                    <Text c="dimmed" ta="center">
+                      No saved tenant lookups yet
+                    </Text>
+                    <Text size="sm" c="dimmed" ta="center">
+                      Perform a lookup and click "Save Lookup" to store tenant information for quick access
+                    </Text>
+                  </Stack>
+                </Card>
+              ) : (
+                <>
+                  <Group justify="space-between" align="center">
+                    <Text fw={500}>Saved Tenant Lookups ({savedLookups.length})</Text>
+                    <Button
+                      variant="light"
+                      color="red"
+                      size="sm"
+                      leftSection={<IconTrash size={16} />}
+                      onClick={handleClearAllSaved}
+                    >
+                      Clear All
+                    </Button>
+                  </Group>
+                  
+                  <Stack gap="md">
+                    {savedLookups.map((lookup) => (
+                      <Card key={lookup.id} withBorder radius="md" p="md">
+                        <Group justify="space-between" align="flex-start">
+                          <Stack gap="xs" style={{ flex: 1 }}>
+                            <Group gap="sm" align="center">
+                              <IconBuilding size={20} color="blue" />
+                              <Text fw={600} size="md">{lookup.displayName || 'Unknown Organization'}</Text>
+                              <Badge variant="light" color="blue" size="xs">
+                                {lookup.domain}
+                              </Badge>
+                            </Group>
+                            <Text size="sm" c="dimmed">
+                              Tenant ID: {lookup.tenantId}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                              Saved: {formatTimestamp(lookup.savedAt)}
+                            </Text>
+                          </Stack>
+                          <Group gap="xs">
+                            <Button
+                              size="xs"
+                              variant="light"
+                              color="blue"
+                              onClick={() => handleLoadLookup(lookup)}
+                            >
+                              Load
+                            </Button>
+                            <ActionIcon
+                              variant="light"
+                              color="red"
+                              size="sm"
+                              onClick={() => setDeleteModal({ opened: true, id: lookup.id })}
+                            >
+                              <IconTrash size={14} />
+                            </ActionIcon>
+                          </Group>
+                        </Group>
+                      </Card>
+                    ))}
+                  </Stack>
+                </>
+              )}
+            </Stack>
+          </Tabs.Panel>
+        </Tabs>
       </Stack>
     </Paper>
+
+    {/* Delete Confirmation Modal */}
+    <Modal
+      opened={deleteModal.opened}
+      onClose={() => setDeleteModal({ opened: false, id: null })}
+      title="Delete Saved Lookup"
+      centered
+    >
+      <Stack gap="md">
+        <Text>Are you sure you want to delete this saved tenant lookup? This action cannot be undone.</Text>
+        <Group justify="flex-end" gap="sm">
+          <Button
+            variant="outline"
+            onClick={() => setDeleteModal({ opened: false, id: null })}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="red"
+            onClick={() => handleDeleteLookup(deleteModal.id)}
+          >
+            Delete
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
     </>
   );
 };

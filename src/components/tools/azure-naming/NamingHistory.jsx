@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Paper, Group, Text, Button, Divider, Stack, ScrollArea, Modal } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { IconTrash, IconHistory } from '@tabler/icons-react';
 import { useAzureNamingContext } from './context/AzureNamingContext';
 
 const NamingHistory = () => {
@@ -10,6 +12,12 @@ const NamingHistory = () => {
   const handleLoadConfiguration = (configuration) => {
     setFormState(configuration);
     setPendingLoad(true);
+    notifications.show({
+      title: 'Configuration Loaded',
+      message: `Loaded naming configuration for "${configuration.workload || 'Unnamed Workload'}"`,
+      color: 'blue',
+      icon: <IconHistory size={16} />
+    });
   };
 
   const handleDelete = (id) => {
@@ -20,6 +28,12 @@ const NamingHistory = () => {
   const confirmDelete = () => {
     if (deleteId) {
       setNamingHistory(prev => prev.filter(item => item.id !== deleteId));
+      notifications.show({
+        title: 'Name Deleted',
+        message: 'Saved name configuration removed from history',
+        color: 'orange',
+        icon: <IconTrash size={16} />
+      });
     }
     setShowConfirm(false);
     setDeleteId(null);

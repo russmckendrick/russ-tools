@@ -19,7 +19,8 @@ import {
   Switch,
   Tooltip,
   Divider,
-  Select
+  Select,
+  Table
 } from '@mantine/core';
 import { useParams } from 'react-router-dom';
 import {

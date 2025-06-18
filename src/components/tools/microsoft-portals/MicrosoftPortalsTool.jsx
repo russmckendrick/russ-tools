@@ -60,6 +60,7 @@ const MicrosoftPortalsTool = () => {
   const [domainToRemove, setDomainToRemove] = useState(null);
   const [tagsModalOpen, setTagsModalOpen] = useState(false);
   const [tagSearchTerm, setTagSearchTerm] = useState('');
+  const [manualSearchTriggered, setManualSearchTriggered] = useState(false);
 
   // Get domain from URL parameters
   const { domain: urlDomain } = useParams();
@@ -198,9 +199,17 @@ const MicrosoftPortalsTool = () => {
     setSearchInput(value);
   };
 
-  // Effect to handle domain lookup when search input changes
+  // Effect to handle domain lookup when search input changes (auto-search)
   useEffect(() => {
-    if (searchInput && (searchInput.includes('.') || searchInput.includes('@'))) {
+    if (manualSearchTriggered) {
+      // Reset the flag after a short delay
+      const resetTimeout = setTimeout(() => {
+        setManualSearchTriggered(false);
+      }, 2000);
+      return () => clearTimeout(resetTimeout);
+    }
+    
+    if (searchInput && (searchInput.includes('.') || searchInput.includes('@')) && !manualSearchTriggered) {
       const domain = extractDomain(searchInput);
       if (isValidDomain(domain)) {
         const timeoutId = setTimeout(() => {
@@ -209,7 +218,7 @@ const MicrosoftPortalsTool = () => {
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [searchInput]);
+  }, [searchInput, manualSearchTriggered]);
 
   // Flatten portal links for display (only when portalLinks exist)
   const allPortals = useMemo(() => {
@@ -447,14 +456,32 @@ const MicrosoftPortalsTool = () => {
                 placeholder="Search portals or enter domain (e.g., contoso.com)"
                 value={searchInput}
                 onChange={(event) => handleSearchChange(event.currentTarget.value)}
+                onKeyPress={(event) => {
+                  if (event.key === 'Enter') {
+                    setManualSearchTriggered(true);
+                    handleDomainLookup(searchInput);
+                  }
+                }}
                 leftSection={<IconSearch size={16} />}
                 style={{ flex: 1 }}
                 size="md"
               />
               <Button
+                leftSection={<IconSearch size={16} />}
+                onClick={() => {
+                  setManualSearchTriggered(true);
+                  handleDomainLookup(searchInput);
+                }}
+                loading={loading}
+                size="md"
+              >
+                {loading ? 'Searching...' : 'Search'}
+              </Button>
+              <Button
                 variant="light"
                 leftSection={<IconClearAll size={16} />}
                 onClick={clearAll}
+                size="md"
               >
                 Clear
               </Button>
@@ -480,6 +507,7 @@ const MicrosoftPortalsTool = () => {
                       style={{ cursor: 'pointer' }}
                       onClick={() => {
                         setSearchInput(item.domain);
+                        setManualSearchTriggered(true);
                         handleDomainLookup(item.domain);
                       }}
                     >

@@ -21,6 +21,7 @@ import {
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
+import { notifications } from '@mantine/notifications';
 import {
   IconNetwork,
   IconSubtask,
@@ -108,6 +109,13 @@ const NetworkDesignerTool = () => {
     setNetworks([newNet, ...networks]);
     setSelectedNetworkId(newNet.id);
     setActiveTab('setup'); // Switch to setup tab for new networks
+    
+    notifications.show({
+      title: 'Network Created',
+      message: 'New network created successfully. Configure your parent network to get started.',
+      color: 'green',
+      icon: <IconPlus size={16} />
+    });
   };
 
   // Set parent network for current
@@ -118,11 +126,25 @@ const NetworkDesignerTool = () => {
         n.id === selectedNetworkId ? { ...n, parentNetwork: parentNet, name: parentNet.name, subnets: [] } : n
       ));
       setIsReconfiguring(false);
+      
+      notifications.show({
+        title: 'Network Reconfigured',
+        message: `Parent network updated to ${parentNet.ip}/${parentNet.cidr}. Previous subnets have been cleared.`,
+        color: 'blue',
+        icon: <IconRefresh size={16} />
+      });
     } else {
       // Normal case: just set the parent network
       setNetworks(networks.map(n =>
         n.id === selectedNetworkId ? { ...n, parentNetwork: parentNet, name: parentNet.name } : n
       ));
+      
+      notifications.show({
+        title: 'Parent Network Configured',
+        message: `Network configured with ${parentNet.ip}/${parentNet.cidr}. Ready to design subnets!`,
+        color: 'green',
+        icon: <IconNetwork size={16} />
+      });
     }
     setActiveTab('design'); // Move to design tab after setting parent network
   };
@@ -181,22 +203,46 @@ const NetworkDesignerTool = () => {
               ? { ...n, subnets: [...(n.subnets || []), { ...subnet, base: candidateIp }] }
               : n
           ));
+          
+          notifications.show({
+            title: 'Subnet Added',
+            message: `Subnet ${subnet.name} (${candidateIp}/${subnet.cidr}) added successfully`,
+            color: 'green',
+            icon: <IconSubtask size={16} />
+          });
           return;
         }
       }
     }
     
     // If we got here, we couldn't find a suitable position
-    alert('No available space for this subnet size. Please try a smaller subnet.');
+    notifications.show({
+      title: 'Subnet Addition Failed',
+      message: 'No available space for this subnet size. Please try a smaller subnet.',
+      color: 'red',
+      icon: <IconInfoCircle size={16} />
+    });
   };
 
   // Remove subnet from current
   const handleRemoveSubnet = (idx) => {
+    const current = networks.find(n => n.id === selectedNetworkId);
+    const subnetToRemove = current?.subnets?.[idx];
+    
     setNetworks(networks.map(n =>
       n.id === selectedNetworkId
         ? { ...n, subnets: n.subnets.filter((_, i) => i !== idx) }
         : n
     ));
+    
+    if (subnetToRemove) {
+      notifications.show({
+        title: 'Subnet Removed',
+        message: `Subnet ${subnetToRemove.name} has been removed from the network`,
+        color: 'orange',
+        icon: <IconTrash size={16} />
+      });
+    }
   };
 
   // Reset/clear current network OR start reconfiguring
@@ -225,6 +271,7 @@ const NetworkDesignerTool = () => {
 
   // Delete current network
   const handleDeleteNetwork = () => {
+    const networkToDelete = networks.find(n => n.id === selectedNetworkId);
     const newNetworks = networks.filter(n => n.id !== selectedNetworkId);
     setNetworks(newNetworks);
     
@@ -236,6 +283,13 @@ const NetworkDesignerTool = () => {
     }
     
     setDeleteModalOpen(false);
+    
+    notifications.show({
+      title: 'Network Deleted',
+      message: `Network "${networkToDelete?.name || 'Unknown'}" has been permanently deleted`,
+      color: 'red',
+      icon: <IconTrash size={16} />
+    });
   };
 
   // Reorder subnets (existing complex logic preserved)

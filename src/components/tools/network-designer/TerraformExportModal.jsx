@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Modal, Tabs, Code, Group, ActionIcon, Tooltip, Text } from '@mantine/core';
 import { IconCopy, IconServer } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/network/terraformExport';
 
 export function TerraformExportModal({ opened, onClose, network, subnets }) {
@@ -40,6 +41,16 @@ export function TerraformExportModal({ opened, onClose, network, subnets }) {
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
+    
+    const platformName = activeTab === 'azure' ? 'Azure' : 
+                        activeTab === 'aws' ? 'AWS' : 'vCloud Director';
+    
+    notifications.show({
+      title: 'Terraform Code Copied',
+      message: `${platformName} Terraform configuration copied to clipboard`,
+      color: 'green',
+      icon: <IconCopy size={16} />
+    });
   };
 
   return (

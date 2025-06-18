@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { useLocalStorage } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
+import { IconBrandAzure, IconX } from '@tabler/icons-react';
 import { devLog, devWarn, devError } from '../../../../utils/devLog';
 import { RESOURCE_TYPES, generateResourceName } from '../../../../utils/azure/rules';
 import environments from '../../../../data/environments.json';
@@ -219,6 +221,14 @@ export const AzureNamingProvider = ({ children }) => {
         errors: {},
         isLoading: false
       }));
+      
+      notifications.show({
+        title: 'Names Generated Successfully',
+        message: `Generated ${generatedNames.length} Azure resource name${generatedNames.length > 1 ? 's' : ''}`,
+        color: 'green',
+        icon: <IconBrandAzure size={16} />
+      });
+      
       return generatedNames;
     } catch (error) {
       setValidationState(prev => ({
@@ -227,6 +237,14 @@ export const AzureNamingProvider = ({ children }) => {
         errors: { general: error.message },
         isLoading: false
       }));
+      
+      notifications.show({
+        title: 'Name Generation Failed',
+        message: error.message || 'Failed to generate Azure resource names',
+        color: 'red',
+        icon: <IconX size={16} />
+      });
+      
       return null;
     }
   };

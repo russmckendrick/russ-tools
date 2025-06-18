@@ -27,16 +27,18 @@ import ClearAllStorage from './components/common/ClearAllStorage';
 export default function App() {
   return (
     <MantineProvider
-      withGlobalStyles
-      withNormalizeCSS
       theme={{
         primaryColor: 'blue',
-        globalStyles: (theme) => ({
-          body: {
-            backgroundColor: theme.colors.gray[9],
-            color: theme.black,
-          },
-        }),
+        fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+        headings: {
+          fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+          fontWeight: '600',
+        },
+        defaultRadius: 'md',
+        cursorType: 'pointer',
+        respectReducedMotion: true,
+        focusRing: 'always',
+        activeClassName: 'mantine-active',
       }}
     >
       <Notifications />

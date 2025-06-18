@@ -1,3 +1,94 @@
+/* Base font loading - must be at the top */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 html, body, #root {
   height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Improve overall typography and spacing */
+* {
+  box-sizing: border-box;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Tool card hover animations */
+.tool-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tool-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+[data-mantine-color-scheme="dark"] .tool-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Improved focus styles */
+.mantine-Button-root:focus-visible,
+.mantine-ActionIcon-root:focus-visible,
+.mantine-UnstyledButton-root:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-6);
+  outline-offset: 2px;
+}
+
+/* Better text selection */
+::selection {
+  background: var(--mantine-color-blue-1);
+  color: var(--mantine-color-blue-9);
+}
+
+[data-mantine-color-scheme="dark"] ::selection {
+  background: var(--mantine-color-blue-8);
+  color: var(--mantine-color-blue-1);
+}
+
+/* Improved scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6));
+}
+
+::-webkit-scrollbar-thumb {
+  background: light-dark(var(--mantine-color-gray-4), var(--mantine-color-dark-4));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-3));
+}
+
+/* Consistent spacing for content */
+.mantine-AppShell-main {
+  min-height: calc(100vh - 60px);
+}
+
+/* Improved loading states */
+.mantine-LoadingOverlay-root {
+  backdrop-filter: blur(2px);
+}
+
+/* Better alert styling */
+.mantine-Alert-root {
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Consistent code block styling */
+.mantine-Code-root {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.9em;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--mantine-radius-sm);
 }

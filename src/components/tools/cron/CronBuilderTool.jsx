@@ -18,6 +18,7 @@ import {
   Badge
 } from '@mantine/core';
 import { IconClock, IconCopy, IconCheck, IconInfoCircle } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
@@ -52,6 +53,12 @@ const CronBuilderTool = () => {
 
   const handleCopy = () => {
     clipboard.copy(cronString);
+    notifications.show({
+      title: 'CRON Expression Copied',
+      message: `Expression "${cronString}" copied to clipboard`,
+      color: 'green',
+      icon: <IconCopy size={16} />
+    });
   };
 
   // Parse cron expression back into fields
@@ -70,7 +77,22 @@ const CronBuilderTool = () => {
   };
 
   const handleManualCronChange = (newCronString) => {
-    parseCronExpression(newCronString);
+    try {
+      parseCronExpression(newCronString);
+      notifications.show({
+        title: 'CRON Expression Loaded',
+        message: 'Expression parsed and loaded into the builder',
+        color: 'blue',
+        icon: <IconCheck size={16} />
+      });
+    } catch (error) {
+      notifications.show({
+        title: 'Invalid CRON Expression',
+        message: 'Please check your CRON expression format',
+        color: 'red',
+        icon: <IconInfoCircle size={16} />
+      });
+    }
   };
 
   return (
@@ -93,13 +115,13 @@ const CronBuilderTool = () => {
           </div>
         </Group>
 
-        <Tabs defaultValue="builder" variant="pills" orientation="horizontal">
-          <Tabs.List grow>
-            <Tabs.Tab value="builder" leftSection={<IconClock size={16} />}>
-              Builder
+        <Tabs defaultValue="builder">
+          <Tabs.List mb="lg">
+            <Tabs.Tab value="builder" leftSection={<IconClock size={18} />}>
+              CRON Builder
             </Tabs.Tab>
-            <Tabs.Tab value="input" leftSection={<IconCopy size={16} />}>
-              Input/Validator
+            <Tabs.Tab value="input" leftSection={<IconCopy size={18} />}>
+              Expression Validator
             </Tabs.Tab>
           </Tabs.List>
 
