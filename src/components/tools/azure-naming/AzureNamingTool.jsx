@@ -13,6 +13,7 @@ import {
   Button
 } from '@mantine/core';
 import { IconBrandAzure, IconEdit, IconHistory, IconInfoCircle } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';

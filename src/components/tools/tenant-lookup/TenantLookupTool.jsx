@@ -21,6 +21,7 @@ import {
   ThemeIcon,
   useMantineColorScheme
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { 
   IconSearch, 
   IconCopy, 
@@ -106,11 +107,29 @@ const TenantLookupTool = () => {
         
         if (data.success) {
           setResult(data);
+          notifications.show({
+            title: 'Tenant Lookup Complete',
+            message: `Found tenant information for ${cleanDomain}`,
+            color: 'green',
+            icon: <IconBuilding size={16} />
+          });
         } else {
           setError(data.error || 'Tenant lookup failed');
+          notifications.show({
+            title: 'Tenant Lookup Failed',
+            message: data.error || 'Unable to find tenant information',
+            color: 'red',
+            icon: <IconAlertCircle size={16} />
+          });
         }
       } else {
         setError(`Request failed with status ${response.status}`);
+        notifications.show({
+          title: 'Lookup Request Failed',
+          message: `Server returned status ${response.status}`,
+          color: 'red',
+          icon: <IconAlertCircle size={16} />
+        });
       }
     } catch (err) {
       console.error('Tenant lookup error:', err);
@@ -123,6 +142,13 @@ const TenantLookupTool = () => {
       } else {
         setError(`Network error: ${err.message}`);
       }
+      
+      notifications.show({
+        title: 'Network Error',
+        message: 'Unable to connect to tenant lookup service',
+        color: 'red',
+        icon: <IconAlertCircle size={16} />
+      });
     } finally {
       setLoading(false);
     }
@@ -169,19 +195,23 @@ const TenantLookupTool = () => {
                   Tenant ID: {result.tenantId}
                 </Text>
               </div>
-              <CopyButton value={result.tenantId}>
-                {({ copied, copy }) => (
-                  <Tooltip label={copied ? 'Copied!' : 'Copy Tenant ID'}>
-                    <ActionIcon 
-                      color={copied ? 'teal' : 'gray'} 
-                      onClick={copy}
-                      variant="light"
-                    >
-                      {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-                    </ActionIcon>
-                  </Tooltip>
-                )}
-              </CopyButton>
+              <Tooltip label="Copy Tenant ID">
+                <ActionIcon 
+                  color="gray" 
+                  onClick={() => {
+                    navigator.clipboard.writeText(result.tenantId);
+                    notifications.show({
+                      title: 'Tenant ID Copied',
+                      message: 'Tenant ID has been copied to clipboard',
+                      color: 'green',
+                      icon: <IconCopy size={16} />
+                    });
+                  }}
+                  variant="light"
+                >
+                  <IconCopy size={16} />
+                </ActionIcon>
+              </Tooltip>
             </Group>
 
             <Grid>
@@ -356,18 +386,22 @@ const TenantLookupTool = () => {
                 Lookup completed at {formatTimestamp(result.timestamp)}
               </Text>
             </Group>
-            <CopyButton value={JSON.stringify(result, null, 2)}>
-              {({ copied, copy }) => (
-                <Button
-                  size="xs"
-                  variant="light"
-                  leftSection={copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
-                  onClick={copy}
-                >
-                  {copied ? 'Copied!' : 'Copy JSON'}
-                </Button>
-              )}
-            </CopyButton>
+            <Button
+              size="xs"
+              variant="light"
+              leftSection={<IconCopy size={14} />}
+              onClick={() => {
+                navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+                notifications.show({
+                  title: 'JSON Data Copied',
+                  message: 'Complete tenant information copied as JSON',
+                  color: 'green',
+                  icon: <IconCopy size={16} />
+                });
+              }}
+            >
+              Copy JSON
+            </Button>
           </Group>
         </Paper>
       </Stack>

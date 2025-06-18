@@ -13,6 +13,7 @@ import {
 import { useLocalStorage } from '@mantine/hooks';
 import { useParams } from 'react-router-dom';
 import { IconShield, IconShieldCheck, IconWorldWww, IconInfoCircle, IconCertificate } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
@@ -109,6 +110,13 @@ const SSLCheckerTool = () => {
       delete newCache[domainToRemove];
       return newCache;
     });
+    
+    notifications.show({
+      title: 'Domain Removed',
+      message: `${domainToRemove} removed from SSL check history`,
+      color: 'orange',
+      icon: <IconShield size={16} />
+    });
   };
 
   const handleDomainSubmit = async (domainToCheck) => {
@@ -133,6 +141,12 @@ const SSLCheckerTool = () => {
         setCertificateData(cachedData);
         addToHistory(cleanDomain, cachedData);
         setLoading(false);
+        notifications.show({
+          title: 'SSL Check Complete (Cached)',
+          message: `SSL certificate information loaded for ${cleanDomain}`,
+          color: 'blue',
+          icon: <IconShieldCheck size={16} />
+        });
         return;
       }
       
@@ -172,11 +186,23 @@ const SSLCheckerTool = () => {
       if (result) {
         cacheSSLData(cleanDomain, result);
         addToHistory(cleanDomain, result);
+        notifications.show({
+          title: 'SSL Check Complete',
+          message: `SSL certificate analysis completed for ${cleanDomain}`,
+          color: 'green',
+          icon: <IconShieldCheck size={16} />
+        });
       }
       
     } catch (err) {
       console.error('💥 Overall SSL Check Error:', err);
       setError(err.message || 'Failed to check SSL certificate');
+      notifications.show({
+        title: 'SSL Check Failed',
+        message: err.message || 'Failed to analyze SSL certificate',
+        color: 'red',
+        icon: <IconShield size={16} />
+      });
     } finally {
       setLoading(false);
     }
