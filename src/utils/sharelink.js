@@ -1,4 +1,5 @@
 import { notifications } from '@mantine/notifications';
+import * as pako from 'pako';
 
 /**
  * Safe JSON stringify that handles circular references and complex objects
@@ -24,17 +25,72 @@ const safeStringify = (obj) => {
 };
 
 /**
- * Filter parameters to only include safe types for URL encoding
- * @param {Object} parameters - Parameters object to filter
- * @returns {Object} - Filtered parameters with only safe types
+ * Convert Uint8Array to URL-safe base64 string
+ * @param {Uint8Array} bytes - Bytes to encode
+ * @returns {string} - URL-safe base64 string
  */
-const getSafeParameters = (parameters) => {
-  return Object.entries(parameters).reduce((acc, [key, value]) => {
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      acc[key] = value;
-    }
-    return acc;
-  }, {});
+const uint8ArrayToBase64Url = (bytes) => {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+};
+
+/**
+ * Convert URL-safe base64 string to Uint8Array
+ * @param {string} base64Url - URL-safe base64 string
+ * @returns {Uint8Array} - Decoded bytes
+ */
+const base64UrlToUint8Array = (base64Url) => {
+  // Add padding if needed
+  const padding = base64Url.length % 4;
+  const base64 = base64Url
+    .replace(/-/g, '+')
+    .replace(/_/g, '/') + 
+    (padding === 2 ? '==' : padding === 3 ? '=' : '');
+  
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+};
+
+/**
+ * Compress and encode configuration data for URL
+ * @param {Object} config - Configuration object to compress
+ * @returns {string} - URL-safe base64 encoded compressed data
+ */
+const compressConfig = (config) => {
+  try {
+    const jsonString = safeStringify(config);
+    const compressed = pako.deflate(jsonString);
+    return uint8ArrayToBase64Url(compressed);
+  } catch (error) {
+    console.error('Failed to compress config:', error);
+    throw new Error('Compression failed');
+  }
+};
+
+/**
+ * Decompress and decode configuration data from URL
+ * @param {string} encodedData - URL-safe base64 encoded compressed data
+ * @returns {Object} - Decompressed configuration object
+ */
+const decompressConfig = (encodedData) => {
+  try {
+    const bytes = base64UrlToUint8Array(encodedData);
+    const decompressed = pako.inflate(bytes, { to: 'string' });
+    return JSON.parse(decompressed);
+  } catch (error) {
+    console.error('Failed to decompress config:', error);
+    throw new Error('Decompression failed');
+  }
 };
 
 /**
@@ -48,16 +104,7 @@ const getSafeParameters = (parameters) => {
  */
 export const generateShareableURL = (config, baseUrl) => {
   try {
-    // Filter parameters to only include safe types
-    const safeParameters = getSafeParameters(config.parameters || {});
-    
-    const safeConfig = {
-      service: config.service,
-      template: config.template,
-      parameters: safeParameters
-    };
-    
-    const encodedConfig = btoa(safeStringify(safeConfig));
+    const encodedConfig = compressConfig(config);
     const currentUrl = baseUrl || (window.location.origin + window.location.pathname);
     const shareableUrl = `${currentUrl}?config=${encodedConfig}`;
     
@@ -85,16 +132,24 @@ export const parseConfigFromURL = (searchParams) => {
   }
 
   try {
-    const config = JSON.parse(atob(configParam));
+    const config = decompressConfig(configParam);
     return config;
   } catch (error) {
     console.error('Failed to parse config from URL:', error);
-    notifications.show({
-      title: 'URL Config Error',
-      message: 'Failed to load configuration from URL',
-      color: 'orange'
-    });
-    return null;
+    // Try legacy format (uncompressed base64) for backward compatibility
+    try {
+      const legacyConfig = JSON.parse(atob(configParam));
+      console.log('Loaded legacy URL format');
+      return legacyConfig;
+    } catch (legacyError) {
+      console.error('Failed to parse legacy config format:', legacyError);
+      notifications.show({
+        title: 'URL Config Error',
+        message: 'Failed to load configuration from URL',
+        color: 'orange'
+      });
+      return null;
+    }
   }
 };
 
@@ -106,16 +161,7 @@ export const parseConfigFromURL = (searchParams) => {
  */
 export const updateURLWithConfig = (config, setSearchParams, options = { replace: true }) => {
   try {
-    // Filter parameters to only include safe types
-    const safeParameters = getSafeParameters(config.parameters || {});
-    
-    const safeConfig = {
-      service: config.service,
-      template: config.template,
-      parameters: safeParameters
-    };
-    
-    const encodedConfig = btoa(safeStringify(safeConfig));
+    const encodedConfig = compressConfig(config);
     setSearchParams({ config: encodedConfig }, options);
   } catch (error) {
     console.error('Failed to update URL:', error);

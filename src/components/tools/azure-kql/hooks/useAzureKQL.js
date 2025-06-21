@@ -67,7 +67,12 @@ export const useAzureKQL = () => {
         acc[key] = value;
         return acc;
       }, {});
-      setParameters(cleanDefaults);
+      
+      // Merge with existing parameters instead of replacing them
+      setParameters(prevParams => ({
+        ...cleanDefaults,
+        ...prevParams  // URL parameters take precedence over defaults
+      }));
     }
   }, [currentTemplate, selectedTemplate]);
 
