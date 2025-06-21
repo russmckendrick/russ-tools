@@ -11,48 +11,36 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
       },
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Vendor chunks for large libraries
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-mantine-core': ['@mantine/core'],
-          'vendor-mantine-extended': [
-            '@mantine/hooks', 
-            '@mantine/notifications', 
-            '@mantine/dropzone',
-            '@mantine/dates'
-          ],
-          'vendor-icons': ['@tabler/icons-react'],
-          'vendor-utils': [
-            'dayjs', 
-            'uuid', 
-            'netmask', 
-            'jwt-decode',
-            'jose'
-          ],
-          'vendor-data': [
-            'js-yaml', 
-            '@iarna/toml', 
-            'ajv', 
-            'ajv-formats',
-            'better-ajv-errors',
-            'json-parse-even-better-errors',
-            'json-source-map',
-            'js-yaml-source-map'
-          ],
-          'vendor-ui': [
-            '@dnd-kit/core',
-            '@dnd-kit/sortable', 
-            '@dnd-kit/utilities',
-            '@svgdotjs/svg.js',
-            'html2canvas'
-          ],
-          'vendor-syntax': ['prismjs']
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@mantine/core')) {
+              return 'vendor-mantine-core';
+            }
+            if (id.includes('@mantine/')) {
+              return 'vendor-mantine-extended';
+            }
+            if (id.includes('@tabler/icons-react')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('prismjs')) {
+              return 'vendor-syntax';
+            }
+            if (id.includes('js-yaml') || id.includes('@iarna/toml') || id.includes('ajv')) {
+              return 'vendor-data';
+            }
+            if (id.includes('@dnd-kit') || id.includes('@svgdotjs') || id.includes('html2canvas')) {
+              return 'vendor-ui';
+            }
+            // Default vendor chunk for other node_modules
+            return 'vendor';
+          }
         },
         // Optimize chunk sizes
-        chunkFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop().replace('.jsx', '').replace('.js', '') : 'chunk';
-          return `js/[name]-[hash].js`;
-        },
+        chunkFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name.split('.');
           const ext = info[info.length - 1];
