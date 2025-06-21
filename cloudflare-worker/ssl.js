@@ -67,7 +67,7 @@ const FALLBACK_APIS = [
 ];
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     return handleRequest(request, env);
   }
 };
