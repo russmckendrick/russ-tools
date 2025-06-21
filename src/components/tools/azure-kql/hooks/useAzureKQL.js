@@ -5,6 +5,7 @@ import { notifications } from '@mantine/notifications';
 import { generateKQLQuery } from '../utils/kqlGenerator';
 import { validateParameters } from '../utils/parameterValidator';
 import { loadTemplate } from '../utils/templateProcessor';
+import { generateShareableURL, parseConfigFromURL, updateURLWithConfig } from '../../../../utils/sharelink';
 
 export const useAzureKQL = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,21 +21,11 @@ export const useAzureKQL = () => {
 
   // Load configuration from URL parameters on mount
   useEffect(() => {
-    const configParam = searchParams.get('config');
-    if (configParam) {
-      try {
-        const config = JSON.parse(atob(configParam));
-        if (config.service) setSelectedService(config.service);
-        if (config.template) setSelectedTemplate(config.template);
-        if (config.parameters) setParameters(config.parameters);
-      } catch (error) {
-        console.error('Failed to load config from URL:', error);
-        notifications.show({
-          title: 'URL Config Error',
-          message: 'Failed to load configuration from URL',
-          color: 'orange'
-        });
-      }
+    const config = parseConfigFromURL(searchParams);
+    if (config) {
+      if (config.service) setSelectedService(config.service);
+      if (config.template) setSelectedTemplate(config.template);
+      if (config.parameters) setParameters(config.parameters);
     }
   }, [searchParams]);
 
@@ -76,9 +67,14 @@ export const useAzureKQL = () => {
         acc[key] = value;
         return acc;
       }, {});
-      setParameters(cleanDefaults);
+      
+      // Merge with existing parameters instead of replacing them
+      setParameters(prevParams => ({
+        ...cleanDefaults,
+        ...prevParams  // URL parameters take precedence over defaults
+      }));
     }
-  }, [currentTemplate, selectedTemplate]);
+  }, [currentTemplate, selectedTemplate, setParameters]);
 
   // Validate and fix parameters when service changes
   useEffect(() => {
@@ -196,80 +192,26 @@ export const useAzureKQL = () => {
   }, []);
 
   // Generate shareable URL
-  const generateShareableURL = useCallback(() => {
-    // Only include simple string/number parameters to avoid circular references
-    const safeParameters = Object.entries(parameters).reduce((acc, [key, value]) => {
-      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-
+  const generateShareableURLCallback = useCallback(() => {
     const config = {
       service: selectedService,
       template: selectedTemplate,
-      parameters: safeParameters
+      parameters: parameters
     };
     
-    try {
-      const encodedConfig = btoa(safeStringify(config));
-      const currentUrl = window.location.origin + window.location.pathname;
-      const shareableUrl = `${currentUrl}?config=${encodedConfig}`;
-      
-      return shareableUrl;
-    } catch (error) {
-      console.error('Failed to generate shareable URL:', error);
-      notifications.show({
-        title: 'URL Generation Error',
-        message: 'Failed to generate shareable URL',
-        color: 'red'
-      });
-      return null;
-    }
+    return generateShareableURL(config);
   }, [selectedService, selectedTemplate, parameters]);
 
-  // Safe JSON stringify that handles circular references
-  const safeStringify = (obj) => {
-    const seen = new Set();
-    return JSON.stringify(obj, (key, value) => {
-      if (typeof value === 'object' && value !== null) {
-        if (seen.has(value)) {
-          return '[Circular]';
-        }
-        seen.add(value);
-      }
-      // Skip function values and complex objects
-      if (typeof value === 'function' || 
-          (typeof value === 'object' && value !== null && value.constructor && value.constructor.name !== 'Object' && value.constructor.name !== 'Array')) {
-        return undefined;
-      }
-      return value;
-    });
-  };
 
   // Update URL with current configuration
   const updateURL = useCallback(() => {
-    // Only include simple string/number parameters to avoid circular references
-    const safeParameters = Object.entries(parameters).reduce((acc, [key, value]) => {
-      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-
     const config = {
       service: selectedService,
       template: selectedTemplate,
-      parameters: safeParameters
+      parameters: parameters
     };
     
-    try {
-      const encodedConfig = btoa(safeStringify(config));
-      setSearchParams({ config: encodedConfig }, { replace: true });
-    } catch (error) {
-      console.error('Failed to update URL:', error);
-      // Don't update URL if there's an error
-    }
+    updateURLWithConfig(config, setSearchParams);
   }, [selectedService, selectedTemplate, parameters, setSearchParams]);
 
   // Reset form
@@ -316,7 +258,7 @@ export const useAzureKQL = () => {
     saveQuery,
     loadQuery,
     resetForm,
-    generateShareableURL,
+    generateShareableURL: generateShareableURLCallback,
     updateURL
   };
 };

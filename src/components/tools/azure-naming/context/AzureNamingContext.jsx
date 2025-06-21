@@ -300,6 +300,7 @@ export const AzureNamingProvider = ({ children }) => {
     loadRegions();
   }, []);
 
+
   // Add environmentOptions for dropdowns
   const environmentOptions = Object.entries(environments).map(([key, value]) => ({
     value: key,

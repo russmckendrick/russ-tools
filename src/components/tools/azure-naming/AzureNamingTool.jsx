@@ -12,13 +12,15 @@ import {
   Alert,
   Button
 } from '@mantine/core';
-import { IconBrandAzure, IconEdit, IconHistory, IconInfoCircle } from '@tabler/icons-react';
+import { IconBrandAzure, IconEdit, IconHistory, IconInfoCircle, IconShare } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { useAzureNaming } from './hooks/useAzureNaming';
 import { useAzureNamingContext } from './context/AzureNamingContext';
+import { useSearchParams } from 'react-router-dom';
+import { copyShareableURL, parseConfigFromURL } from '../../../utils/sharelink';
 import ResourceTypeSelector from './ResourceTypeSelector';
 import ValidationIndicator from './ValidationIndicator';
 import ResultsDisplay from './ResultsDisplay';
@@ -31,13 +33,53 @@ const AzureNamingTool = () => {
     validationState,
     updateFormState,
     generateName,
-    resetForm
+    setFormState
   } = useAzureNaming();
-  const { environmentOptions, regionDropdownOptions, isLoading } = useAzureNamingContext();
+  const { isLoading } = useAzureNamingContext();
+  const [searchParams] = useSearchParams();
 
   // Get tool configuration for SEO
   const toolConfig = toolsConfig.find(tool => tool.id === 'azure-naming');
   const seoData = generateToolSEO(toolConfig);
+
+  // Load configuration from URL on mount
+  React.useEffect(() => {
+    const config = parseConfigFromURL(searchParams);
+    if (config && config.formState) {
+      setFormState(config.formState);
+      notifications.show({
+        title: 'Configuration Loaded',
+        message: 'Azure naming configuration has been loaded from URL',
+        color: 'green'
+      });
+    }
+  }, [searchParams, setFormState]);
+
+  // Share configuration
+  const handleShareConfiguration = async () => {
+    if (!formState.resourceType.length || !formState.workload) {
+      notifications.show({
+        title: 'Incomplete Configuration',
+        message: 'Please fill in at least the resource type and workload before sharing',
+        color: 'orange'
+      });
+      return;
+    }
+
+    const config = {
+      formState: formState
+    };
+
+    const success = await copyShareableURL(config);
+    if (success) {
+      notifications.show({
+        title: 'Configuration Shared',
+        message: 'Shareable link has been copied to your clipboard',
+        color: 'green',
+        icon: <IconShare size={16} />
+      });
+    }
+  };
 
   return (
     <>
@@ -45,18 +87,29 @@ const AzureNamingTool = () => {
       <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
-        <Group gap="md">
-          <ThemeIcon size={48} radius="md" color="cyan" variant="light">
-            <IconBrandAzure size={28} />
-          </ThemeIcon>
-          <div>
-            <Title order={2} fw={600}>
-              Azure Resource Naming Tool
-            </Title>
-            <Text size="sm" c="dimmed">
-              Generate consistent, compliant Azure resource names following best practices
-            </Text>
-          </div>
+        <Group justify="space-between">
+          <Group gap="md">
+            <ThemeIcon size={48} radius="md" color="cyan" variant="light">
+              <IconBrandAzure size={28} />
+            </ThemeIcon>
+            <div>
+              <Title order={2} fw={600}>
+                Azure Resource Naming Tool
+              </Title>
+              <Text size="sm" c="dimmed">
+                Generate consistent, compliant Azure resource names following best practices
+              </Text>
+            </div>
+          </Group>
+          
+          <Button
+            variant="light"
+            leftSection={<IconShare size={16} />}
+            onClick={handleShareConfiguration}
+            disabled={!formState.resourceType.length || !formState.workload}
+          >
+            Share Configuration
+          </Button>
         </Group>
 
         <Tabs defaultValue="builder">

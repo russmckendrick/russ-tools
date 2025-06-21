@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { useAzureNamingContext } from '../context/AzureNamingContext';
 
 export const useAzureNaming = () => {

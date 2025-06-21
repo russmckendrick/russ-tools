@@ -75,6 +75,11 @@ This tool addresses critical challenges in Azure resource management:
    - Review generated names in the results tab
    - Copy individual names or export all results
 
+6. **Share Configuration**
+   - Click "Share Configuration" to create a shareable link
+   - Complete naming configuration shared via compressed URLs
+   - Preserves all resource types, parameters, and settings
+
 ### Advanced Features
 
 #### Custom Naming Patterns
@@ -94,6 +99,26 @@ This tool addresses critical challenges in Azure resource management:
 - Consistent naming across related resources
 - Export results in multiple formats
 - Integration with infrastructure-as-code
+
+#### Configuration Sharing
+- **Share Button**: Located in the header for easy access
+- **Complete State**: Shares all form fields and resource selections
+- **Compressed URLs**: Uses gzip compression for manageable link sizes
+- **Cross-Platform**: Works across different devices and browsers
+- **Privacy-Safe**: All processing happens client-side only
+
+**Sharing Process:**
+1. Configure your naming parameters (resource types, environment, region, etc.)
+2. Click "Share Configuration" in the header
+3. Shareable link automatically copied to clipboard
+4. Share with team members or save for documentation
+5. Opening the link restores complete naming configuration
+
+**Use Cases:**
+- **Team Standards**: Share naming configurations as organizational templates
+- **Project Setup**: Quickly distribute consistent naming patterns to team members
+- **Documentation**: Include shareable links in naming convention documentation
+- **Training**: Share example configurations for learning and onboarding
 
 ## Technical Implementation
 
