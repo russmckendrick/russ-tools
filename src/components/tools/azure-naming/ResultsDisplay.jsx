@@ -4,7 +4,7 @@ import { devError } from '../../../utils/devLog';
 import { IconCopy, IconCheck, IconDownload, IconDeviceFloppy } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useAzureNamingContext } from './context/AzureNamingContext';
-import ExcelJS from 'exceljs';
+// ExcelJS is loaded dynamically to reduce bundle size
 import { v4 as uuidv4 } from 'uuid';
 
 const ResultsDisplay = ({ formState, validationState }) => {
@@ -13,6 +13,7 @@ const ResultsDisplay = ({ formState, validationState }) => {
   const generatedFormState = validationState.generatedFormState || formState;
   const { addToHistory, resourceTypes, environmentOptions, regionDropdownOptions } = useAzureNamingContext();
   const [copySuccess, setCopySuccess] = useState(false);
+  const [excelLoading, setExcelLoading] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -115,70 +116,99 @@ const ResultsDisplay = ({ formState, validationState }) => {
   };
 
   const handleExportExcel = async () => {
-    const names = Array.isArray(validationState.generatedName)
-      ? validationState.generatedName
-      : [validationState.generatedName];
-    const types = Array.isArray(formState.resourceType)
-      ? formState.resourceType
-      : [formState.resourceType];
+    setExcelLoading(true);
+    try {
+      // Show loading notification
+      notifications.show({
+        id: 'excel-loading',
+        title: 'Loading Excel Library',
+        message: 'Preparing Excel export...',
+        color: 'blue',
+        loading: true,
+        autoClose: false
+      });
+      
+      // Dynamically import ExcelJS only when needed
+      const ExcelJS = (await import('exceljs')).default;
+      
+      const names = Array.isArray(validationState.generatedName)
+        ? validationState.generatedName
+        : [validationState.generatedName];
+      const types = Array.isArray(formState.resourceType)
+        ? formState.resourceType
+        : [formState.resourceType];
 
-    // Determine which optional columns to include
-    const columns = [
-      'Generated Name',
-      'Resource Type',
-      'Workload/Application Name',
-      'Environment',
-      'Region',
-    ];
-    if (showInstance) columns.push('Instance');
-    if (showCustomPrefix) columns.push('Custom Prefix');
-    if (showCustomSuffix) columns.push('Custom Suffix');
-    if (showRandom) columns.push('Random Characters');
+      // Determine which optional columns to include
+      const columns = [
+        'Generated Name',
+        'Resource Type',
+        'Workload/Application Name',
+        'Environment',
+        'Region',
+      ];
+      if (showInstance) columns.push('Instance');
+      if (showCustomPrefix) columns.push('Custom Prefix');
+      if (showCustomSuffix) columns.push('Custom Suffix');
+      if (showRandom) columns.push('Random Characters');
 
-    const rows = names.map((name, idx) => {
-      const row = {
-        'Generated Name': name,
-        'Resource Type': getResourceTypeLabel(types[idx]),
-        'Workload/Application Name': formState.workload,
-        'Environment': getEnvironmentLabel(formState.environment),
-        'Region': getRegionLabel(formState.region),
-      };
-      if (showInstance) row['Instance'] = formState.instance;
-      if (showCustomPrefix) row['Custom Prefix'] = formState.customPrefix;
-      if (showCustomSuffix) row['Custom Suffix'] = formState.customSuffix;
-      if (showRandom) row['Random Characters'] = formState.randomLength;
-      return row;
-    });
+      const rows = names.map((name, idx) => {
+        const row = {
+          'Generated Name': name,
+          'Resource Type': getResourceTypeLabel(types[idx]),
+          'Workload/Application Name': formState.workload,
+          'Environment': getEnvironmentLabel(formState.environment),
+          'Region': getRegionLabel(formState.region),
+        };
+        if (showInstance) row['Instance'] = formState.instance;
+        if (showCustomPrefix) row['Custom Prefix'] = formState.customPrefix;
+        if (showCustomSuffix) row['Custom Suffix'] = formState.customSuffix;
+        if (showRandom) row['Random Characters'] = formState.randomLength;
+        return row;
+      });
 
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Names');
-    
-    // Add headers
-    worksheet.columns = columns.map(key => ({
-      header: key,
-      key: key,
-      width: 20
-    }));
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Names');
+      
+      // Add headers
+      worksheet.columns = columns.map(key => ({
+        header: key,
+        key: key,
+        width: 20
+      }));
 
-    // Add rows
-    worksheet.addRows(rows);
+      // Add rows
+      worksheet.addRows(rows);
 
-    // Generate and download the file
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'azure-resource-names.xlsx';
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    notifications.show({
-      title: 'Excel Export Complete',
-      message: 'Azure resource names exported successfully',
-      color: 'green',
-      icon: <IconDownload size={16} />
-    });
+      // Generate and download the file
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'azure-resource-names.xlsx';
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      // Hide loading notification and show success
+      notifications.hide('excel-loading');
+      notifications.show({
+        title: 'Excel Export Complete',
+        message: 'Azure resource names exported successfully',
+        color: 'green',
+        icon: <IconDownload size={16} />
+      });
+    } catch (error) {
+      console.error('Error exporting Excel file:', error);
+      notifications.hide('excel-loading');
+      notifications.show({
+        title: 'Export Error',
+        message: 'Failed to export Excel file. Please try again.',
+        color: 'red',
+        icon: <IconDownload size={16} />
+      });
+    } finally {
+      setExcelLoading(false);
+    }
   };
 
   const handleSave = () => {
@@ -271,8 +301,17 @@ const ResultsDisplay = ({ formState, validationState }) => {
         <Button leftSection={<IconDownload size={16} />} variant="default" size="md" radius="md"fullWidth onClick={handleExportCSV}>
           Export CSV
         </Button>
-        <Button leftSection={<IconDownload size={16} />} variant="default" size="md" radius="md" fullWidth onClick={handleExportExcel}>
-          Export Excel
+        <Button 
+          leftSection={<IconDownload size={16} />} 
+          variant="default" 
+          size="md" 
+          radius="md" 
+          fullWidth 
+          onClick={handleExportExcel}
+          loading={excelLoading}
+          disabled={excelLoading}
+        >
+          {excelLoading ? 'Loading...' : 'Export Excel'}
         </Button>
         <Button leftSection={<IconDeviceFloppy size={16} />} variant="filled" size="md" color="blue" radius="md" fullWidth onClick={handleSave}>
           Save
