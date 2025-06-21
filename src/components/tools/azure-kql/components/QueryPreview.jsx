@@ -11,8 +11,8 @@ import {
 } from '@mantine/core';
 import { IconCode, IconInfoCircle } from '@tabler/icons-react';
 import { useMantineColorScheme } from '@mantine/core';
-import Prism from 'prismjs';
-import '../utils/prism-kql.js';
+import { loadPrismLanguages, highlightCode } from '../../../../utils/prismLoader';
+// KQL language is loaded dynamically via prismLoader
 import '../../../../styles/prism-theme.css';
 import { analyzeQueryPerformance } from '../utils/performanceAnalyzer';
 import PerformanceInsights from './PerformanceInsights';
@@ -37,11 +37,16 @@ const QueryPreview = ({ query, service, parameters = {}, template = null }) => {
     }
   }, [query, parameters, template]);
 
+  // Load PrismJS languages on component mount
+  useEffect(() => {
+    loadPrismLanguages(['kql']);
+  }, []);
+
   // Render highlighted KQL code using Prism
   const renderHighlightedKQL = (kqlCode) => {
     if (!kqlCode) return null;
     
-    const highlighted = Prism.highlight(kqlCode, Prism.languages.kql || Prism.languages.text, 'kql');
+    const highlighted = highlightCode(kqlCode, 'kql');
     
     return (
       <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>

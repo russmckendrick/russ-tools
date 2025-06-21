@@ -48,8 +48,7 @@ import {
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useMantineColorScheme } from '@mantine/core';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-json';
+import { loadPrismLanguages, highlightCode } from '../../../utils/prismLoader';
 import '../../../styles/prism-theme.css';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import WHOISIcon from './WHOISIcon';
@@ -105,6 +104,11 @@ const WHOISLookupTool = () => {
       performWHOISLookup(decodedQuery);
     }
   }, [urlQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load PrismJS languages on component mount
+  useEffect(() => {
+    loadPrismLanguages(['json']);
+  }, []);
 
   // Helper function to check if cached data is still valid
   const isCacheValid = (cachedData) => {
@@ -336,7 +340,7 @@ const WHOISLookupTool = () => {
   // Render highlighted JSON using Prism
   const renderHighlightedJSON = (data) => {
     const jsonString = JSON.stringify(data, null, 2);
-    const highlighted = Prism.highlight(jsonString, Prism.languages.json, 'json');
+    const highlighted = highlightCode(jsonString, 'json');
     
     return (
       <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>

@@ -46,10 +46,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useMantineColorScheme } from '@mantine/core';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-toml';
+import { loadPrismLanguages, highlightCode } from '../../../utils/prismLoader';
 import '../../../styles/prism-theme.css';
 import yaml from 'js-yaml';
 import TOML from '@iarna/toml';
@@ -660,12 +657,12 @@ const DataConverterTool = () => {
     }
   };
 
-  // Render highlighted code using Prism
+  // Render highlighted code using centralized Prism loader
   const renderHighlightedCode = (code, format) => {
     if (!code) return null;
     
     const language = getSyntaxLanguage(format);
-    const highlighted = Prism.highlight(code, Prism.languages[language] || Prism.languages.text, language);
+    const highlighted = highlightCode(code, language);
     
     return (
       <div className={colorScheme === 'dark' ? 'prism-dark' : ''} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -707,6 +704,11 @@ const DataConverterTool = () => {
       return () => clearTimeout(timer);
     }
   }, [outputFormat, indentSize, useSpaces, sortKeys]);
+
+  // Load PrismJS languages on component mount
+  useEffect(() => {
+    loadPrismLanguages(['json', 'yaml', 'toml']);
+  }, []);
 
   return (
     <>
