@@ -18,7 +18,7 @@ export default defineConfig({
           'vendor-mantine': ['@mantine/core', '@mantine/hooks', '@mantine/notifications', '@mantine/dates', '@mantine/dropzone'],
           // Icons
           'vendor-icons': ['@tabler/icons-react'],
-          // Data processing libraries
+          // Data processing libraries (excluding ExcelJS)
           'vendor-data': ['js-yaml', '@ltd/j-toml', 'ajv', 'ajv-formats', 'better-ajv-errors'],
           // UI utilities
           'vendor-ui': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities', '@svgdotjs/svg.js', 'html2canvas'],
@@ -40,8 +40,8 @@ export default defineConfig({
         }
       }
     },
-    // Increase chunk size warning limit since we're now splitting appropriately
-    chunkSizeWarningLimit: 800,
+    // Increase chunk size warning limit to account for ExcelJS dynamic chunk
+    chunkSizeWarningLimit: 1000,
     // Enable source maps for better debugging in production
     sourcemap: true,
     // Optimize build performance
