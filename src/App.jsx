@@ -15,6 +15,7 @@ import JWTTool from './components/tools/jwt/JWTTool';
 import PasswordGeneratorTool from './components/tools/password-generator/PasswordGeneratorTool';
 import MicrosoftPortalsTool from './components/tools/microsoft-portals/MicrosoftPortalsTool';
 import TenantLookupTool from './components/tools/tenant-lookup/TenantLookupTool';
+import AzureKQLTool from './components/tools/azure-kql/AzureKQLTool';
 import HomeView from './components/layout/HomeView';
 import ClearAllStorage from './components/common/ClearAllStorage';
 
@@ -93,6 +94,11 @@ export default function App() {
             {/* Microsoft Tenant Lookup Tool route */}
             <Route path="tenant-lookup" element={<TenantLookupTool />} />
             <Route path="tenant-lookup/:domain" element={<TenantLookupTool />} />
+
+            {/* Azure KQL Query Builder Tool route */}
+            <Route path="azure-kql" element={<AzureKQLTool />} />
+            <Route path="azure-kql/:service" element={<AzureKQLTool />} />
+            <Route path="azure-kql/:service/:template" element={<AzureKQLTool />} />
 
             {/* Add more routes here as needed */}
           </Route>

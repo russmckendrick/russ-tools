@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "schema": {
+    "fields": {
+      "TimeGenerated": {
+        "type": "datetime",
+        "required": true,
+        "description": "Log generation time (indexed field)",
+        "kqlField": "TimeGenerated",
+        "defaultRange": "24h",
+        "category": "time"
+      },
+      "SubscriptionId": {
+        "type": "string",
+        "required": false,
+        "description": "Azure subscription identifier",
+        "kqlField": "SubscriptionId",
+        "category": "resource"
+      },
+      "ResourceGroup": {
+        "type": "string",
+        "required": false,
+        "description": "Azure resource group name",
+        "kqlField": "ResourceGroup",
+        "category": "resource"
+      },
+      "ResourceId": {
+        "type": "string",
+        "required": false,
+        "description": "Full Azure resource identifier",
+        "kqlField": "ResourceId",
+        "category": "resource"
+      }
+    },
+    "filterOrder": [
+      "TimeGenerated",
+      "SubscriptionId",
+      "ResourceGroup",
+      "ResourceId"
+    ]
+  },
+  "queryPatterns": {
+    "timeRange": {
+      "relative": "TimeGenerated >= ago({range})",
+      "absolute": "TimeGenerated between(datetime({start}) .. datetime({end}))"
+    },
+    "basicFilter": "{field} == \"{value}\"",
+    "inFilter": "{field} in ({values})",
+    "containsFilter": "{field} contains \"{value}\"",
+    "regexFilter": "{field} matches regex \"{pattern}\"",
+    "numericFilter": "{field} {operator} {value}",
+    "ipFilter": "ipv4_is_in_range({field}, \"{cidr}\")"
+  },
+  "defaults": {
+    "timeRange": "24h",
+    "limit": 100,
+    "sort": "TimeGenerated desc"
+  }
+}

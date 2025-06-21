@@ -1,1 +1,1 @@
-import { IconCopy, IconServer } from '@tabler/icons-react';
+import { IconCopy, IconServer, IconChartDots3 } from '@tabler/icons-react';
