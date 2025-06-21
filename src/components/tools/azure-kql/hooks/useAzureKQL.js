@@ -137,16 +137,17 @@ export const useAzureKQL = () => {
     });
   }, [selectedService, selectedTemplate, parameters, generatedQuery, setQueryHistory]);
 
-  // Load query from history
-  const loadQuery = useCallback((historyEntry) => {
-    setSelectedService(historyEntry.service);
-    setSelectedTemplate(historyEntry.template);
-    setParameters(historyEntry.parameters);
-    setGeneratedQuery(historyEntry.query);
+  // Load query from history or favorites
+  const loadQuery = useCallback((queryData) => {
+    setSelectedService(queryData.service);
+    setSelectedTemplate(queryData.template);
+    setParameters(queryData.parameters);
+    setGeneratedQuery(queryData.query);
 
+    const source = queryData.name ? 'favorites' : 'history';
     notifications.show({
       title: 'Query Loaded',
-      message: 'Query has been loaded from history',
+      message: `Query has been loaded from ${source}`,
       color: 'blue'
     });
   }, []);

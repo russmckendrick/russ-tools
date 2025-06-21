@@ -12,6 +12,8 @@ import {
 } from '@mantine/core';
 import { IconChartDots3, IconInfoCircle } from '@tabler/icons-react';
 import { useParams } from 'react-router-dom';
+import { useLocalStorage } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
@@ -20,6 +22,7 @@ import ServiceSelector from './components/ServiceSelector';
 import ParameterForm from './components/ParameterForm';
 import QueryPreview from './components/QueryPreview';
 import QueryHistory from './components/QueryHistory';
+import QueryFavorites from './components/QueryFavorites';
 import ExportOptions from './components/ExportOptions';
 
 const AzureKQLTool = () => {
@@ -38,6 +41,55 @@ const AzureKQLTool = () => {
     loadQuery,
     generateShareableURL
   } = useAzureKQL();
+
+  // Favorites management
+  const [favorites, setFavorites] = useLocalStorage({
+    key: 'azure-kql-favorites',
+    defaultValue: []
+  });
+
+  // Add current query to favorites
+  const addToFavorites = () => {
+    if (!generatedQuery) {
+      notifications.show({
+        title: 'No Query',
+        message: 'Generate a query first before adding to favorites',
+        color: 'orange'
+      });
+      return;
+    }
+
+    // Check if already favorited
+    const isAlreadyFavorited = favorites.some(fav => fav.query === generatedQuery);
+    if (isAlreadyFavorited) {
+      notifications.show({
+        title: 'Already Favorited',
+        message: 'This query is already in your favorites',
+        color: 'orange'
+      });
+      return;
+    }
+
+    const favoriteEntry = {
+      id: Date.now().toString(),
+      name: `${selectedService} - ${selectedTemplate}`,
+      description: `Query for ${selectedService} using ${selectedTemplate} template`,
+      timestamp: new Date().toISOString(),
+      service: selectedService,
+      template: selectedTemplate,
+      parameters: { ...parameters },
+      query: generatedQuery,
+      tags: [selectedService, selectedTemplate]
+    };
+
+    setFavorites(prev => [favoriteEntry, ...prev]);
+    
+    notifications.show({
+      title: 'Added to Favorites',
+      message: 'Query has been saved to your favorites',
+      color: 'green'
+    });
+  };
 
   // Get tool configuration for SEO
   const toolConfig = toolsConfig.find(tool => tool.id === 'azure-kql');
@@ -86,6 +138,7 @@ const AzureKQLTool = () => {
           <Tabs defaultValue="builder" keepMounted={false}>
             <Tabs.List>
               <Tabs.Tab value="builder">Query Builder</Tabs.Tab>
+              <Tabs.Tab value="favorites">Favorites</Tabs.Tab>
               <Tabs.Tab value="history">Query History</Tabs.Tab>
             </Tabs.List>
 
@@ -116,10 +169,21 @@ const AzureKQLTool = () => {
                       query={generatedQuery}
                       onSave={saveQuery}
                       generateShareableURL={generateShareableURL}
+                      onAddToFavorites={addToFavorites}
                     />
                   </Stack>
                 </Grid.Col>
               </Grid>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="favorites" pt="lg">
+              <QueryFavorites 
+                onLoadQuery={loadQuery}
+                currentQuery={generatedQuery}
+                currentService={selectedService}
+                currentTemplate={selectedTemplate}
+                currentParameters={parameters}
+              />
             </Tabs.Panel>
 
             <Tabs.Panel value="history" pt="lg">

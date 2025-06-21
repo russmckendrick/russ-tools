@@ -7,11 +7,11 @@ import {
   Paper,
   Divider
 } from '@mantine/core';
-import { IconCopy, IconDownload, IconExternalLink, IconBookmark, IconShare } from '@tabler/icons-react';
+import { IconCopy, IconDownload, IconExternalLink, IconBookmark, IconShare, IconStar } from '@tabler/icons-react';
 import { useClipboard } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 
-const ExportOptions = ({ query, onSave, generateShareableURL }) => {
+const ExportOptions = ({ query, onSave, generateShareableURL, onAddToFavorites }) => {
   const clipboard = useClipboard();
 
   const handleCopyQuery = () => {
@@ -116,6 +116,19 @@ const ExportOptions = ({ query, onSave, generateShareableURL }) => {
     }
   };
 
+  const handleAddToFavorites = () => {
+    if (!onAddToFavorites) {
+      notifications.show({
+        title: 'Favorites Unavailable',
+        message: 'Favorites functionality is not available',
+        color: 'orange'
+      });
+      return;
+    }
+
+    onAddToFavorites();
+  };
+
   if (!query) {
     return (
       <Paper p="md" withBorder>
@@ -168,13 +181,24 @@ const ExportOptions = ({ query, onSave, generateShareableURL }) => {
           
           <Button
             variant="subtle"
-            leftSection={<IconShare size={16} />}
-            onClick={handleShareURL}
+            leftSection={<IconStar size={16} />}
+            onClick={handleAddToFavorites}
             size="sm"
+            color="yellow"
           >
-            Share URL
+            Add to Favorites
           </Button>
         </Group>
+
+        <Button
+          variant="subtle"
+          leftSection={<IconShare size={16} />}
+          onClick={handleShareURL}
+          size="sm"
+          fullWidth
+        >
+          Share URL
+        </Button>
 
         <Button
           variant="subtle"

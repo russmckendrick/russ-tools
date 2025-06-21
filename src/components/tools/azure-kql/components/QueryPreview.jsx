@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   Stack, 
   Text, 
-  Code, 
   Paper, 
   Group, 
   Badge,
@@ -10,8 +9,37 @@ import {
   ScrollArea
 } from '@mantine/core';
 import { IconCode, IconInfoCircle } from '@tabler/icons-react';
+import { useMantineColorScheme } from '@mantine/core';
+import Prism from 'prismjs';
+import '../utils/prism-kql.js';
+import '../../../../styles/prism-theme.css';
 
 const QueryPreview = ({ query, service }) => {
+  const { colorScheme } = useMantineColorScheme();
+
+  // Render highlighted KQL code using Prism
+  const renderHighlightedKQL = (kqlCode) => {
+    if (!kqlCode) return null;
+    
+    const highlighted = Prism.highlight(kqlCode, Prism.languages.kql || Prism.languages.text, 'kql');
+    
+    return (
+      <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
+        <pre className="language-kql" style={{ 
+          margin: 0,
+          background: 'transparent',
+          fontSize: '13px',
+          lineHeight: '1.5'
+        }}>
+          <code 
+            className="language-kql"
+            dangerouslySetInnerHTML={{ __html: highlighted }}
+          />
+        </pre>
+      </div>
+    );
+  };
+
   if (!query) {
     return (
       <Paper p="md" withBorder>
@@ -63,9 +91,7 @@ const QueryPreview = ({ query, service }) => {
       {/* Query Display */}
       <Paper p="md" withBorder>
         <ScrollArea.Autosize mah={400}>
-          <Code block style={{ whiteSpace: 'pre-wrap' }}>
-            {query}
-          </Code>
+          {renderHighlightedKQL(query)}
         </ScrollArea.Autosize>
       </Paper>
 

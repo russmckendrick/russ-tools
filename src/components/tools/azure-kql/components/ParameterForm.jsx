@@ -59,15 +59,28 @@ const ParameterForm = ({
 
   const renderField = (fieldName, fieldConfig) => {
     const value = parameters[fieldName] || '';
-    const hasError = validation?.errors.some(error => error.includes(fieldName));
+    const fieldErrors = validation?.errors.filter(error => error.includes(fieldName)) || [];
+    const fieldWarnings = validation?.warnings.filter(warning => warning.includes(fieldName)) || [];
+    const hasError = fieldErrors.length > 0;
+    const hasWarning = fieldWarnings.length > 0;
+    
+    // Get specific error message for this field
+    const errorMessage = hasError ? fieldErrors[0] : null;
+    const warningMessage = hasWarning && !hasError ? fieldWarnings[0] : null;
     
     const commonProps = {
       key: fieldName,
-      label: fieldConfig.description || fieldName,
+      label: (
+        <Group gap="xs">
+          <Text size="sm">{fieldConfig.description || fieldName}</Text>
+          {fieldConfig.required && <Text size="xs" c="red">*</Text>}
+        </Group>
+      ),
       value,
       onChange: (val) => handleParameterChange(fieldName, val),
-      error: hasError,
-      placeholder: fieldConfig.examples?.[0] || `Enter ${fieldName}`
+      error: errorMessage,
+      placeholder: fieldConfig.examples?.[0] || `Enter ${fieldName}`,
+      description: warningMessage || (fieldConfig.examples ? `Example: ${fieldConfig.examples[0]}` : undefined)
     };
 
     switch (fieldConfig.type) {
@@ -191,19 +204,29 @@ const ParameterForm = ({
         </Accordion>
       )}
 
-      {/* Validation Messages */}
+      {/* Validation Summary */}
       {validation && (validation.errors.length > 0 || validation.warnings.length > 0) && (
         <Stack gap="xs">
-          {validation.errors.map((error, index) => (
-            <Alert key={`error-${index}`} icon={<IconAlertTriangle size={16} />} color="red" size="sm">
-              {error}
+          {validation.errors.length > 0 && (
+            <Alert 
+              icon={<IconAlertTriangle size={16} />} 
+              color="red" 
+              size="sm"
+              title={`${validation.errors.length} validation ${validation.errors.length === 1 ? 'error' : 'errors'}`}
+            >
+              <Text size="sm">Please fix the highlighted fields above to generate your query.</Text>
             </Alert>
-          ))}
-          {validation.warnings.map((warning, index) => (
-            <Alert key={`warning-${index}`} icon={<IconInfoCircle size={16} />} color="yellow" size="sm">
-              {warning}
+          )}
+          {validation.warnings.length > 0 && validation.errors.length === 0 && (
+            <Alert 
+              icon={<IconInfoCircle size={16} />} 
+              color="yellow" 
+              size="sm"
+              title={`${validation.warnings.length} ${validation.warnings.length === 1 ? 'suggestion' : 'suggestions'}`}
+            >
+              <Text size="sm">Your query will work, but consider the suggestions above for better performance.</Text>
             </Alert>
-          ))}
+          )}
         </Stack>
       )}
 
@@ -213,8 +236,13 @@ const ParameterForm = ({
         disabled={!validation?.isValid}
         fullWidth
         size="md"
+        color={validation?.isValid ? 'blue' : 'gray'}
+        variant={validation?.isValid ? 'filled' : 'light'}
       >
-        Generate KQL Query
+        {!validation?.isValid && validation?.errors?.length > 0 
+          ? `Fix ${validation.errors.length} ${validation.errors.length === 1 ? 'error' : 'errors'} to generate`
+          : 'Generate KQL Query'
+        }
       </Button>
     </Stack>
   );
