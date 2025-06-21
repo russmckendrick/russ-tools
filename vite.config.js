@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -8,7 +9,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
+        main: resolve(fileURLToPath(new URL('.', import.meta.url)), 'index.html'),
       },
       output: {
         manualChunks: {
@@ -75,8 +76,8 @@ export default defineConfig({
     dedupe: ['react', 'react-dom', 'react-router-dom'],
     alias: {
       // Ensure consistent React imports
-      'react': resolve(__dirname, 'node_modules/react'),
-      'react-dom': resolve(__dirname, 'node_modules/react-dom')
+      'react': resolve(fileURLToPath(new URL('.', import.meta.url)), 'node_modules/react'),
+      'react-dom': resolve(fileURLToPath(new URL('.', import.meta.url)), 'node_modules/react-dom')
     }
   }
 })

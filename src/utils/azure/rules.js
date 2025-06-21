@@ -1,7 +1,7 @@
 // Azure Resource Naming Rules and Configuration
 
 // Import the region parser
-import { getRegionAbbreviation } from './region-parser';
+// import { getRegionAbbreviation } from './region-parser';
 import environments from '../../data/environments.json';
 import { RESOURCE_DEFINITIONS, getResourceDefinition } from './resource-definitions';
 
