@@ -5,7 +5,7 @@ import jsonSourceMap from 'json-source-map';
 import parseJson from 'json-parse-even-better-errors';
 import yaml from 'js-yaml';
 import SourceMap from 'js-yaml-source-map';
-import TOML from '@iarna/toml';
+import * as TOML from '@ltd/j-toml';
 
 /**
  * Enhanced validation utility that provides detailed error messages

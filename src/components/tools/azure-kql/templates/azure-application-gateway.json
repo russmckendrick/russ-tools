@@ -1,0 +1,302 @@
+{
+  "service": {
+    "id": "azure-application-gateway",
+    "name": "Azure Application Gateway",
+    "description": "Azure Application Gateway web traffic load balancer and firewall logs",
+    "category": "Load Balancing",
+    "version": "1.0.0",
+    "documentation": "https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-diagnostics"
+  },
+  "schema": {
+    "tables": {
+      "primary": "AzureDiagnostics",
+      "secondary": ["ApplicationGatewayAccessLog", "ApplicationGatewayPerformanceLog", "ApplicationGatewayFirewallLog"],
+      "legacy": "AzureDiagnostics"
+    },
+    "fields": {
+      "clientIP_s": {
+        "type": "ipaddress",
+        "required": false,
+        "description": "Client IP address making the request",
+        "kqlField": "clientIP_s",
+        "supportsCIDR": true,
+        "category": "network",
+        "examples": ["192.168.1.1", "10.0.0.0/8"]
+      },
+      "clientPort_d": {
+        "type": "number",
+        "required": false,
+        "description": "Client port number",
+        "kqlField": "clientPort_d",
+        "min": 1,
+        "max": 65535,
+        "category": "network"
+      },
+      "httpMethod_s": {
+        "type": "select",
+        "required": false,
+        "description": "HTTP method used in the request",
+        "kqlField": "httpMethod_s",
+        "options": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"],
+        "category": "http"
+      },
+      "httpStatus_d": {
+        "type": "number",
+        "required": false,
+        "description": "HTTP status code returned",
+        "kqlField": "httpStatus_d",
+        "min": 100,
+        "max": 599,
+        "category": "http",
+        "commonStatuses": [200, 301, 302, 400, 401, 403, 404, 500, 502, 503]
+      },
+      "httpVersion_s": {
+        "type": "select",
+        "required": false,
+        "description": "HTTP version used",
+        "kqlField": "httpVersion_s",
+        "options": ["HTTP/1.0", "HTTP/1.1", "HTTP/2.0"],
+        "category": "http"
+      },
+      "requestUri_s": {
+        "type": "string",
+        "required": false,
+        "description": "Request URI path",
+        "kqlField": "requestUri_s",
+        "category": "http",
+        "examples": ["/api/users", "/admin", "/login"]
+      },
+      "userAgent_s": {
+        "type": "string",
+        "required": false,
+        "description": "User agent string from client",
+        "kqlField": "userAgent_s",
+        "category": "http"
+      },
+      "host_s": {
+        "type": "string",
+        "required": false,
+        "description": "Host header from the request",
+        "kqlField": "host_s",
+        "category": "http",
+        "examples": ["example.com", "api.example.com"]
+      },
+      "serverResponseLatency_d": {
+        "type": "number",
+        "required": false,
+        "description": "Server response latency in milliseconds",
+        "kqlField": "serverResponseLatency_d",
+        "min": 0,
+        "category": "performance"
+      },
+      "serverRouted_s": {
+        "type": "string",
+        "required": false,
+        "description": "Backend server that handled the request",
+        "kqlField": "serverRouted_s",
+        "category": "routing"
+      },
+      "serverStatus_s": {
+        "type": "string",
+        "required": false,
+        "description": "Backend server response status",
+        "kqlField": "serverStatus_s",
+        "category": "routing"
+      },
+      "receivedBytes_d": {
+        "type": "number",
+        "required": false,
+        "description": "Bytes received from client",
+        "kqlField": "receivedBytes_d",
+        "min": 0,
+        "category": "performance"
+      },
+      "sentBytes_d": {
+        "type": "number",
+        "required": false,
+        "description": "Bytes sent to client",
+        "kqlField": "sentBytes_d",
+        "min": 0,
+        "category": "performance"
+      },
+      "timeToBehindServer_d": {
+        "type": "number",
+        "required": false,
+        "description": "Time to establish connection to backend server",
+        "kqlField": "timeToBehindServer_d",
+        "min": 0,
+        "category": "performance"
+      },
+      "Category": {
+        "type": "select",
+        "required": false,
+        "description": "Log category",
+        "kqlField": "Category",
+        "options": ["ApplicationGatewayAccessLog", "ApplicationGatewayPerformanceLog", "ApplicationGatewayFirewallLog"],
+        "category": "system"
+      },
+      "ruleSetType_s": {
+        "type": "string",
+        "required": false,
+        "description": "WAF rule set type",
+        "kqlField": "ruleSetType_s",
+        "category": "security",
+        "examples": ["OWASP", "Microsoft_BotManagerRuleSet"]
+      },
+      "ruleSetVersion_s": {
+        "type": "string",
+        "required": false,
+        "description": "WAF rule set version",
+        "kqlField": "ruleSetVersion_s",
+        "category": "security",
+        "examples": ["3.0", "3.1", "3.2"]
+      },
+      "ruleId_d": {
+        "type": "number",
+        "required": false,
+        "description": "WAF rule ID that triggered",
+        "kqlField": "ruleId_d",
+        "category": "security"
+      },
+      "action_s": {
+        "type": "select",
+        "required": false,
+        "description": "WAF action taken",
+        "kqlField": "action_s",
+        "options": ["Detected", "Blocked", "Matched"],
+        "category": "security"
+      },
+      "limit": {
+        "type": "select",
+        "required": false,
+        "description": "Maximum number of results to return",
+        "category": "essential",
+        "default": "1000",
+        "options": ["500", "1000", "5000", "15000", "0", "custom"],
+        "optionLabels": {
+          "500": "500",
+          "1000": "1,000",
+          "5000": "5,000", 
+          "15000": "15,000",
+          "0": "Max. limit",
+          "custom": "Custom"
+        }
+      }
+    },
+    "filterOrder": [
+      "timeRange",
+      "SubscriptionId",
+      "ResourceGroup",
+      "Category",
+      "httpStatus_d",
+      "clientIP_s",
+      "httpMethod_s",
+      "requestUri_s", 
+      "action_s",
+      "ruleId_d",
+      "serverResponseLatency_d"
+    ]
+  },
+  "templates": {
+    "basic": {
+      "name": "Basic Access Log Query",
+      "description": "Simple query for Application Gateway access logs",
+      "table": "AzureDiagnostics",
+      "defaultParameters": {
+        "timeRange": "24h",
+        "Category": "ApplicationGatewayAccessLog",
+        "limit": "100"
+      },
+      "requiredFields": ["timeRange", "Category"]
+    },
+    "error-analysis": {
+      "name": "Error Analysis",
+      "description": "Analyze HTTP errors and client issues",
+      "table": "AzureDiagnostics",
+      "defaultParameters": {
+        "timeRange": "24h",
+        "Category": "ApplicationGatewayAccessLog",
+        "limit": "500"
+      },
+      "commonFilters": ["httpStatus_d", "clientIP_s", "requestUri_s"],
+      "aggregations": ["count by httpStatus_d", "count by requestUri_s"],
+      "customFilter": "httpStatus_d >= 400"
+    },
+    "performance-monitoring": {
+      "name": "Performance Monitoring",
+      "description": "Monitor response times and backend performance",
+      "table": "AzureDiagnostics",
+      "defaultParameters": {
+        "timeRange": "1h",
+        "Category": "ApplicationGatewayAccessLog",
+        "limit": "1000"
+      },
+      "commonFilters": ["serverResponseLatency_d", "serverRouted_s"],
+      "aggregations": ["avg(serverResponseLatency_d)", "max(serverResponseLatency_d)"],
+      "customFilter": "serverResponseLatency_d > 1000"
+    },
+    "security-analysis": {
+      "name": "WAF Security Analysis",
+      "description": "Analyze Web Application Firewall security events",
+      "table": "AzureDiagnostics",
+      "defaultParameters": {
+        "timeRange": "24h",
+        "Category": "ApplicationGatewayFirewallLog",
+        "limit": "500"
+      },
+      "commonFilters": ["action_s", "ruleId_d", "clientIP_s", "ruleSetType_s"],
+      "aggregations": ["count by action_s", "count by ruleId_d", "count by clientIP_s"]
+    },
+    "traffic-analysis": {
+      "name": "Traffic Analysis",
+      "description": "Analyze web traffic patterns and popular endpoints",
+      "table": "AzureDiagnostics",
+      "defaultParameters": {
+        "timeRange": "7d",
+        "Category": "ApplicationGatewayAccessLog",
+        "limit": "1000"
+      },
+      "commonFilters": ["httpMethod_s", "requestUri_s", "userAgent_s"],
+      "aggregations": ["count by requestUri_s", "count by httpMethod_s"]
+    },
+    "backend-health": {
+      "name": "Backend Health Analysis",
+      "description": "Monitor backend server health and routing",
+      "table": "AzureDiagnostics",
+      "defaultParameters": {
+        "timeRange": "1h",
+        "Category": "ApplicationGatewayAccessLog",
+        "limit": "500"
+      },
+      "commonFilters": ["serverRouted_s", "serverStatus_s", "timeToBehindServer_d"],
+      "aggregations": ["count by serverRouted_s", "count by serverStatus_s"]
+    }
+  },
+  "queryExamples": {
+    "top-error-pages": {
+      "name": "Top Error Pages",
+      "description": "Find the most common error pages and status codes",
+      "query": "AzureDiagnostics | where TimeGenerated >= ago(24h) | where Category == \"ApplicationGatewayAccessLog\" | where httpStatus_d >= 400 | summarize ErrorCount = count() by requestUri_s, httpStatus_d | top 10 by ErrorCount"
+    },
+    "slow-requests": {
+      "name": "Slow Requests Analysis",
+      "description": "Identify slow requests and performance bottlenecks", 
+      "query": "AzureDiagnostics | where TimeGenerated >= ago(1h) | where Category == \"ApplicationGatewayAccessLog\" | where serverResponseLatency_d > 5000 | project TimeGenerated, clientIP_s, requestUri_s, serverResponseLatency_d, serverRouted_s | order by serverResponseLatency_d desc"
+    },
+    "waf-blocked-requests": {
+      "name": "WAF Blocked Requests",
+      "description": "Analyze requests blocked by Web Application Firewall",
+      "query": "AzureDiagnostics | where TimeGenerated >= ago(24h) | where Category == \"ApplicationGatewayFirewallLog\" | where action_s == \"Blocked\" | summarize BlockedCount = count() by clientIP_s, ruleId_d | top 10 by BlockedCount"
+    },
+    "geographic-analysis": {
+      "name": "Client Geographic Analysis", 
+      "description": "Analyze requests by client IP geographic distribution",
+      "query": "AzureDiagnostics | where TimeGenerated >= ago(24h) | where Category == \"ApplicationGatewayAccessLog\" | summarize RequestCount = count(), UniqueClients = dcount(clientIP_s) by bin(TimeGenerated, 1h) | order by TimeGenerated desc"
+    },
+    "api-endpoint-usage": {
+      "name": "API Endpoint Usage",
+      "description": "Track usage patterns of API endpoints",
+      "query": "AzureDiagnostics | where TimeGenerated >= ago(7d) | where Category == \"ApplicationGatewayAccessLog\" | where requestUri_s startswith \"/api/\" | summarize RequestCount = count(), AvgLatency = avg(serverResponseLatency_d) by requestUri_s, httpMethod_s | order by RequestCount desc"
+    }
+  }
+}

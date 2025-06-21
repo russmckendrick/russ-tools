@@ -1,0 +1,200 @@
+{
+  "service": {
+    "id": "azure-firewall",
+    "name": "Azure Firewall",
+    "description": "Azure Firewall network and application filtering logs",
+    "category": "Network Security",
+    "version": "1.0.0",
+    "documentation": "https://docs.microsoft.com/en-us/azure/firewall/logs-and-metrics"
+  },
+  "schema": {
+    "tables": {
+      "primary": "AZFWNetworkRule",
+      "secondary": ["AZFWApplicationRule", "AZFWNatRule"],
+      "legacy": "AzureDiagnostics"
+    },
+    "fields": {
+      "SourceIp": {
+        "type": "ipaddress",
+        "required": false,
+        "description": "Source IP address of the connection",
+        "kqlField": "SourceIp",
+        "supportsCIDR": true,
+        "category": "network",
+        "examples": ["192.168.1.1", "10.0.0.0/8"]
+      },
+      "DestinationIp": {
+        "type": "ipaddress",
+        "required": false,
+        "description": "Destination IP address of the connection",
+        "kqlField": "DestinationIp",
+        "supportsCIDR": true,
+        "category": "network",
+        "examples": ["8.8.8.8", "172.16.0.0/12"]
+      },
+      "SourcePort": {
+        "type": "number",
+        "required": false,
+        "description": "Source port number",
+        "kqlField": "SourcePort",
+        "min": 1,
+        "max": 65535,
+        "category": "network"
+      },
+      "DestinationPort": {
+        "type": "number",
+        "required": false,
+        "description": "Destination port number",
+        "kqlField": "DestinationPort",
+        "min": 1,
+        "max": 65535,
+        "category": "network",
+        "commonPorts": [22, 23, 25, 53, 80, 110, 143, 443, 993, 995]
+      },
+      "Protocol": {
+        "type": "select",
+        "required": false,
+        "description": "Network protocol",
+        "kqlField": "Protocol",
+        "options": ["TCP", "UDP", "ICMP", "Any"],
+        "category": "network"
+      },
+      "Action": {
+        "type": "select",
+        "required": false,
+        "description": "Firewall action taken",
+        "kqlField": "Action",
+        "options": ["Allow", "Deny", "DNAT"],
+        "category": "action",
+        "default": "Deny"
+      },
+      "RuleCollection": {
+        "type": "string",
+        "required": false,
+        "description": "Name of the rule collection",
+        "kqlField": "RuleCollection",
+        "category": "rule"
+      },
+      "RuleName": {
+        "type": "string",
+        "required": false,
+        "description": "Name of the specific rule",
+        "kqlField": "Rule",
+        "category": "rule"
+      },
+      "TargetUrl": {
+        "type": "string",
+        "required": false,
+        "description": "Target URL for application rules",
+        "kqlField": "TargetUrl",
+        "category": "application"
+      },
+      "Fqdn": {
+        "type": "string",
+        "required": false,
+        "description": "Fully qualified domain name",
+        "kqlField": "Fqdn",
+        "category": "application"
+      },
+      "limit": {
+        "type": "select",
+        "required": false,
+        "description": "Maximum number of results to return",
+        "category": "essential",
+        "default": "1000",
+        "options": ["500", "1000", "5000", "15000", "0", "custom"],
+        "optionLabels": {
+          "500": "500",
+          "1000": "1,000",
+          "5000": "5,000", 
+          "15000": "15,000",
+          "0": "Max. limit",
+          "custom": "Custom"
+        }
+      }
+    },
+    "filterOrder": [
+      "timeRange",
+      "SubscriptionId",
+      "ResourceGroup", 
+      "Action",
+      "SourceIp",
+      "DestinationIp",
+      "Protocol",
+      "DestinationPort",
+      "SourcePort",
+      "RuleCollection",
+      "RuleName"
+    ]
+  },
+  "templates": {
+    "basic": {
+      "name": "Basic Firewall Query",
+      "description": "Simple query for Azure Firewall logs with time range and action filtering",
+      "table": "AZFWNetworkRule",
+      "defaultParameters": {
+        "timeRange": "24h",
+        "Action": "Deny",
+        "limit": "100"
+      },
+      "requiredFields": ["timeRange"]
+    },
+    "security-investigation": {
+      "name": "Security Investigation",
+      "description": "Analyze denied connections and potential security threats",
+      "table": "AZFWNetworkRule",
+      "defaultParameters": {
+        "timeRange": "24h",
+        "Action": "Deny",
+        "limit": "500"
+      },
+      "commonFilters": ["SourceIp", "DestinationIp", "DestinationPort"],
+      "aggregations": ["count by SourceIp", "count by DestinationIp"]
+    },
+    "traffic-analysis": {
+      "name": "Traffic Analysis",
+      "description": "Analyze allowed traffic patterns and bandwidth usage",
+      "table": "AZFWNetworkRule", 
+      "defaultParameters": {
+        "timeRange": "7d",
+        "Action": "Allow",
+        "limit": "1000"
+      },
+      "commonFilters": ["Protocol", "DestinationPort"],
+      "aggregations": ["count by Protocol", "count by DestinationPort"]
+    },
+    "rule-effectiveness": {
+      "name": "Rule Effectiveness",
+      "description": "Analyze firewall rule usage and effectiveness",
+      "table": "AZFWNetworkRule",
+      "defaultParameters": {
+        "timeRange": "7d",
+        "limit": "1000"
+      },
+      "commonFilters": ["RuleCollection", "RuleName"],
+      "aggregations": ["count by RuleCollection", "count by Rule"]
+    },
+    "application-rules": {
+      "name": "Application Rules",
+      "description": "Query Azure Firewall application rule logs",
+      "table": "AZFWApplicationRule",
+      "defaultParameters": {
+        "timeRange": "24h",
+        "limit": "100"
+      },
+      "commonFilters": ["TargetUrl", "Fqdn", "Action"]
+    }
+  },
+  "queryExamples": {
+    "top-denied-sources": {
+      "name": "Top Denied Source IPs",
+      "description": "Find the top source IPs with denied connections",
+      "query": "AZFWNetworkRule | where TimeGenerated >= ago(24h) | where Action == \"Deny\" | summarize DeniedCount = count() by SourceIp | top 10 by DeniedCount"
+    },
+    "port-scanning": {
+      "name": "Potential Port Scanning",
+      "description": "Detect potential port scanning activities",
+      "query": "AZFWNetworkRule | where TimeGenerated >= ago(1h) | where Action == \"Deny\" | summarize DistinctPorts = dcount(DestinationPort), Attempts = count() by SourceIp | where DistinctPorts > 10 | order by Attempts desc"
+    }
+  }
+}

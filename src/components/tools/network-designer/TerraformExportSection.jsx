@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Paper, Group, Button, Tabs, ActionIcon, Tooltip, Text, Title, Box, Select, TextInput } from '@mantine/core';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-hcl';
+import { loadPrismLanguages, highlightCode } from '../../../utils/prismLoader';
 import '../../../styles/prism-theme.css';
 import { useComputedColorScheme } from '@mantine/core';
 
@@ -109,6 +108,11 @@ export function TerraformExportSection({ network, subnets }) {
     return () => { mounted = false; };
   }, []);
 
+  // Load PrismJS languages on component mount
+  useEffect(() => {
+    loadPrismLanguages(['hcl']);
+  }, []);
+
   const awsCode = generateAwsTerraform({
     vpcName: network?.name || 'main_vpc',
     vpcCidr: `${network?.ip}/${network?.cidr}`,
@@ -138,9 +142,9 @@ export function TerraformExportSection({ network, subnets }) {
   else code = '';
 
   // PrismJS highlighting
-  const highlightedAws = Prism.highlight(awsCode, Prism.languages.hcl, 'hcl');
-  const highlightedAzure = Prism.highlight(azureCode, Prism.languages.hcl, 'hcl');
-  const highlightedVcd = Prism.highlight(vcdCode, Prism.languages.hcl, 'hcl');
+      const highlightedAws = highlightCode(awsCode, 'hcl');
+    const highlightedAzure = highlightCode(azureCode, 'hcl');
+    const highlightedVcd = highlightCode(vcdCode, 'hcl');
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);

@@ -1,0 +1,74 @@
+{
+  "version": "1.0.0",
+  "schema": {
+    "fields": {
+      "SubscriptionId": {
+        "type": "string",
+        "required": false,
+        "description": "Azure subscription identifier",
+        "kqlField": "SubscriptionId",
+        "category": "resource"
+      },
+      "ResourceGroup": {
+        "type": "string",
+        "required": false,
+        "description": "Azure resource group name",
+        "kqlField": "ResourceGroup",
+        "category": "resource"
+      },
+      "ResourceId": {
+        "type": "string",
+        "required": false,
+        "description": "Full Azure resource identifier",
+        "kqlField": "ResourceId",
+        "category": "resource"
+      },
+      "timeRange": {
+        "type": "datetime",
+        "required": false,
+        "description": "Time range for the query",
+        "category": "time",
+        "default": "24h"
+      },
+      "limit": {
+        "type": "select",
+        "required": false,
+        "description": "Maximum number of results to return",
+        "category": "essential",
+        "default": "1000",
+        "options": ["500", "1000", "5000", "15000", "0", "custom"],
+        "optionLabels": {
+          "500": "500",
+          "1000": "1,000",
+          "5000": "5,000", 
+          "15000": "15,000",
+          "0": "Max. limit",
+          "custom": "Custom"
+        }
+      }
+    },
+    "filterOrder": [
+      "timeRange",
+      "SubscriptionId",
+      "ResourceGroup",
+      "ResourceId"
+    ]
+  },
+  "queryPatterns": {
+    "timeRange": {
+      "relative": "TimeGenerated >= ago({range})",
+      "absolute": "TimeGenerated between(datetime({start}) .. datetime({end}))"
+    },
+    "basicFilter": "{field} == \"{value}\"",
+    "inFilter": "{field} in ({values})",
+    "containsFilter": "{field} contains \"{value}\"",
+    "regexFilter": "{field} matches regex \"{pattern}\"",
+    "numericFilter": "{field} {operator} {value}",
+    "ipFilter": "ipv4_is_in_range({field}, \"{cidr}\")"
+  },
+  "defaults": {
+    "timeRange": "24h",
+    "limit": "1000",
+    "sort": "TimeGenerated desc"
+  }
+}

@@ -1,0 +1,250 @@
+{
+  "service": {
+    "id": "multi-service-correlation",
+    "name": "Multi-Service Correlation",
+    "description": "Correlate data across multiple Azure services for comprehensive analysis",
+    "category": "Cross-Service Analysis",
+    "version": "1.0.0",
+    "documentation": "https://docs.microsoft.com/en-us/azure/azure-monitor/logs/cross-workspace-query"
+  },
+  "schema": {
+    "tables": {
+      "primary": "union",
+      "services": [
+        "AZFWNetworkRule",
+        "AZFWApplicationRule", 
+        "AzureDiagnostics",
+        "ApplicationGatewayAccessLog",
+        "ApplicationGatewayFirewallLog",
+        "NetworkSecurityGroupEvent",
+        "NetworkSecurityGroupRuleCounter"
+      ]
+    },
+    "fields": {
+      "correlationId": {
+        "type": "string",
+        "required": false,
+        "description": "Correlation ID to link related events across services",
+        "kqlField": "CorrelationId",
+        "category": "correlation"
+      },
+      "sourceIp": {
+        "type": "ipaddress",
+        "required": false,
+        "description": "Source IP address common across services",
+        "kqlField": "SourceIp",
+        "supportsCIDR": true,
+        "category": "network",
+        "examples": ["192.168.1.1", "10.0.0.0/8"]
+      },
+      "destinationIp": {
+        "type": "ipaddress",
+        "required": false,
+        "description": "Destination IP address",
+        "kqlField": "DestinationIp",
+        "supportsCIDR": true,
+        "category": "network"
+      },
+      "action": {
+        "type": "select",
+        "required": false,
+        "description": "Action taken by security services",
+        "kqlField": "Action",
+        "options": ["Allow", "Deny", "Block", "Detect"],
+        "category": "security"
+      },
+      "services": {
+        "type": "multiselect",
+        "required": true,
+        "description": "Azure services to include in correlation",
+        "options": [
+          "Azure Firewall",
+          "Application Gateway",
+          "Network Security Groups",
+          "Azure Front Door",
+          "Azure Load Balancer"
+        ],
+        "category": "services",
+        "default": ["Azure Firewall", "Application Gateway"]
+      },
+      "timeWindow": {
+        "type": "select",
+        "required": false,
+        "description": "Time window for correlation analysis",
+        "options": ["1m", "5m", "15m", "30m", "1h"],
+        "default": "5m",
+        "category": "correlation"
+      },
+      "severity": {
+        "type": "select",
+        "required": false,
+        "description": "Event severity level",
+        "options": ["Critical", "High", "Medium", "Low", "Informational"],
+        "category": "security"
+      },
+      "limit": {
+        "type": "select",
+        "required": false,
+        "description": "Maximum number of results to return",
+        "category": "essential",
+        "default": "1000",
+        "options": ["500", "1000", "5000", "15000", "0", "custom"],
+        "optionLabels": {
+          "500": "500",
+          "1000": "1,000",
+          "5000": "5,000", 
+          "15000": "15,000",
+          "0": "Max. limit",
+          "custom": "Custom"
+        }
+      }
+    },
+    "filterOrder": [
+      "timeRange",
+      "services",
+      "sourceIp",
+      "destinationIp",
+      "action",
+      "severity",
+      "correlationId"
+    ]
+  },
+  "templates": {
+    "security-incident-correlation": {
+      "name": "Security Incident Correlation",
+      "description": "Correlate security events across Azure Firewall, Application Gateway, and NSGs",
+      "defaultParameters": {
+        "timeRange": "1h",
+        "services": ["Azure Firewall", "Application Gateway"],
+        "action": "Deny",
+        "timeWindow": "5m",
+        "limit": "1000"
+      },
+      "requiredFields": ["timeRange", "services"],
+      "queryPattern": "union_correlation",
+      "correlationFields": ["SourceIp", "TimeGenerated", "Action"]
+    },
+    "traffic-flow-analysis": {
+      "name": "Traffic Flow Analysis",
+      "description": "Analyze traffic flow patterns across multiple network services",
+      "defaultParameters": {
+        "timeRange": "24h",
+        "services": ["Azure Firewall", "Network Security Groups"],
+        "timeWindow": "15m",
+        "limit": "2000"
+      },
+      "requiredFields": ["timeRange", "services"],
+      "queryPattern": "traffic_flow_correlation",
+      "aggregations": ["count by SourceIp", "count by DestinationIp"]
+    },
+    "performance-correlation": {
+      "name": "Performance Impact Correlation",
+      "description": "Correlate performance metrics across load balancing and security services",
+      "defaultParameters": {
+        "timeRange": "4h",
+        "services": ["Application Gateway", "Azure Load Balancer"],
+        "timeWindow": "10m",
+        "limit": "1500"
+      },
+      "requiredFields": ["timeRange", "services"],
+      "queryPattern": "performance_correlation",
+      "metrics": ["ResponseTime", "RequestCount", "ErrorRate"]
+    },
+    "compliance-audit": {
+      "name": "Compliance Audit Trail",
+      "description": "Generate audit trail across multiple services for compliance reporting",
+      "defaultParameters": {
+        "timeRange": "7d",
+        "services": ["Azure Firewall", "Application Gateway", "Network Security Groups"],
+        "timeWindow": "1h",
+        "limit": "5000"
+      },
+      "requiredFields": ["timeRange", "services"],
+      "queryPattern": "audit_correlation",
+      "complianceFields": ["UserPrincipalName", "Operation", "Result", "IPAddress"]
+    }
+  },
+  "queryPatterns": {
+    "union_correlation": {
+      "description": "Union multiple service tables with time-based correlation",
+      "template": "union {tables} | where TimeGenerated >= ago({timeRange}) | where {filters} | extend CorrelationWindow = bin(TimeGenerated, {timeWindow}) | summarize Events = count(), Services = make_set(Type), FirstEvent = min(TimeGenerated), LastEvent = max(TimeGenerated) by CorrelationWindow, {correlationFields} | order by CorrelationWindow desc"
+    },
+    "traffic_flow_correlation": {
+      "description": "Analyze traffic flow patterns with correlation",
+      "template": "union {tables} | where TimeGenerated >= ago({timeRange}) | where {filters} | extend FlowWindow = bin(TimeGenerated, {timeWindow}) | summarize InboundCount = countif(Direction == 'Inbound'), OutboundCount = countif(Direction == 'Outbound'), UniqueServices = dcount(Type) by FlowWindow, SourceIp, DestinationIp | order by FlowWindow desc"
+    },
+    "performance_correlation": {
+      "description": "Correlate performance metrics across services",
+      "template": "union {tables} | where TimeGenerated >= ago({timeRange}) | where {filters} | extend PerfWindow = bin(TimeGenerated, {timeWindow}) | summarize AvgResponseTime = avg(ResponseTime), TotalRequests = sum(RequestCount), ErrorRate = avg(ErrorRate) by PerfWindow, Type | order by PerfWindow desc"
+    },
+    "audit_correlation": {
+      "description": "Generate comprehensive audit trail",
+      "template": "union {tables} | where TimeGenerated >= ago({timeRange}) | where {filters} | extend AuditWindow = bin(TimeGenerated, {timeWindow}) | project TimeGenerated, Type, Operation, Result, UserPrincipalName, IPAddress, ResourceId | order by TimeGenerated desc"
+    }
+  },
+  "correlationRules": {
+    "timeBasedCorrelation": {
+      "description": "Correlate events within specified time windows",
+      "windowSizes": ["1m", "5m", "15m", "30m", "1h"],
+      "defaultWindow": "5m"
+    },
+    "ipBasedCorrelation": {
+      "description": "Correlate events by source/destination IP addresses",
+      "fields": ["SourceIp", "DestinationIp", "ClientIP"],
+      "supportsCIDR": true
+    },
+    "userBasedCorrelation": {
+      "description": "Correlate events by user identity",
+      "fields": ["UserPrincipalName", "UserId", "CallerIpAddress"],
+      "anonymize": false
+    },
+    "resourceBasedCorrelation": {
+      "description": "Correlate events by Azure resource",
+      "fields": ["ResourceId", "ResourceGroup", "SubscriptionId"],
+      "hierarchical": true
+    }
+  },
+  "visualizations": {
+    "timelineView": {
+      "name": "Correlation Timeline",
+      "description": "Timeline view of correlated events across services",
+      "chartType": "timeline",
+      "xAxis": "TimeGenerated",
+      "yAxis": "Type",
+      "colorBy": "Action"
+    },
+    "networkFlow": {
+      "name": "Network Flow Diagram",
+      "description": "Visual representation of network traffic flow",
+      "chartType": "sankey",
+      "source": "SourceIp",
+      "target": "DestinationIp",
+      "value": "count"
+    },
+    "heatmap": {
+      "name": "Service Activity Heatmap",
+      "description": "Heatmap showing activity levels across services and time",
+      "chartType": "heatmap",
+      "xAxis": "bin(TimeGenerated, 1h)",
+      "yAxis": "Type",
+      "value": "count"
+    }
+  },
+  "exportFormats": {
+    "correlationReport": {
+      "name": "Correlation Analysis Report",
+      "format": "html",
+      "includes": ["summary", "timeline", "details", "recommendations"]
+    },
+    "complianceExport": {
+      "name": "Compliance Export",
+      "format": "csv",
+      "fields": ["TimeGenerated", "Type", "Operation", "Result", "UserPrincipalName", "IPAddress"]
+    },
+    "securityIncident": {
+      "name": "Security Incident Package",
+      "format": "zip",
+      "includes": ["queries", "results", "visualizations", "metadata"]
+    }
+  }
+} 
