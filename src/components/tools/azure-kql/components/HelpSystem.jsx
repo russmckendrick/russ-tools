@@ -186,7 +186,7 @@ const HelpSystem = ({ opened, onClose, currentContext = null }) => {
     'string-functions': [
       { function: 'contains', description: 'String contains substring', example: 'RequestUri contains "/api/"' },
       { function: 'startswith', description: 'String starts with', example: 'UserAgent startswith "Mozilla"' },
-      { function: 'matches regex', description: 'Regular expression match', example: 'SourceIp matches regex @"192\.168\.\d+\.\d+"' },
+      { function: 'matches regex', description: 'Regular expression match', example: 'SourceIp matches regex @"192.168.\\d+.\\d+"' },
       { function: 'split()', description: 'Split string', example: 'split(RequestUri, "/")' },
       { function: 'strcat()', description: 'Concatenate strings', example: 'strcat(SourceIp, ":", SourcePort)' }
     ]

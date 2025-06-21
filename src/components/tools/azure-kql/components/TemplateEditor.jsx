@@ -39,7 +39,6 @@ const TemplateEditor = ({ onTemplateCreate, onTemplateUpdate }) => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
-  const [previewQuery, setPreviewQuery] = useState('');
   
   const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
   const [importModalOpened, { open: openImportModal, close: closeImportModal }] = useDisclosure(false);
@@ -305,7 +304,7 @@ const TemplateEditor = ({ onTemplateCreate, onTemplateUpdate }) => {
           icon: <IconX size={16} />
         });
       }
-    } catch (error) {
+    } catch {
       notifications.show({
         title: 'Import Failed',
         message: 'Invalid JSON format',
@@ -394,52 +393,7 @@ const TemplateEditor = ({ onTemplateCreate, onTemplateUpdate }) => {
     }));
   };
 
-  // Share template (generate shareable URL)
-  const generateShareableUrl = (template) => {
-    try {
-      const templateData = {
-        service: template.service,
-        schema: template.schema,
-        templates: template.templates,
-        version: template.version || '1.0.0'
-      };
-      
-      const encodedTemplate = btoa(JSON.stringify(templateData));
-      const shareUrl = `${window.location.origin}/azure-kql?import=${encodedTemplate}`;
-      
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        notifications.show({
-          title: 'Share URL Copied',
-          message: 'Template share URL has been copied to clipboard',
-          color: 'green',
-          icon: <IconCheck size={16} />
-        });
-      }).catch(() => {
-        // Fallback for browsers that don't support clipboard API
-        const textArea = document.createElement('textarea');
-        textArea.value = shareUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        notifications.show({
-          title: 'Share URL Generated',
-          message: 'Template share URL has been generated and copied',
-          color: 'green',
-          icon: <IconCheck size={16} />
-        });
-      });
-    } catch (error) {
-      console.error('Share URL generation error:', error);
-      notifications.show({
-        title: 'Share Failed',
-        message: 'Failed to generate shareable URL',
-        color: 'red',
-        icon: <IconX size={16} />
-      });
-    }
-  };
+
 
   return (
     <Stack gap="lg">

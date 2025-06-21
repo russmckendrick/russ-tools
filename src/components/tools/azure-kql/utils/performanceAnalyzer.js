@@ -12,7 +12,7 @@
 export const analyzeQueryPerformance = (query, parameters, template) => {
   const warnings = [];
   const suggestions = [];
-  const score = calculatePerformanceScore(query, parameters, template);
+  const score = calculatePerformanceScore(query, parameters);
   const estimatedCost = estimateQueryCost(query, parameters);
   
   // Time range analysis
@@ -222,7 +222,6 @@ const analyzeFilterEfficiency = (query, parameters, template, warnings, suggesti
  * @param {Array} suggestions - Suggestions array
  */
 const analyzeQueryComplexity = (query, warnings, suggestions) => {
-  const lines = query.split('\n').filter(line => line.trim());
   const operatorCount = (query.match(/\|/g) || []).length;
   
   // Complex query detection
@@ -309,7 +308,7 @@ const analyzeResourceScope = (parameters, warnings, suggestions) => {
  * @param {Object} template - Service template
  * @returns {number} Score from 0-100
  */
-const calculatePerformanceScore = (query, parameters, template) => {
+const calculatePerformanceScore = (query, parameters) => {
   let score = 100;
   
   // Time range scoring

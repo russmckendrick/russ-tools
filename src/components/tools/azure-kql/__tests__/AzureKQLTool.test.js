@@ -18,6 +18,7 @@ const mockLocalStorage = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
+/* global global */
 global.localStorage = mockLocalStorage;
 
 // Mock notifications
@@ -415,12 +416,6 @@ describe('Azure KQL Query Builder', () => {
   describe('Export Functionality', () => {
     it('exports queries in KQL format', () => {
       const query = 'AZFWNetworkRule | where TimeGenerated >= ago(24h)';
-      const expectedContent = `// Azure KQL Query
-// Generated: ${new Date().toISOString().split('T')[0]}
-// Service: Azure Firewall
-
-${query}`;
-
       // Mock the export functionality
       const exportContent = `// Azure KQL Query\n// Generated: ${new Date().toISOString().split('T')[0]}\n// Service: Azure Firewall\n\n${query}`;
       

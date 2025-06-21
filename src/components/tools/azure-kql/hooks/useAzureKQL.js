@@ -42,7 +42,7 @@ export const useAzureKQL = () => {
   useEffect(() => {
     const loadServiceTemplate = async () => {
       try {
-        const template = await loadTemplate(selectedService, selectedTemplate);
+        const template = await loadTemplate(selectedService);
         setCurrentTemplate(template);
         
         // Set default parameters from template

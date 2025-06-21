@@ -28,7 +28,7 @@ import {
   IconExclamationMark
 } from '@tabler/icons-react';
 
-const PerformanceInsights = ({ analysis, query, isVisible = true }) => {
+const PerformanceInsights = ({ analysis, isVisible = true }) => {
   if (!isVisible || !analysis) return null;
 
   const getScoreColor = (score) => {

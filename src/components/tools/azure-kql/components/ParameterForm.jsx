@@ -22,6 +22,7 @@ const ParameterForm = ({
   template, 
   parameters, 
   onParameterChange, 
+  onTemplateChange,
   onGenerate 
 }) => {
   const [serviceTemplate, setServiceTemplate] = useState(null);
@@ -31,7 +32,7 @@ const ParameterForm = ({
   // Load template when service changes
   useEffect(() => {
     if (service) {
-      loadTemplate(service, template)
+      loadTemplate(service)
         .then(setServiceTemplate)
         .catch(console.error);
       
@@ -169,14 +170,17 @@ const ParameterForm = ({
   return (
     <Stack gap="md">
       {/* Template Selector */}
-      {templates.length > 1 && (
+      {templates.length > 0 && (
         <Select
           label="Query Template"
           data={templates.map(t => ({ value: t.id, label: t.name }))}
           value={template}
-          onChange={(val) => onParameterChange('template', val)}
+          onChange={(val) => onTemplateChange ? onTemplateChange(val) : onParameterChange('template', val)}
           description="Choose a pre-configured query template"
         />
+      )}
+      {templates.length === 0 && (
+        <Text size="sm" c="dimmed">No templates available for this service</Text>
       )}
 
       {/* Essential Parameters */}

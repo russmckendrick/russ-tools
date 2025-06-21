@@ -54,7 +54,6 @@ const AzureKQLTool = () => {
 
   // Help system state
   const [helpOpened, setHelpOpened] = useState(false);
-  const [helpContext, setHelpContext] = useState(null);
 
   // Add current query to favorites
   const addToFavorites = () => {
@@ -173,6 +172,7 @@ const AzureKQLTool = () => {
                       template={selectedTemplate}
                       parameters={parameters}
                       onParameterChange={updateParameter}
+                      onTemplateChange={setSelectedTemplate}
                       onGenerate={generateQuery}
                     />
                   </Stack>
@@ -239,7 +239,7 @@ const AzureKQLTool = () => {
       <HelpSystem 
         opened={helpOpened}
         onClose={() => setHelpOpened(false)}
-        currentContext={helpContext}
+        currentContext={null}
       />
     </>
   );
