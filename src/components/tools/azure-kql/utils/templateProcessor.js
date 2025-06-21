@@ -1,11 +1,13 @@
 // Template processor for Azure KQL service templates
 import azureFirewallTemplate from '../templates/azure-firewall.json';
 import azureApplicationGatewayTemplate from '../templates/azure-application-gateway.json';
+import azureVirtualDesktopTemplate from '../templates/azure-virtual-desktop.json';
 import baseTemplate from '../templates/base-template.json';
 
 const templates = {
   'azure-firewall': azureFirewallTemplate,
   'azure-application-gateway': azureApplicationGatewayTemplate,
+  'azure-virtual-desktop': azureVirtualDesktopTemplate,
   'base': baseTemplate
 };
 

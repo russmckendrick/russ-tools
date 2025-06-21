@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select, Stack, Text, ThemeIcon, Group } from '@mantine/core';
-import { IconShield, IconBrandAzure, IconWorldWww } from '@tabler/icons-react';
+import { IconShield, IconBrandAzure, IconWorldWww, IconDeviceDesktop } from '@tabler/icons-react';
 import { getAvailableServices } from '../utils/templateProcessor';
 
 const ServiceSelector = ({ value, onChange }) => {
@@ -19,6 +19,8 @@ const ServiceSelector = ({ value, onChange }) => {
         return <IconShield size={16} />;
       case 'azure-application-gateway':
         return <IconWorldWww size={16} />;
+      case 'azure-virtual-desktop':
+        return <IconDeviceDesktop size={16} />;
       default:
         return <IconBrandAzure size={16} />;
     }

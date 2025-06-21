@@ -38,6 +38,23 @@ Complete support for Azure Firewall log analysis with Resource Specific logs:
 - **Rule Effectiveness**: Evaluate firewall rule usage and performance
 - **Application Rules**: Query application-level filtering logs
 
+### Azure Virtual Desktop ✅
+Complete support for Azure Virtual Desktop (AVD) connection and error analysis:
+
+- **Connection Events** (WVDConnections)
+- **Error Analysis** (WVDErrors)
+- **Session Management** (WVDCheckpoints, WVDManagement)
+
+#### Available Templates
+- **IP Addresses Analysis**: Find all IP addresses with geolocation data (30 days)
+- **Users and IP Analysis**: Analyze users and their connection locations
+- **User Connection Locations**: Track specific user connection patterns
+- **Errors from Specific IP**: Investigate errors from particular IP addresses
+- **Session Duration Analysis**: Calculate total session times and usage patterns
+- **Sessions per Host Pool**: Count distinct users across host pools
+- **Recent Completed Sessions**: View recent session details
+- **Errors per Host Pool**: Analyze error patterns by host pool
+
 ### Coming Soon
 - Application Gateway
 - Network Security Groups
@@ -50,7 +67,7 @@ Complete support for Azure Firewall log analysis with Resource Specific logs:
 Navigate to `/azure-kql` in RussTools or visit the Azure KQL Query Builder from the main tools menu.
 
 ### 2. Select Service
-Choose your Azure service (currently Azure Firewall) from the service selector.
+Choose your Azure service (Azure Firewall, Azure Virtual Desktop, or Application Gateway) from the service selector.
 
 ### 3. Choose Template
 Select a pre-configured template that matches your use case:
@@ -160,6 +177,83 @@ AZFWNetworkRule
 | order by HitCount desc
 ```
 
+### Azure Virtual Desktop Use Cases
+
+#### User Connection Analysis
+**Scenario**: Track user connection patterns and geographic distribution
+
+**Template**: Users and IP Analysis
+**Key Parameters**:
+- Time Range: Last 30 days
+- User Name: Specific user or all users
+
+**Generated Query**:
+```kql
+let daysAgo = 30d;
+WVDConnections
+| where TimeGenerated > ago(daysAgo)
+| summarize NumberOfConnections = count() by UserName, ClientIPAddress
+| order by NumberOfConnections desc
+| extend ip_location = parse_json(geo_info_from_ip_address(ClientIPAddress))
+| extend
+    Country = tostring(ip_location.country),
+    State = tostring(ip_location.state),
+    City = tostring(ip_location.city)
+| project UserName, ClientIPAddress, NumberOfConnections, Country, State, City
+```
+
+#### Session Duration Analysis
+**Scenario**: Analyze user session patterns for capacity planning and usage optimization
+
+**Template**: Session Duration Analysis
+**Key Parameters**:
+- Time Range: Last 31 days
+- Connection Type: Desktop or RemoteApp
+
+**Generated Query**:
+```kql
+let daysAgo = 31d;
+WVDConnections
+| where TimeGenerated > ago(daysAgo)
+| where State == "Connected"
+| project CorrelationId, UserName, ConnectionType, StartTime=TimeGenerated
+| join (WVDConnections
+    | where State == "Completed"
+    | project EndTime=TimeGenerated, CorrelationId)
+    on CorrelationId
+| extend SessionDuration = EndTime - StartTime
+| summarize TotalDuration = sum(SessionDuration) by UserName, ConnectionType
+| extend 
+    DurationHours = round(TotalDuration / 1h, 2),
+    DurationDays = round(TotalDuration / 1d, 2)
+| project UserName, ConnectionType, DurationHours, DurationDays
+| sort by DurationHours desc
+```
+
+#### Security Investigation - IP Analysis
+**Scenario**: Investigate potential security issues from specific IP addresses
+
+**Template**: Errors from Specific IP
+**Key Parameters**:
+- Time Range: Last 30 days
+- Client Side IP Address: Suspicious IP address
+
+**Generated Query**:
+```kql
+let ipAddress = "192.168.1.100";
+let daysAgo = 30d;
+let users =
+    WVDConnections
+    | where TimeGenerated > ago(daysAgo)
+    | where ClientSideIPAddress contains ipAddress
+    | summarize by UserName;
+WVDErrors
+| where TimeGenerated > ago(daysAgo)
+| where UserName in (users)
+| summarize ErrorCount = count() by UserName, CodeSymbolic
+| order by ErrorCount desc
+```
+
 ## Advanced Features
 
 ### Favorites System
@@ -222,6 +316,38 @@ Direct deep-linking to Azure Log Analytics:
 - **SubscriptionId**: Azure subscription identifier
 - **ResourceGroup**: Resource group name
 - **ResourceId**: Full Azure resource path
+
+### Azure Virtual Desktop Fields
+- **UserName**: User Principal Name (UPN) of connecting user
+  - Examples: `user@domain.com`, `john.doe@company.com`
+  - Generates: `UserName == "user@domain.com"` or `UserName contains "john"`
+
+- **ClientIPAddress / ClientSideIPAddress**: Client IP with CIDR support
+  - Examples: `192.168.1.1`, `10.0.0.0/8`
+  - Generates: `ClientIPAddress == "192.168.1.1"` or `ipv4_is_in_range(ClientIPAddress, "10.0.0.0/8")`
+
+- **State**: Connection state
+  - Options: Connected, Completed, Failed, Started
+  - Generates: `State == "Connected"`
+
+- **ConnectionType**: Type of connection
+  - Options: RemoteApp, Desktop
+  - Generates: `ConnectionType == "Desktop"`
+
+- **ClientOS**: Client operating system
+  - Examples: Windows 10, Windows 11, macOS, iOS, Android
+  - Generates: `ClientOS == "Windows 10"`
+
+- **ClientType**: Client application type
+  - Examples: Desktop, Web, Mobile
+  - Generates: `ClientType == "Desktop"`
+
+- **CodeSymbolic**: Error codes for WVDErrors
+  - Examples: ConnectionFailedClientDisconnect, ConnectionFailedTimeout
+  - Generates: `CodeSymbolic == "ConnectionFailedTimeout"`
+
+- **CorrelationId**: ID for matching connection events
+  - Generates: `CorrelationId == "12345678-1234-5678-9012-123456789012"`
 
 ### Query Control Fields
 - **limit**: Maximum results (1-10000, default: 100)
