@@ -30,6 +30,16 @@
     "path": "/tenant-lookup"
   },
   {
+    "id": "azure-kql",
+    "title": "Azure KQL Query Builder",
+    "description": "Build optimized KQL queries for Azure services with guided forms and real-time preview. Generate queries for Azure Firewall, Application Gateway, and other Azure monitoring services with automatic performance optimization.",
+    "shortDescription": "Build KQL queries for Azure services with guided forms",
+    "icon": "IconChartDots3",
+    "iconColor": "cyan",
+    "badges": ["KQL Generator", "Azure Services", "Query Optimization"],
+    "path": "/azure-kql"
+  },
+  {
     "id": "azure-naming",
     "title": "Azure Resource Naming Tool",
     "description": "Generate consistent Azure resource names following Cloud Adoption Framework best practices and your organizational conventions.",
@@ -118,16 +128,6 @@
     "iconColor": "violet",
     "badges": ["Cryptographically Secure", "Bulk Generation", "Strength Analysis"],
     "path": "/password-generator"
-  },
-  {
-    "id": "azure-kql",
-    "title": "Azure KQL Query Builder",
-    "description": "Build optimized KQL queries for Azure services with guided forms and real-time preview. Generate queries for Azure Firewall, Application Gateway, and other Azure monitoring services with automatic performance optimization.",
-    "shortDescription": "Build KQL queries for Azure services with guided forms",
-    "icon": "IconChartDots3",
-    "iconColor": "cyan",
-    "badges": ["KQL Generator", "Azure Services", "Query Optimization"],
-    "path": "/azure-kql"
   },
   {
     "id": "github-source",
