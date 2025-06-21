@@ -8,7 +8,7 @@ function goRegexToJsValidation(str, fallback = /.*/) {
   let cleaned = str.trim();
 
   // Remove leading/trailing quotes (single, double, or backtick)
-  cleaned = cleaned.replace(/^(\"|'|`)/, '').replace(/(\"|'|`)$/, '');
+  cleaned = cleaned.replace(/^("|'|`)/, '').replace(/("|'|`)$/, '');
 
   // Unescape double-escaped backslashes (from JSON/Go)
   cleaned = cleaned.replace(/\\/g, '\\');
@@ -17,8 +17,8 @@ function goRegexToJsValidation(str, fallback = /.*/) {
 
   try {
     return new RegExp(cleaned);
-  } catch (e) {
-    // console.warn('Invalid Go regex for JS RegExp (validation):', str, '->', cleaned, e);
+  } catch {
+    // console.warn('Invalid Go regex for JS RegExp (validation):', str, '->', cleaned);
     return fallback;
   }
 }
@@ -32,8 +32,8 @@ function goRegexToJsCleaning(str, fallback = /[^a-zA-Z0-9-._()]/g) {
     // Use as-is, but add global flag
     try {
       return new RegExp(cleaned, 'g');
-    } catch (e) {
-      //console.warn('Invalid Go regex for JS RegExp (cleaning):', str, '->', cleaned, e);
+    } catch {
+      //console.warn('Invalid Go regex for JS RegExp (cleaning):', str, '->', cleaned);
       return fallback;
     }
   }
@@ -43,8 +43,8 @@ function goRegexToJsCleaning(str, fallback = /[^a-zA-Z0-9-._()]/g) {
     cleaned = `[^${charSet}]`;
     try {
       return new RegExp(cleaned, 'g');
-    } catch (e) {
-      // console.warn('Invalid Go regex for JS RegExp (cleaning):', str, '->', cleaned, e);
+    } catch {
+      // console.warn('Invalid Go regex for JS RegExp (cleaning):', str, '->', cleaned);
       return fallback;
     }
   }

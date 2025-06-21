@@ -67,7 +67,7 @@ const FALLBACK_APIS = [
 ];
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     return handleRequest(request, env);
   }
 };
@@ -436,7 +436,7 @@ async function checkWithAPI(api, domain) {
 async function performBasicSSLCheck(domain) {
   try {
     // Try to fetch the domain to check SSL connectivity
-    const response = await fetch(`https://${domain}`, {
+    await fetch(`https://${domain}`, {
       method: 'HEAD',
       cf: {
         timeout: 10000

@@ -126,7 +126,7 @@ const getAllowedOrigins = (env) => {
 };
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     return handleRequest(request, env);
   }
 };
@@ -512,7 +512,7 @@ function normalizeRDAPData(rdapData) {
 }
 
 // Parse ipinfo.io response
-function parseIpinfoResponse(data, ip) {
+function parseIpinfoResponse(data) {
   try {
     const json = JSON.parse(data);
     
@@ -533,13 +533,13 @@ function parseIpinfoResponse(data, ip) {
       anycast: json.anycast,
       source: 'ipinfo.io'
     };
-  } catch (error) {
+  } catch {
     return { error: 'Failed to parse ipinfo.io response' };
   }
 }
 
 // Parse ip-api.com response
-function parseIpApiResponse(data, ip) {
+function parseIpApiResponse(data) {
   try {
     const json = JSON.parse(data);
     
@@ -568,7 +568,7 @@ function parseIpApiResponse(data, ip) {
       hosting: json.hosting,
       source: 'ip-api.com'
     };
-  } catch (error) {
+  } catch {
     return { error: 'Failed to parse ip-api.com response' };
   }
 }
@@ -659,7 +659,7 @@ function corsHeaders(origin, env) {
     } else {
       headers['Access-Control-Allow-Origin'] = allowedOrigins[0];
     }
-  } catch (error) {
+  } catch {
     // Fallback
     headers['Access-Control-Allow-Origin'] = '*';
   }
