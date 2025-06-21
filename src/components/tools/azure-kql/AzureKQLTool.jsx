@@ -24,6 +24,7 @@ import QueryPreview from './components/QueryPreview';
 import QueryHistory from './components/QueryHistory';
 import QueryFavorites from './components/QueryFavorites';
 import ExportOptions from './components/ExportOptions';
+import TemplateEditor from './components/TemplateEditor';
 
 const AzureKQLTool = () => {
   const { service, template: templateParam } = useParams();
@@ -32,6 +33,7 @@ const AzureKQLTool = () => {
     selectedTemplate,
     parameters,
     generatedQuery,
+    currentTemplate,
     queryHistory,
     setSelectedService,
     setSelectedTemplate,
@@ -140,6 +142,7 @@ const AzureKQLTool = () => {
               <Tabs.Tab value="builder">Query Builder</Tabs.Tab>
               <Tabs.Tab value="favorites">Favorites</Tabs.Tab>
               <Tabs.Tab value="history">Query History</Tabs.Tab>
+              <Tabs.Tab value="templates">Template Editor</Tabs.Tab>
             </Tabs.List>
 
             <Tabs.Panel value="builder" pt="lg">
@@ -164,6 +167,8 @@ const AzureKQLTool = () => {
                     <QueryPreview 
                       query={generatedQuery}
                       service={selectedService}
+                      parameters={parameters}
+                      template={currentTemplate}
                     />
                     <ExportOptions 
                       query={generatedQuery}
@@ -190,6 +195,25 @@ const AzureKQLTool = () => {
               <QueryHistory 
                 history={queryHistory}
                 onLoadQuery={loadQuery}
+              />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="templates" pt="lg">
+              <TemplateEditor 
+                onTemplateCreate={(template) => {
+                  notifications.show({
+                    title: 'Template Available',
+                    message: `New template "${template.service.name}" is now available in the service selector`,
+                    color: 'green'
+                  });
+                }}
+                onTemplateUpdate={(template) => {
+                  notifications.show({
+                    title: 'Template Updated',
+                    message: `Template "${template.service.name}" has been updated`,
+                    color: 'blue'
+                  });
+                }}
               />
             </Tabs.Panel>
           </Tabs>

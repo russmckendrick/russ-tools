@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Stack, 
   Text, 
@@ -6,16 +6,36 @@ import {
   Group, 
   Badge,
   Alert,
-  ScrollArea
+  ScrollArea,
+  Switch
 } from '@mantine/core';
 import { IconCode, IconInfoCircle } from '@tabler/icons-react';
 import { useMantineColorScheme } from '@mantine/core';
 import Prism from 'prismjs';
 import '../utils/prism-kql.js';
 import '../../../../styles/prism-theme.css';
+import { analyzeQueryPerformance } from '../utils/performanceAnalyzer';
+import PerformanceInsights from './PerformanceInsights';
 
-const QueryPreview = ({ query, service }) => {
+const QueryPreview = ({ query, service, parameters = {}, template = null }) => {
   const { colorScheme } = useMantineColorScheme();
+  const [showPerformanceInsights, setShowPerformanceInsights] = useState(true);
+  const [performanceAnalysis, setPerformanceAnalysis] = useState(null);
+
+  // Analyze query performance when query or parameters change
+  useEffect(() => {
+    if (query && parameters && template) {
+      try {
+        const analysis = analyzeQueryPerformance(query, parameters, template);
+        setPerformanceAnalysis(analysis);
+      } catch (error) {
+        console.error('Performance analysis error:', error);
+        setPerformanceAnalysis(null);
+      }
+    } else {
+      setPerformanceAnalysis(null);
+    }
+  }, [query, parameters, template]);
 
   // Render highlighted KQL code using Prism
   const renderHighlightedKQL = (kqlCode) => {
@@ -85,6 +105,20 @@ const QueryPreview = ({ query, service }) => {
               Aggregated
             </Badge>
           )}
+          {performanceAnalysis && (
+            <Badge 
+              size="xs" 
+              color={performanceAnalysis.score >= 80 ? 'green' : performanceAnalysis.score >= 60 ? 'yellow' : 'red'}
+            >
+              Score: {performanceAnalysis.score}
+            </Badge>
+          )}
+          <Switch
+            size="xs"
+            label="Performance"
+            checked={showPerformanceInsights}
+            onChange={(event) => setShowPerformanceInsights(event.currentTarget.checked)}
+          />
         </Group>
       </Group>
 
@@ -104,8 +138,17 @@ const QueryPreview = ({ query, service }) => {
         </Text>
       </Alert>
 
-      {/* Performance Tips */}
-      {(!hasTimeFilter || !hasLimit) && (
+      {/* Performance Insights */}
+      {performanceAnalysis && (
+        <PerformanceInsights 
+          analysis={performanceAnalysis}
+          query={query}
+          isVisible={showPerformanceInsights}
+        />
+      )}
+
+      {/* Fallback Performance Tips for queries without full analysis */}
+      {!performanceAnalysis && (!hasTimeFilter || !hasLimit) && (
         <Alert variant="light" color="yellow" title="Performance Tips">
           <Stack gap="xs">
             {!hasTimeFilter && (
