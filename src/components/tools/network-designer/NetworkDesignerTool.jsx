@@ -30,11 +30,14 @@ import {
   IconPlus,
   IconTrash,
   IconRefresh,
-  IconInfoCircle
+  IconInfoCircle,
+  IconShare
 } from '@tabler/icons-react';
 import { useLocalStorage } from '@mantine/hooks';
+import { useSearchParams } from 'react-router-dom';
 import { Netmask } from 'netmask';
 import { v4 as uuidv4 } from 'uuid';
+import { parseConfigFromURL, copyShareableURL } from '../../../utils/sharelink';
 
 // Import existing components
 import { SubnetVisualization } from './SubnetVisualization';
@@ -73,6 +76,7 @@ function parseInput(ipAddress, maskInput) {
 const NetworkDesignerTool = () => {
   const [activeTab, setActiveTab] = useState('setup');
   const { colorScheme } = useMantineColorScheme();
+  const [searchParams] = useSearchParams();
 
   // Get tool configuration for SEO
   const toolConfig = toolsConfig.find(tool => tool.id === 'network-designer');
@@ -88,6 +92,20 @@ const NetworkDesignerTool = () => {
     key: 'selectedNetworkId',
     defaultValue: null
   });
+
+  // Load configuration from URL on mount
+  useEffect(() => {
+    const config = parseConfigFromURL(searchParams);
+    if (config && config.networks && config.selectedNetworkId) {
+      setNetworks(config.networks);
+      setSelectedNetworkId(config.selectedNetworkId);
+      notifications.show({
+        title: 'Configuration Loaded',
+        message: 'Network configuration has been loaded from URL',
+        color: 'green'
+      });
+    }
+  }, [searchParams, setNetworks, setSelectedNetworkId]);
 
   // Get current network
   const current = networks.find(n => n.id === selectedNetworkId);
@@ -267,6 +285,33 @@ const NetworkDesignerTool = () => {
   // Cancel reconfiguration
   const handleCancelReconfigure = () => {
     setIsReconfiguring(false);
+  };
+
+  // Share configuration
+  const handleShareConfiguration = async () => {
+    if (networks.length === 0) {
+      notifications.show({
+        title: 'Nothing to Share',
+        message: 'Create a network configuration first before sharing',
+        color: 'orange'
+      });
+      return;
+    }
+
+    const config = {
+      networks: networks,
+      selectedNetworkId: selectedNetworkId
+    };
+
+    const success = await copyShareableURL(config);
+    if (success) {
+      notifications.show({
+        title: 'Link Copied',
+        message: 'Shareable link has been copied to your clipboard',
+        color: 'green',
+        icon: <IconShare size={16} />
+      });
+    }
   };
 
   // Delete current network
@@ -657,24 +702,35 @@ const NetworkDesignerTool = () => {
       <Paper p="xl" radius="lg" withBorder>
       <Stack gap="xl">
         {/* Header */}
-        <Group gap="md">
-          <ThemeIcon size={48} radius="md" color="blue" variant="light">
-            <IconNetwork size={28} />
-          </ThemeIcon>
-          <div>
-            <Title order={2} fw={600}>
-              Network Designer
-            </Title>
-            <Text size="sm" c="dimmed">
-              Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, 
-              and export configurations for Azure, AWS, or VMware environments.
-            </Text>
-            <Group gap="xs" mt="xs">
-              <Badge variant="light" color="blue" size="sm">Subnet Planning</Badge>
-              <Badge variant="light" color="green" size="sm">Visual Diagrams</Badge>
-              <Badge variant="light" color="orange" size="sm">Terraform Export</Badge>
-            </Group>
-          </div>
+        <Group justify="space-between">
+          <Group gap="md">
+            <ThemeIcon size={48} radius="md" color="blue" variant="light">
+              <IconNetwork size={28} />
+            </ThemeIcon>
+            <div>
+              <Title order={2} fw={600}>
+                Network Designer
+              </Title>
+              <Text size="sm" c="dimmed">
+                Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, 
+                and export configurations for Azure, AWS, or VMware environments.
+              </Text>
+              <Group gap="xs" mt="xs">
+                <Badge variant="light" color="blue" size="sm">Subnet Planning</Badge>
+                <Badge variant="light" color="green" size="sm">Visual Diagrams</Badge>
+                <Badge variant="light" color="orange" size="sm">Terraform Export</Badge>
+              </Group>
+            </div>
+          </Group>
+          
+          <Button
+            variant="light"
+            leftSection={<IconShare size={16} />}
+            onClick={handleShareConfiguration}
+            disabled={networks.length === 0}
+          >
+            Share Configuration
+          </Button>
         </Group>
 
       {/* Tabs */}

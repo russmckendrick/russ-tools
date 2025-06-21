@@ -5,7 +5,9 @@
       "Bash(python3:*)",
       "Bash(mkdir:*)",
       "Bash(rg:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm run lint)",
+      "Bash(npx eslint:*)"
     ],
     "deny": []
   }

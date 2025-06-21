@@ -74,7 +74,7 @@ export const useAzureKQL = () => {
         ...prevParams  // URL parameters take precedence over defaults
       }));
     }
-  }, [currentTemplate, selectedTemplate]);
+  }, [currentTemplate, selectedTemplate, setParameters]);
 
   // Validate and fix parameters when service changes
   useEffect(() => {
