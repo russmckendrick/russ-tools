@@ -270,6 +270,33 @@
       },
       "commonFilters": ["serverRouted_s", "serverStatus_s", "timeToBehindServer_d"],
       "aggregations": ["count by serverRouted_s", "count by serverStatus_s"]
+    },
+    "error-analysis-help": {
+      "name": "Application Gateway Error Analysis",
+      "description": "Analyze HTTP errors by status code and URI",
+      "table": "AzureDiagnostics",
+      "defaultParameters": {
+        "timeRange": "4h",
+        "Category": "ApplicationGatewayAccessLog",
+        "limit": "1000"
+      },
+      "query": "AzureDiagnostics\n| where TimeGenerated >= ago({timeRange})\n| where Category == \"ApplicationGatewayAccessLog\"\n| where httpStatus_d >= 400\n| summarize ErrorCount = count() by httpStatus_d, requestUri_s\n| order by ErrorCount desc",
+      "customFilter": "httpStatus_d >= 400",
+      "aggregations": ["count by httpStatus_d", "count by requestUri_s"],
+      "commonFilters": ["httpStatus_d", "requestUri_s"]
+    },
+    "performance-trending": {
+      "name": "Performance Trending",
+      "description": "Track response time trends over time",
+      "table": "AzureDiagnostics",
+      "defaultParameters": {
+        "timeRange": "24h",
+        "Category": "ApplicationGatewayAccessLog",
+        "limit": "1000"
+      },
+      "query": "AzureDiagnostics\n| where TimeGenerated >= ago({timeRange})\n| where Category == \"ApplicationGatewayAccessLog\"\n| summarize AvgResponseTime = avg(serverResponseLatency_d) by bin(TimeGenerated, 1h)\n| order by TimeGenerated asc",
+      "aggregations": ["avg(serverResponseLatency_d)"],
+      "commonFilters": ["serverResponseLatency_d"]
     }
   },
   "queryExamples": {

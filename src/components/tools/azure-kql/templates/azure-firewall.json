@@ -183,6 +183,19 @@
         "limit": "500"
       },
       "commonFilters": ["TargetUrl", "Fqdn", "Action"]
+    },
+    "top-denied-sources": {
+      "name": "Top Denied Source IPs",
+      "description": "Find the most frequently blocked source IP addresses",
+      "table": "AZFWNetworkRule",
+      "defaultParameters": {
+        "timeRange": "24h",
+        "Action": "Deny",
+        "limit": "1000"
+      },
+      "query": "AZFWNetworkRule\n| where TimeGenerated >= ago({timeRange})\n| where Action == \"Deny\"\n| summarize DeniedCount = count() by SourceIp\n| top 10 by DeniedCount",
+      "aggregations": ["count by SourceIp"],
+      "commonFilters": ["SourceIp"]
     }
   },
   "queryExamples": {
