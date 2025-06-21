@@ -1,0 +1,315 @@
+# Azure KQL Query Builder
+
+The Azure KQL Query Builder is a powerful, form-based tool for generating optimized KQL (Kusto Query Language) queries for Azure services. It transforms complex KQL syntax into an intuitive, guided experience that follows performance best practices and Azure monitoring standards.
+
+## Overview
+
+This tool addresses the challenge of writing effective KQL queries for Azure monitoring and log analytics. Instead of requiring deep KQL knowledge, users can build queries through guided forms that automatically optimize filter ordering, validate parameters, and generate production-ready queries.
+
+### Key Features
+
+- **🎯 Form-Based Query Building**: Convert complex KQL syntax into intuitive forms
+- **⚡ Performance Optimization**: Automatic filter ordering and query optimization
+- **🔧 Multiple Azure Services**: Starting with Azure Firewall, expandable to other services
+- **📊 Real-Time Preview**: Live KQL generation with syntax validation
+- **🔗 Shareable URLs**: Save and share query configurations
+- **📈 Query Templates**: Pre-built templates for common use cases
+- **🏷️ Export Options**: Copy, download, or open directly in Azure Portal
+- **📚 Query History**: Local storage of recent queries with management
+
+## Supported Azure Services
+
+### Azure Firewall ✅
+Complete support for Azure Firewall log analysis with Resource Specific logs:
+
+- **Network Rules** (AZFWNetworkRule)
+- **Application Rules** (AZFWApplicationRule) 
+- **NAT Rules** (AZFWNatRule)
+- **Legacy Support** (AzureDiagnostics)
+
+#### Available Templates
+- **Basic Query**: Simple filtering with time range and actions
+- **Security Investigation**: Analyze denied connections and threats
+- **Traffic Analysis**: Study allowed traffic patterns and bandwidth
+- **Rule Effectiveness**: Evaluate firewall rule usage and performance
+- **Application Rules**: Query application-level filtering logs
+
+### Coming Soon
+- Application Gateway
+- Network Security Groups
+- Azure Application Insights
+- Azure Security Center
+
+## Quick Start
+
+### 1. Access the Tool
+Navigate to `/azure-kql` in RussTools or visit the Azure KQL Query Builder from the main tools menu.
+
+### 2. Select Service
+Choose your Azure service (currently Azure Firewall) from the service selector.
+
+### 3. Choose Template
+Select a pre-configured template that matches your use case:
+- **Basic**: General querying with essential filters
+- **Security Investigation**: Focus on security events and threats
+- **Traffic Analysis**: Analyze traffic patterns and usage
+
+### 4. Configure Parameters
+
+#### Essential Parameters (Always Visible)
+- **Time Range**: Select from common ranges (1h, 6h, 24h, 7d, 30d)
+- **Action**: Filter by Allow, Deny, or DNAT actions
+- **Source IP**: Enter IP addresses or CIDR ranges
+- **Destination IP**: Enter IP addresses or CIDR ranges
+
+#### Advanced Parameters (Expandable)
+- **Ports**: Source and destination port filtering
+- **Protocol**: TCP, UDP, ICMP filtering
+- **Rule Information**: Rule collection and rule name filtering
+- **Resource Context**: Subscription, resource group filtering
+
+### 5. Generate and Export
+- **Preview**: See real-time KQL generation
+- **Copy**: Copy query to clipboard
+- **Azure Portal**: Open query directly in Azure Log Analytics
+- **Download**: Save as .kql file
+- **Share**: Generate shareable URL with configuration
+- **History**: Save to query history for later use
+
+## Architecture
+
+### Template-Driven Design
+The tool uses JSON-based templates that define:
+- **Service Metadata**: Names, descriptions, documentation links
+- **Field Schemas**: Types, validation rules, KQL mappings
+- **Query Patterns**: Template structures for different query types
+- **Filter Ordering**: Performance-optimized field ordering
+
+### Performance Optimization
+Queries are automatically optimized following Azure best practices:
+
+1. **Time Range First**: TimeGenerated filters for indexed performance
+2. **Resource Filters**: Subscription and resource group filtering
+3. **High-Selectivity**: Specific IP addresses and exact matches
+4. **Numeric Filters**: Port and ID filtering
+5. **Pattern Matching**: Last for complex string operations
+
+### Progressive Disclosure
+The UI follows a three-tier approach:
+- **Essential**: Core parameters visible by default
+- **Advanced**: Detailed options available via expansion
+- **Expert**: Future raw KQL editing capabilities
+
+## Use Cases
+
+### Security Investigation
+**Scenario**: Investigate potential security threats and denied connections
+
+**Template**: Security Investigation
+**Key Parameters**: 
+- Time Range: Last 24 hours
+- Action: Deny
+- Source IP: Specific suspicious IPs
+
+**Generated Query**:
+```kql
+AZFWNetworkRule
+| where TimeGenerated >= ago(24h) and Action == "Deny"
+| where SourceIp == "192.168.1.100"
+| order by TimeGenerated desc
+| limit 500
+```
+
+### Traffic Analysis
+**Scenario**: Analyze allowed traffic patterns for capacity planning
+
+**Template**: Traffic Analysis
+**Key Parameters**:
+- Time Range: Last 7 days
+- Action: Allow
+- Protocol: TCP
+
+**Generated Query**:
+```kql
+AZFWNetworkRule
+| where TimeGenerated >= ago(7d) and Action == "Allow"
+| where Protocol == "TCP"
+| order by TimeGenerated desc
+| limit 1000
+```
+
+### Rule Effectiveness
+**Scenario**: Evaluate firewall rule usage and optimization opportunities
+
+**Template**: Rule Effectiveness
+**Key Parameters**:
+- Time Range: Last 7 days
+- Rule Collection: Specific collection name
+
+**Generated Query**:
+```kql
+AZFWNetworkRule
+| where TimeGenerated >= ago(7d)
+| where RuleCollection == "ProductionRules"
+| summarize HitCount = count() by Rule
+| order by HitCount desc
+```
+
+## Advanced Features
+
+### Query History
+- **Automatic Saving**: Queries saved to local storage
+- **Management**: View, reload, and delete saved queries
+- **Metadata**: Track service, template, and parameters
+- **Limit**: Last 50 queries maintained automatically
+
+### Shareable URLs
+Generate URLs that encode complete query configurations:
+```
+/azure-kql?config=eyJzZXJ2aWNlIjoiYXp1cmUtZmlyZXdhbGwiLCJ0ZW1wbGF0ZSI6ImJhc2ljIiwicGFyYW1ldGVycyI6eyJ0aW1lUmFuZ2UiOiIyNGgiLCJBY3Rpb24iOiJEZW55In19
+```
+
+### Azure Portal Integration
+Direct deep-linking to Azure Log Analytics:
+- Automatically opens with generated query
+- Pre-configured for immediate execution
+- Maintains query context and formatting
+
+## Field Reference
+
+### Time Fields
+- **timeRange**: User-friendly time range selection (1h, 6h, 24h, 7d, 30d)
+- Generates: `TimeGenerated >= ago({range})`
+
+### Network Fields
+- **SourceIp / DestinationIp**: IPv4 addresses with CIDR support
+  - Examples: `192.168.1.1`, `10.0.0.0/8`
+  - Generates: `SourceIp == "192.168.1.1"` or `ipv4_is_in_range(SourceIp, "10.0.0.0/8")`
+
+- **SourcePort / DestinationPort**: Port numbers (1-65535)
+  - Generates: `DestinationPort == 443`
+
+- **Protocol**: Network protocols
+  - Options: TCP, UDP, ICMP, Any
+  - Generates: `Protocol == "TCP"`
+
+### Action Fields
+- **Action**: Firewall action taken
+  - Options: Allow, Deny, DNAT
+  - Generates: `Action == "Allow"`
+
+### Rule Fields
+- **RuleCollection**: Name of the rule collection
+  - Generates: `RuleCollection == "ProductionRules"`
+
+- **RuleName**: Specific rule name
+  - Generates: `Rule == "AllowHTTPS"`
+
+### Resource Fields
+- **SubscriptionId**: Azure subscription identifier
+- **ResourceGroup**: Resource group name
+- **ResourceId**: Full Azure resource path
+
+### Query Control Fields
+- **limit**: Maximum results (1-10000, default: 100)
+- **sortField**: Field to sort by (default: TimeGenerated)
+- **sortOrder**: Sort direction (asc/desc, default: desc)
+
+## Validation
+
+### Field Validation
+- **IP Addresses**: IPv4 format validation with CIDR support
+- **Ports**: Range validation (1-65535)
+- **Time Ranges**: Format validation for relative ranges
+- **Required Fields**: Enforcement of essential parameters
+
+### Query Validation
+- **Performance Warnings**: Large time ranges, missing limits
+- **Syntax Checking**: KQL structure validation
+- **Optimization Suggestions**: Filter ordering recommendations
+
+### Error Handling
+- **Real-time Feedback**: Immediate validation on parameter change
+- **Clear Messages**: Specific error descriptions and solutions
+- **Recovery Suggestions**: Guidance for fixing validation issues
+
+## Browser Support
+
+### Compatibility
+- **Modern Browsers**: Chrome, Firefox, Safari, Edge (latest versions)
+- **Local Storage**: Required for query history and preferences
+- **JavaScript**: ES6+ support required
+
+### Privacy
+- **No External APIs**: Query generation entirely client-side
+- **Local Storage Only**: No server-side data storage
+- **Optional Sharing**: URL sharing is opt-in only
+
+## Performance Considerations
+
+### Query Optimization
+- **Automatic Ordering**: Filters ordered for optimal performance
+- **Index Utilization**: TimeGenerated filters prioritized
+- **Result Limiting**: Default and maximum limits enforced
+
+### Client Performance
+- **Lazy Loading**: Templates loaded on demand
+- **Debounced Updates**: Real-time preview with performance optimization
+- **Efficient Rendering**: Minimal re-renders on parameter changes
+
+## Troubleshooting
+
+### Common Issues
+
+#### "Unknown parameter" warnings
+**Cause**: Parameter name mismatch between form and template
+**Solution**: Refresh page or report as bug
+
+#### Query not generating
+**Cause**: Required fields missing or validation errors
+**Solution**: Check validation messages and fill required fields
+
+#### Azure Portal link not working
+**Cause**: Query too long or special characters
+**Solution**: Simplify query or use copy/paste method
+
+#### History not saving
+**Cause**: Browser local storage disabled or full
+**Solution**: Enable local storage or clear browser data
+
+### Getting Help
+- **Documentation**: Check field reference and use cases
+- **Examples**: Use provided query templates as starting points
+- **Community**: Report issues via GitHub repository
+
+## Contributing
+
+### Template Development
+Templates are defined in JSON format with:
+- Service metadata and configuration
+- Field schemas with validation rules
+- Query patterns and default parameters
+- Filter ordering for performance
+
+### Feature Requests
+- Enhanced service support
+- Additional query templates
+- UI/UX improvements
+- Performance optimizations
+
+## Security
+
+### Data Handling
+- **Client-Side Processing**: No data sent to external servers
+- **Local Storage**: Query history stored locally only
+- **No Tracking**: No analytics or user tracking
+- **Safe Parameters**: Input sanitization and validation
+
+### Query Safety
+- **Parameter Validation**: Prevents KQL injection
+- **Type Checking**: Ensures parameter type safety
+- **Performance Limits**: Prevents resource-intensive queries
+
+---
+
+*This tool is part of RussTools, a comprehensive suite of developer and IT tools. For more information, visit the main RussTools documentation.*
