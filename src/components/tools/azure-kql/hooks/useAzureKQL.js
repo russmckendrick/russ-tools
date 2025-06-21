@@ -8,8 +8,8 @@ import { loadTemplate } from '../utils/templateProcessor';
 
 export const useAzureKQL = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedService, setSelectedService] = useState('azure-virtual-desktop');
-  const [selectedTemplate, setSelectedTemplate] = useState('ip-addresses-analysis');
+  const [selectedService, setSelectedService] = useState('azure-firewall');
+  const [selectedTemplate, setSelectedTemplate] = useState('basic');
   const [parameters, setParameters] = useState({});
   const [generatedQuery, setGeneratedQuery] = useState('');
   const [currentTemplate, setCurrentTemplate] = useState(null);
@@ -79,6 +79,34 @@ export const useAzureKQL = () => {
       setParameters(cleanDefaults);
     }
   }, [currentTemplate, selectedTemplate]);
+
+  // Validate and fix parameters when service changes
+  useEffect(() => {
+    if (currentTemplate?.schema?.fields) {
+      setParameters(prevParams => {
+        const validatedParams = { ...prevParams };
+        const fields = currentTemplate.schema.fields;
+        
+        Object.keys(validatedParams).forEach(paramName => {
+          const fieldConfig = fields[paramName];
+          const paramValue = validatedParams[paramName];
+          
+          // If field exists in new template, validate it
+          if (fieldConfig) {
+            // For select fields, ensure the value is in the options
+            if (fieldConfig.type === 'select' && fieldConfig.options) {
+              if (!fieldConfig.options.includes(paramValue)) {
+                // Use template default or first option
+                validatedParams[paramName] = fieldConfig.default || fieldConfig.options[0];
+              }
+            }
+          }
+        });
+        
+        return validatedParams;
+      });
+    }
+  }, [currentTemplate]);
 
   // Update a single parameter
   const updateParameter = useCallback((key, value) => {

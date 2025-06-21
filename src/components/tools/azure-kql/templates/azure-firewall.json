@@ -135,7 +135,7 @@
       "defaultParameters": {
         "timeRange": "24h",
         "Action": "Deny",
-        "limit": "100"
+        "limit": "500"
       },
       "requiredFields": ["timeRange"]
     },
@@ -180,7 +180,7 @@
       "table": "AZFWApplicationRule",
       "defaultParameters": {
         "timeRange": "24h",
-        "limit": "100"
+        "limit": "500"
       },
       "commonFilters": ["TargetUrl", "Fqdn", "Action"]
     }
