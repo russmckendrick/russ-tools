@@ -50,9 +50,14 @@ export const generateKQLQuery = (template, parameters, templateId = 'basic') => 
   if (limitValue === '0') {
     // "Max. limit" - don't add limit clause
   } else if (limitValue === 'custom') {
-    // Custom limit should have been replaced with actual number
-    // If still 'custom', use default
-    queryParts.push(`| limit 1000`);
+    // Use custom limit value if provided
+    const customLimit = parameters.limit_custom;
+    if (customLimit && !isNaN(parseInt(customLimit, 10)) && parseInt(customLimit, 10) > 0) {
+      queryParts.push(`| limit ${parseInt(customLimit, 10)}`);
+    } else {
+      // If no valid custom limit, use default
+      queryParts.push(`| limit 1000`);
+    }
   } else {
     // Standard limit value
     const numericLimit = parseInt(limitValue, 10);

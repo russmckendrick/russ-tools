@@ -88,13 +88,15 @@
         "description": "Maximum number of results to return",
         "category": "essential",
         "default": "1000",
-        "options": [
-          { "value": "1000", "label": "1,000" },
-          { "value": "5000", "label": "5,000" },
-          { "value": "15000", "label": "15,000" },
-          { "value": "0", "label": "Max. limit" },
-          { "value": "custom", "label": "Custom" }
-        ]
+        "options": ["500", "1000", "5000", "15000", "0", "custom"],
+        "optionLabels": {
+          "500": "500",
+          "1000": "1,000",
+          "5000": "5,000", 
+          "15000": "15,000",
+          "0": "Max. limit",
+          "custom": "Custom"
+        }
       }
     },
     "filterOrder": [
@@ -116,7 +118,7 @@
         "services": ["Azure Firewall", "Application Gateway"],
         "action": "Deny",
         "timeWindow": "5m",
-        "limit": 1000
+        "limit": "1000"
       },
       "requiredFields": ["timeRange", "services"],
       "queryPattern": "union_correlation",
@@ -129,7 +131,7 @@
         "timeRange": "24h",
         "services": ["Azure Firewall", "Network Security Groups"],
         "timeWindow": "15m",
-        "limit": 2000
+        "limit": "2000"
       },
       "requiredFields": ["timeRange", "services"],
       "queryPattern": "traffic_flow_correlation",
@@ -142,7 +144,7 @@
         "timeRange": "4h",
         "services": ["Application Gateway", "Azure Load Balancer"],
         "timeWindow": "10m",
-        "limit": 1500
+        "limit": "1500"
       },
       "requiredFields": ["timeRange", "services"],
       "queryPattern": "performance_correlation",
@@ -155,7 +157,7 @@
         "timeRange": "7d",
         "services": ["Azure Firewall", "Application Gateway", "Network Security Groups"],
         "timeWindow": "1h",
-        "limit": 5000
+        "limit": "5000"
       },
       "requiredFields": ["timeRange", "services"],
       "queryPattern": "audit_correlation",

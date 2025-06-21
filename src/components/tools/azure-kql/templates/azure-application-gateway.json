@@ -172,13 +172,15 @@
         "description": "Maximum number of results to return",
         "category": "essential",
         "default": "1000",
-        "options": [
-          { "value": "1000", "label": "1,000" },
-          { "value": "5000", "label": "5,000" },
-          { "value": "15000", "label": "15,000" },
-          { "value": "0", "label": "Max. limit" },
-          { "value": "custom", "label": "Custom" }
-        ]
+        "options": ["500", "1000", "5000", "15000", "0", "custom"],
+        "optionLabels": {
+          "500": "500",
+          "1000": "1,000",
+          "5000": "5,000", 
+          "15000": "15,000",
+          "0": "Max. limit",
+          "custom": "Custom"
+        }
       }
     },
     "filterOrder": [
@@ -203,7 +205,7 @@
       "defaultParameters": {
         "timeRange": "24h",
         "Category": "ApplicationGatewayAccessLog",
-        "limit": 100
+        "limit": "100"
       },
       "requiredFields": ["timeRange", "Category"]
     },
@@ -214,7 +216,7 @@
       "defaultParameters": {
         "timeRange": "24h",
         "Category": "ApplicationGatewayAccessLog",
-        "limit": 500
+        "limit": "500"
       },
       "commonFilters": ["httpStatus_d", "clientIP_s", "requestUri_s"],
       "aggregations": ["count by httpStatus_d", "count by requestUri_s"],
@@ -227,7 +229,7 @@
       "defaultParameters": {
         "timeRange": "1h",
         "Category": "ApplicationGatewayAccessLog",
-        "limit": 1000
+        "limit": "1000"
       },
       "commonFilters": ["serverResponseLatency_d", "serverRouted_s"],
       "aggregations": ["avg(serverResponseLatency_d)", "max(serverResponseLatency_d)"],
@@ -240,7 +242,7 @@
       "defaultParameters": {
         "timeRange": "24h",
         "Category": "ApplicationGatewayFirewallLog",
-        "limit": 500
+        "limit": "500"
       },
       "commonFilters": ["action_s", "ruleId_d", "clientIP_s", "ruleSetType_s"],
       "aggregations": ["count by action_s", "count by ruleId_d", "count by clientIP_s"]
@@ -252,7 +254,7 @@
       "defaultParameters": {
         "timeRange": "7d",
         "Category": "ApplicationGatewayAccessLog",
-        "limit": 1000
+        "limit": "1000"
       },
       "commonFilters": ["httpMethod_s", "requestUri_s", "userAgent_s"],
       "aggregations": ["count by requestUri_s", "count by httpMethod_s"]
@@ -264,7 +266,7 @@
       "defaultParameters": {
         "timeRange": "1h",
         "Category": "ApplicationGatewayAccessLog",
-        "limit": 500
+        "limit": "500"
       },
       "commonFilters": ["serverRouted_s", "serverStatus_s", "timeToBehindServer_d"],
       "aggregations": ["count by serverRouted_s", "count by serverStatus_s"]

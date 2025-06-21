@@ -126,15 +126,24 @@ const ParameterForm = ({
         );
 
       case 'select':
+        // Prepare select data with labels
+        let selectData = fieldConfig.options || [];
+        if (fieldConfig.optionLabels) {
+          selectData = fieldConfig.options.map(value => ({
+            value: value,
+            label: fieldConfig.optionLabels[value] || value
+          }));
+        }
+        
         // Special handling for limit field with custom option
         if (fieldName === 'limit') {
           return (
             <Stack key={fieldName} gap="xs">
               <Select
                 {...commonProps}
-                data={fieldConfig.options || []}
+                data={selectData}
                 clearable
-                searchable={fieldConfig.options?.length > 5}
+                searchable={selectData.length > 5}
                 onChange={(value) => handleParameterChange(fieldName, value)}
               />
               {/* Show custom input when "custom" is selected */}
@@ -144,7 +153,8 @@ const ParameterForm = ({
                   placeholder="Enter custom number of results"
                   min={1}
                   max={100000}
-                  onChange={(val) => handleParameterChange(fieldName, val)}
+                  value={parameters[`${fieldName}_custom`] || ''}
+                  onChange={(val) => handleParameterChange(`${fieldName}_custom`, val)}
                   description="Enter a custom number between 1 and 100,000"
                 />
               )}
@@ -156,9 +166,9 @@ const ParameterForm = ({
           <Select
             key={fieldName}
             {...commonProps}
-            data={fieldConfig.options || []}
+            data={selectData}
             clearable
-            searchable={fieldConfig.options?.length > 5}
+            searchable={selectData.length > 5}
             onChange={(value) => handleParameterChange(fieldName, value)}
           />
         );
