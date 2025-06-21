@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Paper, 
   Stack, 
@@ -8,7 +8,8 @@ import {
   Text,
   Alert,
   Tabs,
-  Grid
+  Grid,
+  Button
 } from '@mantine/core';
 import { IconChartDots3, IconInfoCircle } from '@tabler/icons-react';
 import { useParams } from 'react-router-dom';
@@ -25,6 +26,7 @@ import QueryHistory from './components/QueryHistory';
 import QueryFavorites from './components/QueryFavorites';
 import ExportOptions from './components/ExportOptions';
 import TemplateEditor from './components/TemplateEditor';
+import HelpSystem from './components/HelpSystem';
 
 const AzureKQLTool = () => {
   const { service, template: templateParam } = useParams();
@@ -49,6 +51,10 @@ const AzureKQLTool = () => {
     key: 'azure-kql-favorites',
     defaultValue: []
   });
+
+  // Help system state
+  const [helpOpened, setHelpOpened] = useState(false);
+  const [helpContext, setHelpContext] = useState(null);
 
   // Add current query to favorites
   const addToFavorites = () => {
@@ -113,16 +119,25 @@ const AzureKQLTool = () => {
       <Paper p="xl" radius="lg" withBorder>
         <Stack gap="xl">
           {/* Header */}
-          <Group gap="md">
-            <ThemeIcon size={48} radius="md" color="cyan" variant="light">
-              <IconChartDots3 size={28} />
-            </ThemeIcon>
-            <div>
-              <Title order={2}>Azure KQL Query Builder</Title>
-              <Text size="sm" c="dimmed">
-                Build optimized KQL queries for Azure services with guided forms
-              </Text>
-            </div>
+          <Group justify="space-between">
+            <Group gap="md">
+              <ThemeIcon size={48} radius="md" color="cyan" variant="light">
+                <IconChartDots3 size={28} />
+              </ThemeIcon>
+              <div>
+                <Title order={2}>Azure KQL Query Builder</Title>
+                <Text size="sm" c="dimmed">
+                  Build optimized KQL queries for Azure services with guided forms
+                </Text>
+              </div>
+            </Group>
+            <Button
+              variant="light"
+              leftSection={<IconInfoCircle size={16} />}
+              onClick={() => setHelpOpened(true)}
+            >
+              Help
+            </Button>
           </Group>
 
           {/* Info Alert */}
@@ -219,6 +234,13 @@ const AzureKQLTool = () => {
           </Tabs>
         </Stack>
       </Paper>
+
+      {/* Help System */}
+      <HelpSystem 
+        opened={helpOpened}
+        onClose={() => setHelpOpened(false)}
+        currentContext={helpContext}
+      />
     </>
   );
 };

@@ -81,21 +81,83 @@ const TemplateEditor = ({ onTemplateCreate, onTemplateUpdate }) => {
     const errors = [];
     
     // Service validation
-    if (!template.service?.id) errors.push('Service ID is required');
-    if (!template.service?.name) errors.push('Service name is required');
-    if (!template.service?.description) errors.push('Service description is required');
-    
-    // Schema validation
-    if (!template.schema?.tables?.primary) errors.push('Primary table is required');
-    if (!template.schema?.fields || Object.keys(template.schema.fields).length === 0) {
-      errors.push('At least one field is required');
+    if (!template.service) {
+      errors.push('Service configuration is required');
+    } else {
+      if (!template.service.id) errors.push('Service ID is required');
+      if (!template.service.name) errors.push('Service name is required');
+      if (!template.service.category) errors.push('Service category is required');
+      if (!/^[a-z0-9-]+$/.test(template.service.id)) {
+        errors.push('Service ID must contain only lowercase letters, numbers, and hyphens');
+      }
     }
     
-    // Field validation
-    Object.entries(template.schema?.fields || {}).forEach(([fieldName, fieldConfig]) => {
-      if (!fieldConfig.type) errors.push(`Field "${fieldName}" is missing type`);
-      if (!fieldConfig.description) errors.push(`Field "${fieldName}" is missing description`);
-    });
+    // Schema validation
+    if (!template.schema) {
+      errors.push('Schema configuration is required');
+    } else {
+      // Tables validation
+      if (!template.schema.tables) {
+        errors.push('Tables configuration is required');
+      } else {
+        if (!template.schema.tables.primary) {
+          errors.push('Primary table is required');
+        }
+        if (template.schema.tables.secondary && !Array.isArray(template.schema.tables.secondary)) {
+          errors.push('Secondary tables must be an array');
+        }
+      }
+      
+      // Fields validation
+      if (!template.schema.fields || Object.keys(template.schema.fields).length === 0) {
+        errors.push('At least one field definition is required');
+      } else {
+        Object.keys(template.schema.fields).forEach(fieldName => {
+          const field = template.schema.fields[fieldName];
+          if (!field.type) errors.push(`Field '${fieldName}' must have a type`);
+          if (!field.kqlField) errors.push(`Field '${fieldName}' must have a kqlField mapping`);
+          if (!field.description) errors.push(`Field '${fieldName}' should have a description`);
+          
+          // Type-specific validation
+          if (field.type === 'select' && (!field.options || !Array.isArray(field.options))) {
+            errors.push(`Select field '${fieldName}' must have options array`);
+          }
+          if (field.type === 'number') {
+            if (field.min !== undefined && field.max !== undefined && field.min >= field.max) {
+              errors.push(`Number field '${fieldName}' min value must be less than max value`);
+            }
+          }
+        });
+      }
+      
+      // Filter order validation
+      if (template.schema.filterOrder && !Array.isArray(template.schema.filterOrder)) {
+        errors.push('Filter order must be an array');
+      }
+    }
+    
+    // Templates validation
+    if (template.templates && typeof template.templates === 'object') {
+      Object.keys(template.templates).forEach(templateName => {
+        const tmpl = template.templates[templateName];
+        if (!tmpl.name) errors.push(`Template '${templateName}' must have a name`);
+        if (!tmpl.description) errors.push(`Template '${templateName}' must have a description`);
+        if (tmpl.defaultParameters && typeof tmpl.defaultParameters !== 'object') {
+          errors.push(`Template '${templateName}' defaultParameters must be an object`);
+        }
+      });
+    }
+    
+    // Advanced validation
+    if (template.schema?.fields && template.schema?.filterOrder) {
+      const fieldNames = Object.keys(template.schema.fields);
+      const invalidFilterFields = template.schema.filterOrder.filter(
+        field => field !== 'timeRange' && !fieldNames.includes(field)
+      );
+      if (invalidFilterFields.length > 0) {
+        errors.push(`Filter order contains undefined fields: ${invalidFilterFields.join(', ')}`);
+      }
+    }
     
     return errors;
   };
@@ -330,6 +392,53 @@ const TemplateEditor = ({ onTemplateCreate, onTemplateUpdate }) => {
         }
       }
     }));
+  };
+
+  // Share template (generate shareable URL)
+  const generateShareableUrl = (template) => {
+    try {
+      const templateData = {
+        service: template.service,
+        schema: template.schema,
+        templates: template.templates,
+        version: template.version || '1.0.0'
+      };
+      
+      const encodedTemplate = btoa(JSON.stringify(templateData));
+      const shareUrl = `${window.location.origin}/azure-kql?import=${encodedTemplate}`;
+      
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        notifications.show({
+          title: 'Share URL Copied',
+          message: 'Template share URL has been copied to clipboard',
+          color: 'green',
+          icon: <IconCheck size={16} />
+        });
+      }).catch(() => {
+        // Fallback for browsers that don't support clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        notifications.show({
+          title: 'Share URL Generated',
+          message: 'Template share URL has been generated and copied',
+          color: 'green',
+          icon: <IconCheck size={16} />
+        });
+      });
+    } catch (error) {
+      console.error('Share URL generation error:', error);
+      notifications.show({
+        title: 'Share Failed',
+        message: 'Failed to generate shareable URL',
+        color: 'red',
+        icon: <IconX size={16} />
+      });
+    }
   };
 
   return (

@@ -69,7 +69,6 @@ const ParameterForm = ({
     const warningMessage = hasWarning && !hasError ? fieldWarnings[0] : null;
     
     const commonProps = {
-      key: fieldName,
       label: (
         <Group gap="xs">
           <Text size="sm">{fieldConfig.description || fieldName}</Text>
@@ -87,6 +86,7 @@ const ParameterForm = ({
       case 'number':
         return (
           <NumberInput
+            key={fieldName}
             {...commonProps}
             min={fieldConfig.min}
             max={fieldConfig.max}
@@ -97,6 +97,7 @@ const ParameterForm = ({
       case 'select':
         return (
           <Select
+            key={fieldName}
             {...commonProps}
             data={fieldConfig.options || []}
             clearable
@@ -107,6 +108,7 @@ const ParameterForm = ({
       case 'multiselect':
         return (
           <MultiSelect
+            key={fieldName}
             {...commonProps}
             data={fieldConfig.options || []}
             clearable
@@ -118,6 +120,7 @@ const ParameterForm = ({
         if (fieldName === 'timeRange' || fieldName === 'TimeGenerated') {
           return (
             <Select
+              key={fieldName}
               {...commonProps}
               data={[
                 { value: '1h', label: 'Last 1 hour' },
@@ -132,6 +135,7 @@ const ParameterForm = ({
         }
         return (
           <TextInput
+            key={fieldName}
             {...commonProps}
             placeholder="e.g., 24h, 7d, or 2023-01-01"
           />
@@ -139,7 +143,7 @@ const ParameterForm = ({
 
       default:
         return (
-          <TextInput {...commonProps} />
+          <TextInput key={fieldName} {...commonProps} />
         );
     }
   };
