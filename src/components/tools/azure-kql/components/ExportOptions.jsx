@@ -171,16 +171,17 @@ const ExportOptions = ({ query, onSave, generateShareableURL, onAddToFavorites }
 
         <Group grow>
           <Button
-            variant="subtle"
+            variant="light"
             leftSection={<IconBookmark size={16} />}
             onClick={handleSaveQuery}
             size="sm"
+            color="cyan"
           >
             Save to History
           </Button>
           
           <Button
-            variant="subtle"
+            variant="light"
             leftSection={<IconStar size={16} />}
             onClick={handleAddToFavorites}
             size="sm"
@@ -190,25 +191,27 @@ const ExportOptions = ({ query, onSave, generateShareableURL, onAddToFavorites }
           </Button>
         </Group>
 
-        <Button
-          variant="subtle"
-          leftSection={<IconShare size={16} />}
-          onClick={handleShareURL}
-          size="sm"
-          fullWidth
-        >
-          Share URL
-        </Button>
+        <Group grow>
+          <Button
+            variant="light"
+            leftSection={<IconDownload size={16} />}
+            onClick={handleDownloadQuery}
+            size="sm"
+            color="green"
+          >
+            Download .kql File
+          </Button>
 
-        <Button
-          variant="subtle"
-          leftSection={<IconDownload size={16} />}
-          onClick={handleDownloadQuery}
-          size="sm"
-          fullWidth
-        >
-          Download .kql File
-        </Button>
+          <Button
+            variant="light"
+            leftSection={<IconShare size={16} />}
+            onClick={handleShareURL}
+            size="sm"
+            color="violet"
+          >
+            Share URL
+          </Button>
+        </Group>
       </Stack>
     </Paper>
   );

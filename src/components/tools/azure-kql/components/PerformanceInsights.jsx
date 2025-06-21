@@ -1,20 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Paper,
   Stack,
-  Title,
   Text,
-  Progress,
   Badge,
   Group,
   Alert,
-  Accordion,
+  Collapse,
   List,
   ThemeIcon,
   Tooltip,
-  Grid,
-  RingProgress,
-  Center
+  ActionIcon,
+  Divider,
+  Modal,
+  Button,
+  useMantineColorScheme
 } from '@mantine/core';
 import {
   IconSpeedboat,
@@ -25,10 +25,16 @@ import {
   IconChartBar,
   IconCheck,
   IconX,
-  IconExclamationMark
+  IconExclamationMark,
+  IconChevronDown,
+  IconChevronRight
 } from '@tabler/icons-react';
 
 const PerformanceInsights = ({ analysis, isVisible = true }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [issuesModalOpened, setIssuesModalOpened] = useState(false);
+  const { colorScheme } = useMantineColorScheme();
+
   if (!isVisible || !analysis) return null;
 
   const getScoreColor = (score) => {
@@ -39,9 +45,9 @@ const PerformanceInsights = ({ analysis, isVisible = true }) => {
   };
 
   const getScoreIcon = (score) => {
-    if (score >= 80) return <IconCheck size={16} />;
-    if (score >= 60) return <IconExclamationMark size={16} />;
-    return <IconX size={16} />;
+    if (score >= 80) return <IconCheck size={12} />;
+    if (score >= 60) return <IconExclamationMark size={12} />;
+    return <IconX size={12} />;
   };
 
   const getCostColor = (category) => {
@@ -75,243 +81,270 @@ const PerformanceInsights = ({ analysis, isVisible = true }) => {
 
   const getSeverityIcon = (severity) => {
     switch (severity) {
-      case 'critical': return <IconX size={14} />;
-      case 'high': return <IconAlertTriangle size={14} />;
-      case 'medium': return <IconExclamationMark size={14} />;
-      default: return <IconBulb size={14} />;
+      case 'critical': return <IconX size={12} />;
+      case 'high': return <IconAlertTriangle size={12} />;
+      case 'medium': return <IconExclamationMark size={12} />;
+      default: return <IconBulb size={12} />;
     }
   };
 
+  const hasIssues = analysis.warnings.length > 0 || analysis.score < 70;
+  const hasContent = analysis.warnings.length > 0 || analysis.suggestions.length > 0 || analysis.optimizationTips.length > 0;
+
   return (
-    <Paper p="md" withBorder>
-      <Stack gap="md">
-        <Group justify="space-between">
-          <Group gap="sm">
-            <ThemeIcon size="sm" color="blue" variant="light">
-              <IconSpeedboat size={16} />
+    <Paper 
+      p="xs" 
+      withBorder 
+      variant="light" 
+      style={{
+        backgroundColor: colorScheme === 'dark' 
+          ? 'var(--mantine-color-dark-6)' 
+          : 'var(--mantine-color-gray-0)'
+      }}
+    >
+      <Stack gap="xs">
+        {/* Compact Header */}
+        <Group justify="space-between" gap="xs">
+          <Group gap="xs">
+            <ThemeIcon size="xs" color="blue" variant="light">
+              <IconSpeedboat size={12} />
             </ThemeIcon>
-            <Title order={4}>Performance Insights</Title>
+            <Text size="xs" fw={500}>Performance</Text>
+            <Badge size="xs" color={getScoreColor(analysis.score)} variant="light">
+              {analysis.score}/100
+            </Badge>
+            <Tooltip label={`Estimated cost: ${analysis.estimatedCost.estimated} ${analysis.estimatedCost.unit}`}>
+              <Badge size="xs" color={getCostColor(analysis.estimatedCost.category)} variant="outline">
+                <Group gap={2}>
+                  <IconCoin size={10} />
+                  <Text size="xs">{analysis.estimatedCost.category}</Text>
+                </Group>
+              </Badge>
+            </Tooltip>
+            <Tooltip label={`Execution time: ${analysis.executionTime.display}`}>
+              <Badge size="xs" color={getTimeColor(analysis.executionTime.category)} variant="outline">
+                <Group gap={2}>
+                  <IconClock size={10} />
+                  <Text size="xs">{analysis.executionTime.category}</Text>
+                </Group>
+              </Badge>
+            </Tooltip>
+            {hasIssues && (
+              <Badge 
+                size="xs" 
+                color="red" 
+                variant="light"
+                style={{ cursor: 'pointer' }}
+                onClick={() => setIssuesModalOpened(true)}
+              >
+                <Group gap={2}>
+                  <IconAlertTriangle size={10} />
+                  <Text size="xs">{analysis.warnings.length} issue{analysis.warnings.length !== 1 ? 's' : ''}</Text>
+                </Group>
+              </Badge>
+            )}
           </Group>
-          <Badge size="xs" color={getScoreColor(analysis.score)}>
-            {analysis.score}/100
-          </Badge>
+          
+          {hasContent && (
+            <ActionIcon
+              size="xs"
+              variant="subtle"
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded ? <IconChevronDown size={12} /> : <IconChevronRight size={12} />}
+            </ActionIcon>
+          )}
         </Group>
 
-        {/* Performance Overview */}
-        <Grid>
-          <Grid.Col span={4}>
-            <Paper p="sm" withBorder bg="gray.0">
-              <Stack gap="xs" align="center">
-                <RingProgress
-                  size={60}
-                  thickness={6}
-                  sections={[{ value: analysis.score, color: getScoreColor(analysis.score) }]}
-                  label={
-                    <Center>
-                      <ThemeIcon size="xs" color={getScoreColor(analysis.score)} variant="light">
-                        {getScoreIcon(analysis.score)}
-                      </ThemeIcon>
-                    </Center>
-                  }
-                />
-                <div style={{ textAlign: 'center' }}>
-                  <Text size="xs" fw={600}>Performance Score</Text>
-                  <Text size="xs" c="dimmed">{analysis.score}/100</Text>
-                </div>
-              </Stack>
-            </Paper>
-          </Grid.Col>
-
-          <Grid.Col span={4}>
-            <Paper p="sm" withBorder bg="gray.0">
-              <Stack gap="xs" align="center">
-                <ThemeIcon size={40} color={getCostColor(analysis.estimatedCost.category)} variant="light">
-                  <IconCoin size={24} />
-                </ThemeIcon>
-                <div style={{ textAlign: 'center' }}>
-                  <Text size="xs" fw={600}>Estimated Cost</Text>
-                  <Text size="xs" c="dimmed">
-                    {analysis.estimatedCost.estimated} {analysis.estimatedCost.unit}
-                  </Text>
-                  <Badge size="xs" color={getCostColor(analysis.estimatedCost.category)}>
-                    {analysis.estimatedCost.category}
-                  </Badge>
-                </div>
-              </Stack>
-            </Paper>
-          </Grid.Col>
-
-          <Grid.Col span={4}>
-            <Paper p="sm" withBorder bg="gray.0">
-              <Stack gap="xs" align="center">
-                <ThemeIcon size={40} color={getTimeColor(analysis.executionTime.category)} variant="light">
-                  <IconClock size={24} />
-                </ThemeIcon>
-                <div style={{ textAlign: 'center' }}>
-                  <Text size="xs" fw={600}>Execution Time</Text>
-                  <Text size="xs" c="dimmed">{analysis.executionTime.display}</Text>
-                  <Badge size="xs" color={getTimeColor(analysis.executionTime.category)}>
-                    {analysis.executionTime.category}
-                  </Badge>
-                </div>
-              </Stack>
-            </Paper>
-          </Grid.Col>
-        </Grid>
-
-        {/* Warnings and Suggestions */}
-        {(analysis.warnings.length > 0 || analysis.suggestions.length > 0) && (
-          <Accordion variant="contained">
+        {/* Expandable Details */}
+        <Collapse in={expanded}>
+          <Stack gap="xs">
+            <Divider />
+            
+            {/* Warnings */}
             {analysis.warnings.length > 0 && (
-              <Accordion.Item value="warnings">
-                <Accordion.Control 
-                  icon={
-                    <ThemeIcon size="sm" color="red" variant="light">
-                      <IconAlertTriangle size={16} />
-                    </ThemeIcon>
-                  }
-                >
-                  <Group gap="sm">
-                    <Text>Performance Warnings</Text>
-                    <Badge size="xs" color="red">{analysis.warnings.length}</Badge>
+              <Stack gap="xs">
+                <Text size="xs" fw={500} c="red">
+                  <Group gap={4}>
+                    <IconAlertTriangle size={12} />
+                    Performance Warnings ({analysis.warnings.length})
                   </Group>
-                </Accordion.Control>
-                <Accordion.Panel>
-                  <Stack gap="sm">
-                    {analysis.warnings.map((warning, index) => (
-                      <Alert
-                        key={index}
-                        icon={getSeverityIcon(warning.severity)}
-                        color={getSeverityColor(warning.severity)}
-                        variant="light"
-                        title={warning.message}
-                      >
-                        <Stack gap="xs">
-                          <Text size="sm">
-                            <strong>Impact:</strong> {warning.impact}
-                          </Text>
-                          <Text size="sm">
-                            <strong>Recommendation:</strong> {warning.recommendation}
-                          </Text>
-                        </Stack>
-                      </Alert>
-                    ))}
-                  </Stack>
-                </Accordion.Panel>
-              </Accordion.Item>
+                </Text>
+                {analysis.warnings.map((warning, index) => (
+                  <Alert
+                    key={index}
+                    icon={getSeverityIcon(warning.severity)}
+                    color={getSeverityColor(warning.severity)}
+                    variant="light"
+                    p="xs"
+                  >
+                    <Stack gap={2}>
+                      <Text size="xs" fw={500}>{warning.message}</Text>
+                      <Text size="xs" c="dimmed">
+                        Impact: {warning.impact}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        Fix: {warning.recommendation}
+                      </Text>
+                    </Stack>
+                  </Alert>
+                ))}
+              </Stack>
             )}
 
+            {/* Suggestions */}
             {analysis.suggestions.length > 0 && (
-              <Accordion.Item value="suggestions">
-                <Accordion.Control 
+              <Stack gap="xs">
+                <Text size="xs" fw={500} c="blue">
+                  <Group gap={4}>
+                    <IconBulb size={12} />
+                    Optimization Suggestions ({analysis.suggestions.length})
+                  </Group>
+                </Text>
+                <List
+                  spacing={2}
+                  size="xs"
                   icon={
-                    <ThemeIcon size="sm" color="blue" variant="light">
-                      <IconBulb size={16} />
+                    <ThemeIcon size="xs" color="blue" variant="light">
+                      <IconBulb size={8} />
                     </ThemeIcon>
                   }
                 >
-                  <Group gap="sm">
-                    <Text>Optimization Suggestions</Text>
-                    <Badge size="xs" color="blue">{analysis.suggestions.length}</Badge>
-                  </Group>
-                </Accordion.Control>
-                <Accordion.Panel>
-                  <List
-                    spacing="sm"
-                    size="sm"
-                    icon={
-                      <ThemeIcon size="sm" color="blue" variant="light">
-                        <IconBulb size={12} />
-                      </ThemeIcon>
-                    }
-                  >
-                    {analysis.suggestions.map((suggestion, index) => (
-                      <List.Item key={index}>
-                        <Stack gap={4}>
-                          <Text size="sm" fw={500}>{suggestion.message}</Text>
-                          {suggestion.benefit && (
-                            <Text size="xs" c="dimmed">
-                              <strong>Benefit:</strong> {suggestion.benefit}
-                            </Text>
-                          )}
-                        </Stack>
-                      </List.Item>
-                    ))}
-                  </List>
-                </Accordion.Panel>
-              </Accordion.Item>
+                  {analysis.suggestions.map((suggestion, index) => (
+                    <List.Item key={index}>
+                      <Stack gap={2}>
+                        <Text size="xs">{suggestion.message}</Text>
+                        {suggestion.benefit && (
+                          <Text size="xs" c="dimmed">
+                            Benefit: {suggestion.benefit}
+                          </Text>
+                        )}
+                      </Stack>
+                    </List.Item>
+                  ))}
+                </List>
+              </Stack>
             )}
 
+            {/* Quick Tips */}
             {analysis.optimizationTips.length > 0 && (
-              <Accordion.Item value="tips">
-                <Accordion.Control 
+              <Stack gap="xs">
+                <Text size="xs" fw={500} c="green">
+                  <Group gap={4}>
+                    <IconChartBar size={12} />
+                    Quick Tips ({analysis.optimizationTips.length})
+                  </Group>
+                </Text>
+                <List
+                  spacing={2}
+                  size="xs"
                   icon={
-                    <ThemeIcon size="sm" color="green" variant="light">
-                      <IconChartBar size={16} />
+                    <ThemeIcon size="xs" color="green" variant="light">
+                      <IconCheck size={8} />
                     </ThemeIcon>
                   }
                 >
-                  <Group gap="sm">
-                    <Text>Quick Optimization Tips</Text>
-                    <Badge size="xs" color="green">{analysis.optimizationTips.length}</Badge>
-                  </Group>
-                </Accordion.Control>
-                <Accordion.Panel>
-                  <List
-                    spacing="sm"
-                    size="sm"
-                    icon={
-                      <ThemeIcon size="sm" color="green" variant="light">
-                        <IconCheck size={12} />
-                      </ThemeIcon>
-                    }
-                  >
-                    {analysis.optimizationTips.map((tip, index) => (
-                      <List.Item key={index}>
-                        <Group gap="sm" align="flex-start">
-                          <Badge size="xs" color={tip.priority === 'high' ? 'red' : tip.priority === 'medium' ? 'yellow' : 'blue'}>
-                            {tip.priority}
-                          </Badge>
-                          <Stack gap={4} style={{ flex: 1 }}>
-                            <Text size="sm" fw={500}>{tip.tip}</Text>
-                            <Text size="xs" c="dimmed">{tip.impact}</Text>
-                          </Stack>
-                        </Group>
-                      </List.Item>
-                    ))}
-                  </List>
-                </Accordion.Panel>
-              </Accordion.Item>
+                  {analysis.optimizationTips.map((tip, index) => (
+                    <List.Item key={index}>
+                      <Group gap="xs" align="flex-start">
+                        <Badge size="xs" color={tip.priority === 'high' ? 'red' : tip.priority === 'medium' ? 'yellow' : 'blue'}>
+                          {tip.priority}
+                        </Badge>
+                        <Stack gap={2} style={{ flex: 1 }}>
+                          <Text size="xs">{tip.tip}</Text>
+                          <Text size="xs" c="dimmed">{tip.impact}</Text>
+                        </Stack>
+                      </Group>
+                    </List.Item>
+                  ))}
+                </List>
+              </Stack>
             )}
-          </Accordion>
-        )}
 
-        {/* Perfect Score Message */}
-        {analysis.score >= 90 && analysis.warnings.length === 0 && (
-          <Alert 
-            icon={<IconCheck size={16} />} 
-            color="green" 
-            variant="light"
-            title="Excellent Query Performance!"
-          >
-            Your query is well-optimized and should execute efficiently with minimal cost.
-          </Alert>
-        )}
+            {/* Status Messages */}
+            {analysis.score >= 90 && analysis.warnings.length === 0 && (
+              <Alert 
+                icon={<IconCheck size={12} />} 
+                color="green" 
+                variant="light"
+                p="xs"
+              >
+                <Text size="xs">Excellent! Your query is well-optimized.</Text>
+              </Alert>
+            )}
 
-        {/* Poor Score Warning */}
-        {analysis.score < 40 && (
-          <Alert 
-            icon={<IconX size={16} />} 
-            color="red" 
-            variant="light"
-            title="Query Performance Needs Improvement"
-          >
-            This query may be slow and expensive to execute. Please review the warnings and suggestions above to optimize performance.
-          </Alert>
-        )}
-      </Stack>
-    </Paper>
-  );
-};
+            {analysis.score < 40 && (
+              <Alert 
+                icon={<IconX size={12} />} 
+                color="red" 
+                variant="light"
+                p="xs"
+              >
+                <Text size="xs">Query needs optimization - review suggestions above.</Text>
+              </Alert>
+            )}
+          </Stack>
+                 </Collapse>
+       </Stack>
 
-export default PerformanceInsights;
+       {/* Issues Modal */}
+       <Modal
+         opened={issuesModalOpened}
+         onClose={() => setIssuesModalOpened(false)}
+         title={
+           <Group gap="sm">
+             <ThemeIcon size="sm" color="red" variant="light">
+               <IconAlertTriangle size={16} />
+             </ThemeIcon>
+             <Text fw={500}>Performance Issues ({analysis.warnings.length})</Text>
+           </Group>
+         }
+         size="lg"
+       >
+         <Stack gap="md">
+           {analysis.warnings.map((warning, index) => (
+             <Alert
+               key={index}
+               icon={getSeverityIcon(warning.severity)}
+               color={getSeverityColor(warning.severity)}
+               variant="light"
+               title={warning.message}
+             >
+               <Stack gap="sm">
+                 <Text size="sm">
+                   <strong>Impact:</strong> {warning.impact}
+                 </Text>
+                 <Text size="sm">
+                   <strong>Recommendation:</strong> {warning.recommendation}
+                 </Text>
+                 <Badge size="xs" color={getSeverityColor(warning.severity)}>
+                   {warning.severity} priority
+                 </Badge>
+               </Stack>
+             </Alert>
+           ))}
+           
+           {analysis.score < 40 && (
+             <Alert 
+               icon={<IconX size={16} />} 
+               color="red" 
+               variant="light"
+               title="Overall Performance Warning"
+             >
+               This query has a low performance score ({analysis.score}/100) and may be slow and expensive to execute. 
+               Please address the issues above to improve performance.
+             </Alert>
+           )}
+
+           <Group justify="flex-end" mt="md">
+             <Button variant="light" onClick={() => setIssuesModalOpened(false)}>
+               Close
+             </Button>
+           </Group>
+         </Stack>
+       </Modal>
+     </Paper>
+   );
+ };
+ 
+ export default PerformanceInsights;
