@@ -11,33 +11,19 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
       },
       output: {
-        manualChunks: (id) => {
-          // Vendor chunks for large libraries
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            if (id.includes('@mantine/core')) {
-              return 'vendor-mantine-core';
-            }
-            if (id.includes('@mantine/')) {
-              return 'vendor-mantine-extended';
-            }
-            if (id.includes('@tabler/icons-react')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('prismjs')) {
-              return 'vendor-syntax';
-            }
-            if (id.includes('js-yaml') || id.includes('@iarna/toml') || id.includes('ajv')) {
-              return 'vendor-data';
-            }
-            if (id.includes('@dnd-kit') || id.includes('@svgdotjs') || id.includes('html2canvas')) {
-              return 'vendor-ui';
-            }
-            // Default vendor chunk for other node_modules
-            return 'vendor';
-          }
+        manualChunks: {
+          // Keep React ecosystem together
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // Mantine UI components
+          'vendor-mantine': ['@mantine/core', '@mantine/hooks', '@mantine/notifications', '@mantine/dates', '@mantine/dropzone'],
+          // Icons
+          'vendor-icons': ['@tabler/icons-react'],
+          // Data processing libraries
+          'vendor-data': ['js-yaml', '@ltd/j-toml', 'ajv', 'ajv-formats', 'better-ajv-errors'],
+          // UI utilities
+          'vendor-ui': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities', '@svgdotjs/svg.js', 'html2canvas'],
+          // Syntax highlighting
+          'vendor-syntax': ['prismjs']
         },
         // Optimize chunk sizes
         chunkFileNames: 'js/[name]-[hash].js',
@@ -55,9 +41,9 @@ export default defineConfig({
       }
     },
     // Increase chunk size warning limit since we're now splitting appropriately
-    chunkSizeWarningLimit: 600,
-    // Enable source maps for better debugging
-    sourcemap: false,
+    chunkSizeWarningLimit: 800,
+    // Enable source maps for better debugging in production
+    sourcemap: true,
     // Optimize build performance
     target: 'esnext',
     minify: 'esbuild'
@@ -70,15 +56,27 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
-  // Optimize dependencies
+  // Optimize dependencies and prevent React duplication
   optimizeDeps: {
     include: [
       'react', 
       'react-dom', 
+      'react/jsx-runtime',
+      'react-router-dom',
       '@mantine/core',
       '@mantine/hooks',
+      '@mantine/notifications',
       '@tabler/icons-react'
     ],
-    exclude: ['@iarna/toml']
+    exclude: ['exceljs']
+  },
+  resolve: {
+    // Ensure React consistency across chunks
+    dedupe: ['react', 'react-dom', 'react-router-dom'],
+    alias: {
+      // Ensure consistent React imports
+      'react': resolve(__dirname, 'node_modules/react'),
+      'react-dom': resolve(__dirname, 'node_modules/react-dom')
+    }
   }
 })

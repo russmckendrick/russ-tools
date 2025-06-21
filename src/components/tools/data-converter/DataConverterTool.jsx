@@ -49,7 +49,7 @@ import { useMantineColorScheme } from '@mantine/core';
 import { loadPrismLanguages, highlightCode } from '../../../utils/prismLoader';
 import '../../../styles/prism-theme.css';
 import yaml from 'js-yaml';
-import TOML from '@iarna/toml';
+import * as TOML from '@ltd/j-toml';
 import CompressIcon from './CompressIcon';
 import JSONIcon from './JSONIcon';
 import { 

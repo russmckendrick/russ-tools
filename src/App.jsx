@@ -1,7 +1,7 @@
+import React, { Suspense, lazy } from 'react';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import React, { Suspense, lazy } from 'react';
 import { Layout } from './components/layout/Layout';
 import { AzureNamingProvider } from './components/tools/azure-naming/context/AzureNamingContext';
 import HomeView from './components/layout/HomeView';
