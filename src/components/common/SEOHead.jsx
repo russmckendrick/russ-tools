@@ -16,8 +16,6 @@ export default function SEOHead({
   structuredData 
 }) {
   useEffect(() => {
-    console.log('SEOHead useEffect running with title:', title);
-    
     // Helper function to update or create meta tag
     const updateMetaTag = (selector, content) => {
       let meta = document.querySelector(selector);
@@ -46,23 +44,13 @@ export default function SEOHead({
 
     // Update document title
     if (title) {
-      console.log('Updating document.title to:', title);
       document.title = title;
     }
 
     // Update primary meta tags
-    if (title) {
-      console.log('Updating title meta tag to:', title);
-      updateMetaTag('meta[name="title"]', title);
-    }
-    if (description) {
-      console.log('Updating description meta tag to:', description);
-      updateMetaTag('meta[name="description"]', description);
-    }
-    if (keywords) {
-      console.log('Updating keywords meta tag to:', keywords);
-      updateMetaTag('meta[name="keywords"]', keywords);
-    }
+    if (title) updateMetaTag('meta[name="title"]', title);
+    if (description) updateMetaTag('meta[name="description"]', description);
+    if (keywords) updateMetaTag('meta[name="keywords"]', keywords);
     if (canonical) updateLinkTag('canonical', canonical);
 
     // Update Open Graph tags

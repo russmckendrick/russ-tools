@@ -902,14 +902,40 @@ Visit [https://www.russ.tools/password-generator](https://www.russ.tools/passwor
 
 ---
 
+## 🔍 SEO & Performance
+
+Russ Tools features comprehensive SEO optimization with:
+
+- **🎯 Tool-Specific SEO** - Each tool has unique, optimized meta tags and titles
+- **📊 Enhanced Metadata** - Rich Open Graph and Twitter Card support for social sharing
+- **🏗️ Structured Data** - Schema.org markup for better search engine understanding
+- **⚡ Dynamic Updates** - Client-side meta tag management with React 19 compatibility
+- **🔧 SEO Configuration** - Centralized SEO management through `toolsConfig.json`
+
+### SEO Implementation Details
+
+The application uses a hybrid SEO approach:
+- **Static Base HTML** - Clean, minimal initial HTML for fast loading
+- **Dynamic Meta Tags** - JavaScript-driven meta tag updates for tool-specific content
+- **useEffect DOM Updates** - Immediate DOM manipulation for search engine compatibility
+- **React 19 Future-Ready** - Maintains compatibility with React 19's native metadata features
+
+Each tool automatically generates:
+- Unique page titles with targeted keywords
+- Tool-specific descriptions and keywords
+- Category-based Schema.org structured data
+- Open Graph and Twitter Card metadata
+- Canonical URLs for proper indexing
+
 ## 🛠️ Technology Stack
 
-- ⚛️ **React** (SPA framework)
+- ⚛️ **React 19** (SPA framework with native metadata support)
 - ⚡ **Vite** (build tool)
 - 🎨 **Mantine** (UI framework)
 - 🧮 **netmask** (IPv4 subnet calculation)
 - 🖱️ **@dnd-kit/core**, **@dnd-kit/sortable** (drag-and-drop)
 - 🏷️ **Tabler Icons** (SVG icons)
+- 🔍 **Custom SEO System** (dynamic meta tag management)
 
 Key libraries used in specific tools:
 - **Network Designer & Subnet Calculator:**

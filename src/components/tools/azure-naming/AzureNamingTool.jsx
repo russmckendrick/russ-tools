@@ -41,9 +41,6 @@ const AzureNamingTool = () => {
   // Get tool configuration for SEO
   const toolConfig = toolsConfig.find(tool => tool.id === 'azure-naming');
   const seoData = generateToolSEO(toolConfig);
-  
-  console.log('AzureNamingTool - toolConfig:', toolConfig);
-  console.log('AzureNamingTool - seoData:', seoData);
 
   // Load configuration from URL on mount
   React.useEffect(() => {
