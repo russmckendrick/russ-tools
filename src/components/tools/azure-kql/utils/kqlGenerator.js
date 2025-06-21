@@ -29,7 +29,15 @@ export const generateKQLQuery = (template, parameters, templateId = 'basic') => 
   // Add filters in optimal order
   const filters = buildFilters(template, parameters);
   if (filters.length > 0) {
-    queryParts.push(`| where ${filters.join(' and ')}`);
+    if (filters.length === 1) {
+      queryParts.push(`| where ${filters[0]}`);
+    } else {
+      // Format multiple filters for better readability
+      queryParts.push(`| where ${filters[0]}`);
+      filters.slice(1).forEach(filter => {
+        queryParts.push(`    and ${filter}`);
+      });
+    }
   }
   
   // Add aggregations if specified in template
