@@ -31,7 +31,7 @@ const TENANT_APIS = [
   },
   {
     name: 'GetCredentialType API',
-    url: (domain) => `https://login.microsoftonline.com/common/GetCredentialType`,
+    url: () => `https://login.microsoftonline.com/common/GetCredentialType`,
     parser: parseGetCredentialTypeResponse,
     requiresAuth: false,
     method: 'POST',
@@ -73,7 +73,7 @@ const ENHANCED_APIS = [
   },
   {
     name: 'Autodiscover Service',
-    url: (domain) => `https://autodiscover-s.outlook.com/autodiscover/autodiscover.svc`,
+    url: () => `https://autodiscover-s.outlook.com/autodiscover/autodiscover.svc`,
     parser: parseAutodiscoverResponse,
     requiresAuth: false,
     method: 'POST',
@@ -232,7 +232,7 @@ async function performDNSAnalysis(domain) {
 }
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     return handleRequest(request, env);
   }
 };
@@ -582,17 +582,16 @@ function parseFederationResponse(data, domain) {
 }
 
 // Parse OpenID Connect Well-Known response
-function parseOpenIdResponse(data, domain) {
+function parseOpenIdResponse(data) {
   if (!data || !data.issuer) return null;
   
   // Extract tenant ID from the issuer field
   // Issuer format: https://login.microsoftonline.com/{tenant-id}/v2.0
-  const issuerMatch = data.issuer.match(/https:\/\/login\.microsoftonline\.com\/([^\/]+)\/v2\.0/);
+  const issuerMatch = data.issuer.match(/https:\/\/login\.microsoftonline\.com\/([^/]+)\/v2\.0/);
   
   if (issuerMatch && issuerMatch[1]) {
     return {
       tenantId: issuerMatch[1],
-      domain: domain,
       issuer: data.issuer,
       authorizationEndpoint: data.authorization_endpoint,
       tokenEndpoint: data.token_endpoint
@@ -671,7 +670,7 @@ function parseGetCredentialTypeResponse(data, domain) {
 }
 
 // Additional parsers for enhanced APIs
-function parseOpenIdConfigResponse(data, tenantId) {
+function parseOpenIdConfigResponse(data) {
   if (!data || !data.issuer) return null;
   
   return {
@@ -683,7 +682,7 @@ function parseOpenIdConfigResponse(data, tenantId) {
   };
 }
 
-function parseUserRealmResponse(data, domain) {
+function parseUserRealmResponse(data) {
   if (!data) return null;
   
   return {
@@ -695,7 +694,7 @@ function parseUserRealmResponse(data, domain) {
   };
 }
 
-function parseAutodiscoverResponse(data, domain) {
+function parseAutodiscoverResponse() {
   // This would parse XML response from autodiscover
   // For now, return null as it's complex to implement
   return null;
