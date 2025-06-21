@@ -76,6 +76,11 @@ This tool is designed for network engineers, system administrators, cloud archit
    - Generate Terraform code in the "Export" tab
    - Download for use in your cloud deployments
 
+6. **Share Configuration**
+   - Click "Share Configuration" to create a shareable link
+   - Complete network designs shared via compressed URLs
+   - Preserves all networks, subnets, and visual settings
+
 ### Advanced Usage
 
 #### Custom Subnet Ordering
@@ -92,6 +97,26 @@ This tool is designed for network engineers, system administrators, cloud archit
 - Real-time validation of CIDR notation
 - Prevents invalid subnet configurations
 - Clear error messages for resolution guidance
+
+#### Configuration Sharing
+- **Share Button**: Located in the header for easy access
+- **Complete State**: Shares all networks, subnets, and configurations
+- **Compressed URLs**: Uses gzip compression for manageable link sizes
+- **Cross-Platform**: Works across different devices and browsers
+- **Privacy-Safe**: All processing happens client-side only
+
+**Sharing Process:**
+1. Design your network architecture
+2. Click "Share Configuration" in the header
+3. Shareable link automatically copied to clipboard
+4. Share with team members or save for documentation
+5. Opening the link restores complete network design
+
+**Use Cases:**
+- **Team Collaboration**: Share network designs with colleagues
+- **Architecture Review**: Send designs for approval or feedback
+- **Documentation**: Include shareable links in network documentation
+- **Templates**: Share common network patterns as starting points
 
 ## Technical Implementation
 

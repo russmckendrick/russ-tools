@@ -155,6 +155,32 @@ Click "Save to History" to store your query locally:
 - Includes all parameters and metadata
 - Accessible via "Query History" tab
 
+### Share Configuration
+Click "Share Configuration" to create a shareable link:
+- **Compressed URL**: Uses gzip compression for shorter URLs
+- **Complete State**: Preserves all parameters and selections
+- **Cross-Platform**: Works across different devices and browsers
+- **No Data Loss**: Includes complex parameters like UserName, IP addresses, etc.
+- **Privacy-Safe**: All processing happens client-side only
+
+**How Sharing Works:**
+1. Configure your query parameters
+2. Click "Share Configuration" button  
+3. Shareable link automatically copied to clipboard
+4. Share the link with colleagues or save for later
+5. Opening the link restores exact configuration
+
+**Example Shared URL:**
+```
+https://russ.tools/azure-kql?config=eJwVjUEKwzAMBP-icx1c2lNOeUEOhT5A...
+```
+
+**Benefits:**
+- **Collaboration**: Share complex queries with team members
+- **Documentation**: Include shareable links in runbooks
+- **Troubleshooting**: Easily reproduce exact query conditions
+- **Training**: Share example configurations for learning
+
 ## Managing Query History
 
 ### Viewing Saved Queries

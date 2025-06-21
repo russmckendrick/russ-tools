@@ -23,7 +23,8 @@ Individual documentation for each major tool:
 - **[SSL Certificate Checker](tools/ssl-checker/README.md)** - Comprehensive SSL/TLS analysis
 
 #### Microsoft Ecosystem Tools
-- **[Azure Resource Naming Tool](tools/azure-naming/README.md)** - Azure naming convention generator
+- **[Azure KQL Query Builder](tools/azure-kql/README.md)** - Interactive KQL query builder with sharing support
+- **[Azure Resource Naming Tool](tools/azure-naming/README.md)** - Azure naming convention generator with shareable configurations
 - **[Microsoft Portals (GDAP)](tools/microsoft-portals/README.md)** - Portal discovery for CSP partners
 - **[Microsoft Tenant Lookup](tools/tenant-lookup/README.md)** - Tenant information discovery
 
@@ -42,6 +43,7 @@ Individual documentation for each major tool:
 - **[Cloudflare Workers](cloudflare-workers/README.md)** - Complete backend services documentation
 
 ### Utility Documentation
+- **[ShareLink Utility](utils/sharelink.md)** - Configuration sharing and URL compression system
 - **[TLD Utilities](utils/tld-utilities.md)** - Top-level domain utility functions
 
 ## 🚀 Quick Start
@@ -75,14 +77,15 @@ Key architectural principles:
 - **Performance-optimized**: Global CDN distribution and caching
 - **Security-focused**: CSP headers, HTTPS everywhere, input validation
 - **Developer-friendly**: Component-based architecture with consistent patterns
+- **Collaboration-enabled**: Shareable configuration links with gzip compression
 
 ## 🛠️ Tool Categories
 
 ### Network & Infrastructure (4 Tools)
-Professional networking tools for subnet planning, DNS analysis, SSL certificate validation, and domain investigation.
+Professional networking tools for subnet planning, DNS analysis, SSL certificate validation, and domain investigation. Network Designer includes shareable configuration links.
 
-### Microsoft Ecosystem (3 Tools)
-Specialized tools for Azure resource management, tenant discovery, and partner portal access.
+### Microsoft Ecosystem (4 Tools)
+Specialized tools for Azure resource management, KQL query building, tenant discovery, and partner portal access. Azure KQL and Azure Naming tools include shareable configuration links.
 
 ### Security & Authentication (2 Tools)
 Privacy-focused tools for JWT analysis and secure password generation.
