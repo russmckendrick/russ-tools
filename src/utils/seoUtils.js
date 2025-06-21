@@ -11,20 +11,28 @@ export function generateToolSEO(tool) {
   const baseUrl = 'https://russ.tools';
   const toolUrl = `${baseUrl}${tool.path}`;
   
+  // Use enhanced SEO title if available, fallback to standard format
+  const seoTitle = tool.seoTitle || `${tool.title} - Free Online Tool | RussTools`;
+  
+  // Generate comprehensive keywords from multiple sources
+  const keywords = [
+    // Use specific SEO keywords if available
+    ...(tool.seoKeywords || []),
+    // Fallback to badges and general terms if no specific keywords
+    ...(!tool.seoKeywords ? tool.badges.map(badge => badge.toLowerCase()) : []),
+    // Add category-based keywords
+    ...(tool.category ? [tool.category.toLowerCase().replace(' tools', ''), tool.category.toLowerCase()] : []),
+    // Standard tool keywords (only if no specific SEO keywords provided)
+    ...(!tool.seoKeywords ? [tool.title.toLowerCase(), 'free tool', 'online tool'] : [])
+  ].filter((keyword, index, array) => array.indexOf(keyword) === index); // Remove duplicates
+  
   return {
-    title: `${tool.title} - Free Online Tool | RussTools`,
+    title: seoTitle,
     description: tool.description,
-    keywords: [
-      ...tool.badges.map(badge => badge.toLowerCase()),
-      tool.title.toLowerCase(),
-      'free tool',
-      'online tool',
-      'developer tool',
-      'devops tool'
-    ].join(', '),
+    keywords: keywords.join(', '),
     canonical: toolUrl,
     openGraph: {
-      title: `${tool.title} - Free Online Tool | RussTools`,
+      title: seoTitle,
       description: tool.description,
       url: toolUrl,
       type: 'website',
@@ -33,7 +41,7 @@ export function generateToolSEO(tool) {
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${tool.title} - Free Online Tool | RussTools`,
+      title: seoTitle,
       description: tool.description,
       image: `${baseUrl}/og-image.png`,
       creator: '@russmckendrick'
@@ -44,7 +52,7 @@ export function generateToolSEO(tool) {
       name: tool.title,
       url: toolUrl,
       description: tool.description,
-      applicationCategory: 'DeveloperApplication',
+      applicationCategory: tool.category ? mapCategoryToSchema(tool.category) : 'DeveloperApplication',
       operatingSystem: 'Web Browser',
       offers: {
         '@type': 'Offer',
@@ -60,7 +68,8 @@ export function generateToolSEO(tool) {
         '@type': 'Person',
         name: 'Russ McKendrick'
       },
-      featureList: tool.badges,
+      featureList: tool.features || tool.badges,
+      keywords: keywords.join(', '),
       isPartOf: {
         '@type': 'WebSite',
         name: 'RussTools',
@@ -68,6 +77,23 @@ export function generateToolSEO(tool) {
       }
     }
   };
+}
+
+/**
+ * Map tool categories to Schema.org application categories
+ * @param {string} category - Tool category
+ * @returns {string} Schema.org application category
+ */
+function mapCategoryToSchema(category) {
+  const categoryMap = {
+    'Network Tools': 'NetworkApplication',
+    'Azure Tools': 'DeveloperApplication',
+    'Microsoft Tools': 'BusinessApplication',
+    'Security Tools': 'SecurityApplication',
+    'Developer Tools': 'DeveloperApplication'
+  };
+  
+  return categoryMap[category] || 'DeveloperApplication';
 }
 
 /**

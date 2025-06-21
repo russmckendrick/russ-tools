@@ -7,7 +7,11 @@
     "icon": "IconNetwork",
     "iconColor": "blue",
     "badges": ["Subnet Planning", "Visual Diagrams", "Terraform Export"],
-    "path": "/network-designer"
+    "path": "/network-designer",
+    "seoTitle": "Network Subnet Designer - Plan & Visualize IP Networks",
+    "seoKeywords": ["network designer", "subnet planning", "ip calculator", "network visualization", "terraform export", "azure networking", "aws networking", "vmware networking", "cidr calculator", "network architecture"],
+    "category": "Network Tools",
+    "features": ["Interactive subnet visualization", "CIDR notation support", "Multi-cloud export (Azure, AWS, VMware)", "Drag & drop interface", "Real-time IP calculations", "Terraform configuration export"]
   },
   {
     "id": "microsoft-portals",
@@ -17,7 +21,11 @@
     "icon": "MicrosoftPortalsIcon",
     "iconColor": "indigo",
     "badges": ["Tenant Discovery", "Deep Links", "Multi-Portal"],
-    "path": "/microsoft-portals"
+    "path": "/microsoft-portals",
+    "seoTitle": "Microsoft Portals Deep Link Generator - GDAP Tenant Access",
+    "seoKeywords": ["microsoft portals", "gdap", "tenant links", "azure portal", "microsoft 365", "power platform", "deep links", "tenant discovery", "microsoft admin", "partner access"],
+    "category": "Microsoft Tools",
+    "features": ["Multi-portal deep linking", "Tenant information discovery", "GDAP partner support", "Azure portal access", "Microsoft 365 admin links", "Power Platform navigation"]
   },
   {
     "id": "tenant-lookup",
@@ -27,7 +35,11 @@
     "icon": "TenantLookupIcon",
     "iconColor": "blue",
     "badges": ["Tenant Discovery", "DNS Analysis", "API Integration"],
-    "path": "/tenant-lookup"
+    "path": "/tenant-lookup",
+    "seoTitle": "Microsoft Tenant Lookup - Domain to Tenant Discovery Tool",
+    "seoKeywords": ["microsoft tenant", "tenant lookup", "tenant id", "domain lookup", "azure ad", "office 365", "tenant discovery", "dns analysis", "microsoft api", "organization lookup"],
+    "category": "Microsoft Tools",
+    "features": ["Domain to tenant mapping", "Tenant ID discovery", "Organization details", "DNS configuration analysis", "Authentication settings", "Multi-API integration"]
   },
   {
     "id": "azure-kql",
@@ -37,7 +49,11 @@
     "icon": "IconChartDots3",
     "iconColor": "cyan",
     "badges": ["KQL Generator", "Azure Services", "Query Optimization"],
-    "path": "/azure-kql"
+    "path": "/azure-kql",
+    "seoTitle": "Azure KQL Query Builder - Kusto Query Language Generator",
+    "seoKeywords": ["kql query", "kusto query", "azure monitor", "log analytics", "azure firewall", "application gateway", "kql builder", "azure logs", "monitoring queries", "kusto explorer"],
+    "category": "Azure Tools",
+    "features": ["Guided query building", "Real-time query preview", "Azure service templates", "Performance optimization", "Syntax highlighting", "Query validation"]
   },
   {
     "id": "azure-naming",
@@ -47,7 +63,11 @@
     "icon": "IconBrandAzure",
     "iconColor": "cyan",
     "badges": ["CAF Compliant", "Best Practices", "Bulk Export"],
-    "path": "/azure-naming"
+    "path": "/azure-naming",
+    "seoTitle": "Azure Resource Naming Tool - CAF Compliant Name Generator",
+    "seoKeywords": ["azure naming", "cloud adoption framework", "azure resources", "naming conventions", "caf compliant", "azure best practices", "resource naming", "azure governance", "bulk naming", "azure standards"],
+    "category": "Azure Tools",
+    "features": ["Cloud Adoption Framework compliance", "Bulk name generation", "Custom naming patterns", "Resource type validation", "Export to multiple formats", "Organizational conventions support"]
   },
   {
     "id": "cron-builder",
@@ -57,7 +77,11 @@
     "icon": "IconClock",
     "iconColor": "orange",
     "badges": ["Schedule Builder", "Expression Validator", "Human Readable"],
-    "path": "/cron"
+    "path": "/cron",
+    "seoTitle": "CRON Expression Builder - Free Cron Job Scheduler Tool",
+    "seoKeywords": ["cron expression", "cron builder", "cron generator", "cron job", "cron scheduler", "crontab", "task scheduler", "unix cron", "linux cron", "cron validator"],
+    "category": "Developer Tools",
+    "features": ["Visual cron builder", "Expression validation", "Human-readable descriptions", "Common schedule presets", "Real-time preview", "Copy-paste ready output"]
   },
   {
     "id": "ssl-checker",
@@ -67,7 +91,11 @@
     "icon": "IconShield",
     "iconColor": "green",
     "badges": ["SSL Labs API", "Security Analysis", "Certificate Info"],
-    "path": "/ssl-checker"
+    "path": "/ssl-checker",
+    "seoTitle": "SSL Certificate Checker - Free SSL Analysis & Validation Tool",
+    "seoKeywords": ["ssl checker", "ssl certificate", "ssl analysis", "ssl validation", "ssl labs", "certificate checker", "ssl security", "tls checker", "ssl report", "website security"],
+    "category": "Security Tools",
+    "features": ["SSL Labs API integration", "Comprehensive security analysis", "Certificate chain validation", "Vulnerability detection", "Detailed SSL reports", "Domain security scoring"]
   },
   {
     "id": "dns-lookup",
@@ -77,7 +105,11 @@
     "icon": "DNSIcon",
     "iconColor": "indigo",
     "badges": ["DNS over HTTPS", "Multiple Providers", "Record History"],
-    "path": "/dns-lookup"
+    "path": "/dns-lookup",
+    "seoTitle": "DNS Lookup Tool - Free DNS Record Checker & Analyzer",
+    "seoKeywords": ["dns lookup", "dns checker", "dns records", "dns analysis", "domain lookup", "dns resolver", "nslookup", "dig tool", "dns over https", "dns query"],
+    "category": "Network Tools",
+    "features": ["Multiple DNS providers", "All record types support", "DNS over HTTPS", "Query history tracking", "Response caching", "Detailed DNS analysis"]
   },
   {
     "id": "whois-lookup",
@@ -87,7 +119,11 @@
     "icon": "WHOISIcon",
     "iconColor": "violet",
     "badges": ["RDAP Protocol", "IP Geolocation", "Domain History"],
-    "path": "/whois-lookup"
+    "path": "/whois-lookup",
+    "seoTitle": "WHOIS Lookup Tool - Domain & IP Information Checker",
+    "seoKeywords": ["whois lookup", "domain lookup", "whois checker", "domain info", "ip lookup", "rdap", "domain registration", "nameservers", "domain owner", "ip geolocation"],
+    "category": "Network Tools",
+    "features": ["RDAP protocol support", "Domain registration data", "IP geolocation information", "Nameserver details", "Registration history", "Comprehensive domain analysis"]
   },
   {
     "id": "data-converter",
@@ -97,7 +133,11 @@
     "icon": "JSONIcon",
     "iconColor": "yellow",
     "badges": ["Multi-Format", "Auto-Detection", "Syntax Highlighting"],
-    "path": "/data-converter"
+    "path": "/data-converter",
+    "seoTitle": "Data Converter - JSON, YAML & TOML Format Converter",
+    "seoKeywords": ["data converter", "json converter", "yaml converter", "toml converter", "json to yaml", "yaml to json", "json formatter", "yaml formatter", "data format", "config converter"],
+    "category": "Developer Tools",
+    "features": ["Multi-format support (JSON, YAML, TOML)", "Auto-format detection", "Syntax highlighting", "Data validation", "Structure analysis", "Error highlighting"]
   },
   {
     "id": "base64",
@@ -107,7 +147,11 @@
     "icon": "Base64Icon",
     "iconColor": "teal",
     "badges": ["Multiple Variants", "File Support", "Batch Processing"],
-    "path": "/base64"
+    "path": "/base64",
+    "seoTitle": "Base64 Encoder Decoder - Free Online Base64 Tool",
+    "seoKeywords": ["base64 encoder", "base64 decoder", "base64 converter", "encode base64", "decode base64", "base64 tool", "base64 online", "text encoder", "file encoder", "base64 utility"],
+    "category": "Developer Tools",
+    "features": ["Text and file encoding", "Multiple Base64 variants", "Batch processing", "Auto-detection", "Security-focused design", "Download encoded files"]
   },
   {
     "id": "jwt",
@@ -117,7 +161,11 @@
     "icon": "JWTIcon",
     "iconColor": "red",
     "badges": ["100% Client-Side", "Privacy First", "Security Analysis"],
-    "path": "/jwt"
+    "path": "/jwt",
+    "seoTitle": "JWT Token Decoder - Secure Client-Side JWT Analysis",
+    "seoKeywords": ["jwt decoder", "jwt validator", "json web token", "jwt debugger", "token decoder", "jwt parser", "auth debugging", "jwt security", "client side jwt", "token validation"],
+    "category": "Security Tools",
+    "features": ["100% client-side processing", "No data sent to servers", "JWT signature validation", "Claims analysis", "Expiration checking", "Token security analysis"]
   },
   {
     "id": "password-generator",
@@ -127,7 +175,11 @@
     "icon": "PasswordIcon",
     "iconColor": "violet",
     "badges": ["Cryptographically Secure", "Bulk Generation", "Strength Analysis"],
-    "path": "/password-generator"
+    "path": "/password-generator",
+    "seoTitle": "Password Generator - Secure Random Password Creator",
+    "seoKeywords": ["password generator", "secure password", "random password", "password creator", "strong password", "password strength", "bulk passwords", "password tool", "secure generator", "password manager"],
+    "category": "Security Tools",
+    "features": ["Cryptographically secure generation", "Customizable length and character sets", "Password strength analysis", "Bulk password generation", "Secure download options", "No server communication"]
   },
   {
     "id": "github-source",
