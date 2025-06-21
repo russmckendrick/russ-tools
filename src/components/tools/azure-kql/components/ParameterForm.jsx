@@ -146,7 +146,7 @@ const ParameterForm = ({
   }
 
   const fields = serviceTemplate.schema?.fields || {};
-  const essentialFields = ['TimeGenerated', 'timeRange', 'Action', 'SourceIp', 'DestinationIp'];
+  const essentialFields = ['timeRange', 'Action', 'SourceIp', 'DestinationIp'];
   const advancedFields = Object.keys(fields).filter(f => !essentialFields.includes(f));
 
   return (

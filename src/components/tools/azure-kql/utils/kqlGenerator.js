@@ -60,8 +60,16 @@ const buildFilters = (template, parameters) => {
   const filters = [];
   const filterOrder = template.schema.filterOrder || [];
   
+  // Fields that should not be treated as filters
+  const nonFilterFields = ['limit', 'sortField', 'sortOrder', 'enableAggregation'];
+  
   // Process filters in optimal order for performance
   filterOrder.forEach(fieldName => {
+    // Skip non-filter fields
+    if (nonFilterFields.includes(fieldName)) {
+      return;
+    }
+    
     const fieldConfig = template.schema.fields[fieldName];
     const value = parameters[fieldName];
     
@@ -119,16 +127,35 @@ const buildFieldFilter = (fieldName, value, fieldConfig, template) => {
 const buildTimeFilter = (field, value, patterns) => {
   if (!value) return null;
   
-  // Handle relative time ranges (e.g., "24h", "7d")
-  if (value.match(/^\d+[hdwmy]$/)) {
+  // Special handling for timeRange field - it should generate TimeGenerated filter
+  if (field === 'timeRange') {
+    // Handle relative time ranges (e.g., "24h", "7d")
+    if (value.match(/^\d+[hdwmy]$/)) {
+      const pattern = patterns.timeRange?.relative || 'TimeGenerated >= ago({range})';
+      return pattern.replace('{range}', value);
+    }
+    
+    // Handle absolute time ranges (future implementation)
+    // For now, default to relative
     const pattern = patterns.timeRange?.relative || 'TimeGenerated >= ago({range})';
     return pattern.replace('{range}', value);
   }
   
-  // Handle absolute time ranges (future implementation)
-  // For now, default to relative
-  const pattern = patterns.timeRange?.relative || 'TimeGenerated >= ago({range})';
-  return pattern.replace('{range}', value);
+  // Handle direct TimeGenerated field
+  if (field === 'TimeGenerated') {
+    // Handle relative time ranges (e.g., "24h", "7d")
+    if (value.match(/^\d+[hdwmy]$/)) {
+      return `TimeGenerated >= ago(${value})`;
+    }
+    
+    // Handle ISO datetime format
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return `TimeGenerated >= datetime('${date.toISOString()}')`;
+    }
+  }
+  
+  return null;
 };
 
 /**

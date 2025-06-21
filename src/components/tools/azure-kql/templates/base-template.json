@@ -2,14 +2,6 @@
   "version": "1.0.0",
   "schema": {
     "fields": {
-      "TimeGenerated": {
-        "type": "datetime",
-        "required": true,
-        "description": "Log generation time (indexed field)",
-        "kqlField": "TimeGenerated",
-        "defaultRange": "24h",
-        "category": "time"
-      },
       "SubscriptionId": {
         "type": "string",
         "required": false,
@@ -30,10 +22,26 @@
         "description": "Full Azure resource identifier",
         "kqlField": "ResourceId",
         "category": "resource"
+      },
+      "timeRange": {
+        "type": "datetime",
+        "required": false,
+        "description": "Time range for the query",
+        "category": "time",
+        "default": "24h"
+      },
+      "limit": {
+        "type": "number",
+        "required": false,
+        "description": "Maximum number of results to return",
+        "min": 1,
+        "max": 10000,
+        "default": 100,
+        "category": "query"
       }
     },
     "filterOrder": [
-      "TimeGenerated",
+      "timeRange",
       "SubscriptionId",
       "ResourceGroup",
       "ResourceId"

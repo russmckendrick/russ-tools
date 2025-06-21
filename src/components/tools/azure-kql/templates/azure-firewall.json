@@ -98,9 +98,9 @@
       }
     },
     "filterOrder": [
-      "TimeGenerated",
+      "timeRange",
       "SubscriptionId",
-      "ResourceGroup",
+      "ResourceGroup", 
       "Action",
       "SourceIp",
       "DestinationIp",
@@ -118,10 +118,10 @@
       "table": "AZFWNetworkRule",
       "defaultParameters": {
         "timeRange": "24h",
-        "action": "Deny",
+        "Action": "Deny",
         "limit": 100
       },
-      "requiredFields": ["TimeGenerated"]
+      "requiredFields": ["timeRange"]
     },
     "security-investigation": {
       "name": "Security Investigation",
@@ -129,7 +129,7 @@
       "table": "AZFWNetworkRule",
       "defaultParameters": {
         "timeRange": "24h",
-        "action": "Deny",
+        "Action": "Deny",
         "limit": 500
       },
       "commonFilters": ["SourceIp", "DestinationIp", "DestinationPort"],
@@ -141,7 +141,7 @@
       "table": "AZFWNetworkRule", 
       "defaultParameters": {
         "timeRange": "7d",
-        "action": "Allow",
+        "Action": "Allow",
         "limit": 1000
       },
       "commonFilters": ["Protocol", "DestinationPort"],
