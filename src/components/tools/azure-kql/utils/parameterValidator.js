@@ -77,6 +77,11 @@ export const validateField = (fieldName, value, fieldConfig) => {
     return { errors, warnings };
   }
   
+  // Skip validation for very short values (user is likely still typing)
+  if (typeof value === 'string' && value.length < 2) {
+    return { errors, warnings };
+  }
+  
   switch (fieldConfig.type) {
     case 'string':
       validateString(fieldName, value, fieldConfig, errors);
@@ -114,6 +119,11 @@ export const validateField = (fieldName, value, fieldConfig) => {
 const validateString = (fieldName, value, fieldConfig, errors) => {
   if (typeof value !== 'string') {
     errors.push(`${fieldName} must be a string`);
+    return;
+  }
+  
+  // Skip validation for placeholder values
+  if (value.includes('<replace') || value.includes('[object Object]')) {
     return;
   }
   
@@ -176,6 +186,11 @@ const validateIpAddress = (fieldName, value, fieldConfig, errors) => {
     return;
   }
   
+  // Skip validation for partial IP addresses (user is likely still typing)
+  if (value.length < 7) { // Minimum valid IP is "1.1.1.1" (7 chars)
+    return;
+  }
+  
   // Check for CIDR notation
   if (value.includes('/')) {
     if (!fieldConfig.supportsCIDR) {
@@ -186,17 +201,17 @@ const validateIpAddress = (fieldName, value, fieldConfig, errors) => {
     const [ip, mask] = value.split('/');
     const maskNum = parseInt(mask, 10);
     
-    if (isNaN(maskNum) || maskNum < 0 || maskNum > 32) {
+    if (mask && (isNaN(maskNum) || maskNum < 0 || maskNum > 32)) {
       errors.push(`${fieldName} has invalid CIDR mask`);
       return;
     }
     
-    if (!isValidIpv4(ip)) {
+    if (ip && ip.length >= 7 && !isValidIpv4(ip)) {
       errors.push(`${fieldName} has invalid IP address in CIDR`);
       return;
     }
   } else {
-    // Regular IP address
+    // Regular IP address - only validate if it looks complete
     if (!isValidIpv4(value)) {
       errors.push(`${fieldName} is not a valid IPv4 address`);
     }

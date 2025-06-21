@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Stack, 
   Text, 
@@ -38,36 +38,63 @@ const ParameterForm = ({
       
       setTemplates(getServiceTemplates(service));
     }
-  }, [service, template]);
+  }, [service]);
 
-  // Validate parameters when they change
+  // Update templates when service changes
   useEffect(() => {
+    if (service) {
+      const serviceTemplates = getServiceTemplates(service);
+      setTemplates(serviceTemplates);
+    }
+  }, [service]);
+
+  // Only validate when generating query, not on every parameter change
+  const validateOnDemand = useCallback(() => {
     if (serviceTemplate && parameters) {
       const validationResult = validateParameters(parameters, serviceTemplate);
+      validationResult.hasBeenValidated = true;
       setValidation(validationResult);
+      return validationResult;
     }
-  }, [parameters, serviceTemplate]);
+    return { isValid: true, errors: [], warnings: [], hasBeenValidated: false };
+  }, [serviceTemplate, parameters]);
 
   const handleParameterChange = (field, value) => {
     onParameterChange(field, value);
   };
 
   const handleGenerate = () => {
-    if (validation?.isValid) {
+    const currentValidation = validateOnDemand();
+    if (currentValidation.isValid) {
       onGenerate();
     }
   };
 
   const renderField = (fieldName, fieldConfig) => {
     const value = parameters[fieldName] || '';
-    const fieldErrors = validation?.errors.filter(error => error.includes(fieldName)) || [];
-    const fieldWarnings = validation?.warnings.filter(warning => warning.includes(fieldName)) || [];
-    const hasError = fieldErrors.length > 0;
-    const hasWarning = fieldWarnings.length > 0;
+    
+    // Clean up placeholder values
+    const cleanValue = (() => {
+      if (typeof value === 'string') {
+        if (value.includes('<replace') || value === '[object Object]' || value.startsWith('[object')) {
+          return '';
+        }
+      }
+      if (typeof value === 'object' && value !== null) {
+        return '';
+      }
+      return value;
+    })();
+    
+    // Only show validation errors when not actively typing (no real-time validation)
+    const fieldErrors = [];
+    const fieldWarnings = [];
+    const hasError = false;
+    const hasWarning = false;
     
     // Get specific error message for this field
-    const errorMessage = hasError ? fieldErrors[0] : null;
-    const warningMessage = hasWarning && !hasError ? fieldWarnings[0] : null;
+    const errorMessage = null;
+    const warningMessage = null;
     
     const commonProps = {
       label: (
@@ -76,11 +103,14 @@ const ParameterForm = ({
           {fieldConfig.required && <Text size="xs" c="red">*</Text>}
         </Group>
       ),
-      value,
-      onChange: (val) => handleParameterChange(fieldName, val),
+      value: cleanValue,
+      onChange: (event) => {
+        const newValue = event?.target?.value !== undefined ? event.target.value : event;
+        handleParameterChange(fieldName, newValue);
+      },
       error: errorMessage,
-      placeholder: fieldConfig.examples?.[0] || `Enter ${fieldName}`,
-      description: warningMessage || (fieldConfig.examples ? `Example: ${fieldConfig.examples[0]}` : undefined)
+      placeholder: Array.isArray(fieldConfig.examples) && fieldConfig.examples.length > 0 ? fieldConfig.examples[0] : `Enter ${fieldName}`,
+      description: warningMessage || (Array.isArray(fieldConfig.examples) && fieldConfig.examples.length > 0 ? `Example: ${fieldConfig.examples[0]}` : undefined)
     };
 
     switch (fieldConfig.type) {
@@ -96,6 +126,32 @@ const ParameterForm = ({
         );
 
       case 'select':
+        // Special handling for limit field with custom option
+        if (fieldName === 'limit') {
+          return (
+            <Stack key={fieldName} gap="xs">
+              <Select
+                {...commonProps}
+                data={fieldConfig.options || []}
+                clearable
+                searchable={fieldConfig.options?.length > 5}
+                onChange={(value) => handleParameterChange(fieldName, value)}
+              />
+              {/* Show custom input when "custom" is selected */}
+              {parameters[fieldName] === 'custom' && (
+                <NumberInput
+                  label="Custom limit"
+                  placeholder="Enter custom number of results"
+                  min={1}
+                  max={100000}
+                  onChange={(val) => handleParameterChange(fieldName, val)}
+                  description="Enter a custom number between 1 and 100,000"
+                />
+              )}
+            </Stack>
+          );
+        }
+        
         return (
           <Select
             key={fieldName}
@@ -103,6 +159,7 @@ const ParameterForm = ({
             data={fieldConfig.options || []}
             clearable
             searchable={fieldConfig.options?.length > 5}
+            onChange={(value) => handleParameterChange(fieldName, value)}
           />
         );
 
@@ -139,12 +196,23 @@ const ParameterForm = ({
             key={fieldName}
             {...commonProps}
             placeholder="e.g., 24h, 7d, or 2023-01-01"
+            onChange={(event) => {
+              const value = event.currentTarget.value;
+              handleParameterChange(fieldName, value);
+            }}
           />
         );
 
       default:
         return (
-          <TextInput key={fieldName} {...commonProps} />
+          <TextInput 
+            key={fieldName} 
+            {...commonProps}
+            onChange={(event) => {
+              const value = event.currentTarget.value;
+              handleParameterChange(fieldName, value);
+            }}
+          />
         );
     }
   };
@@ -164,7 +232,19 @@ const ParameterForm = ({
   }
 
   const fields = serviceTemplate.schema?.fields || {};
-  const essentialFields = ['timeRange', 'Action', 'SourceIp', 'DestinationIp'];
+  
+  // Determine essential fields based on service type
+  let essentialFields = ['timeRange', 'limit'];
+  if (service === 'azure-firewall') {
+    essentialFields = ['timeRange', 'limit', 'Action', 'SourceIp', 'DestinationIp'];
+  } else if (service === 'azure-virtual-desktop') {
+    essentialFields = ['timeRange', 'limit', 'UserName', 'State', 'ClientIPAddress'];
+  } else if (service === 'azure-application-gateway') {
+    essentialFields = ['timeRange', 'limit', 'RequestUri', 'HttpStatus', 'ClientIP'];
+  } else if (service === 'multi-service-correlation') {
+    essentialFields = ['timeRange', 'limit', 'services', 'sourceIp', 'destinationIp'];
+  }
+  
   const advancedFields = Object.keys(fields).filter(f => !essentialFields.includes(f));
 
   return (
@@ -175,8 +255,13 @@ const ParameterForm = ({
           label="Query Template"
           data={templates.map(t => ({ value: t.id, label: t.name }))}
           value={template}
-          onChange={(val) => onTemplateChange ? onTemplateChange(val) : onParameterChange('template', val)}
+          onChange={(val) => {
+            if (onTemplateChange) {
+              onTemplateChange(val);
+            }
+          }}
           description="Choose a pre-configured query template"
+          clearable={false}
         />
       )}
       {templates.length === 0 && (
@@ -212,8 +297,8 @@ const ParameterForm = ({
         </Accordion>
       )}
 
-      {/* Validation Summary */}
-      {validation && (validation.errors.length > 0 || validation.warnings.length > 0) && (
+      {/* Validation Summary - Only show after validation has been run */}
+      {validation && validation.hasBeenValidated && (validation.errors.length > 0 || validation.warnings.length > 0) && (
         <Stack gap="xs">
           {validation.errors.length > 0 && (
             <Alert 
@@ -222,7 +307,12 @@ const ParameterForm = ({
               size="sm"
               title={`${validation.errors.length} validation ${validation.errors.length === 1 ? 'error' : 'errors'}`}
             >
-              <Text size="sm">Please fix the highlighted fields above to generate your query.</Text>
+              <Text size="sm">Please fix the issues below to generate your query:</Text>
+              <ul style={{ margin: '0.5rem 0 0 1rem', padding: 0 }}>
+                {validation.errors.map((error, index) => (
+                  <li key={index} style={{ fontSize: '0.875rem' }}>{error}</li>
+                ))}
+              </ul>
             </Alert>
           )}
           {validation.warnings.length > 0 && validation.errors.length === 0 && (
@@ -241,16 +331,12 @@ const ParameterForm = ({
       {/* Generate Button */}
       <Button 
         onClick={handleGenerate}
-        disabled={!validation?.isValid}
         fullWidth
         size="md"
-        color={validation?.isValid ? 'blue' : 'gray'}
-        variant={validation?.isValid ? 'filled' : 'light'}
+        color="blue"
+        variant="filled"
       >
-        {!validation?.isValid && validation?.errors?.length > 0 
-          ? `Fix ${validation.errors.length} ${validation.errors.length === 1 ? 'error' : 'errors'} to generate`
-          : 'Generate KQL Query'
-        }
+        Generate KQL Query
       </Button>
     </Stack>
   );

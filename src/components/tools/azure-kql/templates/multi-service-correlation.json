@@ -81,6 +81,20 @@
         "description": "Event severity level",
         "options": ["Critical", "High", "Medium", "Low", "Informational"],
         "category": "security"
+      },
+      "limit": {
+        "type": "select",
+        "required": false,
+        "description": "Maximum number of results to return",
+        "category": "essential",
+        "default": "1000",
+        "options": [
+          { "value": "1000", "label": "1,000" },
+          { "value": "5000", "label": "5,000" },
+          { "value": "15000", "label": "15,000" },
+          { "value": "0", "label": "Max. limit" },
+          { "value": "custom", "label": "Custom" }
+        ]
       }
     },
     "filterOrder": [

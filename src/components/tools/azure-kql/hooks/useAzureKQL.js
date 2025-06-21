@@ -8,8 +8,8 @@ import { loadTemplate } from '../utils/templateProcessor';
 
 export const useAzureKQL = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedService, setSelectedService] = useState('azure-firewall');
-  const [selectedTemplate, setSelectedTemplate] = useState('basic');
+  const [selectedService, setSelectedService] = useState('azure-virtual-desktop');
+  const [selectedTemplate, setSelectedTemplate] = useState('ip-addresses-analysis');
   const [parameters, setParameters] = useState({});
   const [generatedQuery, setGeneratedQuery] = useState('');
   const [currentTemplate, setCurrentTemplate] = useState(null);
@@ -38,19 +38,17 @@ export const useAzureKQL = () => {
     }
   }, [searchParams]);
 
-  // Load template when service or template changes
+  // Load template when service changes
   useEffect(() => {
     const loadServiceTemplate = async () => {
       try {
         const template = await loadTemplate(selectedService);
         setCurrentTemplate(template);
         
-        // Set default parameters from template
-        if (template?.templates?.[selectedTemplate]?.defaultParameters) {
-          setParameters(prev => ({
-            ...template.templates[selectedTemplate].defaultParameters,
-            ...prev
-          }));
+        // Reset template to first available when service changes
+        const availableTemplates = Object.keys(template?.templates || {});
+        if (availableTemplates.length > 0 && !availableTemplates.includes(selectedTemplate)) {
+          setSelectedTemplate(availableTemplates[0]);
         }
       } catch (error) {
         console.error('Failed to load template:', error);
@@ -63,7 +61,24 @@ export const useAzureKQL = () => {
     };
 
     loadServiceTemplate();
-  }, [selectedService, selectedTemplate]);
+  }, [selectedService]);
+
+  // Update parameters when template changes
+  useEffect(() => {
+    if (currentTemplate?.templates?.[selectedTemplate]?.defaultParameters) {
+      const defaults = currentTemplate.templates[selectedTemplate].defaultParameters;
+      // Clean up any placeholder values
+      const cleanDefaults = Object.entries(defaults).reduce((acc, [key, value]) => {
+        if (typeof value === 'string' && (value.includes('<replace') || value === '[object Object]')) {
+          // Skip placeholder values
+          return acc;
+        }
+        acc[key] = value;
+        return acc;
+      }, {});
+      setParameters(cleanDefaults);
+    }
+  }, [currentTemplate, selectedTemplate]);
 
   // Update a single parameter
   const updateParameter = useCallback((key, value) => {
@@ -154,14 +169,22 @@ export const useAzureKQL = () => {
 
   // Generate shareable URL
   const generateShareableURL = useCallback(() => {
+    // Only include simple string/number parameters to avoid circular references
+    const safeParameters = Object.entries(parameters).reduce((acc, [key, value]) => {
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
     const config = {
       service: selectedService,
       template: selectedTemplate,
-      parameters: parameters
+      parameters: safeParameters
     };
     
     try {
-      const encodedConfig = btoa(JSON.stringify(config));
+      const encodedConfig = btoa(safeStringify(config));
       const currentUrl = window.location.origin + window.location.pathname;
       const shareableUrl = `${currentUrl}?config=${encodedConfig}`;
       
@@ -177,19 +200,47 @@ export const useAzureKQL = () => {
     }
   }, [selectedService, selectedTemplate, parameters]);
 
+  // Safe JSON stringify that handles circular references
+  const safeStringify = (obj) => {
+    const seen = new Set();
+    return JSON.stringify(obj, (key, value) => {
+      if (typeof value === 'object' && value !== null) {
+        if (seen.has(value)) {
+          return '[Circular]';
+        }
+        seen.add(value);
+      }
+      // Skip function values and complex objects
+      if (typeof value === 'function' || 
+          (typeof value === 'object' && value !== null && value.constructor && value.constructor.name !== 'Object' && value.constructor.name !== 'Array')) {
+        return undefined;
+      }
+      return value;
+    });
+  };
+
   // Update URL with current configuration
   const updateURL = useCallback(() => {
+    // Only include simple string/number parameters to avoid circular references
+    const safeParameters = Object.entries(parameters).reduce((acc, [key, value]) => {
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
     const config = {
       service: selectedService,
       template: selectedTemplate,
-      parameters: parameters
+      parameters: safeParameters
     };
     
     try {
-      const encodedConfig = btoa(JSON.stringify(config));
+      const encodedConfig = btoa(safeStringify(config));
       setSearchParams({ config: encodedConfig }, { replace: true });
     } catch (error) {
       console.error('Failed to update URL:', error);
+      // Don't update URL if there's an error
     }
   }, [selectedService, selectedTemplate, parameters, setSearchParams]);
 
@@ -207,13 +258,21 @@ export const useAzureKQL = () => {
     }
   }, [currentTemplate, selectedTemplate, setSearchParams]);
 
-  // Update URL when significant state changes occur
-  useEffect(() => {
-    // Only update URL if we have meaningful parameters
-    if (Object.keys(parameters).length > 0 || selectedService !== 'azure-firewall' || selectedTemplate !== 'basic') {
-      updateURL();
-    }
-  }, [selectedService, selectedTemplate, parameters, updateURL]);
+  // Update URL when significant state changes occur (disabled for now to prevent circular reference errors)
+  // useEffect(() => {
+  //   // Only update URL if we have meaningful parameters
+  //   if (Object.keys(parameters).length > 0 || selectedService !== 'azure-virtual-desktop' || selectedTemplate !== 'ip-addresses-analysis') {
+  //     updateURL();
+  //   }
+  // }, [selectedService, selectedTemplate, parameters, updateURL]);
+
+  // Custom setSelectedService that resets template
+  const handleSetSelectedService = useCallback((service) => {
+    setSelectedService(service);
+    // Reset parameters when service changes
+    setParameters({});
+    setGeneratedQuery('');
+  }, []);
 
   return {
     selectedService,
@@ -222,7 +281,7 @@ export const useAzureKQL = () => {
     generatedQuery,
     currentTemplate,
     queryHistory,
-    setSelectedService,
+    setSelectedService: handleSetSelectedService,
     setSelectedTemplate,
     updateParameter,
     generateQuery,

@@ -31,13 +31,19 @@
         "default": "24h"
       },
       "limit": {
-        "type": "number",
+        "type": "select",
         "required": false,
         "description": "Maximum number of results to return",
-        "min": 1,
-        "max": 10000,
-        "default": 100,
-        "category": "query"
+        "category": "essential",
+        "default": "1000",
+        "options": ["1000", "5000", "15000", "0", "custom"],
+        "optionLabels": {
+          "1000": "1,000",
+          "5000": "5,000", 
+          "15000": "15,000",
+          "0": "Max. limit",
+          "custom": "Custom"
+        }
       }
     },
     "filterOrder": [
@@ -61,7 +67,7 @@
   },
   "defaults": {
     "timeRange": "24h",
-    "limit": 100,
+    "limit": 1000,
     "sort": "TimeGenerated desc"
   }
 }

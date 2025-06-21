@@ -43,9 +43,23 @@ export const generateKQLQuery = (template, parameters, templateId = 'basic') => 
   const sortOrder = parameters.sortOrder || 'desc';
   queryParts.push(`| order by ${sortField} ${sortOrder}`);
   
-  // Add limit
-  const limit = parameters.limit || template.defaults?.limit || 100;
-  queryParts.push(`| limit ${limit}`);
+  // Add limit - handle different limit options
+  const limitValue = parameters.limit || template.defaults?.limit || '1000';
+  
+  // Handle different limit options
+  if (limitValue === '0') {
+    // "Max. limit" - don't add limit clause
+  } else if (limitValue === 'custom') {
+    // Custom limit should have been replaced with actual number
+    // If still 'custom', use default
+    queryParts.push(`| limit 1000`);
+  } else {
+    // Standard limit value
+    const numericLimit = parseInt(limitValue, 10);
+    if (!isNaN(numericLimit) && numericLimit > 0) {
+      queryParts.push(`| limit ${numericLimit}`);
+    }
+  }
   
   return queryParts.join('\n');
 };

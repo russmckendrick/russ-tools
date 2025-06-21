@@ -93,6 +93,20 @@
         "description": "Correlation ID for matching connection events",
         "kqlField": "CorrelationId",
         "category": "correlation"
+      },
+      "limit": {
+        "type": "select",
+        "required": false,
+        "description": "Maximum number of results to return",
+        "category": "essential",
+        "default": "1000",
+        "options": [
+          { "value": "1000", "label": "1,000" },
+          { "value": "5000", "label": "5,000" },
+          { "value": "15000", "label": "15,000" },
+          { "value": "0", "label": "Max. limit" },
+          { "value": "custom", "label": "Custom" }
+        ]
       }
     },
     "filterOrder": [
@@ -138,7 +152,6 @@
       "table": "WVDConnections",
       "defaultParameters": {
         "timeRange": "30d",
-        "UserName": "<replace with the UPN of a user>",
         "limit": 500
       },
       "query": "let userSearch = \"{UserName}\";\nlet daysAgo = 30d;\nWVDConnections\n| where TimeGenerated > ago(daysAgo)\n| where UserName contains userSearch\n| summarize NumberOfConnections = count() by ClientIPAddress\n| order by NumberOfConnections desc\n| extend ip_location = parse_json(geo_info_from_ip_address(ClientIPAddress))\n| extend\n    Country = tostring(ip_location.country),\n    State = tostring(ip_location.state),\n    City = tostring(ip_location.city)\n| project ClientIPAddress, NumberOfConnections, Country, State, City",
@@ -151,7 +164,6 @@
       "table": "WVDErrors",
       "defaultParameters": {
         "timeRange": "30d",
-        "ClientSideIPAddress": "<replace with the IP address you are interested in>",
         "limit": 500
       },
       "query": "let ipAddress = \"{ClientSideIPAddress}\";\nlet daysAgo = 30d;\nlet users =\n    WVDConnections\n    | where TimeGenerated > ago(daysAgo)\n    | where ClientSideIPAddress contains ipAddress\n    | summarize by UserName;\nWVDErrors\n| where TimeGenerated > ago(daysAgo)\n| where UserName in (users)\n| summarize ErrorCount = count() by UserName, CodeSymbolic\n| order by ErrorCount desc",
