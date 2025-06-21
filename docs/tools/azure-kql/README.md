@@ -11,11 +11,15 @@ This tool addresses the challenge of writing effective KQL queries for Azure mon
 - **🎯 Form-Based Query Building**: Convert complex KQL syntax into intuitive forms
 - **⚡ Performance Optimization**: Automatic filter ordering and query optimization
 - **🔧 Multiple Azure Services**: Starting with Azure Firewall, expandable to other services
-- **📊 Real-Time Preview**: Live KQL generation with syntax validation
+- **🎨 Professional Syntax Highlighting**: Custom KQL language definition with comprehensive keyword, function, and operator highlighting
+- **⭐ Advanced Favorites System**: Complete query favorites management with search, edit, organize, and tag capabilities
+- **✅ Enhanced Parameter Validation**: Real-time validation with field-specific error messages and smart UI states
+- **📊 Real-Time Preview**: Live KQL generation with professional syntax highlighting
 - **🔗 Shareable URLs**: Save and share query configurations
 - **📈 Query Templates**: Pre-built templates for common use cases
 - **🏷️ Export Options**: Copy, download, or open directly in Azure Portal
 - **📚 Query History**: Local storage of recent queries with management
+- **🔧 Improved User Experience**: Professional polish with better error handling and visual feedback
 
 ## Supported Azure Services
 
@@ -69,11 +73,12 @@ Select a pre-configured template that matches your use case:
 - **Resource Context**: Subscription, resource group filtering
 
 ### 5. Generate and Export
-- **Preview**: See real-time KQL generation
+- **Preview**: See real-time KQL generation with professional syntax highlighting
 - **Copy**: Copy query to clipboard
 - **Azure Portal**: Open query directly in Azure Log Analytics
 - **Download**: Save as .kql file
 - **Share**: Generate shareable URL with configuration
+- **Favorites**: Save to favorites with custom names, descriptions, and tags
 - **History**: Save to query history for later use
 
 ## Architecture
@@ -157,6 +162,14 @@ AZFWNetworkRule
 
 ## Advanced Features
 
+### Favorites System
+- **Save Queries**: Save favorite queries with custom names and descriptions
+- **Organization**: Tag and categorize queries for easy organization
+- **Search**: Full-text search across favorite names, descriptions, and tags
+- **Edit**: Modify favorite query names, descriptions, tags, and parameters
+- **Management**: Delete, duplicate, and organize favorite queries
+- **Metadata**: Track creation date, last modified, and usage statistics
+
 ### Query History
 - **Automatic Saving**: Queries saved to local storage
 - **Management**: View, reload, and delete saved queries
@@ -215,23 +228,31 @@ Direct deep-linking to Azure Log Analytics:
 - **sortField**: Field to sort by (default: TimeGenerated)
 - **sortOrder**: Sort direction (asc/desc, default: desc)
 
-## Validation
+## Enhanced Validation System
 
-### Field Validation
+### Field-Level Validation
+- **Real-time Validation**: Parameter validation as you type with immediate feedback
 - **IP Addresses**: IPv4 format validation with CIDR support
-- **Ports**: Range validation (1-65535)
+- **Ports**: Range validation (1-65535) with clear error messages
 - **Time Ranges**: Format validation for relative ranges
-- **Required Fields**: Enforcement of essential parameters
+- **Required Fields**: Enforcement of essential parameters with visual indicators
+
+### Smart UI States
+- **Dynamic Button States**: Generate button updates based on validation status
+- **Field-Specific Errors**: Individual field error messages with specific guidance
+- **Visual Indicators**: Color-coded validation states and warning icons
+- **Progress Feedback**: Clear indication of validation progress
 
 ### Query Validation
-- **Performance Warnings**: Large time ranges, missing limits
-- **Syntax Checking**: KQL structure validation
-- **Optimization Suggestions**: Filter ordering recommendations
+- **Performance Warnings**: Large time ranges, missing limits with optimization suggestions
+- **Syntax Checking**: KQL structure validation before generation
+- **Optimization Suggestions**: Filter ordering recommendations for better performance
 
-### Error Handling
-- **Real-time Feedback**: Immediate validation on parameter change
-- **Clear Messages**: Specific error descriptions and solutions
-- **Recovery Suggestions**: Guidance for fixing validation issues
+### Enhanced Error Handling
+- **Contextual Messages**: Error messages specific to each field type and validation rule
+- **Recovery Guidance**: Step-by-step instructions for fixing validation issues
+- **Warning vs Error**: Clear distinction between blocking errors and performance suggestions
+- **Batch Validation**: Summary of all validation issues with priority indication
 
 ## Browser Support
 
@@ -280,6 +301,8 @@ Direct deep-linking to Azure Log Analytics:
 ### Getting Help
 - **Documentation**: Check field reference and use cases
 - **Examples**: Use provided query templates as starting points
+- **Favorites**: Browse and learn from saved favorite queries
+- **Validation Messages**: Follow field-specific guidance for parameter corrections
 - **Community**: Report issues via GitHub repository
 
 ## Contributing
