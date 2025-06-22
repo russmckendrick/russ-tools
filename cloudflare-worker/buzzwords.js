@@ -42,6 +42,55 @@ function generateBuzzwordPhrase(count = 1) {
   return phrases;
 }
 
+function generateBuzzwordSentences(count = 1) {
+  const sentences = [];
+  
+  for (let i = 0; i < count; i++) {
+    const adverb = getRandomElement(BUZZWORDS.adverbs);
+    const verb = getRandomElement(BUZZWORDS.verbs);
+    const adjective = getRandomElement(BUZZWORDS.adjectives);
+    const noun = getRandomElement(BUZZWORDS.nouns);
+    
+    const sentence = `${adverb.charAt(0).toUpperCase() + adverb.slice(1)} ${verb} ${adjective} ${noun}.`;
+    sentences.push(sentence);
+  }
+  
+  return sentences;
+}
+
+function generateBuzzwordParagraphs(count = 1) {
+  const paragraphs = [];
+  
+  for (let i = 0; i < count; i++) {
+    const sentenceCount = Math.floor(Math.random() * 3) + 3; // 3-5 sentences per paragraph
+    const sentences = [];
+    
+    for (let j = 0; j < sentenceCount; j++) {
+      const adverb = getRandomElement(BUZZWORDS.adverbs);
+      const verb = getRandomElement(BUZZWORDS.verbs);
+      const adjective1 = getRandomElement(BUZZWORDS.adjectives);
+      const noun1 = getRandomElement(BUZZWORDS.nouns);
+      
+      // Add some variety with additional clauses
+      if (Math.random() > 0.5) {
+        const verb2 = getRandomElement(BUZZWORDS.verbs);
+        const adjective2 = getRandomElement(BUZZWORDS.adjectives);
+        const noun2 = getRandomElement(BUZZWORDS.nouns);
+        
+        const sentence = `${adverb.charAt(0).toUpperCase() + adverb.slice(1)} ${verb} ${adjective1} ${noun1} while ${verb2} ${adjective2} ${noun2}.`;
+        sentences.push(sentence);
+      } else {
+        const sentence = `${adverb.charAt(0).toUpperCase() + adverb.slice(1)} ${verb} ${adjective1} ${noun1}.`;
+        sentences.push(sentence);
+      }
+    }
+    
+    paragraphs.push(sentences.join(' '));
+  }
+  
+  return paragraphs;
+}
+
 function generateBuzzwordList(type, count = 10) {
   if (!BUZZWORDS[type]) {
     throw new Error(`Invalid buzzword type: ${type}`);
@@ -72,15 +121,24 @@ export default {
       });
     }
 
-
-
     try {
       switch (url.pathname) {
         case '/health':
           return new Response(JSON.stringify({
             status: 'healthy',
             timestamp: new Date().toISOString(),
-            version: '1.0.0'
+            version: '1.0.0',
+            services: {
+              buzzwords: 'operational',
+              rateLimit: 'operational',
+              cors: 'enabled'
+            },
+            wordCounts: {
+              adverbs: BUZZWORDS.adverbs.length,
+              adjectives: BUZZWORDS.adjectives.length,
+              nouns: BUZZWORDS.nouns.length,
+              verbs: BUZZWORDS.verbs.length
+            }
           }), {
             status: 200,
             headers: {
@@ -134,6 +192,18 @@ export default {
               count: count,
               data: generateBuzzwordPhrase(count)
             };
+          } else if (type === 'sentences') {
+            result = {
+              type: 'sentences',
+              count: count,
+              data: generateBuzzwordSentences(count)
+            };
+          } else if (type === 'paragraphs') {
+            result = {
+              type: 'paragraphs',
+              count: count,
+              data: generateBuzzwordParagraphs(count)
+            };
           } else if (['adverbs', 'adjectives', 'nouns', 'verbs'].includes(type)) {
             result = {
               type: type,
@@ -142,7 +212,7 @@ export default {
             };
           } else {
             return new Response(JSON.stringify({
-              error: 'Invalid type'
+              error: 'Invalid type. Supported types: phrase, sentences, paragraphs, adverbs, adjectives, nouns, verbs'
             }), {
               status: 400,
               headers: {
@@ -171,7 +241,7 @@ export default {
 
           if (wordType && !BUZZWORDS[wordType]) {
             return new Response(JSON.stringify({
-              error: 'Invalid word type'
+              error: 'Invalid word type. Supported types: adverbs, adjectives, nouns, verbs'
             }), {
               status: 400,
               headers: {

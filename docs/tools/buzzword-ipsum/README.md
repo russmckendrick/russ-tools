@@ -166,10 +166,10 @@ Health check endpoint for monitoring API status.
     "cors": "enabled"
   },
   "wordCounts": {
-    "adverbs": 67,
-    "adjectives": 408,
-    "nouns": 606,
-    "verbs": 201
+    "adverbs": 65,
+    "adjectives": 205,
+    "nouns": 196,
+    "verbs": 132
   }
 }
 ```
@@ -215,6 +215,43 @@ Response:
     "machine-learning",
     "containerized",
     "fault-tolerant"
+  ]
+}
+```
+
+#### Generate Sentences
+```bash
+curl "https://buzzwords.russ.tools/generate?type=sentences&count=3"
+```
+Response:
+```json
+{
+  "success": true,
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "type": "sentences",
+  "count": 3,
+  "data": [
+    "Proactively orchestrate AI-powered microservices.",
+    "Seamlessly leverage cloud-native DevOps paradigms.",
+    "Intelligently deploy containerized applications."
+  ]
+}
+```
+
+#### Generate Paragraphs
+```bash
+curl "https://buzzwords.russ.tools/generate?type=paragraphs&count=2"
+```
+Response:
+```json
+{
+  "success": true,
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "type": "paragraphs",
+  "count": 2,
+  "data": [
+    "Collaboratively streamline AI-powered microservices while seamlessly orchestrating cloud-native DevOps. Proactively leverage machine learning algorithms to optimize containerized applications. Intelligently deploy scalable infrastructure solutions through predictive analytics.",
+    "Holistically synthesize blockchain-enabled supply chains while efficiently processing real-time data. Strategically implement serverless architectures to enhance business processes. Continuously monitor distributed systems through advanced observability frameworks."
   ]
 }
 ```
@@ -345,6 +382,20 @@ The tool uses a sophisticated algorithm that:
 3. **Varies sentence length** based on user preferences
 4. **Ensures proper capitalization** and punctuation
 5. **Generates unique combinations** each time
+
+#### Content Type Differences
+- **Phrases**: Simple 4-word combinations without punctuation
+  - Format: `adverb verb adjective noun`
+  - Example: `"proactively orchestrate AI-powered microservices"`
+
+- **Sentences**: Complete sentences with proper capitalization and punctuation
+  - Format: `Adverb verb adjective noun.`
+  - Example: `"Proactively orchestrate AI-powered microservices."`
+
+- **Paragraphs**: Multi-sentence blocks with varied structure
+  - 3-5 sentences per paragraph
+  - 50% chance of compound sentences with "while" clauses
+  - Example: `"Proactively orchestrate AI-powered microservices while seamlessly leveraging cloud-native solutions. Intelligently deploy containerized applications."`
 
 ### Data Structure
 ```json
