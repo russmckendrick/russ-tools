@@ -4,12 +4,6 @@
 // Import buzzwords from the source file
 import BUZZWORDS from '../src/components/tools/buzzword-ipsum/data/buzzwords.json';
 
-function getClientId(request) {
-  return request.headers.get('CF-Connecting-IP') || 
-         request.headers.get('X-Forwarded-For') || 
-         'unknown';
-}
-
 function createCorsHeaders(origin) {
   const allowedOrigins = [
     'https://russ.tools',
@@ -78,22 +72,7 @@ export default {
       });
     }
 
-    // Apply rate limiting for API endpoints (skip for health check)
-    if (url.pathname !== '/health') {
-      const { pathname } = url;
-      try {
-        const { success } = await env.MY_RATE_LIMITER.limit({ key: pathname });
-        if (!success) {
-          return new Response(`429 Failure – rate limit exceeded for ${pathname}`, {
-            status: 429,
-            headers: corsHeaders
-          });
-        }
-      } catch (error) {
-        // Fail open if the rate limiter itself has an issue.
-        console.error(`Rate Limiting failed: ${error}`);
-      }
-    }
+
 
     try {
       switch (url.pathname) {
