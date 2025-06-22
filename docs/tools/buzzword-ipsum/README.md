@@ -84,26 +84,43 @@ The tool includes over 500+ carefully curated terms across multiple categories:
 
 ## 🌐 API Access
 
-Buzzword Ipsum includes a powerful API that allows developers to integrate buzzword generation directly into their applications. Simply add the `?api` parameter to generate JSON responses.
+Buzzword Ipsum includes a powerful REST API that allows developers to integrate buzzword generation directly into their applications. The API is hosted on Cloudflare Workers for global edge performance and reliability.
 
 ### 🚀 Quick API Usage
 
 ```bash
-# Basic API call with defaults
-curl "https://www.russ.tools/buzzword-ipsum/?api"
+# Generate buzzword phrases (default)
+curl "https://buzzwords.russ.tools/generate"
 
-# Custom parameters
-curl "https://www.russ.tools/buzzword-ipsum/?api&output=sentences&quantity=10&length=short"
+# Generate sentences with custom parameters
+curl "https://buzzwords.russ.tools/generate?type=sentences&count=10"
+
+# POST request with JSON body
+curl -X POST "https://buzzwords.russ.tools/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "paragraphs", "count": 3}'
 ```
 
-### 📋 API Parameters
+### 📋 API Endpoints
+
+#### `GET/POST /generate`
+Generate buzzword content with customizable parameters.
 
 | Parameter | Type | Default | Options | Description |
 |-----------|------|---------|---------|-------------|
-| `api` | flag | - | required | Enables API mode and JSON response |
-| `output` | string | `paragraphs` | `phrases`, `sentences`, `paragraphs` | Format of generated content |
-| `quantity` | integer | `5` | `1-20` | Number of items to generate |
-| `length` | string | `medium` | `short`, `medium`, `long` | Sentence/paragraph length (ignored for phrases) |
+| `type` | string | `phrase` | `phrase`, `adverbs`, `adjectives`, `nouns`, `verbs` | Type of content to generate |
+| `count` | integer | `1` | `1-50` | Number of items to generate |
+
+#### `GET /words`
+Get word lists by category.
+
+| Parameter | Type | Default | Options | Description |
+|-----------|------|---------|---------|-------------|
+| `type` | string | `all` | `adverbs`, `adjectives`, `nouns`, `verbs` | Word category to retrieve |
+| `count` | integer | `10` | `1-100` | Number of words to return |
+
+#### `GET /health`
+Health check endpoint for monitoring API status.
 
 ### 📊 API Response Format
 
