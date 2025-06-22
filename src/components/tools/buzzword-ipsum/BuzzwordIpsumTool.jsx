@@ -18,7 +18,9 @@ import {
   Divider,
   Box,
   Tooltip,
-  Code
+  Code,
+  Modal,
+  List
 } from '@mantine/core';
 import {
   IconCopy,
@@ -26,7 +28,8 @@ import {
   IconDownload,
   IconMessageCircle,
   IconInfoCircle,
-  IconCheck
+  IconCheck,
+  IconApi
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useMantineColorScheme } from '@mantine/core';
@@ -49,6 +52,7 @@ const BuzzwordIpsumTool = () => {
   const [outputFormat, setOutputFormat] = useState('paragraphs');
   const [quantity, setQuantity] = useState(5);
   const [sentenceLength, setSentenceLength] = useState('medium');
+  const [apiModalOpened, setApiModalOpened] = useState(false);
 
   const getRandomItem = (array) => {
     return array[Math.floor(Math.random() * array.length)];
@@ -220,7 +224,7 @@ const BuzzwordIpsumTool = () => {
             >
               <BuzzwordIpsumIcon size={24} />
             </ThemeIcon>
-            <div>
+            <div style={{ flex: 1 }}>
               <Title order={2} size="h1">
                 Buzzword Ipsum
               </Title>
@@ -228,6 +232,16 @@ const BuzzwordIpsumTool = () => {
                 Generate corporate buzzword-filled placeholder text for mockups and presentations
               </Text>
             </div>
+            <Tooltip label="View API Documentation">
+              <ActionIcon 
+                variant="light" 
+                color="blue"
+                size="lg"
+                onClick={() => setApiModalOpened(true)}
+              >
+                <IconApi size={20} />
+              </ActionIcon>
+            </Tooltip>
           </Group>
 
           <Group spacing="lg">
@@ -369,6 +383,76 @@ const BuzzwordIpsumTool = () => {
           )}
         </Grid.Col>
       </Grid>
+
+      {/* API Documentation Modal */}
+      <Modal
+        opened={apiModalOpened}
+        onClose={() => setApiModalOpened(false)}
+        title="Buzzword Ipsum API Documentation"
+        size="lg"
+      >
+        <Stack spacing="md">
+          <Text>
+            Access the Buzzword Ipsum API programmatically to generate corporate buzzwords for your applications.
+          </Text>
+          
+          <Title order={4}>Base URL</Title>
+          <Code block>https://buzzwords.russmckendrick.com</Code>
+          
+          <Title order={4}>Endpoints</Title>
+          
+          <Stack spacing="sm">
+            <div>
+              <Text fw={600}>Generate Phrases</Text>
+              <Code block>GET /api/phrases?count={'{count}'}</Code>
+              <Text size="sm" c="dimmed">Returns an array of buzzword phrases</Text>
+            </div>
+            
+            <div>
+              <Text fw={600}>Generate Adjectives</Text>
+              <Code block>GET /api/adjectives?count={'{count}'}</Code>
+              <Text size="sm" c="dimmed">Returns an array of corporate adjectives</Text>
+            </div>
+            
+            <div>
+              <Text fw={600}>Health Check</Text>
+              <Code block>GET /api/health</Code>
+              <Text size="sm" c="dimmed">Returns API status and version</Text>
+            </div>
+          </Stack>
+          
+          <Title order={4}>Parameters</Title>
+          <List>
+            <List.Item><Code>count</Code> (optional): Number of items to generate (1-100, default: 10)</List.Item>
+          </List>
+          
+          <Title order={4}>Rate Limiting</Title>
+          <Text size="sm">
+            The API is rate limited to prevent abuse:
+          </Text>
+          <List size="sm">
+            <List.Item>100 requests per minute per IP address</List.Item>
+            <List.Item>Protected by Cloudflare's DDoS protection</List.Item>
+            <List.Item>Rate limit headers included in responses</List.Item>
+          </List>
+          
+          <Title order={4}>Example Response</Title>
+          <Code block>{`{
+  "success": true,
+  "data": [
+    "synergistic paradigm",
+    "dynamic optimization",
+    "strategic innovation"
+  ],
+  "count": 3,
+  "timestamp": "2024-01-01T12:00:00Z"
+}`}</Code>
+          
+          <Text size="sm" c="dimmed">
+            This API is provided free of charge for development and testing purposes.
+          </Text>
+        </Stack>
+      </Modal>
 
     </Box>
   );
