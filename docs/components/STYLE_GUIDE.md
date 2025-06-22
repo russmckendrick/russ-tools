@@ -53,6 +53,69 @@ This style guide ensures consistent design and user experience across all tools 
 - Secondary actions: Use `ActionIcon` with `variant="light"`
 - Group related actions with `Group` component
 
+### Share Configuration Buttons
+All tools with shareable configurations should follow this consistent pattern:
+
+#### Header Placement
+- Located in header section alongside other action buttons (Help, etc.)
+- Use `Group gap="sm"` to group header buttons
+- Button text: "Copy Configuration Share URL"
+- Icon: `<IconShare size={16} />`
+- Variant: `variant="light"`
+
+#### Disable Conditions
+Each tool should disable the share button until meaningful content exists:
+- **Azure Naming**: `disabled={!formState.resourceType.length || !formState.workload}`
+- **Network Designer**: `disabled={networks.length === 0}`
+- **Azure KQL**: `disabled={!generatedQuery}`
+
+#### Implementation Pattern
+```jsx
+<Button
+  variant="light"
+  leftSection={<IconShare size={16} />}
+  onClick={handleShareConfiguration}
+  disabled={/* tool-specific condition */}
+>
+  Copy Configuration Share URL
+</Button>
+```
+
+#### Share Handler Function
+```jsx
+const handleShareConfiguration = async () => {
+  // Validate that content exists
+  if (!/* content condition */) {
+    notifications.show({
+      title: 'Content Required',
+      message: 'Please create/generate content before sharing',
+      color: 'orange'
+    });
+    return;
+  }
+
+  const config = {
+    // tool-specific configuration data
+  };
+
+  const success = await copyShareableURL(config);
+  if (success) {
+    notifications.show({
+      title: 'Configuration Shared',
+      message: 'Shareable link has been copied to your clipboard',
+      color: 'green',
+      icon: <IconShare size={16} />
+    });
+  }
+};
+```
+
+#### Required Imports
+```jsx
+import { IconShare } from '@tabler/icons-react';
+import { copyShareableURL } from '../../../utils/sharelink';
+```
+
 ## Color Scheme
 
 ### Tool-Specific Colors

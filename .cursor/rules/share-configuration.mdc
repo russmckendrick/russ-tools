@@ -1,0 +1,73 @@
+---
+description: Share Configuration button implementation patterns and requirements
+globs: ["src/components/tools/**/*.jsx"]
+alwaysApply: false
+---
+
+# Share Configuration Button Implementation
+
+## Standard Pattern
+All tools with shareable configurations must follow this consistent implementation:
+
+### Header Placement
+```jsx
+// In tool header section alongside other buttons
+<Group gap="sm">
+  <Button
+    variant="light"
+    leftSection={<IconShare size={16} />}
+    onClick={handleShareConfiguration}
+    disabled={/* tool-specific condition */}
+  >
+    Copy Configuration Share URL
+  </Button>
+  {/* Other header buttons like Help */}
+</Group>
+```
+
+### Required Imports
+```jsx
+import { IconShare } from '@tabler/icons-react';
+import { copyShareableURL } from '../../../utils/sharelink';
+```
+
+### Handler Implementation
+```jsx
+const handleShareConfiguration = async () => {
+  // Validate content exists
+  if (!/* content condition */) {
+    notifications.show({
+      title: 'Content Required',
+      message: 'Please create/generate content before sharing',
+      color: 'orange'
+    });
+    return;
+  }
+
+  const config = {
+    // tool-specific configuration data
+  };
+
+  const success = await copyShareableURL(config);
+  if (success) {
+    notifications.show({
+      title: 'Configuration Shared',
+      message: 'Shareable link has been copied to your clipboard',
+      color: 'green',
+      icon: <IconShare size={16} />
+    });
+  }
+};
+```
+
+## Tool-Specific Disable Conditions
+- **Azure Naming**: `disabled={!formState.resourceType.length || !formState.workload}`
+- **Network Designer**: `disabled={networks.length === 0}`
+- **Azure KQL**: `disabled={!generatedQuery}`
+
+## Requirements
+- Button text must be exactly: "Copy Configuration Share URL"
+- Button must be disabled until meaningful content exists
+- Button placed in header section, not in export/action areas
+- Use `variant="light"` and `IconShare size={16}`
+- Implement proper validation and user feedback
