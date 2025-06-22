@@ -2,7 +2,7 @@
 // Provides buzzword generation services with rate limiting and CORS support
 
 // Import buzzwords from the source file
-import BUZZWORDS from '../src/components/tools/buzzword-placeholder/data/buzzwords.json';
+import BUZZWORDS from '../src/components/tools/buzzword-ipsum/data/buzzwords.json';
 
 // Rate limiting configuration
 const RATE_LIMITS = {

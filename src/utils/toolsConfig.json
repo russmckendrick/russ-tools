@@ -182,7 +182,7 @@
     "features": ["Cryptographically secure generation", "Customizable length and character sets", "Password strength analysis", "Bulk password generation", "Secure download options", "No server communication"]
   },
   {
-    "id": "buzzword-placeholder",
+    "id": "buzzword-ipsum",
     "title": "Buzzword Ipsum",
     "description": "Generate corporate buzzword-filled ipsum text for mockups and presentations. Create professional-sounding but meaningless content perfect for design templates and business materials.",
     "shortDescription": "Generate corporate buzzword ipsum text",

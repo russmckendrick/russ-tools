@@ -375,7 +375,7 @@ The tool uses a sophisticated algorithm that:
 ## 🔧 Customization & Updates
 
 ### Adding New Buzzwords
-The tool's buzzword database is stored in `/src/components/tools/buzzword-placeholder/data/buzzwords.json`. To add new terms:
+The tool's buzzword database is stored in `/src/components/tools/buzzword-ipsum/data/buzzwords.json`. To add new terms:
 
 1. Edit the appropriate category (adverbs, verbs, adjectives, nouns)
 2. Add new terms following the existing format

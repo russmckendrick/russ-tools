@@ -31,17 +31,17 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useMantineColorScheme } from '@mantine/core';
 import { useSearchParams } from 'react-router-dom';
-import BuzzwordPlaceholderIcon from './BuzzwordPlaceholderIcon';
+import BuzzwordIpsumIcon from './BuzzwordIpsumIcon';
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import buzzwordData from './data/buzzwords.json';
 
-const BuzzwordPlaceholderTool = () => {
+const BuzzwordIpsumTool = () => {
   const { colorScheme } = useMantineColorScheme();
   const [searchParams] = useSearchParams();
   
-  const toolConfig = toolsConfig.find(tool => tool.id === 'buzzword-placeholder');
+  const toolConfig = toolsConfig.find(tool => tool.id === 'buzzword-ipsum');
   const seoData = generateToolSEO(toolConfig);
   
   const [generatedText, setGeneratedText] = useState('');
@@ -153,9 +153,21 @@ const BuzzwordPlaceholderTool = () => {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedText).then(() => {
+      // Show witty copy notification
+      const copyNotifications = [
+        'Successfully leveraged clipboard synergies!',
+        'Proactively orchestrated text duplication!',
+        'Seamlessly optimized copy-paste workflows!',
+        'Dynamically streamlined content portability!',
+        'Collaboratively enhanced clipboard utilization!',
+        'Holistically deployed copy operations!',
+        'Efficiently optimized text distribution channels!'
+      ];
+      const randomCopyNotification = copyNotifications[Math.floor(Math.random() * copyNotifications.length)];
+      
       notifications.show({
-        title: 'Copied!',
-        message: 'Buzzword text copied to clipboard',
+        title: 'Content Copied!',
+        message: randomCopyNotification,
         color: 'green',
         icon: <IconCheck size={16} />
       });
@@ -167,15 +179,27 @@ const BuzzwordPlaceholderTool = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `buzzword-placeholder-${Date.now()}.txt`;
+    a.download = `buzzword-ipsum-${Date.now()}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
+    // Show witty download notification
+    const downloadNotifications = [
+      'Successfully deployed file distribution strategies!',
+      'Proactively architected document delivery systems!',
+      'Seamlessly orchestrated content export workflows!',
+      'Holistically optimized file transmission protocols!',
+      'Dynamically leveraged download optimization!',
+      'Collaboratively streamlined asset deployment!',
+      'Efficiently maximized content portability solutions!'
+    ];
+    const randomDownloadNotification = downloadNotifications[Math.floor(Math.random() * downloadNotifications.length)];
+    
     notifications.show({
-      title: 'Downloaded!',
-      message: 'Buzzword text file downloaded',
+      title: 'File Downloaded!',
+      message: randomDownloadNotification,
       color: 'blue',
       icon: <IconCheck size={16} />
     });
@@ -194,7 +218,7 @@ const BuzzwordPlaceholderTool = () => {
               variant="gradient" 
               gradient={{ from: 'orange', to: 'red' }}
             >
-              <BuzzwordPlaceholderIcon size={24} />
+              <BuzzwordIpsumIcon size={24} />
             </ThemeIcon>
             <div>
               <Title order={2} size="h1">
@@ -350,4 +374,4 @@ const BuzzwordPlaceholderTool = () => {
   );
 };
 
-export default BuzzwordPlaceholderTool;
+export default BuzzwordIpsumTool;

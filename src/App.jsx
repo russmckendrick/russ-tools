@@ -124,9 +124,9 @@ const AzureKQLTool = lazy(() =>
     default: () => <div>Error loading Azure KQL Tool</div>
   }))
 );
-const BuzzwordPlaceholderTool = lazy(() => 
-  import('./components/tools/buzzword-placeholder/BuzzwordPlaceholderTool').catch(() => ({
-    default: () => <div>Error loading Buzzword Placeholder Tool</div>
+const BuzzwordIpsumTool = lazy(() => 
+  import('./components/tools/buzzword-ipsum/BuzzwordIpsumTool').catch(() => ({
+    default: () => <div>Error loading Buzzword Ipsum Tool</div>
   }))
 );
 
@@ -318,10 +318,10 @@ export default function App() {
               </LazyRoute>
             } />
 
-            {/* Buzzword Placeholder Tool route */}
+            {/* Buzzword Ipsum Tool route */}
             <Route path="buzzword-ipsum" element={
               <LazyRoute>
-                <BuzzwordPlaceholderTool />
+                <BuzzwordIpsumTool />
               </LazyRoute>
             } />
 
