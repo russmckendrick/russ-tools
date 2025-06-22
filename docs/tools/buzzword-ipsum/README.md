@@ -296,17 +296,31 @@ print_r($adjectives);
 ### ⚡ Rate Limiting & Best Practices
 
 - **No Authentication Required**: The API is open and free to use
-- **Rate Limiting**: Please be respectful with usage frequency
-- **Caching**: Consider caching responses for repeated identical requests
+- **Rate Limits**: 30 requests/minute, 250 requests/hour, 500 requests/day per IP
+- **Caching**: Responses are cached for 5 minutes for better performance
 - **Error Handling**: Always check the `success` field in responses
-- **Content Validation**: Validate the `format` and `quantity` in responses match your request
+- **CORS**: API supports cross-origin requests from web applications
 
 ### 🔍 API Error Handling
 
-Invalid parameters will be corrected to valid defaults:
-- Invalid `output` → defaults to `paragraphs`
-- Invalid `quantity` → clamped to 1-20 range
-- Invalid `length` → defaults to `medium`
+#### Rate Limiting Response (429)
+```json
+{
+  "error": "Rate limit exceeded",
+  "message": "Too many requests. Please try again later.",
+  "limits": {
+    "perMinute": 30,
+    "perHour": 250,
+    "perDay": 500
+  }
+}
+```
+
+#### Parameter Validation
+Invalid parameters are automatically corrected:
+- Invalid `type` → defaults to `phrase`
+- Invalid `count` → clamped to valid range (1-50 for generate, 1-100 for words)
+- Missing parameters → use sensible defaults
 
 ### 🎯 Use Cases for API
 
