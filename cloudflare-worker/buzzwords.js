@@ -4,19 +4,45 @@
 // Import buzzwords from the source file
 import BUZZWORDS from '../src/components/tools/buzzword-ipsum/data/buzzwords.json';
 
-// Rate limiting configuration
-const RATE_LIMITS = {
-  PER_MINUTE: 60,
-  PER_HOUR: 500,
-  PER_DAY: 1000
-};
-
 function getClientId(request) {
   return request.headers.get('CF-Connecting-IP') || 
          request.headers.get('X-Forwarded-For') || 
          'unknown';
 }
 
+async function checkRateLimit(env, clientId) {
+  // Check burst rate limit (10 requests per 10 seconds)
+  const burstResult = await env.RATE_LIMITER_BURST.limit({ key: clientId });
+  if (!burstResult.success) {
+    return { 
+      success: false, 
+      error: 'Rate limit exceeded: too many requests in short period',
+      retryAfter: 10
+    };
+  }
+
+  // Check per-minute rate limit (60 requests per minute)
+  const minuteResult = await env.RATE_LIMITER_MINUTE.limit({ key: clientId });
+  if (!minuteResult.success) {
+    return { 
+      success: false, 
+      error: 'Rate limit exceeded: too many requests per minute',
+      retryAfter: 60
+    };
+  }
+
+  // Check hourly rate limit (500 requests per hour, checked every minute)
+  const hourResult = await env.RATE_LIMITER_HOUR.limit({ key: clientId });
+  if (!hourResult.success) {
+    return { 
+      success: false, 
+      error: 'Rate limit exceeded: hourly limit reached',
+      retryAfter: 3600
+    };
+  }
+
+  return { success: true };
+}
 
 function createCorsHeaders(origin) {
   const allowedOrigins = [
@@ -85,7 +111,27 @@ async function handleRequest(request, env) {
     });
   }
 
-  // Rely on Cloudflare's built-in DDoS protection and zone-level rate limiting
+  // Apply rate limiting for API endpoints (skip for health check)
+  if (url.pathname !== '/health') {
+    const clientId = getClientId(request);
+    const rateLimitResult = await checkRateLimit(env, clientId);
+    
+    if (!rateLimitResult.success) {
+      return new Response(JSON.stringify({
+        error: 'Rate limit exceeded',
+        message: rateLimitResult.error,
+        retryAfter: rateLimitResult.retryAfter
+      }), {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Retry-After': rateLimitResult.retryAfter.toString(),
+          'X-RateLimit-Reset': Math.floor(Date.now() / 1000) + rateLimitResult.retryAfter
+        }
+      });
+    }
+  }
 
   try {
     switch (url.pathname) {
