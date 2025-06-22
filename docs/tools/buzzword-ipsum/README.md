@@ -82,6 +82,176 @@ The tool includes over 500+ carefully curated terms across multiple categories:
 - **Satire Projects**: Create content that parodies business jargon
 - **Creative Writing**: Use as inspiration for corporate characters and scenarios
 
+## 🌐 API Access
+
+Buzzword Ipsum includes a powerful API that allows developers to integrate buzzword generation directly into their applications. Simply add the `?api` parameter to generate JSON responses.
+
+### 🚀 Quick API Usage
+
+```bash
+# Basic API call with defaults
+curl "https://www.russ.tools/buzzword-ipsum/?api"
+
+# Custom parameters
+curl "https://www.russ.tools/buzzword-ipsum/?api&output=sentences&quantity=10&length=short"
+```
+
+### 📋 API Parameters
+
+| Parameter | Type | Default | Options | Description |
+|-----------|------|---------|---------|-------------|
+| `api` | flag | - | required | Enables API mode and JSON response |
+| `output` | string | `paragraphs` | `phrases`, `sentences`, `paragraphs` | Format of generated content |
+| `quantity` | integer | `5` | `1-20` | Number of items to generate |
+| `length` | string | `medium` | `short`, `medium`, `long` | Sentence/paragraph length (ignored for phrases) |
+
+### 📊 API Response Format
+
+```json
+{
+  "success": true,
+  "data": {
+    "content": [
+      "Proactively orchestrate AI-powered microservices...",
+      "Seamlessly leverage machine learning algorithms..."
+    ],
+    "format": "paragraphs",
+    "quantity": 2,
+    "length": "medium",
+    "generated_at": "2024-01-15T10:30:00.000Z"
+  },
+  "meta": {
+    "tool": "buzzword-ipsum",
+    "version": "1.0",
+    "total_items": 2,
+    "api_docs": "https://www.russ.tools/buzzword-ipsum/?docs"
+  }
+}
+```
+
+### 🔧 API Examples
+
+#### Generate Business Phrases
+```bash
+curl "https://www.russ.tools/buzzword-ipsum/?api&output=phrases&quantity=5"
+```
+Response:
+```json
+{
+  "success": true,
+  "data": {
+    "content": [
+      "AI-powered microservices",
+      "cloud-native DevOps",
+      "blockchain solutions",
+      "machine learning optimization",
+      "serverless architecture"
+    ],
+    "format": "phrases",
+    "quantity": 5,
+    "length": "medium"
+  }
+}
+```
+
+#### Generate Short Sentences
+```bash
+curl "https://www.russ.tools/buzzword-ipsum/?api&output=sentences&quantity=3&length=short"
+```
+Response:
+```json
+{
+  "data": {
+    "content": [
+      "Proactively optimize AI algorithms.",
+      "Seamlessly deploy cloud infrastructure.",
+      "Intelligently scale microservices."
+    ],
+    "format": "sentences",
+    "quantity": 3,
+    "length": "short"
+  }
+}
+```
+
+#### Generate Corporate Paragraphs
+```bash
+curl "https://www.russ.tools/buzzword-ipsum/?api&output=paragraphs&quantity=2&length=long"
+```
+
+### 🧑‍💻 Integration Examples
+
+#### JavaScript/Fetch
+```javascript
+async function generateBuzzwords(output = 'paragraphs', quantity = 5, length = 'medium') {
+  const url = `https://www.russ.tools/buzzword-ipsum/?api&output=${output}&quantity=${quantity}&length=${length}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data.data.content;
+}
+
+// Usage
+const buzzwords = await generateBuzzwords('sentences', 10, 'short');
+console.log(buzzwords);
+```
+
+#### Python/Requests
+```python
+import requests
+
+def generate_buzzwords(output='paragraphs', quantity=5, length='medium'):
+    url = f"https://www.russ.tools/buzzword-ipsum/"
+    params = {
+        'api': '',
+        'output': output,
+        'quantity': quantity,
+        'length': length
+    }
+    response = requests.get(url, params=params)
+    return response.json()['data']['content']
+
+# Usage
+buzzwords = generate_buzzwords('sentences', 10, 'short')
+print(buzzwords)
+```
+
+#### PHP/cURL
+```php
+function generateBuzzwords($output = 'paragraphs', $quantity = 5, $length = 'medium') {
+    $url = "https://www.russ.tools/buzzword-ipsum/?api&output={$output}&quantity={$quantity}&length={$length}";
+    $response = file_get_contents($url);
+    $data = json_decode($response, true);
+    return $data['data']['content'];
+}
+
+// Usage
+$buzzwords = generateBuzzwords('sentences', 10, 'short');
+print_r($buzzwords);
+```
+
+### ⚡ Rate Limiting & Best Practices
+
+- **No Authentication Required**: The API is open and free to use
+- **Rate Limiting**: Please be respectful with usage frequency
+- **Caching**: Consider caching responses for repeated identical requests
+- **Error Handling**: Always check the `success` field in responses
+- **Content Validation**: Validate the `format` and `quantity` in responses match your request
+
+### 🔍 API Error Handling
+
+Invalid parameters will be corrected to valid defaults:
+- Invalid `output` → defaults to `paragraphs`
+- Invalid `quantity` → clamped to 1-20 range
+- Invalid `length` → defaults to `medium`
+
+### 🎯 Use Cases for API
+
+- **Content Management Systems**: Generate placeholder text for templates
+- **Design Tools**: Populate mockups with realistic business content
+- **Testing Frameworks**: Create test data for corporate applications
+- **Chatbots**: Generate corporate-style responses for business bots
+- **Documentation**: Fill templates with professional-sounding placeholder content
+
 ## 🛠️ Technical Implementation
 
 ### Architecture
