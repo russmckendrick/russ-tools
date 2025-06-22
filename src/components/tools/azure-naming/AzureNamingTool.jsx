@@ -108,7 +108,7 @@ const AzureNamingTool = () => {
             onClick={handleShareConfiguration}
             disabled={!formState.resourceType.length || !formState.workload}
           >
-            Share Configuration
+            Copy Configuration Share URL
           </Button>
         </Group>
 

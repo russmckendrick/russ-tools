@@ -729,7 +729,7 @@ const NetworkDesignerTool = () => {
             onClick={handleShareConfiguration}
             disabled={networks.length === 0}
           >
-            Share Configuration
+            Copy Configuration Share URL
           </Button>
         </Group>
 

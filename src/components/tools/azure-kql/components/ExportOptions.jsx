@@ -7,11 +7,11 @@ import {
   Paper,
   Divider
 } from '@mantine/core';
-import { IconCopy, IconDownload, IconExternalLink, IconBookmark, IconShare, IconStar } from '@tabler/icons-react';
+import { IconCopy, IconDownload, IconExternalLink, IconBookmark, IconStar } from '@tabler/icons-react';
 import { useClipboard } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 
-const ExportOptions = ({ query, onSave, generateShareableURL, onAddToFavorites }) => {
+const ExportOptions = ({ query, onSave, onAddToFavorites }) => {
   const clipboard = useClipboard();
 
   const handleCopyQuery = () => {
@@ -95,26 +95,6 @@ const ExportOptions = ({ query, onSave, generateShareableURL, onAddToFavorites }
     });
   };
 
-  const handleShareURL = () => {
-    if (!generateShareableURL) {
-      notifications.show({
-        title: 'Share Unavailable',
-        message: 'Share functionality is not available',
-        color: 'orange'
-      });
-      return;
-    }
-
-    const shareableUrl = generateShareableURL();
-    if (shareableUrl) {
-      clipboard.copy(shareableUrl);
-      notifications.show({
-        title: 'URL Copied',
-        message: 'Shareable URL copied to clipboard',
-        color: 'green'
-      });
-    }
-  };
 
   const handleAddToFavorites = () => {
     if (!onAddToFavorites) {
@@ -191,27 +171,16 @@ const ExportOptions = ({ query, onSave, generateShareableURL, onAddToFavorites }
           </Button>
         </Group>
 
-        <Group grow>
-          <Button
-            variant="light"
-            leftSection={<IconDownload size={16} />}
-            onClick={handleDownloadQuery}
-            size="sm"
-            color="green"
-          >
-            Download .kql File
-          </Button>
-
-          <Button
-            variant="light"
-            leftSection={<IconShare size={16} />}
-            onClick={handleShareURL}
-            size="sm"
-            color="violet"
-          >
-            Share URL
-          </Button>
-        </Group>
+        <Button
+          variant="light"
+          leftSection={<IconDownload size={16} />}
+          onClick={handleDownloadQuery}
+          size="sm"
+          color="green"
+          fullWidth
+        >
+          Download .kql File
+        </Button>
       </Stack>
     </Paper>
   );

@@ -11,10 +11,11 @@ import {
   Grid,
   Button
 } from '@mantine/core';
-import { IconChartDots3, IconInfoCircle } from '@tabler/icons-react';
+import { IconChartDots3, IconInfoCircle, IconShare } from '@tabler/icons-react';
 import { useParams } from 'react-router-dom';
 import { useLocalStorage } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
+import { copyShareableURL } from '../../../utils/sharelink';
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
@@ -98,6 +99,34 @@ const AzureKQLTool = () => {
     });
   };
 
+  // Share configuration
+  const handleShareConfiguration = async () => {
+    if (!generatedQuery) {
+      notifications.show({
+        title: 'No Query Generated',
+        message: 'Please generate a KQL query before sharing the configuration',
+        color: 'orange'
+      });
+      return;
+    }
+
+    const config = {
+      selectedService,
+      selectedTemplate,
+      parameters
+    };
+
+    const success = await copyShareableURL(config);
+    if (success) {
+      notifications.show({
+        title: 'Configuration Shared',
+        message: 'Shareable link has been copied to your clipboard',
+        color: 'green',
+        icon: <IconShare size={16} />
+      });
+    }
+  };
+
   // Get tool configuration for SEO
   const toolConfig = toolsConfig.find(tool => tool.id === 'azure-kql');
   const seoData = generateToolSEO(toolConfig);
@@ -130,13 +159,23 @@ const AzureKQLTool = () => {
                 </Text>
               </div>
             </Group>
-            <Button
-              variant="light"
-              leftSection={<IconInfoCircle size={16} />}
-              onClick={() => setHelpOpened(true)}
-            >
-              Help
-            </Button>
+            <Group gap="sm">
+              <Button
+                variant="light"
+                leftSection={<IconShare size={16} />}
+                onClick={handleShareConfiguration}
+                disabled={!generatedQuery}
+              >
+                Copy Configuration Share URL
+              </Button>
+              <Button
+                variant="light"
+                leftSection={<IconInfoCircle size={16} />}
+                onClick={() => setHelpOpened(true)}
+              >
+                Help
+              </Button>
+            </Group>
           </Group>
 
           {/* Info Alert */}
@@ -188,7 +227,6 @@ const AzureKQLTool = () => {
                     <ExportOptions 
                       query={generatedQuery}
                       onSave={saveQuery}
-                      generateShareableURL={generateShareableURL}
                       onAddToFavorites={addToFavorites}
                     />
                   </Stack>
