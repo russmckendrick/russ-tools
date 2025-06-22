@@ -6,9 +6,4 @@ routes = [
   { pattern = "buzzwords.russ.tools", custom_domain = true }
 ]
 
-# KV Namespace for rate limiting
-[[kv_namespaces]]
-binding = "BUZZWORDS_RATE_LIMIT"
-id = "3eae99792d2d4b0ab852e5f09298ccee"
-
-# Use: npx wrangler secret put KV_NAMESPACE_ID --config cloudflare-worker/configs/wrangler-buzzwords.toml
+# Skip rate limiting for now - use Cloudflare's zone-level protection

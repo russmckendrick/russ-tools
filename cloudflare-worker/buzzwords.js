@@ -6,70 +6,17 @@ import BUZZWORDS from '../src/components/tools/buzzword-placeholder/data/buzzwor
 
 // Rate limiting configuration
 const RATE_LIMITS = {
-  PER_MINUTE: 30,
-  PER_HOUR: 250,
-  PER_DAY: 500
+  PER_MINUTE: 60,
+  PER_HOUR: 500,
+  PER_DAY: 1000
 };
 
-class RateLimiter {
-  constructor(env) {
-    this.kv = env.BUZZWORDS_RATE_LIMIT;
-  }
-
-  async checkLimit(clientId, timeWindow, limit) {
-    const now = Date.now();
-    const windowStart = this.getWindowStart(now, timeWindow);
-    const key = `${clientId}:${timeWindow}:${windowStart}`;
-    
-    const current = await this.kv.get(key);
-    const count = current ? parseInt(current) + 1 : 1;
-    
-    if (count > limit) {
-      return { allowed: false, count, limit };
-    }
-    
-    await this.kv.put(key, count.toString(), { 
-      expirationTtl: this.getTtl(timeWindow) 
-    });
-    
-    return { allowed: true, count, limit };
-  }
-
-  getWindowStart(timestamp, timeWindow) {
-    switch (timeWindow) {
-      case 'minute':
-        return Math.floor(timestamp / 60000) * 60000;
-      case 'hour':
-        return Math.floor(timestamp / 3600000) * 3600000;
-      case 'day':
-        return Math.floor(timestamp / 86400000) * 86400000;
-      default:
-        return timestamp;
-    }
-  }
-
-  getTtl(timeWindow) {
-    switch (timeWindow) {
-      case 'minute':
-        return 120; // 2 minutes
-      case 'hour':
-        return 7200; // 2 hours
-      case 'day':
-        return 172800; // 2 days
-      default:
-        return 3600;
-    }
-  }
-}
-
 function getClientId(request) {
-  const clientIP = request.headers.get('CF-Connecting-IP') || 
-                  request.headers.get('X-Forwarded-For') || 
-                  request.headers.get('X-Real-IP') || 
-                  'unknown';
-  const userAgent = request.headers.get('User-Agent') || 'unknown';
-  return `${clientIP}:${btoa(userAgent).slice(0, 10)}`;
+  return request.headers.get('CF-Connecting-IP') || 
+         request.headers.get('X-Forwarded-For') || 
+         'unknown';
 }
+
 
 function createCorsHeaders(origin) {
   const allowedOrigins = [
@@ -138,44 +85,7 @@ async function handleRequest(request, env) {
     });
   }
 
-  // Rate limiting
-  const rateLimiter = new RateLimiter(env);
-  const clientId = getClientId(request);
-  
-  const minuteCheck = await rateLimiter.checkLimit(clientId, 'minute', RATE_LIMITS.PER_MINUTE);
-  const hourCheck = await rateLimiter.checkLimit(clientId, 'hour', RATE_LIMITS.PER_HOUR);
-  const dayCheck = await rateLimiter.checkLimit(clientId, 'day', RATE_LIMITS.PER_DAY);
-  
-  if (!minuteCheck.allowed || !hourCheck.allowed || !dayCheck.allowed) {
-    const resetTime = Math.floor(Date.now() / 1000) + 60;
-    
-    return new Response(JSON.stringify({
-      error: 'Rate limit exceeded',
-      message: 'Too many requests. Please try again later.',
-      limits: {
-        perMinute: RATE_LIMITS.PER_MINUTE,
-        perHour: RATE_LIMITS.PER_HOUR,
-        perDay: RATE_LIMITS.PER_DAY
-      }
-    }), {
-      status: 429,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json',
-        'X-RateLimit-Limit': RATE_LIMITS.PER_MINUTE.toString(),
-        'X-RateLimit-Remaining': '0',
-        'X-RateLimit-Reset': resetTime.toString(),
-        'Retry-After': '60'
-      }
-    });
-  }
-
-  // Add rate limit headers
-  const rateLimitHeaders = {
-    'X-RateLimit-Limit': RATE_LIMITS.PER_MINUTE.toString(),
-    'X-RateLimit-Remaining': (RATE_LIMITS.PER_MINUTE - minuteCheck.count).toString(),
-    'X-RateLimit-Reset': Math.floor(Date.now() / 1000 + 60).toString()
-  };
+  // Rely on Cloudflare's built-in DDoS protection and zone-level rate limiting
 
   try {
     switch (url.pathname) {
@@ -200,7 +110,6 @@ async function handleRequest(request, env) {
           status: 200,
           headers: {
             ...corsHeaders,
-            ...rateLimitHeaders,
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache'
           }
@@ -280,7 +189,6 @@ async function handleRequest(request, env) {
           status: 200,
           headers: {
             ...corsHeaders,
-            ...rateLimitHeaders,
             'Content-Type': 'application/json',
             'Cache-Control': 'public, max-age=300'
           }
@@ -321,7 +229,6 @@ async function handleRequest(request, env) {
           status: 200,
           headers: {
             ...corsHeaders,
-            ...rateLimitHeaders,
             'Content-Type': 'application/json',
             'Cache-Control': 'public, max-age=1800'
           }
