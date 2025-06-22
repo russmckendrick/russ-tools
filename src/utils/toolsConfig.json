@@ -182,6 +182,20 @@
     "features": ["Cryptographically secure generation", "Customizable length and character sets", "Password strength analysis", "Bulk password generation", "Secure download options", "No server communication"]
   },
   {
+    "id": "buzzword-ipsum",
+    "title": "Buzzword Ipsum",
+    "description": "Generate corporate buzzword-filled ipsum text for mockups and presentations. Create professional-sounding but meaningless content perfect for design templates and business materials.",
+    "shortDescription": "Generate corporate buzzword ipsum text",
+    "icon": "IconMessageCircle",
+    "iconColor": "orange",
+    "badges": ["Lorem Ipsum Alternative", "Corporate Speak", "Business Jargon"],
+    "path": "/buzzword-ipsum",
+    "seoTitle": "Buzzword Ipsum Generator - Corporate Lorem Ipsum Alternative",
+    "seoKeywords": ["buzzword ipsum", "corporate lorem ipsum", "business jargon generator", "buzzword generator", "corporate placeholder", "business ipsum", "mockup content", "corporate speak", "professional text", "lorem ipsum alternative"],
+    "category": "Content Tools",
+    "features": ["Corporate buzzword generation", "Multiple output formats", "Customizable length options", "Professional placeholder text", "Perfect for mockups", "Client-side generation"]
+  },
+  {
     "id": "github-source",
     "title": "Source Code",
     "description": "View the source code on GitHub",

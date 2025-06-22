@@ -1,0 +1,7 @@
+name = "buzzword-generator"
+main = "../buzzwords.js"
+compatibility_date = "2025-05-05"
+
+routes = [
+  { pattern = "buzzwords.russ.tools", custom_domain = true }
+]

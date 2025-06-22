@@ -124,6 +124,11 @@ const AzureKQLTool = lazy(() =>
     default: () => <div>Error loading Azure KQL Tool</div>
   }))
 );
+const BuzzwordIpsumTool = lazy(() => 
+  import('./components/tools/buzzword-ipsum/BuzzwordIpsumTool').catch(() => ({
+    default: () => <div>Error loading Buzzword Ipsum Tool</div>
+  }))
+);
 
 // Loading component for lazy-loaded routes
 const LoadingFallback = () => (
@@ -310,6 +315,13 @@ export default function App() {
             <Route path="azure-kql/:service/:template" element={
               <LazyRoute>
                 <AzureKQLTool />
+              </LazyRoute>
+            } />
+
+            {/* Buzzword Ipsum Tool route */}
+            <Route path="buzzword-ipsum" element={
+              <LazyRoute>
+                <BuzzwordIpsumTool />
               </LazyRoute>
             } />
 

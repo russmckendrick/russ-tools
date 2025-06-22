@@ -1,4 +1,4 @@
-import { IconNetwork, IconBrandAzure, IconClock, IconShield, IconBrandGithub } from '@tabler/icons-react';
+import { IconNetwork, IconBrandAzure, IconClock, IconShield, IconBrandGithub, IconMessageCircle } from '@tabler/icons-react';
 import DNSIcon from '../components/tools/dns-lookup/DNSIcon';
 import WHOISIcon from '../components/tools/whois/WHOISIcon';
 import JSONIcon from '../components/tools/data-converter/JSONIcon';
@@ -16,6 +16,7 @@ const iconMap = {
   IconClock,
   IconShield,
   IconBrandGithub,
+  IconMessageCircle,
   DNSIcon,
   WHOISIcon,
   JSONIcon,
