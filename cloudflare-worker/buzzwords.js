@@ -11,37 +11,52 @@ function getClientId(request) {
 }
 
 async function checkRateLimit(env, clientId) {
-  // Check burst rate limit (10 requests per 10 seconds)
-  const burstResult = await env.RATE_LIMITER_BURST.limit({ key: clientId });
-  if (!burstResult.success) {
-    return { 
-      success: false, 
-      error: 'Rate limit exceeded: too many requests in short period',
-      retryAfter: 10
-    };
-  }
+  try {
+    // Check burst rate limit (10 requests per 10 seconds)
+    console.log(`Checking burst rate limit for client: ${clientId}`);
+    const burstResult = await env.RATE_LIMITER_BURST.limit({ key: clientId });
+    console.log(`Burst result:`, burstResult);
+    
+    if (!burstResult.success) {
+      return { 
+        success: false, 
+        error: 'Rate limit exceeded: too many requests in short period',
+        retryAfter: 10
+      };
+    }
 
-  // Check per-minute rate limit (60 requests per minute)
-  const minuteResult = await env.RATE_LIMITER_MINUTE.limit({ key: clientId });
-  if (!minuteResult.success) {
-    return { 
-      success: false, 
-      error: 'Rate limit exceeded: too many requests per minute',
-      retryAfter: 60
-    };
-  }
+    // Check per-minute rate limit (60 requests per minute)
+    console.log(`Checking minute rate limit for client: ${clientId}`);
+    const minuteResult = await env.RATE_LIMITER_MINUTE.limit({ key: clientId });
+    console.log(`Minute result:`, minuteResult);
+    
+    if (!minuteResult.success) {
+      return { 
+        success: false, 
+        error: 'Rate limit exceeded: too many requests per minute',
+        retryAfter: 60
+      };
+    }
 
-  // Check hourly rate limit (500 requests per hour, checked every minute)
-  const hourResult = await env.RATE_LIMITER_HOUR.limit({ key: clientId });
-  if (!hourResult.success) {
-    return { 
-      success: false, 
-      error: 'Rate limit exceeded: hourly limit reached',
-      retryAfter: 3600
-    };
-  }
+    // Check hourly rate limit (500 requests per hour, checked every minute)
+    console.log(`Checking hour rate limit for client: ${clientId}`);
+    const hourResult = await env.RATE_LIMITER_HOUR.limit({ key: clientId });
+    console.log(`Hour result:`, hourResult);
+    
+    if (!hourResult.success) {
+      return { 
+        success: false, 
+        error: 'Rate limit exceeded: hourly limit reached',
+        retryAfter: 3600
+      };
+    }
 
-  return { success: true };
+    return { success: true };
+  } catch (error) {
+    console.error('Rate limiting error:', error);
+    // If rate limiting fails, allow the request to proceed
+    return { success: true };
+  }
 }
 
 function createCorsHeaders(origin) {
@@ -237,6 +252,29 @@ async function handleRequest(request, env) {
             ...corsHeaders,
             'Content-Type': 'application/json',
             'Cache-Control': 'public, max-age=300'
+          }
+        });
+
+      case '/debug-rate-limit':
+        const debugClientId = getClientId(request);
+        const debugResult = await checkRateLimit(env, debugClientId);
+        
+        return new Response(JSON.stringify({
+          success: true,
+          timestamp: new Date().toISOString(),
+          clientId: debugClientId,
+          rateLimitResult: debugResult,
+          bindings: {
+            burst: typeof env.RATE_LIMITER_BURST,
+            minute: typeof env.RATE_LIMITER_MINUTE,
+            hour: typeof env.RATE_LIMITER_HOUR
+          }
+        }), {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
           }
         });
 
