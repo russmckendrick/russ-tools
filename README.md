@@ -15,6 +15,7 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 - 📜 Data Converter
 - 🔐 JWT Decoder/Validator
 - 🔒 Password Generator
+- 💬 Buzzword Ipsum
 
 ## 🧰 Tools Overview
 
@@ -29,6 +30,7 @@ Russ Tools is a suite of modern, web-based tools for network and cloud professio
 | 📜 **Data Converter** | Convert data between JSON, YAML, and TOML formats. Features auto-detection, validation, formatting options (indentation, sorting), and schema validation. |
 | 🔐 **JWT Decoder/Validator** | Decode, analyze, and validate JSON Web Tokens (JWT) entirely in your browser. Features signature validation, claims inspection, and security analysis. |
 | 🔒 **Password Generator** | Generate cryptographically secure passwords with advanced customization options. Features entropy analysis, strength assessment, bulk generation, and detailed security feedback. |
+| 💬 **Buzzword Ipsum** | Generate corporate buzzword-filled placeholder text for mockups and presentations. Features AI/ML and DevOps terminology with customizable output formats. |
 | 🏢 **Microsoft Portals (GDAP)** | Generate tenant-specific deep links to Microsoft portals for GDAP scenarios. Discover tenant information and create direct links to Azure, Microsoft 365, Power Platform, and other Microsoft admin portals. |
 | 🔍 **Microsoft Tenant Lookup** | Discover comprehensive Microsoft tenant information for any domain. Get tenant ID, organization details, DNS configuration, and authentication settings using multiple Microsoft APIs with detailed analysis. |
 
@@ -899,6 +901,88 @@ Visit [https://www.russ.tools/password-generator](https://www.russ.tools/passwor
    - See detailed breakdown of possible combinations
    - Learn about modern password attack scenarios
    - Get recommendations for enterprise-grade security
+
+---
+
+## 💬 Buzzword Ipsum
+
+The Buzzword Ipsum tool generates corporate buzzword-filled placeholder text that sounds professional but is intentionally meaningless. Perfect for mockups, presentations, and design work where you need realistic-looking business content without actual meaning.
+
+### ✨ Why Use This Tool?
+- 🎭 **Professional Mockups** - Realistic corporate content for design templates
+- 🔄 **Lorem Ipsum Alternative** - Business-focused placeholder text instead of Latin
+- 🤖 **Modern Terminology** - Includes AI/ML, DevOps, and cloud buzzwords
+- ⚡ **Multiple Formats** - Generate phrases, sentences, or full paragraphs
+- 🎲 **Randomized Content** - Fresh combinations every time you generate
+- 📱 **Easy to Use** - Simple interface with instant generation
+
+### 🔑 Key Features
+
+- 🎯 **Multiple Output Formats:**
+  - **Phrases:** Short buzzword combinations (e.g., "AI-powered microservices")
+  - **Sentences:** Complete corporate statements with proper grammar
+  - **Paragraphs:** Full blocks of professional-sounding text
+
+- 🤖 **Comprehensive Buzzword Database:**
+  - Traditional corporate speak and business jargon
+  - Modern AI/ML terminology (neural networks, machine learning, deep learning)
+  - DevOps and cloud buzzwords (containerization, Kubernetes, serverless)
+  - Technology terminology (blockchain, edge computing, quantum computing)
+
+- ⚙️ **Customization Options:**
+  - Adjustable quantity (1-20 items)
+  - Sentence length control (short, medium, long)
+  - Real-time generation with visual feedback
+
+- 💾 **Professional Features:**
+  - Copy to clipboard functionality
+  - Download as text file for offline use
+  - Two-column layout for efficient workflow
+  - Witty notifications with buzzword humor
+
+#### 🎯 Example Use Cases
+- **Design Mockups:** Fill website templates and app designs with realistic content
+- **Presentation Templates:** Create professional-looking slide decks for demos
+- **Marketing Materials:** Generate placeholder copy for brochures and campaigns
+- **Training Materials:** Create realistic business documents for educational purposes
+- **Comedy & Satire:** Generate hilariously meaningless corporate speak
+
+#### 📝 Sample Output
+- "Seamlessly orchestrate AI-powered microservices architecture"
+- "Proactively leverage ML-driven containerization strategies"
+- "Dynamically optimize neural network performance metrics"
+- "Holistically streamline cloud-native DevOps paradigms"
+
+### Buzzword Ipsum
+
+Visit [https://www.russ.tools/buzzword-ipsum](https://www.russ.tools/buzzword-ipsum) and:
+
+1. 🎛️ **Configure Options:**
+   - Select output format: Phrases, Sentences, or Paragraphs
+   - Choose quantity (1-20 items to generate)
+   - Adjust sentence length for sentences/paragraphs
+
+2. 🎲 **Generate Content:**
+   - Click "Generate Text" to create buzzword-filled content
+   - Enjoy the witty notification messages
+   - Content appears instantly in the output area
+
+3. 📋 **Use Your Content:**
+   - Click "Copy" button to copy all text to clipboard
+   - Download as text file using the download icon
+   - Edit content directly in the output area if needed
+
+4. 🔄 **Iterate and Refine:**
+   - Generate new content with different settings
+   - Mix and match different formats
+   - Create unique combinations for your specific needs
+
+#### 🛠️ Technical Features
+- **Client-Side Generation:** All content generated locally in your browser
+- **Configurable Word Lists:** Buzzwords stored in separate JSON files for easy updates
+- **Modern UI:** Clean two-column layout with responsive design
+- **Smart Notifications:** Random buzzword-filled success messages
+- **Export Capabilities:** Download functionality with proper formatting
 
 ---
 
