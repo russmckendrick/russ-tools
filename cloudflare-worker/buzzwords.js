@@ -4,10 +4,9 @@
 // Import buzzwords from the source file
 import BUZZWORDS from '../src/components/tools/buzzword-ipsum/data/buzzwords.json';
 
-// Helper functions
 function getClientId(request) {
-  return request.headers.get('CF-Connecting-IP') ||
-         request.headers.get('X-Forwarded-For') ||
+  return request.headers.get('CF-Connecting-IP') || 
+         request.headers.get('X-Forwarded-For') || 
          'unknown';
 }
 
@@ -18,7 +17,9 @@ function createCorsHeaders(origin) {
     'http://localhost:5173',
     'http://localhost:3000'
   ];
+
   const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://russ.tools';
+
   return {
     'Access-Control-Allow-Origin': corsOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -34,13 +35,16 @@ function getRandomElement(array) {
 
 function generateBuzzwordPhrase(count = 1) {
   const phrases = [];
+  
   for (let i = 0; i < count; i++) {
     const adverb = getRandomElement(BUZZWORDS.adverbs);
     const verb = getRandomElement(BUZZWORDS.verbs);
     const adjective = getRandomElement(BUZZWORDS.adjectives);
     const noun = getRandomElement(BUZZWORDS.nouns);
+    
     phrases.push(`${adverb} ${verb} ${adjective} ${noun}`);
   }
+  
   return phrases;
 }
 
@@ -48,12 +52,15 @@ function generateBuzzwordList(type, count = 10) {
   if (!BUZZWORDS[type]) {
     throw new Error(`Invalid buzzword type: ${type}`);
   }
+  
   const words = [...BUZZWORDS[type]];
   const result = [];
+  
   for (let i = 0; i < Math.min(count, words.length); i++) {
     const randomIndex = Math.floor(Math.random() * words.length);
     result.push(words.splice(randomIndex, 1)[0]);
   }
+  
   return result;
 }
 
@@ -70,22 +77,21 @@ export default {
         headers: corsHeaders
       });
     }
-    
+
     // Apply rate limiting for API endpoints (skip for health check)
     if (url.pathname !== '/health') {
-      // Using pathname as the key, directly following the Cloudflare documentation example.
-      const { pathname } = url; 
+      const { pathname } = url;
       try {
         const { success } = await env.MY_RATE_LIMITER.limit({ key: pathname });
         if (!success) {
-          return new Response(`429 Failure – rate limit exceeded for ${pathname}`, { 
+          return new Response(`429 Failure – rate limit exceeded for ${pathname}`, {
             status: 429,
             headers: corsHeaders
           });
         }
       } catch (error) {
-        console.error('Rate limiting error:', error);
         // Fail open if the rate limiter itself has an issue.
+        console.error(`Rate Limiting failed: ${error}`);
       }
     }
 
@@ -95,19 +101,7 @@ export default {
           return new Response(JSON.stringify({
             status: 'healthy',
             timestamp: new Date().toISOString(),
-            version: '1.0.0',
-            uptime: Date.now() - (env.START_TIME || Date.now()),
-            services: {
-              buzzwords: 'operational',
-              rateLimit: 'operational',
-              cors: 'enabled'
-            },
-            wordCounts: {
-              adverbs: BUZZWORDS.adverbs.length,
-              adjectives: BUZZWORDS.adjectives.length,
-              nouns: BUZZWORDS.nouns.length,
-              verbs: BUZZWORDS.verbs.length
-            }
+            version: '1.0.0'
           }), {
             status: 200,
             headers: {
@@ -120,8 +114,7 @@ export default {
         case '/generate':
           if (request.method !== 'GET' && request.method !== 'POST') {
             return new Response(JSON.stringify({
-              error: 'Method not allowed',
-              message: 'Use GET or POST method'
+              error: 'Method not allowed'
             }), {
               status: 405,
               headers: {
@@ -137,8 +130,7 @@ export default {
               params = await request.json();
             } catch (e) {
               return new Response(JSON.stringify({
-                error: 'Invalid JSON',
-                message: 'Request body must be valid JSON'
+                error: 'Invalid JSON'
               }), {
                 status: 400,
                 headers: {
@@ -171,8 +163,7 @@ export default {
             };
           } else {
             return new Response(JSON.stringify({
-              error: 'Invalid type',
-              message: 'Type must be one of: phrase, adverbs, adjectives, nouns, verbs'
+              error: 'Invalid type'
             }), {
               status: 400,
               headers: {
@@ -195,42 +186,13 @@ export default {
             }
           });
 
-        case '/debug-rate-limit':
-          const debugKey = url.pathname;
-          let rateLimitResult = { success: 'Not yet checked' };
-          try {
-              const { success } = await env.MY_RATE_LIMITER.limit({ key: debugKey });
-              rateLimitResult = { success };
-          } catch(e) {
-              rateLimitResult = { success: false, error: e.message };
-          }
-
-          return new Response(JSON.stringify({
-            success: true,
-            timestamp: new Date().toISOString(),
-            key: debugKey,
-            rateLimitResult: rateLimitResult,
-            binding: {
-              type: typeof env.MY_RATE_LIMITER
-            }
-          }), {
-            status: 200,
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/json',
-              'Cache-Control': 'no-cache'
-            }
-          });
-
         case '/words':
           const wordType = url.searchParams.get('type');
           const wordCount = Math.min(Math.max(parseInt(url.searchParams.get('count')) || 10, 1), 100);
 
           if (wordType && !BUZZWORDS[wordType]) {
             return new Response(JSON.stringify({
-              error: 'Invalid word type',
-              message: 'Type must be one of: adverbs, adjectives, nouns, verbs',
-              availableTypes: Object.keys(BUZZWORDS)
+              error: 'Invalid word type'
             }), {
               status: 400,
               headers: {
@@ -240,14 +202,16 @@ export default {
             });
           }
 
-          const wordsResult = wordType 
-            ? { [wordType]: generateBuzzwordList(wordType, wordCount) }
+          const wordsResult = wordType
+            ? {
+              [wordType]: generateBuzzwordList(wordType, wordCount)
+            }
             : {
-                adverbs: generateBuzzwordList('adverbs', Math.min(wordCount, 10)),
-                adjectives: generateBuzzwordList('adjectives', Math.min(wordCount, 10)),
-                nouns: generateBuzzwordList('nouns', Math.min(wordCount, 10)),
-                verbs: generateBuzzwordList('verbs', Math.min(wordCount, 10))
-              };
+              adverbs: generateBuzzwordList('adverbs', Math.min(wordCount, 10)),
+              adjectives: generateBuzzwordList('adjectives', Math.min(wordCount, 10)),
+              nouns: generateBuzzwordList('nouns', Math.min(wordCount, 10)),
+              verbs: generateBuzzwordList('verbs', Math.min(wordCount, 10))
+            };
 
           return new Response(JSON.stringify({
             success: true,
@@ -264,13 +228,7 @@ export default {
 
         default:
           return new Response(JSON.stringify({
-            error: 'Not found',
-            message: 'Endpoint not found',
-            availableEndpoints: [
-              'GET /health - Health check',
-              'GET/POST /generate - Generate buzzword phrases',
-              'GET /words - Get buzzword lists'
-            ]
+            error: 'Not found'
           }), {
             status: 404,
             headers: {
@@ -281,11 +239,8 @@ export default {
       }
     } catch (error) {
       console.error('Worker error:', error);
-      
       return new Response(JSON.stringify({
-        error: 'Internal server error',
-        message: 'An unexpected error occurred',
-        timestamp: new Date().toISOString()
+        error: 'Internal server error'
       }), {
         status: 500,
         headers: {
