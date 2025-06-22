@@ -124,24 +124,52 @@ Health check endpoint for monitoring API status.
 
 ### 📊 API Response Format
 
+#### Generate Endpoint Response
 ```json
 {
   "success": true,
-  "data": {
-    "content": [
-      "Proactively orchestrate AI-powered microservices...",
-      "Seamlessly leverage machine learning algorithms..."
-    ],
-    "format": "paragraphs",
-    "quantity": 2,
-    "length": "medium",
-    "generated_at": "2024-01-15T10:30:00.000Z"
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "type": "phrases",
+  "count": 3,
+  "data": [
+    "proactively orchestrate AI-powered microservices",
+    "seamlessly leverage machine learning algorithms",
+    "holistically optimize cloud-native solutions"
+  ]
+}
+```
+
+#### Words Endpoint Response
+```json
+{
+  "success": true,
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "adjectives": [
+    "AI-powered",
+    "cloud-native", 
+    "scalable",
+    "innovative",
+    "strategic"
+  ]
+}
+```
+
+#### Health Endpoint Response
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "version": "1.0.0",
+  "services": {
+    "buzzwords": "operational",
+    "rateLimit": "operational",
+    "cors": "enabled"
   },
-  "meta": {
-    "tool": "buzzword-ipsum",
-    "version": "1.0",
-    "total_items": 2,
-    "api_docs": "https://www.russ.tools/buzzword-ipsum/?docs"
+  "wordCounts": {
+    "adverbs": 67,
+    "adjectives": 408,
+    "nouns": 606,
+    "verbs": 201
   }
 }
 ```
@@ -150,50 +178,50 @@ Health check endpoint for monitoring API status.
 
 #### Generate Business Phrases
 ```bash
-curl "https://www.russ.tools/buzzword-ipsum/?api&output=phrases&quantity=5"
+curl "https://buzzwords.russ.tools/generate?type=phrase&count=5"
 ```
 Response:
 ```json
 {
   "success": true,
-  "data": {
-    "content": [
-      "AI-powered microservices",
-      "cloud-native DevOps",
-      "blockchain solutions",
-      "machine learning optimization",
-      "serverless architecture"
-    ],
-    "format": "phrases",
-    "quantity": 5,
-    "length": "medium"
-  }
+  "type": "phrases",
+  "count": 5,
+  "data": [
+    "proactively orchestrate AI-powered microservices",
+    "seamlessly leverage cloud-native DevOps",
+    "holistically optimize blockchain solutions",
+    "intelligently scale machine learning optimization",
+    "strategically deploy serverless architecture"
+  ]
 }
 ```
 
-#### Generate Short Sentences
+#### Get Technology Adjectives
 ```bash
-curl "https://www.russ.tools/buzzword-ipsum/?api&output=sentences&quantity=3&length=short"
+curl "https://buzzwords.russ.tools/words?type=adjectives&count=10"
 ```
 Response:
 ```json
 {
-  "data": {
-    "content": [
-      "Proactively optimize AI algorithms.",
-      "Seamlessly deploy cloud infrastructure.",
-      "Intelligently scale microservices."
-    ],
-    "format": "sentences",
-    "quantity": 3,
-    "length": "short"
-  }
+  "success": true,
+  "adjectives": [
+    "AI-powered",
+    "cloud-native",
+    "scalable", 
+    "microservices",
+    "serverless",
+    "edge-computing",
+    "blockchain-enabled",
+    "machine-learning",
+    "containerized",
+    "fault-tolerant"
+  ]
 }
 ```
 
-#### Generate Corporate Paragraphs
+#### Generate Multiple Word Types
 ```bash
-curl "https://www.russ.tools/buzzword-ipsum/?api&output=paragraphs&quantity=2&length=long"
+curl "https://buzzwords.russ.tools/words?count=5"
 ```
 
 ### 🧑‍💻 Integration Examples
