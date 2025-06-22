@@ -10,7 +10,8 @@
       "Bash(npx eslint:*)",
       "WebFetch(domain:www.freecodecamp.org)",
       "Bash(rm:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm run generate:sitemap:*)"
     ],
     "deny": []
   }

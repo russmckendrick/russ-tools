@@ -13,6 +13,9 @@ dist-ssr
 *.local
 package-lock.json
 
+# Generated files
+public/sitemap.xml
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
