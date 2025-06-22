@@ -13,6 +13,9 @@ dist-ssr
 *.local
 package-lock.json
 
+# AI
+.claude
+
 # Generated files
 public/sitemap.xml
 

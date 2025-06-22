@@ -1,0 +1,35 @@
+---
+description: Tool architecture patterns and component structure
+globs: ["src/components/tools/**/*.jsx"]
+alwaysApply: false
+---
+
+# Tool Architecture Pattern
+
+Each tool follows this consistent structure:
+
+```
+src/components/tools/[tool-name]/
+├── [ToolName]Tool.jsx          # Main component
+├── components/                 # Sub-components for complex tools
+├── hooks/                     # Custom hooks (useToolName.js)
+├── utils/                     # Tool-specific utilities
+└── context/                   # React context (when needed)
+```
+
+## State Management
+- **localStorage** - Persistent storage for user preferences and tool state
+- **React Context** - Complex state sharing within tools
+- **Custom Hooks** - Encapsulated tool-specific state logic
+
+## UI Guidelines
+- Use Mantine components for consistency
+- Implement proper error handling and loading states
+- Persist tool state to localStorage for better UX
+
+## Tool Categories
+- Network Tools: Network Designer, DNS Lookup, WHOIS Lookup
+- Azure Tools: KQL Query Builder, Resource Naming Tool
+- Microsoft Tools: Portals (GDAP), Tenant Lookup
+- Developer Tools: CRON Builder, Data Converter, Base64 Encoder/Decoder
+- Security Tools: SSL Checker, JWT Decoder/Validator, Password Generator

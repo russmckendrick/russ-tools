@@ -1,0 +1,38 @@
+---
+description: Guidelines for adding new tools to the application
+globs: ["src/utils/toolsConfig.json"]
+alwaysApply: false
+---
+
+# Adding New Tools
+
+## Process Checklist
+1. Create tool directory in `src/components/tools/[tool-name]/`
+2. Add tool configuration to `src/utils/toolsConfig.json`
+3. Implement main component following existing patterns
+4. Add routing configuration
+5. Update navigation if needed
+
+## toolsConfig.json Structure
+Each tool must include:
+- `id` - Unique tool identifier
+- `title` - Display name
+- `description` - Detailed tool description
+- `shortDescription` - Brief summary
+- `icon` - Icon component name
+- `iconColor` - Theme color
+- `badges` - Feature highlights array
+- `path` - Route path
+- `seoTitle` - SEO page title
+- `seoKeywords` - Keywords array
+- `category` - Tool category
+- `features` - Key features array
+
+## Dependencies
+Always check existing usage before adding new dependencies:
+- netmask - IPv4 subnet calculations
+- js-yaml, @ltd/j-toml - Data format parsing
+- jose, jwt-decode - JWT processing
+- prismjs - Syntax highlighting
+- @dnd-kit - Drag and drop
+- ajv - JSON schema validation

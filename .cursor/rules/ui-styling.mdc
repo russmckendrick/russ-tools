@@ -1,0 +1,98 @@
+---
+description: UI styling guidelines and Mantine patterns based on project style guide
+globs: ["**/*.jsx"]
+alwaysApply: false
+---
+
+# UI Styling Guidelines
+
+## Essential Patterns
+- **Main Container**: `<Paper withBorder p="xl" radius="lg">`
+- **Icon Size**: `size={48}` for tool headers, `size={18}` for tab icons
+- **Color Prop**: Use `c="dimmed"` (NOT `color="dimmed"`)
+- **SEO**: Include `<SEOHead {...seoData} />` in every tool
+
+## Layout Structure
+
+### Main Container
+```jsx
+<Paper withBorder p="xl" radius="lg">
+  {/* Tool content */}
+</Paper>
+```
+
+### Header Section
+```jsx
+<Stack gap="xl">
+  <Group gap="md">
+    <ThemeIcon size={48} radius="md" variant="light" color="toolColor">
+      <ToolIcon />
+    </ThemeIcon>
+    <div>
+      <Title order={2} fw={600}>Tool Name</Title>
+      <Text size="sm" c="dimmed">Description</Text>
+      <Badge variant="light" size="sm" mt="xs">Optional Info</Badge>
+    </div>
+  </Group>
+</Stack>
+```
+
+## Dark Mode Support
+
+### Required Import
+```jsx
+import { useMantineColorScheme } from '@mantine/core';
+
+const { colorScheme } = useMantineColorScheme();
+```
+
+### Background Colors
+```jsx
+// Conditional backgrounds
+backgroundColor: colorScheme === 'dark' 
+  ? 'var(--mantine-color-dark-6)' 
+  : 'var(--mantine-color-gray-0)'
+```
+
+### Common Patterns
+- Light `gray-0` → Dark `dark-6`
+- Cards `gray-1` → Dark `dark-7`
+- Subtle `gray-2` → Dark `dark-8`
+
+## Tool-Specific Colors
+- Azure Naming: `cyan`
+- Base64: `teal`
+- Cron: `orange`
+- Data Converter: `yellow`
+- DNS Lookup: `indigo`
+- JWT: `red`
+- Microsoft Portals: `indigo`
+- Network Designer: `blue`
+- Password Generator: `violet`
+- SSL Checker: `green`
+- WHOIS: `violet`
+
+## Tabs Pattern
+```jsx
+<Tabs defaultValue="tab1">
+  <Tabs.List mb="lg">
+    <Tabs.Tab value="tab1" leftSection={<IconName size={18} />}>
+      Tab Name
+    </Tabs.Tab>
+  </Tabs.List>
+  <Tabs.Panel value="tab1" pt="lg">
+    {/* Content */}
+  </Tabs.Panel>
+</Tabs>
+```
+
+## Spacing
+- Main sections: `gap="xl"`
+- Card content: `gap="lg"`
+- Form elements: `gap="md"`
+- Small elements: `gap="sm"` or `gap="xs"`
+
+## Cards and Components
+- Cards: `<Card withBorder p="lg" radius="md">`
+- Responsive grid: `span={{ base: 12, md: 6 }}`
+- Status colors: Success=`green`, Error=`red`, Warning=`yellow`

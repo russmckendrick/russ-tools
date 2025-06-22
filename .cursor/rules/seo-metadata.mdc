@@ -1,0 +1,39 @@
+---
+description: SEO metadata requirements and patterns
+globs: ["src/utils/toolsConfig.json", "src/components/common/SEO*.jsx"]
+alwaysApply: false
+---
+
+# SEO & Metadata Requirements
+
+## Required Fields in toolsConfig.json
+Every tool must include comprehensive SEO metadata:
+
+```json
+{
+  "seoTitle": "Tool Name - Descriptive Title",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3"],
+  "description": "Detailed tool description for meta description",
+  "shortDescription": "Brief tool summary",
+  "features": ["Feature 1", "Feature 2", "Feature 3"],
+  "category": "Tool Category",
+  "badges": ["Badge1", "Badge2", "Badge3"]
+}
+```
+
+## SEO Best Practices
+- seoTitle should be unique and descriptive (50-60 characters)
+- seoKeywords should include relevant search terms
+- description should be compelling and informative (150-160 characters)
+- features should highlight key capabilities
+- category should match existing categories
+
+## Existing Categories
+- Network Tools
+- Azure Tools  
+- Microsoft Tools
+- Developer Tools
+- Security Tools
+
+## Schema.org Implementation
+The application uses structured data for search engines with React 19 native metadata support.

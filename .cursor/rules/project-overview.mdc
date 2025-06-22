@@ -1,0 +1,34 @@
+---
+description: Core project architecture and technology stack
+alwaysApply: true
+---
+
+# russ-tools Project Overview
+
+This is a React 19 SPA built with Vite providing network and cloud professional tools.
+
+## Core Stack
+- React 19 with modern hooks and native metadata support
+- Vite for build tooling with optimized chunking
+- Mantine UI framework for consistent design
+- React Router DOM for client-side routing
+- JavaScript/JSX (NOT TypeScript)
+
+## File Conventions
+- Component files: `.jsx` extension
+- Utility files: `.js` extension
+- PascalCase for components, camelCase for utilities
+- NO COMMENTS unless explicitly requested
+
+## Development Commands
+- `npm run dev` - Start development server
+- `npm run build` - Build for production (includes sitemap generation)
+- `npm run lint` - Run ESLint code linting
+- `npm run preview` - Preview production build
+
+## Critical Rules
+- Use functional components with hooks only
+- NEVER create files unless absolutely necessary
+- ALWAYS edit existing files instead of creating new ones
+- NEVER create documentation files unless explicitly requested
+- Follow existing patterns exactly

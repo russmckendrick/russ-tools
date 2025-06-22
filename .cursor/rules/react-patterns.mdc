@@ -1,0 +1,47 @@
+---
+description: React coding patterns and conventions specific to this project
+globs: ["**/*.jsx"]
+alwaysApply: false
+---
+
+# React Patterns & Conventions
+
+## Component Structure
+- Use functional components with hooks only
+- Follow existing patterns in the codebase
+- Use Mantine components for UI consistency
+- Implement proper error handling and loading states
+
+## State Management Patterns
+```jsx
+// Use custom hooks for tool-specific logic
+const useToolName = () => {
+  const [state, setState] = useState(() => {
+    // Load from localStorage
+    const saved = localStorage.getItem('toolName-state');
+    return saved ? JSON.parse(saved) : defaultState;
+  });
+
+  useEffect(() => {
+    // Persist to localStorage
+    localStorage.setItem('toolName-state', JSON.stringify(state));
+  }, [state]);
+
+  return { state, setState };
+};
+```
+
+## Error Handling
+- Always implement loading and error states
+- Use try-catch blocks for async operations
+- Provide meaningful error messages to users
+
+## Performance
+- Use useMemo and useCallback appropriately
+- Implement lazy loading for large dependencies
+- Persist state to localStorage for better UX
+
+## Security
+- All sensitive processing happens client-side
+- Never send tokens or credentials to external services
+- Use secure random generation where needed

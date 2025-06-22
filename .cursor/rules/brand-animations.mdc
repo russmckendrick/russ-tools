@@ -1,0 +1,62 @@
+---
+description: Brand consistency and animation patterns
+globs: ["src/components/layout/**/*.jsx", "src/components/common/**/*.jsx"]
+alwaysApply: false
+---
+
+# Brand & Animation Guidelines
+
+## Brand Consistency
+
+### RussTools Title Gradient
+```jsx
+// Apply to home page title and navigation header
+<Title 
+  fw={700}
+  style={{
+    background: 'linear-gradient(45deg, var(--mantine-color-blue-6), var(--mantine-color-cyan-5))',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text'
+  }}
+>
+  RussTools
+</Title>
+```
+
+### Home Page Typography
+- Main title: `size="3rem"` with gradient effect
+- Description: `size="xl"` with `lh={1.5}`
+- Tool descriptions: Use `shortDescription` for brevity
+
+## Animations
+
+### Tool Cards (Home Page)
+```css
+.tool-card {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tool-card:hover {
+  transform: translateY(-2px);
+  /* Enhanced box shadows with theme awareness */
+}
+```
+
+### Interactive Elements
+- Standard transitions: `0.15s ease` for buttons/links
+- Micro-interactions: `transform: translateX(2px)`
+- Respect `prefers-reduced-motion` setting
+
+### Navigation
+```css
+/* Header glassmorphism effect */
+backdrop-filter: blur(8px);
+/* Semi-transparent background */
+```
+
+## Accessibility
+- Icons: Always include meaningful `title` attributes
+- Color contrast: Test both light and dark themes
+- Keyboard navigation: Ensure all interactive elements are accessible
+- Screen readers: Use semantic HTML structure
