@@ -228,50 +228,69 @@ curl "https://buzzwords.russ.tools/words?count=5"
 
 #### JavaScript/Fetch
 ```javascript
-async function generateBuzzwords(output = 'paragraphs', quantity = 5, length = 'medium') {
-  const url = `https://www.russ.tools/buzzword-ipsum/?api&output=${output}&quantity=${quantity}&length=${length}`;
+async function generateBuzzwords(type = 'phrase', count = 5) {
+  const url = `https://buzzwords.russ.tools/generate?type=${type}&count=${count}`;
   const response = await fetch(url);
   const data = await response.json();
-  return data.data.content;
+  return data.data;
+}
+
+async function getBuzzwordsByCategory(type = 'adjectives', count = 10) {
+  const url = `https://buzzwords.russ.tools/words?type=${type}&count=${count}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data[type];
 }
 
 // Usage
-const buzzwords = await generateBuzzwords('sentences', 10, 'short');
-console.log(buzzwords);
+const phrases = await generateBuzzwords('phrase', 10);
+const adjectives = await getBuzzwordsByCategory('adjectives', 20);
+console.log(phrases, adjectives);
 ```
 
 #### Python/Requests
 ```python
 import requests
 
-def generate_buzzwords(output='paragraphs', quantity=5, length='medium'):
-    url = f"https://www.russ.tools/buzzword-ipsum/"
-    params = {
-        'api': '',
-        'output': output,
-        'quantity': quantity,
-        'length': length
-    }
+def generate_buzzwords(buzz_type='phrase', count=5):
+    url = "https://buzzwords.russ.tools/generate"
+    params = {'type': buzz_type, 'count': count}
     response = requests.get(url, params=params)
-    return response.json()['data']['content']
+    return response.json()['data']
+
+def get_buzzwords_by_category(category='adjectives', count=10):
+    url = "https://buzzwords.russ.tools/words"
+    params = {'type': category, 'count': count}
+    response = requests.get(url, params=params)
+    return response.json()[category]
 
 # Usage
-buzzwords = generate_buzzwords('sentences', 10, 'short')
-print(buzzwords)
+phrases = generate_buzzwords('phrase', 10)
+adjectives = get_buzzwords_by_category('adjectives', 20)
+print(phrases, adjectives)
 ```
 
 #### PHP/cURL
 ```php
-function generateBuzzwords($output = 'paragraphs', $quantity = 5, $length = 'medium') {
-    $url = "https://www.russ.tools/buzzword-ipsum/?api&output={$output}&quantity={$quantity}&length={$length}";
+function generateBuzzwords($type = 'phrase', $count = 5) {
+    $url = "https://buzzwords.russ.tools/generate?type={$type}&count={$count}";
     $response = file_get_contents($url);
     $data = json_decode($response, true);
-    return $data['data']['content'];
+    return $data['data'];
+}
+
+function getBuzzwordsByCategory($category = 'adjectives', $count = 10) {
+    $url = "https://buzzwords.russ.tools/words?type={$category}&count={$count}";
+    $response = file_get_contents($url);
+    $data = json_decode($response, true);
+    return $data[$category];
 }
 
 // Usage
-$buzzwords = generateBuzzwords('sentences', 10, 'short');
-print_r($buzzwords);
+$phrases = generateBuzzwords('phrase', 10);
+$adjectives = getBuzzwordsByCategory('adjectives', 20);
+print_r($phrases);
+print_r($adjectives);
 ```
 
 ### ⚡ Rate Limiting & Best Practices
