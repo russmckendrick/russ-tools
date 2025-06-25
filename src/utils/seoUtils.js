@@ -9,7 +9,9 @@
  */
 export function generateToolSEO(tool) {
   const baseUrl = 'https://russ.tools';
-  const toolUrl = `${baseUrl}${tool.path}`;
+  // Normalize path to remove trailing slash for consistent canonical URLs
+  const normalizedPath = tool.path.endsWith('/') ? tool.path.slice(0, -1) : tool.path;
+  const toolUrl = `${baseUrl}${normalizedPath}`;
   
   // Use enhanced SEO title if available, fallback to standard format
   const seoTitle = tool.seoTitle || `${tool.title} - Free Online Tool | RussTools`;
@@ -147,8 +149,10 @@ export function generateSitemapData(tools) {
   // Add tool pages
   tools.forEach(tool => {
     if (tool.path.startsWith('/')) {
+      // Normalize path to remove trailing slash for consistent sitemap URLs
+      const normalizedPath = tool.path.endsWith('/') ? tool.path.slice(0, -1) : tool.path;
       sitemapEntries.push({
-        url: `${baseUrl}${tool.path}`,
+        url: `${baseUrl}${normalizedPath}`,
         lastmod: currentDate,
         changefreq: 'monthly',
         priority: '0.8'
