@@ -116,9 +116,15 @@ export function NewHomeView() {
                 const networks = JSON.parse(localStorage.getItem('networks') || '[]')
                 const selectedId = JSON.parse(localStorage.getItem('selectedNetworkId') || 'null')
                 if (!Array.isArray(networks) || networks.length === 0) return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div>
+                const azureNaming = (() => {
+                  try { return JSON.parse(localStorage.getItem('azure-naming-history') || '[]') } catch { return [] }
+                })()
+                const dataConv = (() => {
+                  try { return JSON.parse(localStorage.getItem('dataConverter_history') || '[]') } catch { return [] }
+                })()
                 return (
                   <ul className="divide-y">
-                    {networks.slice(0,6).map((n) => (
+                    {networks.slice(0,4).map((n) => (
                       <li key={n.id} className="px-3 py-1.5">
                         <Link to="/network-designer" className="flex items-center justify-between">
                           <div className="min-w-0">
@@ -128,6 +134,28 @@ export function NewHomeView() {
                             <div className="text-xs text-muted-foreground truncate">
                               {n?.parentNetwork ? `${n.parentNetwork.ip}/${n.parentNetwork.cidr}` : ''}
                             </div>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        </Link>
+                      </li>
+                    ))}
+                    {azureNaming.slice(0,2).map((h, i) => (
+                      <li key={`azn-${i}`} className="px-3 py-1.5">
+                        <Link to="/azure-naming" className="flex items-center justify-between">
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">Azure Naming</div>
+                            <div className="text-xs text-muted-foreground truncate">{h?.result || h?.name || 'Previous session'}</div>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        </Link>
+                      </li>
+                    ))}
+                    {dataConv.slice(0,2).map((h, i) => (
+                      <li key={`dc-${i}`} className="px-3 py-1.5">
+                        <Link to="/data-converter" className="flex items-center justify-between">
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">Data Converter</div>
+                            <div className="text-xs text-muted-foreground truncate">{h?.from || ''} → {h?.to || ''}</div>
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         </Link>
