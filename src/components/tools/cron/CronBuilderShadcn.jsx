@@ -288,12 +288,12 @@ const CronFieldSelector = ({ field, value, onChange }) => {
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-w-[400px]">
               {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <div className="flex flex-col">
-                    <span>{option.label}</span>
-                    <span className="text-xs text-muted-foreground">{option.description}</span>
+                <SelectItem key={option.value} value={option.value} className="py-3">
+                  <div className="flex flex-col space-y-1 min-w-0">
+                    <span className="font-medium truncate">{option.label}</span>
+                    <span className="text-xs text-muted-foreground whitespace-normal leading-tight">{option.description}</span>
                   </div>
                 </SelectItem>
               ))}
