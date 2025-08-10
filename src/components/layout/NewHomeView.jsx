@@ -11,8 +11,11 @@ import {
   Zap,
   Globe,
   Lock,
-  FileCode2
+  FileCode2,
+  Copy
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 const toolCategories = [
   {
@@ -76,46 +79,6 @@ const stats = [
 export function NewHomeView() {
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="pt-2 lg:pt-4">
-        <h1 className="text-3xl font-semibold tracking-tight">RussTools</h1>
-        <p className="text-muted-foreground mt-1">
-          Practical tools for networks, cloud and dev workflows.
-        </p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        {stats.map((stat) => (
-          <Card key={stat.label} className="text-center border-muted/70">
-            <CardContent className="py-4 md:pt-6">
-              <div className="flex items-center justify-center mb-2">
-                <stat.icon className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Tools grid (simple) */}
-      <div>
-        <h2 className="text-xl font-semibold mb-3">Tools</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {toolCategories.flatMap((c) => c.tools.map((t) => ({...t, category: c.title}))).map((tool) => (
-            <Link key={tool.path} to={tool.path} className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium text-sm">{tool.name}</div>
-                  <div className="text-xs text-muted-foreground">{tool.description}</div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
 
       {/* Recent activity */}
       <div>
@@ -183,7 +146,7 @@ export function NewHomeView() {
                     <li key={idx} className="px-3 py-2 hover:bg-muted/50 transition-colors">
                       <Link to={it.to} className="flex items-center justify-between">
                         <div>
-                          <div className="text-sm font-medium truncate max-w-[28rem]">{it.label}</div>
+                          <div className="text-sm font-medium truncate max-w-[26rem]">{it.label}</div>
                           <div className="text-xs text-muted-foreground">{it.meta}</div>
                         </div>
                         <ArrowRight className="h-4 w-4 text-muted-foreground" />
@@ -194,6 +157,107 @@ export function NewHomeView() {
               </CardContent></Card>
             )
           })()}
+        </div>
+      </div>
+
+      {/* Saved networks + quick generate sections */}
+      <div className="grid gap-3 lg:grid-cols-3">
+        {/* Saved Networks */}
+        <Card className="border-muted/70">
+          <CardHeader>
+            <CardTitle className="text-base">Saved networks</CardTitle>
+            <CardDescription>From Network Designer</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            {(() => {
+              try {
+                const keys = Object.keys(localStorage).filter(k => k.startsWith('network-designer-'))
+                if (keys.length === 0) return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div>
+                const items = keys.slice(0,6).map(k => {
+                  try { return JSON.parse(localStorage.getItem(k) || '{}') } catch { return {} }
+                })
+                return (
+                  <ul className="divide-y">
+                    {items.map((n, i) => (
+                      <li key={i} className="px-3 py-2">
+                        <Link to="/network-designer" className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-medium">{n?.name || 'Saved network'}</div>
+                            <div className="text-xs text-muted-foreground">{n?.parentNetwork ? `${n.parentNetwork.ip}/${n.parentNetwork.cidr}` : ''}</div>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              } catch { return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div> }
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* Random Passwords */}
+        <Card className="border-muted/70">
+          <CardHeader>
+            <CardTitle className="text-base">Random passwords</CardTitle>
+            <CardDescription>Quick copy, or open generator</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <ul className="divide-y">
+              {Array.from({length:5}).map((_,i) => {
+                const pwd = Math.random().toString(36).slice(2) + Math.random().toString(36).toUpperCase().slice(2,6) + "!";
+                return (
+                  <li key={i} className="px-3 py-2 flex items-center justify-between">
+                    <span className="font-mono text-sm truncate mr-2">{pwd}</span>
+                    <div className="flex items-center gap-2">
+                      <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(pwd); toast.success('Copied password') }}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Link to="/password-generator" className="text-xs text-muted-foreground hover:underline">Open</Link>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* Buzzword Ipsum */}
+        <Card className="border-muted/70">
+          <CardHeader>
+            <CardTitle className="text-base">Buzzword ipsum</CardTitle>
+            <CardDescription>Quick sentences</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <ul className="divide-y">
+              {Array.from({length:5}).map((_,i) => {
+                const phrase = `Leverage ${['synergies','innovation','scalability','alignment','efficiencies'][i%5]} to drive ${['outcomes','value','growth','impact','excellence'][Math.floor(Math.random()*5)]}.`;
+                return (
+                  <li key={i} className="px-3 py-2 flex items-center justify-between">
+                    <span className="text-sm truncate mr-2">{phrase}</span>
+                    <div className="flex items-center gap-2">
+                      <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(phrase); toast.success('Copied sentence') }}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Link to="/buzzword-ipsum" className="text-xs text-muted-foreground hover:underline">Open</Link>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick links to tools (compact, bottom) */}
+      <div>
+        <h2 className="text-sm font-medium mb-2 text-muted-foreground">Tools</h2>
+        <div className="flex flex-wrap gap-2">
+          {toolCategories.flatMap((c) => c.tools).map((tool) => (
+            <Button key={tool.path} size="sm" variant="outline" asChild>
+              <Link to={tool.path}>{tool.name}</Link>
+            </Button>
+          ))}
         </div>
       </div>
 
