@@ -6,6 +6,7 @@ import { Layout } from './components/layout/Layout';
 import { NewLayout } from './components/layout/NewLayout';
 import { ThemeProvider } from './components/theme-provider';
 import { AzureNamingProvider } from './components/tools/azure-naming/context/AzureNamingContext';
+import { AzureNamingProviderShadcn } from './components/tools/azure-naming/context/AzureNamingContextShadcn';
 import HomeView from './components/layout/HomeView';
 import { NewHomeView } from './components/layout/NewHomeView';
 import ClearAllStorage from './components/common/ClearAllStorage';
@@ -68,7 +69,7 @@ const NetworkDesignerTool = lazy(() =>
   }))
 );
 const AzureNamingTool = lazy(() => 
-  import('./components/tools/azure-naming/AzureNamingTool').catch(() => ({
+  import('./components/tools/azure-naming/AzureNamingShadcn').catch(() => ({
     default: () => <div>Error loading Azure Naming Tool</div>
   }))
 );
@@ -186,7 +187,7 @@ export default function App() {
         }}
       >
         <Notifications />
-        <AzureNamingProvider>
+        <AzureNamingProviderShadcn>
           <BrowserRouter>
           <Routes>
             <Route path="/" element={<NewLayout />}>
@@ -345,7 +346,7 @@ export default function App() {
           </Route>
         </Routes>
         </BrowserRouter>
-      </AzureNamingProvider>
+      </AzureNamingProviderShadcn>
     </MantineProvider>
     </ThemeProvider>
   );
