@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { 
   Network, 
   Settings, 
@@ -70,9 +71,10 @@ const toolCategories = [
   }
 ]
 
-export function Sidebar({ onClose }) {
+export function Sidebar({ onClose, collapsed = false }) {
   const location = useLocation()
   const [expandedCategories, setExpandedCategories] = useState(new Set(['Network Tools']))
+  const [hoveredCategory, setHoveredCategory] = useState(null)
 
   const toggleCategory = (categoryName) => {
     const newExpanded = new Set(expandedCategories)
@@ -94,7 +96,7 @@ export function Sidebar({ onClose }) {
   }
 
   return (
-    <div className="flex flex-col h-screen w-64">
+    <div className={cn("flex flex-col h-screen", collapsed ? "w-16" : "w-64") }>
       {/* Mobile close button */}
       {onClose && (
         <div className="flex justify-between items-center p-4 border-b lg:hidden">
@@ -106,112 +108,146 @@ export function Sidebar({ onClose }) {
       )}
       
       <div className="flex-1 space-y-4 py-4">
-        <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight lg:block hidden">
-            RussTools
-          </h2>
+        <div className={cn("px-3 py-2", collapsed && "px-2")}>
+          {!collapsed && (
+            <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight lg:block hidden">
+              RussTools
+            </h2>
+          )}
           <div className="space-y-1">
-            {toolCategories.map((category) => (
-              <div key={category.name}>
-                {category.items.length === 0 ? (
-                  // Single item categories (like Dashboard)
-                  <Button
-                    variant={isCategoryActive(category) ? "secondary" : "ghost"}
-                    className={cn(
-                      "w-full justify-start",
-                      isCategoryActive(category) && "bg-muted font-medium"
-                    )}
-                    asChild
-                  >
-                    <Link to={category.path} onClick={() => onClose && onClose()}>
-                      <category.icon className="mr-2 h-4 w-4" />
-                      {category.name}
-                    </Link>
-                  </Button>
-                ) : (
-                  // Categories with sub-items
-                  <>
+            <TooltipProvider>
+              {toolCategories.map((category) => (
+                <div key={category.name} className={cn("relative", collapsed && "group")}
+                  onMouseEnter={() => collapsed && setHoveredCategory(category.name)}
+                  onMouseLeave={() => collapsed && setHoveredCategory(null)}
+                >
+                  {category.items.length === 0 ? (
                     <Button
-                      variant="ghost"
+                      variant={isCategoryActive(category) ? "secondary" : "ghost"}
                       className={cn(
-                        "w-full justify-between",
-                        isCategoryActive(category) && "bg-muted/50"
+                        "w-full justify-start",
+                        isCategoryActive(category) && "bg-muted font-medium",
+                        collapsed && "justify-center"
                       )}
-                      onClick={() => toggleCategory(category.name)}
+                      asChild
                     >
-                      <div className="flex items-center">
-                        <category.icon className="mr-2 h-4 w-4" />
-                        {category.name}
-                      </div>
-                      {expandedCategories.has(category.name) ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
+                      <Link to={category.path} onClick={() => onClose && onClose()}>
+                        <div className={cn("flex items-center", collapsed && "justify-center")}> 
+                          <category.icon className={cn("h-4 w-4", !collapsed && "mr-2")} />
+                          {!collapsed && category.name}
+                        </div>
+                      </Link>
                     </Button>
-                    {expandedCategories.has(category.name) && (
-                      <div className="ml-6 space-y-1">
-                        {category.items.map((item) => (
+                  ) : (
+                    <>
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
                           <Button
-                            key={item.path}
-                            variant={isActiveItem(item.path) ? "secondary" : "ghost"}
+                            variant="ghost"
                             className={cn(
-                              "w-full justify-start text-sm font-normal",
-                              isActiveItem(item.path) && "bg-muted font-medium"
+                              "w-full justify-between",
+                              isCategoryActive(category) && "bg-muted/50",
+                              collapsed && "justify-center"
                             )}
-                            asChild
+                            onClick={() => !collapsed && toggleCategory(category.name)}
                           >
-                            <Link to={item.path} onClick={() => onClose && onClose()}>
-                              {item.name}
-                            </Link>
+                            <div className={cn("flex items-center", collapsed && "justify-center")}> 
+                              <category.icon className={cn("h-4 w-4", !collapsed && "mr-2")} />
+                              {!collapsed && category.name}
+                            </div>
+                            {!collapsed && (
+                              expandedCategories.has(category.name) ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )
+                            )}
                           </Button>
-                        ))}
-                      </div>
-                    )}
-                  </>
+                        </TooltipTrigger>
+                        {collapsed && (
+                          <TooltipContent side="right">{category.name}</TooltipContent>
+                        )}
+                      </Tooltip>
+                      {collapsed && hoveredCategory === category.name && (
+                        <div className="absolute left-full top-0 z-50 ml-2 w-56 rounded-md border bg-background p-2 shadow-lg">
+                          {category.items.map((item) => (
+                            <Button
+                              key={item.path}
+                              variant={isActiveItem(item.path) ? "secondary" : "ghost"}
+                              className={cn(
+                                "w-full justify-start text-sm",
+                                isActiveItem(item.path) && "bg-muted font-medium"
+                              )}
+                              asChild
+                            >
+                              <Link to={item.path} onClick={() => onClose && onClose()}>
+                                {item.name}
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                      {!collapsed && expandedCategories.has(category.name) && (
+                        <div className="ml-6 space-y-1">
+                          {category.items.map((item) => (
+                            <Button
+                              key={item.path}
+                              variant={isActiveItem(item.path) ? "secondary" : "ghost"}
+                              className={cn(
+                                "w-full justify-start text-sm font-normal",
+                                isActiveItem(item.path) && "bg-muted font-medium"
+                              )}
+                              asChild
+                            >
+                              <Link to={item.path} onClick={() => onClose && onClose()}>
+                                {item.name}
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ))}
+              {/* Demo link - temporary */}
+              <Button
+                variant={location.pathname === "/ui-demo" ? "secondary" : "ghost"}
+                className={cn(
+                  "w-full justify-start",
+                  location.pathname === "/ui-demo" && "bg-muted font-medium",
+                  collapsed && "justify-center"
                 )}
-              </div>
-            ))}
-            
-            {/* Demo link - temporary */}
-            <Button
-              variant={location.pathname === "/ui-demo" ? "secondary" : "ghost"}
-              className={cn(
-                "w-full justify-start",
-                location.pathname === "/ui-demo" && "bg-muted font-medium"
-              )}
-              asChild
-            >
-              <Link to="/ui-demo" onClick={() => onClose && onClose()}>
-                <FileText className="mr-2 h-4 w-4" />
-                UI Demo
-              </Link>
-            </Button>
+                asChild
+              >
+                <Link to="/ui-demo" onClick={() => onClose && onClose()}>
+                  <FileText className={cn("h-4 w-4", !collapsed && "mr-2")} />
+                  {!collapsed && 'UI Demo'}
+                </Link>
+              </Button>
+            </TooltipProvider>
           </div>
         </div>
       </div>
       
       {/* Bottom section with GitHub and Theme Toggle */}
-      <div className="border-t p-4 space-y-2">
-        <Button
-          variant="ghost"
-          className="w-full justify-start"
-          asChild
-        >
+      <div className={cn("border-t p-4 space-y-2", collapsed && "p-2") }>
+        <Button variant="ghost" className={cn("w-full justify-start", collapsed && "justify-center")} asChild>
           <a 
             href="https://github.com/russmckendrick/russ-tools" 
             target="_blank" 
             rel="noopener noreferrer"
           >
-            <Github className="mr-2 h-4 w-4" />
-            GitHub
+            <Github className={cn("h-4 w-4", !collapsed && "mr-2")} />
+            {!collapsed && 'GitHub'}
           </a>
         </Button>
-        
-        <div className="flex items-center justify-between px-2">
-          <span className="text-sm text-muted-foreground">Theme</span>
-          <ThemeToggle />
-        </div>
+        {!collapsed && (
+          <div className="flex items-center justify-between px-2">
+            <span className="text-sm text-muted-foreground">Theme</span>
+            <ThemeToggle />
+          </div>
+        )}
       </div>
     </div>
   )
