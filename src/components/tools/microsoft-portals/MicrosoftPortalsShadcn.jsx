@@ -2,18 +2,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -21,35 +9,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { toast } from 'sonner';
 import { 
-  Search,
-  Copy,
-  ExternalLink,
-  AlertCircle,
-  Filter,
-  X,
-  Star,
-  Trash2,
   Building,
-  RefreshCw,
-  Bookmark,
-  History,
   Grid3X3,
   List
 } from 'lucide-react';
 import { getTenantId, isValidDomain, extractDomain } from './TenantLookup';
 import { generateAllPortalLinks } from './PortalLinkGenerator';
+import TenantSearchCard from './components/TenantSearchCard';
+import PortalFilters from './components/PortalFilters';
+import PortalCard from './components/PortalCard';
+import PortalTable from './components/PortalTable';
+import EmptyState from './components/EmptyState';
 import SEOHead from '../../common/SEOHead';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
@@ -352,14 +325,22 @@ const MicrosoftPortalsShadcn = () => {
     });
   };
 
-  // Copy portal URL to clipboard
-  const copyPortalUrl = async (url, name) => {
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success(`${name} URL copied to clipboard`);
-    } catch (err) {
-      toast.error('Failed to copy URL');
-    }
+  // Handle search button click
+  const handleSearchClick = (domainOverride) => {
+    setManualSearchTriggered(true);
+    handleDomainLookup(domainOverride);
+  };
+
+  // Clear history
+  const clearHistory = () => {
+    setLookupHistory([]);
+    toast.success('History cleared');
+  };
+
+  // Handle remove domain from history
+  const handleRemoveDomain = (domain) => {
+    setDomainToRemove(domain);
+    setRemoveModalOpen(true);
   };
 
   return (
@@ -381,142 +362,17 @@ const MicrosoftPortalsShadcn = () => {
         </div>
 
         {/* Search Section */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Tenant Lookup & Portal Access</CardTitle>
-            <CardDescription>
-              Enter a domain name or email address to find the tenant and generate portal links
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Input
-                    placeholder="Enter domain (e.g., contoso.com) or email address..."
-                    value={searchInput}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    className="text-sm"
-                  />
-                </div>
-                <Button
-                  onClick={() => {
-                    setManualSearchTriggered(true);
-                    handleDomainLookup();
-                  }}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Search className="h-4 w-4 mr-2" />
-                  )}
-                  Search
-                </Button>
-              </div>
-
-              {/* Recent Searches */}
-              {lookupHistory.length > 0 && (
-                <div className="border rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <Label className="text-sm font-medium">Recent Searches</Label>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setLookupHistory([])}
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      Clear
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {lookupHistory.slice(0, 5).map((item, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs"
-                        onClick={() => {
-                          setSearchInput(item.domain);
-                          handleDomainLookup(item.domain);
-                        }}
-                      >
-                        <History className="h-3 w-3 mr-1" />
-                        {item.domain}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0 ml-2 hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDomainToRemove(item.domain);
-                            setRemoveModalOpen(true);
-                          }}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Error Display */}
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {/* Tenant Info */}
-              {tenantInfo && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Tenant Information</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium">Domain</Label>
-                        <p className="text-sm text-muted-foreground">{tenantInfo.domain}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Tenant ID</Label>
-                        <div className="flex items-center gap-2">
-                          <code className="text-xs bg-muted p-1 rounded">
-                            {tenantInfo.tenantId}
-                          </code>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => copyPortalUrl(tenantInfo.tenantId, 'Tenant ID')}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      {tenantInfo.displayName && (
-                        <div>
-                          <Label className="text-sm font-medium">Display Name</Label>
-                          <p className="text-sm text-muted-foreground">{tenantInfo.displayName}</p>
-                        </div>
-                      )}
-                      {tenantInfo.method && (
-                        <div>
-                          <Label className="text-sm font-medium">Lookup Method</Label>
-                          <Badge variant="secondary" className="text-xs">
-                            {tenantInfo.method}
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <TenantSearchCard 
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          loading={loading}
+          error={error}
+          tenantInfo={tenantInfo}
+          lookupHistory={lookupHistory}
+          onSearch={handleSearchClick}
+          onClearHistory={clearHistory}
+          onRemoveDomain={handleRemoveDomain}
+        />
 
         {/* Portal Links Section */}
         {portalLinks && (
@@ -550,195 +406,35 @@ const MicrosoftPortalsShadcn = () => {
             </CardHeader>
             <CardContent>
               {/* Filters */}
-              <div className="mb-6 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="category-filter">Category</Label>
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger id="category-filter">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories ({allPortals.length})</SelectItem>
-                        <SelectItem value="favorites">Favorites ({favorites.length})</SelectItem>
-                        <Separator />
-                        {Object.entries(categoryCounts).map(([category, count]) => (
-                          <SelectItem key={category} value={category.toLowerCase()}>
-                            {category} ({count})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {allTags.length > 0 && (
-                    <div className="flex-1">
-                      <Label htmlFor="tag-filter">Filter by Tag</Label>
-                      <Select value={selectedTag || ''} onValueChange={(value) => setSelectedTag(value || null)}>
-                        <SelectTrigger id="tag-filter">
-                          <SelectValue placeholder="All Tags" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">All Tags</SelectItem>
-                          {allTags.map(tag => (
-                            <SelectItem key={tag} value={tag.toLowerCase()}>
-                              {tag}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-
-                {(selectedCategory !== 'all' || selectedTag) && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Active filters:</span>
-                    {selectedCategory !== 'all' && (
-                      <Badge variant="secondary" className="cursor-pointer" onClick={() => setSelectedCategory('all')}>
-                        {selectedCategory} <X className="h-3 w-3 ml-1" />
-                      </Badge>
-                    )}
-                    {selectedTag && (
-                      <Badge variant="secondary" className="cursor-pointer" onClick={() => setSelectedTag(null)}>
-                        {selectedTag} <X className="h-3 w-3 ml-1" />
-                      </Badge>
-                    )}
-                  </div>
-                )}
-              </div>
+              <PortalFilters 
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                selectedTag={selectedTag}
+                setSelectedTag={setSelectedTag}
+                categoryCounts={categoryCounts}
+                allTags={allTags}
+                allPortals={allPortals}
+                favorites={favorites}
+              />
 
               {/* Portal Grid/List */}
-              {viewMode === 'grid' ? (
+              {filteredPortals.length === 0 ? (
+                <EmptyState allPortals={allPortals} />
+              ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredPortals.map((portal) => (
-                    <Card key={portal.key} className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base truncate">{portal.name}</CardTitle>
-                            <CardDescription className="text-sm line-clamp-2">
-                              {portal.description}
-                            </CardDescription>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex-shrink-0 ml-2"
-                            onClick={() => toggleFavorite(portal.key, portal.name)}
-                          >
-                            {portal.isFavorite ? (
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            ) : (
-                              <Star className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="space-y-3">
-                          <div className="flex flex-wrap gap-1">
-                            <Badge variant="outline" className="text-xs">
-                              {portal.category}
-                            </Badge>
-                            {portal.tags && portal.tags.slice(0, 2).map(tag => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              className="flex-1"
-                              onClick={() => window.open(portal.url, '_blank')}
-                            >
-                              <ExternalLink className="h-3 w-3 mr-2" />
-                              Open
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyPortalUrl(portal.url, portal.name)}
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <PortalCard 
+                      key={portal.key}
+                      portal={portal}
+                      onToggleFavorite={toggleFavorite}
+                    />
                   ))}
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead></TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPortals.map((portal) => (
-                      <TableRow key={portal.key}>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleFavorite(portal.key, portal.name)}
-                          >
-                            {portal.isFavorite ? (
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            ) : (
-                              <Star className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableCell>
-                        <TableCell className="font-medium">{portal.name}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground max-w-md">
-                          {portal.description}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{portal.category}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => window.open(portal.url, '_blank')}
-                            >
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              Open
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyPortalUrl(portal.url, portal.name)}
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-
-              {filteredPortals.length === 0 && (
-                <div className="text-center py-12">
-                  <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No portals found</h3>
-                  <p className="text-muted-foreground">
-                    {allPortals.length === 0 
-                      ? 'Search for a tenant to see available portals'
-                      : 'Try adjusting your filters or search terms'
-                    }
-                  </p>
-                </div>
+                <PortalTable 
+                  portals={filteredPortals}
+                  onToggleFavorite={toggleFavorite}
+                />
               )}
             </CardContent>
           </Card>

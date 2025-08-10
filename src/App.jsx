@@ -113,7 +113,7 @@ const PasswordGeneratorTool = lazy(() =>
   }))
 );
 const MicrosoftPortalsTool = lazy(() => 
-  import('./components/tools/microsoft-portals/MicrosoftPortalsTool').catch(() => ({
+  import('./components/tools/microsoft-portals/MicrosoftPortalsShadcn').catch(() => ({
     default: () => <div>Error loading Microsoft Portals Tool</div>
   }))
 );
