@@ -23,6 +23,7 @@ import { useLocalStorage } from '@mantine/hooks';
 import { toast } from 'sonner';
 import { copyShareableURL } from '../../../utils/sharelink';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { useAzureKQLShadcn } from './hooks/useAzureKQLShadcn';
@@ -140,55 +141,38 @@ const AzureKQLShadcn = () => {
   return (
     <>
       <SEOHead {...seoData} />
+      <ToolHeader
+        icon={BarChart3}
+        title="Azure KQL Query Builder"
+        description="Build optimized KQL queries for Azure services with guided forms"
+        iconColor="cyan"
+        actions={[
+          {
+            text: "Copy Configuration Share URL",
+            icon: Share,
+            onClick: handleShareConfiguration,
+            disabled: !generatedQuery,
+            variant: "outline",
+            size: "sm"
+          },
+          {
+            text: "Help",
+            icon: HelpCircle,
+            onClick: () => setHelpOpened(true),
+            variant: "outline",
+            size: "sm"
+          }
+        ]}
+        alert={{
+          title: "Query Builder Features:",
+          description: "Generate KQL queries with automatic performance optimization, filter ordering, and support for Azure Firewall, Application Gateway, and other Azure services."
+        }}
+        standalone={false}
+      />
+      
       <Card className="w-full">
-        <CardHeader className="space-y-4">
-          {/* Header */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
-                <BarChart3 className="w-7 h-7" />
-              </div>
-              <div className="space-y-1">
-                <CardTitle className="text-2xl font-semibold">
-                  Azure KQL Query Builder
-                </CardTitle>
-                <CardDescription className="text-base">
-                  Build optimized KQL queries for Azure services with guided forms
-                </CardDescription>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShareConfiguration}
-                disabled={!generatedQuery}
-              >
-                <Share className="w-4 h-4 mr-2" />
-                Copy Configuration Share URL
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setHelpOpened(true)}
-              >
-                <HelpCircle className="w-4 h-4 mr-2" />
-                Help
-              </Button>
-            </div>
-          </div>
 
-          {/* Info Alert */}
-          <Alert className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/50">
-            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <AlertDescription className="text-blue-900 dark:text-blue-100">
-              <span className="font-semibold">Query Builder Features:</span> Generate KQL queries with automatic performance optimization, filter ordering, 
-              and support for Azure Firewall, Application Gateway, and other Azure services.
-            </AlertDescription>
-          </Alert>
-        </CardHeader>
-
-        <CardContent>
+        <CardContent className="pt-0">
           {/* Main Interface */}
           <Tabs defaultValue="builder" className="w-full">
             <TabsList className="grid w-full grid-cols-4">

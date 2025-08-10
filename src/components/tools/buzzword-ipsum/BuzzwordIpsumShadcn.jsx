@@ -15,12 +15,14 @@ import {
   MessageCircle,
   Info,
   Check,
-  Code
+  Code,
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import BuzzwordIpsumIcon from './BuzzwordIpsumIcon';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import buzzwordData from './data/buzzwords.json';
@@ -196,99 +198,89 @@ const BuzzwordIpsumShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         {/* Header */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 text-white">
-                  <BuzzwordIpsumIcon size={32} />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold">Buzzword Ipsum</h1>
-                  <p className="text-muted-foreground">
-                    Generate corporate buzzword-filled placeholder text for mockups and presentations
-                  </p>
+        <ToolHeader
+          icon={FileText}
+          title="Buzzword Ipsum"
+          description="Generate corporate buzzword-filled placeholder text for mockups and presentations"
+          iconColor="orange"
+          actions={[
+            {
+              text: "API Usage",
+              icon: Code,
+              onClick: () => setApiModalOpen(true),
+              variant: "outline"
+            }
+          ]}
+          standalone={false}
+        />
+        
+        <Dialog open={apiModalOpen} onOpenChange={setApiModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Buzzword Ipsum API Documentation</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Access the Buzzword Ipsum API programmatically to generate corporate buzzwords for your applications.
+              </p>
+              
+              <div className="space-y-2">
+                <h4 className="font-semibold">Base URL</h4>
+                <div className="p-3 bg-muted rounded-md font-mono text-sm">
+                  https://buzzwords.russmckendrick.com
                 </div>
               </div>
-              <Dialog open={apiModalOpen} onOpenChange={setApiModalOpen}>
-                <DialogTrigger asChild>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon">
-                        <Code className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>View API Documentation</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Buzzword Ipsum API Documentation</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      Access the Buzzword Ipsum API programmatically to generate corporate buzzwords for your applications.
-                    </p>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-semibold">Base URL</h4>
-                      <div className="p-3 bg-muted rounded-md font-mono text-sm">
-                        https://buzzwords.russmckendrick.com
-                      </div>
+              
+              <div className="space-y-3">
+                <h4 className="font-semibold">Endpoints</h4>
+                
+                <div className="space-y-3">
+                  <div>
+                    <p className="font-medium">Generate Phrases</p>
+                    <div className="p-2 bg-muted rounded text-sm font-mono">
+                      GET /api/phrases?count={'{count}'}
                     </div>
-                    
-                    <div className="space-y-3">
-                      <h4 className="font-semibold">Endpoints</h4>
-                      
-                      <div className="space-y-3">
-                        <div>
-                          <p className="font-medium">Generate Phrases</p>
-                          <div className="p-2 bg-muted rounded text-sm font-mono">
-                            GET /api/phrases?count={'{count}'}
-                          </div>
-                          <p className="text-sm text-muted-foreground">Returns an array of buzzword phrases</p>
-                        </div>
-                        
-                        <div>
-                          <p className="font-medium">Generate Adjectives</p>
-                          <div className="p-2 bg-muted rounded text-sm font-mono">
-                            GET /api/adjectives?count={'{count}'}
-                          </div>
-                          <p className="text-sm text-muted-foreground">Returns an array of corporate adjectives</p>
-                        </div>
-                        
-                        <div>
-                          <p className="font-medium">Health Check</p>
-                          <div className="p-2 bg-muted rounded text-sm font-mono">
-                            GET /api/health
-                          </div>
-                          <p className="text-sm text-muted-foreground">Returns API status and version</p>
-                        </div>
-                      </div>
+                    <p className="text-sm text-muted-foreground">Returns an array of buzzword phrases</p>
+                  </div>
+                  
+                  <div>
+                    <p className="font-medium">Generate Adjectives</p>
+                    <div className="p-2 bg-muted rounded text-sm font-mono">
+                      GET /api/adjectives?count={'{count}'}
                     </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-semibold">Parameters</h4>
-                      <ul className="text-sm space-y-1">
-                        <li><code className="bg-muted px-1 rounded">count</code> (optional): Number of items to generate (1-100, default: 10)</li>
-                      </ul>
+                    <p className="text-sm text-muted-foreground">Returns an array of corporate adjectives</p>
+                  </div>
+                  
+                  <div>
+                    <p className="font-medium">Health Check</p>
+                    <div className="p-2 bg-muted rounded text-sm font-mono">
+                      GET /api/health
                     </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-semibold">Rate Limiting</h4>
-                      <p className="text-sm text-muted-foreground">The API is rate limited to prevent abuse:</p>
-                      <ul className="text-sm space-y-1">
-                        <li>• 100 requests per minute per IP address</li>
-                        <li>• Protected by Cloudflare's DDoS protection</li>
-                        <li>• Rate limit headers included in responses</li>
-                      </ul>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-semibold">Example Response</h4>
-                      <div className="p-3 bg-muted rounded-md font-mono text-xs">
+                    <p className="text-sm text-muted-foreground">Returns API status and version</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-semibold">Parameters</h4>
+                <ul className="text-sm space-y-1">
+                  <li><code className="bg-muted px-1 rounded">count</code> (optional): Number of items to generate (1-100, default: 10)</li>
+                </ul>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-semibold">Rate Limiting</h4>
+                <p className="text-sm text-muted-foreground">The API is rate limited to prevent abuse:</p>
+                <ul className="text-sm space-y-1">
+                  <li>• 100 requests per minute per IP address</li>
+                  <li>• Protected by Cloudflare's DDoS protection</li>
+                  <li>• Rate limit headers included in responses</li>
+                </ul>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-semibold">Example Response</h4>
+                <div className="p-3 bg-muted rounded-md font-mono text-xs">
 {`{
   "success": true,
   "data": [
@@ -299,24 +291,15 @@ const BuzzwordIpsumShadcn = () => {
   "count": 3,
   "timestamp": "2024-01-01T12:00:00Z"
 }`}
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground">
-                      This API is provided free of charge for development and testing purposes.
-                    </p>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                </div>
+              </div>
+              
+              <p className="text-sm text-muted-foreground">
+                This API is provided free of charge for development and testing purposes.
+              </p>
             </div>
-            
-            <div className="flex gap-2 mt-4">
-              <Badge variant="secondary">Corporate Speak</Badge>
-              <Badge variant="secondary">Professional Jargon</Badge>
-              <Badge variant="secondary">Business Buzzwords</Badge>
-            </div>
-          </CardContent>
-        </Card>
+          </DialogContent>
+        </Dialog>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Options Column */}

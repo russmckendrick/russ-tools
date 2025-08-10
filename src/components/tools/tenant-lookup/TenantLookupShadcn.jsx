@@ -23,13 +23,15 @@ import {
   Save,
   History,
   Trash2,
-  RotateCcw
+  RotateCcw,
+  Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useParams, Link } from 'react-router-dom';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import TenantLookupIcon from './TenantLookupIcon';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 
@@ -399,27 +401,18 @@ const TenantLookupShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         {/* Header */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 text-white">
-                <TenantLookupIcon size={32} />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">Microsoft Tenant Lookup</h1>
-                <p className="text-muted-foreground">
-                  Discover Microsoft 365 and Azure AD tenant information from domain names or email addresses
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex gap-2 mt-4">
-              <Badge variant="secondary">Microsoft 365</Badge>
-              <Badge variant="secondary">Azure AD</Badge>
-              <Badge variant="secondary">Tenant Discovery</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <ToolHeader
+          icon={Building2}
+          title="Microsoft Tenant Lookup"
+          description="Discover Microsoft 365 and Azure AD tenant information from domain names or email addresses"
+          iconColor="cyan"
+          badges={[
+            { text: "Microsoft 365", variant: "secondary" },
+            { text: "Azure AD", variant: "secondary" },
+            { text: "Tenant Discovery", variant: "secondary" }
+          ]}
+          standalone={false}
+        />
 
         {/* Lookup Form */}
         <Card>

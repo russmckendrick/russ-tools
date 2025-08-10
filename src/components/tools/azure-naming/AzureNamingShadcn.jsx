@@ -20,6 +20,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { useAzureNamingShadcn } from './hooks/useAzureNamingShadcn';
@@ -84,37 +85,26 @@ const AzureNamingShadcn = () => {
   return (
     <>
       <SEOHead {...seoData} />
+      <ToolHeader
+        icon={Cloud}
+        title="Azure Resource Naming Tool"
+        description="Generate consistent, compliant Azure resource names following best practices"
+        iconColor="cyan"
+        actions={[
+          {
+            text: "Copy Configuration Share URL",
+            icon: Share,
+            onClick: handleShareConfiguration,
+            disabled: !formState.resourceType.length || !formState.workload,
+            variant: "outline"
+          }
+        ]}
+        standalone={false}
+      />
+      
       <Card className="w-full">
-        <CardHeader className="space-y-4">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
-                <Cloud size={28} />
-              </div>
-              <div className="space-y-1">
-                <CardTitle className="text-2xl font-semibold">
-                  Azure Resource Naming Tool
-                </CardTitle>
-                <CardDescription className="text-base">
-                  Generate consistent, compliant Azure resource names following best practices
-                </CardDescription>
-              </div>
-            </div>
-            
-            <Button
-              variant="outline"
-              onClick={handleShareConfiguration}
-              disabled={!formState.resourceType.length || !formState.workload}
-              className="gap-2"
-            >
-              <Share size={16} />
-              Copy Configuration Share URL
-            </Button>
-          </div>
-        </CardHeader>
 
-        <CardContent>
+        <CardContent className="pt-0">
           <Tabs defaultValue="builder" className="space-y-6">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="builder" className="gap-2">

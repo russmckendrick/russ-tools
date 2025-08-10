@@ -27,6 +27,7 @@ import {
 import { toast } from 'sonner';
 import Base64Icon from './Base64Icon';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 
@@ -528,17 +529,13 @@ const Base64ToolShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-primary/10 text-primary">
-            <Base64Icon size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Base64 Encoder/Decoder</h1>
-            <p className="text-muted-foreground">
-              Encode and decode text and files using Base64 encoding with multiple variants
-            </p>
-          </div>
-        </div>
+        <ToolHeader
+          icon={Base64Icon}
+          title="Base64 Encoder/Decoder"
+          description="Encode and decode text and files using Base64 encoding with multiple variants"
+          iconColor="blue"
+          standalone={true}
+        />
 
         {/* Controls */}
         <Card>

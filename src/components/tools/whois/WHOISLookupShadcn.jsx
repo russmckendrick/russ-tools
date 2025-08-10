@@ -30,6 +30,7 @@ import {
 import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
@@ -462,27 +463,18 @@ const WHOISLookupShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         {/* Header */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
-                <WHOISIcon size={32} />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">WHOIS Lookup Tool</h1>
-                <p className="text-muted-foreground">
-                  Get detailed registration information for domains and IP addresses
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex gap-2 mt-4">
-              <Badge variant="secondary">Domain Lookup</Badge>
-              <Badge variant="secondary">IP Information</Badge>
-              <Badge variant="secondary">Registration Data</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <ToolHeader
+          icon={Search}
+          title="WHOIS Lookup Tool"
+          description="Get detailed registration information for domains and IP addresses"
+          iconColor="blue"
+          badges={[
+            { text: "Domain Lookup", variant: "secondary" },
+            { text: "IP Information", variant: "secondary" },
+            { text: "Registration Data", variant: "secondary" }
+          ]}
+          standalone={false}
+        />
 
         {/* Lookup Form */}
         <Card>

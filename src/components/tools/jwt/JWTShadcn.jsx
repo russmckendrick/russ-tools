@@ -36,6 +36,7 @@ import {
 import { jwtDecode } from 'jwt-decode';
 import { jwtVerify, importJWK, importSPKI, importPKCS8 } from 'jose';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 
@@ -258,34 +259,20 @@ const JWTShadcn = () => {
     <>
       <SEOHead {...seoData} />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/20">
-              <Key className="h-6 w-6 text-red-600 dark:text-red-400" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">JWT Decoder/Validator</h1>
-              <p className="text-muted-foreground">
-                Decode JWT tokens and validate signatures without sending to external services
-              </p>
-              <Badge variant="secondary" className="mt-2">
-                🔒 100% Client-Side • No External Requests • Privacy First
-              </Badge>
-            </div>
-          </div>
-        </div>
-
-        {/* Security Notice */}
-        <Alert className="mb-6">
-          <Shield className="h-4 w-4" />
-          <AlertDescription>
-            <div className="font-semibold text-sm mb-1">🔒 Your tokens stay private</div>
-            <div className="text-xs">
-              All JWT processing happens locally in your browser. No tokens are sent to external servers or services. 
-              Perfect for analyzing sensitive authentication tokens safely.
-            </div>
-          </AlertDescription>
-        </Alert>
+        <ToolHeader
+          icon={Key}
+          title="JWT Decoder/Validator"
+          description="Decode JWT tokens and validate signatures without sending to external services"
+          iconColor="red"
+          badges={[
+            { text: "🔒 100% Client-Side • No External Requests • Privacy First", variant: "secondary" }
+          ]}
+          alert={{
+            title: "🔒 Your tokens stay private",
+            description: "All JWT processing happens locally in your browser. No tokens are sent to external servers or services. Perfect for analyzing sensitive authentication tokens safely."
+          }}
+          standalone={true}
+        />
 
         {/* Input Section */}
         <Card className="mb-6">

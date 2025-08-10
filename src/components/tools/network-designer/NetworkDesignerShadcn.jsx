@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { parseConfigFromURL, copyShareableURL } from '../../../utils/sharelink';
@@ -1011,39 +1012,27 @@ const NetworkDesignerShadcn = () => {
     <>
       <SEOHead {...seoData} />
       <div className="container max-w-7xl mx-auto p-6">
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
-                  <Network className="h-8 w-8" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-semibold">Network Designer</h1>
-                  <p className="text-muted-foreground">
-                    Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, 
-                    and export configurations for Azure, AWS, or VMware environments.
-                  </p>
-                  <div className="flex gap-2 mt-2">
-                    <Badge variant="secondary">Subnet Planning</Badge>
-                    <Badge variant="secondary">Visual Diagrams</Badge>
-                    <Badge variant="secondary">Terraform Export</Badge>
-                  </div>
-                </div>
-              </div>
-              
-              <Button
-                variant="outline"
-                onClick={handleShareConfiguration}
-                disabled={networks.length === 0}
-                className="flex items-center gap-2"
-              >
-                <Share className="h-4 w-4" />
-                Copy Configuration Share URL
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <ToolHeader
+          icon={Network}
+          title="Network Designer"
+          description="Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, and export configurations for Azure, AWS, or VMware environments."
+          iconColor="blue"
+          badges={[
+            { text: "Subnet Planning", variant: "secondary" },
+            { text: "Visual Diagrams", variant: "secondary" },
+            { text: "Terraform Export", variant: "secondary" }
+          ]}
+          actions={[
+            {
+              text: "Copy Configuration Share URL",
+              icon: Share,
+              onClick: handleShareConfiguration,
+              disabled: networks.length === 0,
+              variant: "outline"
+            }
+          ]}
+          standalone={false}
+        />
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 mb-6">

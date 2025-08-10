@@ -28,6 +28,7 @@ import {
 import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
@@ -471,27 +472,18 @@ const SSLCheckerShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         {/* Header */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 text-white">
-                <Shield size={32} />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">SSL Certificate Checker</h1>
-                <p className="text-muted-foreground">
-                  Analyze SSL/TLS certificates and security configuration for any domain
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex gap-2 mt-4">
-              <Badge variant="secondary">SSL Labs API</Badge>
-              <Badge variant="secondary">Security Analysis</Badge>
-              <Badge variant="secondary">Certificate Validation</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <ToolHeader
+          icon={Shield}
+          title="SSL Certificate Checker"
+          description="Analyze SSL/TLS certificates and security configuration for any domain"
+          iconColor="green"
+          badges={[
+            { text: "SSL Labs API", variant: "secondary" },
+            { text: "Security Analysis", variant: "secondary" },
+            { text: "Certificate Validation", variant: "secondary" }
+          ]}
+          standalone={false}
+        />
 
         {/* Domain Input */}
         <Card>

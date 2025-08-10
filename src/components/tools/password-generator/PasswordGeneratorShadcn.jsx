@@ -26,6 +26,7 @@ import {
 import { toast } from 'sonner';
 import PasswordIcon from './PasswordIcon';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 
@@ -366,28 +367,20 @@ Visit: https://russ.tools
       <SEOHead {...seoData} />
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-primary/10 text-primary">
-            <PasswordIcon size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Password Generator</h1>
-            <p className="text-muted-foreground">
-              Generate secure, random passwords with customizable options
-            </p>
-            <Badge variant="secondary" className="mt-2">
-              <Shield className="w-3 h-3 mr-1" />
-              Cryptographically Secure
-            </Badge>
-          </div>
-        </div>
-
-        <Alert>
-          <Shield className="h-4 w-4" />
-          <AlertDescription>
-            All passwords are generated locally in your browser. Nothing is sent to any server.
-          </AlertDescription>
-        </Alert>
+        <ToolHeader
+          icon={PasswordIcon}
+          title="Password Generator"
+          description="Generate secure, random passwords with customizable options"
+          iconColor="green"
+          badges={[
+            { text: "Cryptographically Secure", variant: "secondary" }
+          ]}
+          alert={{
+            title: "Privacy Notice",
+            description: "All passwords are generated locally in your browser. Nothing is sent to any server."
+          }}
+          standalone={true}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Configuration Panel */}

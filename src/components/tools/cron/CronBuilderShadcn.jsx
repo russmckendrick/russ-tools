@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 
@@ -378,17 +379,13 @@ const CronBuilderShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-primary/10 text-primary">
-            <Clock size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">CRON Expression Builder</h1>
-            <p className="text-muted-foreground">
-              Build and validate cron expressions with ease
-            </p>
-          </div>
-        </div>
+        <ToolHeader
+          icon={Calendar}
+          title="CRON Expression Builder"
+          description="Build and validate cron expressions with ease"
+          iconColor="purple"
+          standalone={true}
+        />
 
         <Tabs defaultValue="builder">
           <TabsList className="grid w-full grid-cols-2">

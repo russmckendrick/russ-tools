@@ -14,7 +14,8 @@ import { toast } from 'sonner';
 import { 
   Building,
   Grid3X3,
-  List
+  List,
+  Building2
 } from 'lucide-react';
 import { getTenantId, isValidDomain, extractDomain } from './TenantLookup';
 import { generateAllPortalLinks } from './PortalLinkGenerator';
@@ -24,6 +25,7 @@ import PortalCard from './components/PortalCard';
 import PortalTable from './components/PortalTable';
 import EmptyState from './components/EmptyState';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 
@@ -347,19 +349,13 @@ const MicrosoftPortalsShadcn = () => {
     <>
       <SEOHead {...seoData} />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/20">
-              <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Microsoft Portals (GDAP)</h1>
-              <p className="text-muted-foreground">
-                Quick access to Microsoft admin portals with GDAP tenant switching
-              </p>
-            </div>
-          </div>
-        </div>
+        <ToolHeader
+          icon={Building2}
+          title="Microsoft Portals (GDAP)"
+          description="Quick access to Microsoft admin portals with GDAP tenant switching"
+          iconColor="cyan"
+          standalone={true}
+        />
 
         {/* Search Section */}
         <TenantSearchCard 

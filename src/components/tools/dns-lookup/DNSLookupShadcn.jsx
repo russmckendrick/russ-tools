@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner';
 import { useParams, Link } from 'react-router-dom';
 import SEOHead from '../../common/SEOHead';
+import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
@@ -456,27 +457,18 @@ const DNSLookupShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         {/* Header */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
-                <DNSIcon size={32} />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">DNS Lookup Tool</h1>
-                <p className="text-muted-foreground">
-                  Perform DNS queries for various record types using different DNS providers
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex gap-2 mt-4">
-              <Badge variant="secondary">DNS over HTTPS</Badge>
-              <Badge variant="secondary">Multiple Providers</Badge>
-              <Badge variant="secondary">Cached Results</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <ToolHeader
+          icon={Globe}
+          title="DNS Lookup Tool"
+          description="Perform DNS queries for various record types using different DNS providers"
+          iconColor="blue"
+          badges={[
+            { text: "DNS over HTTPS", variant: "secondary" },
+            { text: "Multiple Providers", variant: "secondary" },
+            { text: "Cached Results", variant: "secondary" }
+          ]}
+          standalone={false}
+        />
 
         {/* Lookup Form */}
         <Card>

@@ -22,7 +22,8 @@ import {
   AlertCircle,
   History,
   Zap,
-  Eye
+  Eye,
+  ArrowRightLeft
 } from 'lucide-react';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-json';
@@ -46,6 +47,7 @@ import {
   YAML_SAMPLES,
   TOML_SAMPLES
 } from './samples';
+import ToolHeader from '../../common/ToolHeader';
 
 const DataConverterShadcn = () => {
   // Core state
@@ -398,12 +400,13 @@ const DataConverterShadcn = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Data Format Converter</h1>
-        <p className="text-muted-foreground">
-          Convert between JSON, YAML, and TOML formats with validation and error checking
-        </p>
-      </div>
+      <ToolHeader
+        icon={ArrowRightLeft}
+        title="Data Format Converter"
+        description="Convert between JSON, YAML, and TOML formats with validation and error checking"
+        iconColor="blue"
+        standalone={true}
+      />
 
       {/* Controls */}
       <Card className="mb-6">
