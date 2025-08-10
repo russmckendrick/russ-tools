@@ -78,7 +78,7 @@ const CronBuilderTool = lazy(() =>
   }))
 );
 const SSLCheckerTool = lazy(() => 
-  import('./components/tools/ssl-checker/SSLCheckerTool').catch(() => ({
+  import('./components/tools/ssl-checker/SSLCheckerShadcn').catch(() => ({
     default: () => <div>Error loading SSL Checker Tool</div>
   }))
 );

@@ -19,7 +19,7 @@ export function NewLayout() {
       
       {/* Sidebar */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50 
+        fixed inset-y-0 left-0 z-50 
         w-64 border-r bg-background 
         transform transition-transform duration-200 ease-in-out
         lg:translate-x-0
@@ -29,7 +29,7 @@ export function NewLayout() {
       </aside>
 
       {/* Main content */}
-      <div className="lg:ml-64">
+      <div className="ml-0 lg:ml-64">
         {/* Mobile header with menu button */}
         <div className="sticky top-0 z-30 lg:hidden flex items-center justify-between p-4 border-b bg-background/80 backdrop-blur">
           <Button
