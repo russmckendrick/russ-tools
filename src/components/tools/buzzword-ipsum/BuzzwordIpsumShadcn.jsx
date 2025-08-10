@@ -211,7 +211,7 @@ const BuzzwordIpsumShadcn = () => {
               variant: "outline"
             }
           ]}
-          standalone={false}
+          standalone={true}
         />
         
         <Dialog open={apiModalOpen} onOpenChange={setApiModalOpen}>
