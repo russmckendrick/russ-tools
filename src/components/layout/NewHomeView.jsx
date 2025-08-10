@@ -17,7 +17,10 @@ import {
   Fingerprint,
   PanelsTopLeft,
   Users,
-  RefreshCw
+  RefreshCw,
+  History,
+  Key,
+  MessageSquareQuote
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -91,19 +94,27 @@ export function NewHomeView() {
   }
   const [passwords] = useState(() => Array.from({ length: 5 }).map(() => generateSecure(16)))
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Decorative background accents */}
+      <div className="pointer-events-none absolute -top-10 -right-10 h-52 w-52 rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-10 -left-10 h-52 w-52 rounded-full bg-secondary/20 blur-3xl" />
 
       
 
       {/* Saved networks + quick generate sections */}
       <div className="grid gap-3 lg:grid-cols-2">
         {/* Saved Networks */}
-        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background">
+        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">Saved networks</CardTitle>
-                <CardDescription>From Network Designer</CardDescription>
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
+                  <Database className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Saved data</CardTitle>
+                  <CardDescription>From your tools</CardDescription>
+                </div>
               </div>
               <Button size="sm" variant="outline" asChild>
                 <Link to="/network-designer">Open</Link>
@@ -169,9 +180,14 @@ export function NewHomeView() {
         </Card>
 
         {/* Recent activity */}
-        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background">
+        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Recent activity</CardTitle>
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
+                <History className="h-4 w-4 text-primary" />
+              </div>
+              <CardTitle className="text-base">Recent activity</CardTitle>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {(() => {
@@ -220,7 +236,7 @@ export function NewHomeView() {
                   {items.slice(0,6).map((it, idx) => {
                     const Icon = metaIcon(it.meta)
                     return (
-                      <li key={idx} className="px-3 py-1.5 hover:bg-muted/50 transition-colors">
+                      <li key={idx} className="group px-3 py-1.5 hover:bg-muted/50 transition-colors">
                         <Link to={it.to} className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
                             <Icon className="h-4 w-4 text-muted-foreground" />
@@ -229,7 +245,7 @@ export function NewHomeView() {
                               <div className="text-xs text-muted-foreground">{it.meta}</div>
                             </div>
                           </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                         </Link>
                       </li>
                     )
@@ -241,12 +257,17 @@ export function NewHomeView() {
         </Card>
 
         {/* Random Passwords */}
-        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background">
+        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">Random passwords</CardTitle>
-                <CardDescription>Quick copy, or open generator</CardDescription>
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
+                  <Key className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Random passwords</CardTitle>
+                  <CardDescription>Quick copy, or open generator</CardDescription>
+                </div>
               </div>
               <Button size="sm" variant="outline" asChild>
                 <Link to="/password-generator">Open</Link>
@@ -270,12 +291,17 @@ export function NewHomeView() {
         </Card>
 
         {/* Buzzword Ipsum */}
-        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background">
+        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">Buzzword ipsum</CardTitle>
-                <CardDescription>One paragraph, quick copy</CardDescription>
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
+                  <MessageSquareQuote className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Buzzword ipsum</CardTitle>
+                  <CardDescription>One paragraph, quick copy</CardDescription>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <Button size="sm" variant="outline" asChild>
