@@ -118,7 +118,7 @@ const MicrosoftPortalsTool = lazy(() =>
   }))
 );
 const TenantLookupTool = lazy(() => 
-  import('./components/tools/tenant-lookup/TenantLookupTool').catch(() => ({
+  import('./components/tools/tenant-lookup/TenantLookupShadcn').catch(() => ({
     default: () => <div>Error loading Tenant Lookup Tool</div>
   }))
 );
