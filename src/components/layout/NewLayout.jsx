@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Outlet, Link } from "react-router-dom"
-import { Menu, ChevronLeft, ChevronRight, Github } from "lucide-react"
+import { Menu, ChevronLeft, ChevronRight, Github as GithubIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -70,7 +70,7 @@ export function NewLayout() {
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
               <a href="https://github.com/russmckendrick/russ-tools" target="_blank" rel="noreferrer">
-                <Github className="h-4 w-4 mr-2" />
+                <GithubIcon className="h-4 w-4 mr-2" />
                 GitHub
               </a>
             </Button>
