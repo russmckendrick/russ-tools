@@ -467,7 +467,7 @@ const DNSLookupShadcn = () => {
             { text: "Multiple Providers", variant: "secondary" },
             { text: "Cached Results", variant: "secondary" }
           ]}
-          standalone={false}
+          standalone={true}
         />
 
         {/* Lookup Form */}

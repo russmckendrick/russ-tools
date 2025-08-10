@@ -99,13 +99,10 @@ const AzureNamingShadcn = () => {
             variant: "outline"
           }
         ]}
-        standalone={false}
+        standalone={true}
       />
       
-      <Card className="w-full">
-
-        <CardContent className="pt-0">
-          <Tabs defaultValue="builder" className="space-y-6">
+      <Tabs defaultValue="builder" className="space-y-6">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="builder" className="gap-2">
                 <Edit size={16} />
@@ -228,8 +225,6 @@ const AzureNamingShadcn = () => {
               <NamingHistoryShadcn />
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
     </>
   );
 };

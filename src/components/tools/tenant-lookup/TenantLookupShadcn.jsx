@@ -411,7 +411,7 @@ const TenantLookupShadcn = () => {
             { text: "Azure AD", variant: "secondary" },
             { text: "Tenant Discovery", variant: "secondary" }
           ]}
-          standalone={false}
+          standalone={true}
         />
 
         {/* Lookup Form */}

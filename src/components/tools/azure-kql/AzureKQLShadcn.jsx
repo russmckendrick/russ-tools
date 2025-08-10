@@ -167,14 +167,11 @@ const AzureKQLShadcn = () => {
           title: "Query Builder Features:",
           description: "Generate KQL queries with automatic performance optimization, filter ordering, and support for Azure Firewall, Application Gateway, and other Azure services."
         }}
-        standalone={false}
+        standalone={true}
       />
       
-      <Card className="w-full">
-
-        <CardContent className="pt-0">
-          {/* Main Interface */}
-          <Tabs defaultValue="builder" className="w-full">
+      {/* Main Interface */}
+      <Tabs defaultValue="builder" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="builder">Query Builder</TabsTrigger>
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
@@ -250,8 +247,6 @@ const AzureKQLShadcn = () => {
               />
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
 
       {/* Help System */}
       <HelpSystemShadcn 

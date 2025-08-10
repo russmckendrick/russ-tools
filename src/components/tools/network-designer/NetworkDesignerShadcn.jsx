@@ -1011,7 +1011,7 @@ const NetworkDesignerShadcn = () => {
   return (
     <>
       <SEOHead {...seoData} />
-      <div className="container max-w-7xl mx-auto p-6">
+      <div className="space-y-6">
         <ToolHeader
           icon={Network}
           title="Network Designer"
@@ -1031,7 +1031,7 @@ const NetworkDesignerShadcn = () => {
               variant: "outline"
             }
           ]}
-          standalone={false}
+          standalone={true}
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>

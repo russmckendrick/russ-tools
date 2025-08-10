@@ -110,11 +110,7 @@ const ToolHeader = ({
 
   // Render with or without Card wrapper
   if (standalone) {
-    return (
-      <div className="mb-6">
-        <HeaderContent />
-      </div>
-    );
+    return <HeaderContent />;
   }
 
   return (

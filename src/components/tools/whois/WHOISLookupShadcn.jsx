@@ -473,7 +473,7 @@ const WHOISLookupShadcn = () => {
             { text: "IP Information", variant: "secondary" },
             { text: "Registration Data", variant: "secondary" }
           ]}
-          standalone={false}
+          standalone={true}
         />
 
         {/* Lookup Form */}

@@ -482,7 +482,7 @@ const SSLCheckerShadcn = () => {
             { text: "Security Analysis", variant: "secondary" },
             { text: "Certificate Validation", variant: "secondary" }
           ]}
-          standalone={false}
+          standalone={true}
         />
 
         {/* Domain Input */}
