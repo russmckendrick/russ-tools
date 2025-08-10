@@ -83,6 +83,13 @@ const stats = [
 
 export function NewHomeView() {
   const [buzzSeed, setBuzzSeed] = useState(0)
+  const generateSecure = (len = 16) => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+'
+    const bytes = new Uint8Array(len)
+    crypto.getRandomValues(bytes)
+    return Array.from(bytes, b => chars[b % chars.length]).join('')
+  }
+  const [passwords] = useState(() => Array.from({ length: 5 }).map(() => generateSecure(16)))
   return (
     <div className="space-y-6">
 
@@ -220,15 +227,8 @@ export function NewHomeView() {
           </CardHeader>
           <CardContent className="p-0">
             <ul className="divide-y">
-              {Array.from({length:5}).map((_,i) => {
-                const generateSecure = (len=16) => {
-                  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+'
-                  const bytes = new Uint8Array(len)
-                  crypto.getRandomValues(bytes)
-                  return Array.from(bytes, b => chars[b % chars.length]).join('')
-                }
-                const pwd = generateSecure(16)
-                return (
+              {passwords.map((pwd, i) => (
+                (
                   <li key={i} className="px-3 py-1.5 flex items-center justify-between">
                     <span className="font-mono text-sm truncate mr-2">{pwd}</span>
                     <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(pwd); toast.success('Copied password') }}>
@@ -236,7 +236,7 @@ export function NewHomeView() {
                     </Button>
                   </li>
                 )
-              })}
+              ))}
             </ul>
           </CardContent>
         </Card>
