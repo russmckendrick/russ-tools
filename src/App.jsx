@@ -3,8 +3,11 @@ import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
+import { NewLayout } from './components/layout/NewLayout';
+import { ThemeProvider } from './components/theme-provider';
 import { AzureNamingProvider } from './components/tools/azure-naming/context/AzureNamingContext';
 import HomeView from './components/layout/HomeView';
+import { NewHomeView } from './components/layout/NewHomeView';
 import ClearAllStorage from './components/common/ClearAllStorage';
 
 // Error Boundary for lazy loading
@@ -129,6 +132,11 @@ const BuzzwordIpsumTool = lazy(() =>
     default: () => <div>Error loading Buzzword Ipsum Tool</div>
   }))
 );
+const UIDemo = lazy(() => 
+  import('./components/ui/demo').catch(() => ({
+    default: () => <div>Failed to load UI Demo</div>
+  }))
+);
 
 // Loading component for lazy-loaded routes
 const LoadingFallback = () => (
@@ -161,28 +169,29 @@ const LazyRoute = ({ children }) => (
  */
 export default function App() {
   return (
-    <MantineProvider
-      theme={{
-        primaryColor: 'blue',
-        fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-        headings: {
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <MantineProvider
+        theme={{
+          primaryColor: 'blue',
           fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-          fontWeight: '600',
-        },
-        defaultRadius: 'md',
-        cursorType: 'pointer',
-        respectReducedMotion: true,
-        focusRing: 'always',
-        activeClassName: 'mantine-active',
-      }}
-    >
-      <Notifications />
-      <AzureNamingProvider>
-        <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            {/* Default route - now points to HomeView */}
-            <Route index element={<HomeView />} />
+          headings: {
+            fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+            fontWeight: '600',
+          },
+          defaultRadius: 'md',
+          cursorType: 'pointer',
+          respectReducedMotion: true,
+          focusRing: 'always',
+          activeClassName: 'mantine-active',
+        }}
+      >
+        <Notifications />
+        <AzureNamingProvider>
+          <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<NewLayout />}>
+              {/* Default route - now points to NewHomeView */}
+              <Route index element={<NewHomeView />} />
             
             {/* Network Designer route */}
             <Route path="network-designer" element={
@@ -325,11 +334,19 @@ export default function App() {
               </LazyRoute>
             } />
 
+            {/* UI Demo route - temporary for testing new components */}
+            <Route path="ui-demo" element={
+              <LazyRoute>
+                <UIDemo />
+              </LazyRoute>
+            } />
+
             {/* Add more routes here as needed */}
           </Route>
         </Routes>
         </BrowserRouter>
       </AzureNamingProvider>
     </MantineProvider>
+    </ThemeProvider>
   );
 }

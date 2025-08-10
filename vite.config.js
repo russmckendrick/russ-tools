@@ -75,6 +75,8 @@ export default defineConfig({
     // Ensure React consistency across chunks
     dedupe: ['react', 'react-dom', 'react-router-dom'],
     alias: {
+      // Add @ alias for src directory
+      '@': resolve(fileURLToPath(new URL('.', import.meta.url)), 'src'),
       // Ensure consistent React imports
       'react': resolve(fileURLToPath(new URL('.', import.meta.url)), 'node_modules/react'),
       'react-dom': resolve(fileURLToPath(new URL('.', import.meta.url)), 'node_modules/react-dom')
