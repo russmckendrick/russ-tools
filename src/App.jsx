@@ -98,7 +98,7 @@ const DataConverterTool = lazy(() =>
   }))
 );
 const Base64Tool = lazy(() => 
-  import('./components/tools/base64/Base64Tool').catch(() => ({
+  import('./components/tools/base64/Base64ToolShadcn').catch(() => ({
     default: () => <div>Error loading Base64 Tool</div>
   }))
 );
