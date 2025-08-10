@@ -83,7 +83,7 @@ const SSLCheckerTool = lazy(() =>
   }))
 );
 const DNSLookupTool = lazy(() => 
-  import('./components/tools/dns-lookup/DNSLookupTool').catch(() => ({
+  import('./components/tools/dns-lookup/DNSLookupShadcn').catch(() => ({
     default: () => <div>Error loading DNS Lookup Tool</div>
   }))
 );
