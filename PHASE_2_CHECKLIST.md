@@ -14,19 +14,19 @@ Individual migration of tools from Mantine to shadcn/ui components while maintai
   - [x] Update route in App.jsx
   - [x] Remove old Mantine version
 
-- [ ] **Password Generator** (`/password-generator`)
-  - [ ] Create new PasswordGeneratorShadcn.jsx
-  - [ ] Implement strength indicator with custom component
-  - [ ] Add copy-to-clipboard with custom hook
-  - [ ] Test generation algorithms
-  - [ ] Update route and cleanup
+- [x] **Password Generator** (`/password-generator`)
+  - [x] Create new PasswordGeneratorShadcn.jsx
+  - [x] Implement strength indicator with custom component
+  - [x] Add copy-to-clipboard with custom hook
+  - [x] Test generation algorithms
+  - [x] Update route and cleanup
 
-- [ ] **CRON Expression Builder** (`/cron`)
-  - [ ] Create CronBuilderShadcn.jsx
-  - [ ] Replace Mantine Select with shadcn/ui Select
-  - [ ] Implement form validation with react-hook-form
-  - [ ] Test cron validation and display
-  - [ ] Update route and cleanup
+- [x] **CRON Expression Builder** (`/cron`)
+  - [x] Create CronBuilderShadcn.jsx
+  - [x] Replace Mantine Select with shadcn/ui Select
+  - [x] Implement form validation with react-hook-form
+  - [x] Test cron validation and display
+  - [x] Update route and cleanup
 
 - [ ] **Buzzword Ipsum Generator** (`/buzzword-ipsum`)
   - [ ] Create BuzzwordIpsumShadcn.jsx
@@ -157,7 +157,7 @@ For each migrated tool:
 - 🔄 **Phase 2 Tool Migration**: IN PROGRESS
 - ⏳ **Phase 3 Polish & Cleanup**: PENDING
 
-### Tools Migrated: 1/14
+### Tools Migrated: 3/14
 - Remaining Mantine Dependencies: All tools
 - shadcn/ui Coverage: Layout + Core Components
 

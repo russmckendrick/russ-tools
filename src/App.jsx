@@ -73,7 +73,7 @@ const AzureNamingTool = lazy(() =>
   }))
 );
 const CronBuilderTool = lazy(() => 
-  import('./components/tools/cron/CronBuilderTool').catch(() => ({
+  import('./components/tools/cron/CronBuilderShadcn').catch(() => ({
     default: () => <div>Error loading Cron Builder Tool</div>
   }))
 );
@@ -108,7 +108,7 @@ const JWTTool = lazy(() =>
   }))
 );
 const PasswordGeneratorTool = lazy(() => 
-  import('./components/tools/password-generator/PasswordGeneratorTool').catch(() => ({
+  import('./components/tools/password-generator/PasswordGeneratorShadcn').catch(() => ({
     default: () => <div>Error loading Password Generator Tool</div>
   }))
 );
