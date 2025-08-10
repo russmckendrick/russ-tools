@@ -13,7 +13,8 @@ import {
   Home,
   ChevronDown,
   ChevronRight,
-  Github
+  Github,
+  X
 } from "lucide-react"
 
 const toolCategories = [
@@ -69,7 +70,7 @@ const toolCategories = [
   }
 ]
 
-export function Sidebar() {
+export function Sidebar({ onClose }) {
   const location = useLocation()
   const [expandedCategories, setExpandedCategories] = useState(new Set(['Network Tools']))
 
@@ -94,9 +95,19 @@ export function Sidebar() {
 
   return (
     <div className="flex flex-col h-screen w-64">
+      {/* Mobile close button */}
+      {onClose && (
+        <div className="flex justify-between items-center p-4 border-b lg:hidden">
+          <h2 className="text-lg font-semibold">RussTools</h2>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+      
       <div className="flex-1 space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight lg:block hidden">
             RussTools
           </h2>
           <div className="space-y-1">
@@ -112,7 +123,7 @@ export function Sidebar() {
                     )}
                     asChild
                   >
-                    <Link to={category.path}>
+                    <Link to={category.path} onClick={() => onClose && onClose()}>
                       <category.icon className="mr-2 h-4 w-4" />
                       {category.name}
                     </Link>
@@ -150,7 +161,7 @@ export function Sidebar() {
                             )}
                             asChild
                           >
-                            <Link to={item.path}>
+                            <Link to={item.path} onClick={() => onClose && onClose()}>
                               {item.name}
                             </Link>
                           </Button>
@@ -171,7 +182,7 @@ export function Sidebar() {
               )}
               asChild
             >
-              <Link to="/ui-demo">
+              <Link to="/ui-demo" onClick={() => onClose && onClose()}>
                 <FileText className="mr-2 h-4 w-4" />
                 UI Demo
               </Link>

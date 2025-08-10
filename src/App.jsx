@@ -128,7 +128,7 @@ const AzureKQLTool = lazy(() =>
   }))
 );
 const BuzzwordIpsumTool = lazy(() => 
-  import('./components/tools/buzzword-ipsum/BuzzwordIpsumTool').catch(() => ({
+  import('./components/tools/buzzword-ipsum/BuzzwordIpsumShadcn').catch(() => ({
     default: () => <div>Error loading Buzzword Ipsum Tool</div>
   }))
 );
