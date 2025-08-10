@@ -88,7 +88,7 @@ const DNSLookupTool = lazy(() =>
   }))
 );
 const WHOISLookupTool = lazy(() => 
-  import('./components/tools/whois/WHOISLookupTool').catch(() => ({
+  import('./components/tools/whois/WHOISLookupShadcn').catch(() => ({
     default: () => <div>Error loading WHOIS Lookup Tool</div>
   }))
 );
