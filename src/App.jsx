@@ -93,7 +93,7 @@ const WHOISLookupTool = lazy(() =>
   }))
 );
 const DataConverterTool = lazy(() => 
-  import('./components/tools/data-converter/DataConverterTool').catch(() => ({
+  import('./components/tools/data-converter/DataConverterShadcn').catch(() => ({
     default: () => <div>Error loading Data Converter Tool</div>
   }))
 );
@@ -103,7 +103,7 @@ const Base64Tool = lazy(() =>
   }))
 );
 const JWTTool = lazy(() => 
-  import('./components/tools/jwt/JWTTool').catch(() => ({
+  import('./components/tools/jwt/JWTShadcn').catch(() => ({
     default: () => <div>Error loading JWT Tool</div>
   }))
 );
