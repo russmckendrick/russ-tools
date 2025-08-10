@@ -12,7 +12,10 @@ import {
   Globe,
   Lock,
   FileCode2,
-  Copy
+  Copy,
+  Fingerprint,
+  PanelsTopLeft,
+  Users
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -78,7 +81,7 @@ const stats = [
 
 export function NewHomeView() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
 
       {/* Recent activity */}
       <div>
@@ -139,20 +142,36 @@ export function NewHomeView() {
               return <Card><CardContent className="py-6 text-sm text-muted-foreground">No recent activity yet. Use a tool and it will appear here.</CardContent></Card>
             }
 
+            const metaIcon = (meta) => {
+              if (meta.startsWith('DNS')) return Globe
+              if (meta.startsWith('WHOIS')) return Fingerprint
+              if (meta.startsWith('SSL')) return Shield
+              if (meta.startsWith('Portals')) return PanelsTopLeft
+              if (meta.startsWith('Tenant')) return Users
+              if (meta.startsWith('Azure KQL')) return FileCode2
+              return ArrowRight
+            }
+
             return (
-              <Card className="border-muted/70"><CardContent className="p-0">
+              <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background"><CardContent className="p-0">
                 <ul className="divide-y">
-                  {items.slice(0,8).map((it, idx) => (
-                    <li key={idx} className="px-3 py-2 hover:bg-muted/50 transition-colors">
-                      <Link to={it.to} className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-medium truncate max-w-[26rem]">{it.label}</div>
-                          <div className="text-xs text-muted-foreground">{it.meta}</div>
-                        </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      </Link>
-                    </li>
-                  ))}
+                  {items.slice(0,8).map((it, idx) => {
+                    const Icon = metaIcon(it.meta)
+                    return (
+                      <li key={idx} className="px-3 py-2 hover:bg-muted/50 transition-colors">
+                        <Link to={it.to} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Icon className="h-4 w-4 text-muted-foreground" />
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate max-w-[26rem]">{it.label}</div>
+                              <div className="text-xs text-muted-foreground">{it.meta}</div>
+                            </div>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      </li>
+                    )
+                  })}
                 </ul>
               </CardContent></Card>
             )
@@ -163,27 +182,36 @@ export function NewHomeView() {
       {/* Saved networks + quick generate sections */}
       <div className="grid gap-3 lg:grid-cols-3">
         {/* Saved Networks */}
-        <Card className="border-muted/70">
-          <CardHeader>
-            <CardTitle className="text-base">Saved networks</CardTitle>
-            <CardDescription>From Network Designer</CardDescription>
+        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Saved networks</CardTitle>
+                <CardDescription>From Network Designer</CardDescription>
+              </div>
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/network-designer">Open</Link>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {(() => {
               try {
-                const keys = Object.keys(localStorage).filter(k => k.startsWith('network-designer-'))
-                if (keys.length === 0) return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div>
-                const items = keys.slice(0,6).map(k => {
-                  try { return JSON.parse(localStorage.getItem(k) || '{}') } catch { return {} }
-                })
+                const networks = JSON.parse(localStorage.getItem('networks') || '[]')
+                const selectedId = JSON.parse(localStorage.getItem('selectedNetworkId') || 'null')
+                if (!Array.isArray(networks) || networks.length === 0) return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div>
                 return (
                   <ul className="divide-y">
-                    {items.map((n, i) => (
-                      <li key={i} className="px-3 py-2">
+                    {networks.slice(0,6).map((n) => (
+                      <li key={n.id} className="px-3 py-1.5">
                         <Link to="/network-designer" className="flex items-center justify-between">
-                          <div>
-                            <div className="text-sm font-medium">{n?.name || 'Saved network'}</div>
-                            <div className="text-xs text-muted-foreground">{n?.parentNetwork ? `${n.parentNetwork.ip}/${n.parentNetwork.cidr}` : ''}</div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">
+                              {n?.name || 'Saved network'}{n?.id === selectedId ? ' • current' : ''}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {n?.parentNetwork ? `${n.parentNetwork.ip}/${n.parentNetwork.cidr}` : ''}
+                            </div>
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         </Link>
@@ -197,24 +225,34 @@ export function NewHomeView() {
         </Card>
 
         {/* Random Passwords */}
-        <Card className="border-muted/70">
-          <CardHeader>
-            <CardTitle className="text-base">Random passwords</CardTitle>
-            <CardDescription>Quick copy, or open generator</CardDescription>
+        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Random passwords</CardTitle>
+                <CardDescription>Quick copy, or open generator</CardDescription>
+              </div>
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/password-generator">Open</Link>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <ul className="divide-y">
               {Array.from({length:5}).map((_,i) => {
-                const pwd = Math.random().toString(36).slice(2) + Math.random().toString(36).toUpperCase().slice(2,6) + "!";
+                const generateSecure = (len=16) => {
+                  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+'
+                  const bytes = new Uint8Array(len)
+                  crypto.getRandomValues(bytes)
+                  return Array.from(bytes, b => chars[b % chars.length]).join('')
+                }
+                const pwd = generateSecure(16)
                 return (
-                  <li key={i} className="px-3 py-2 flex items-center justify-between">
+                  <li key={i} className="px-3 py-1.5 flex items-center justify-between">
                     <span className="font-mono text-sm truncate mr-2">{pwd}</span>
-                    <div className="flex items-center gap-2">
-                      <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(pwd); toast.success('Copied password') }}>
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Link to="/password-generator" className="text-xs text-muted-foreground hover:underline">Open</Link>
-                    </div>
+                    <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(pwd); toast.success('Copied password') }}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
                   </li>
                 )
               })}
@@ -223,28 +261,31 @@ export function NewHomeView() {
         </Card>
 
         {/* Buzzword Ipsum */}
-        <Card className="border-muted/70">
-          <CardHeader>
-            <CardTitle className="text-base">Buzzword ipsum</CardTitle>
-            <CardDescription>Quick sentences</CardDescription>
+        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Buzzword ipsum</CardTitle>
+                <CardDescription>One paragraph, quick copy</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/buzzword-ipsum">Open</Link>
+                </Button>
+                <Button size="icon" variant="outline" onClick={() => { const text = document.getElementById('buzzword-paragraph')?.textContent || ''; navigator.clipboard.writeText(text); toast.success('Copied paragraph') }}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <ul className="divide-y">
-              {Array.from({length:5}).map((_,i) => {
-                const phrase = `Leverage ${['synergies','innovation','scalability','alignment','efficiencies'][i%5]} to drive ${['outcomes','value','growth','impact','excellence'][Math.floor(Math.random()*5)]}.`;
-                return (
-                  <li key={i} className="px-3 py-2 flex items-center justify-between">
-                    <span className="text-sm truncate mr-2">{phrase}</span>
-                    <div className="flex items-center gap-2">
-                      <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(phrase); toast.success('Copied sentence') }}>
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Link to="/buzzword-ipsum" className="text-xs text-muted-foreground hover:underline">Open</Link>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
+          <CardContent className="p-3">
+            {(() => {
+              const termsA = ['synergies','innovation','scalability','alignment','efficiencies','optimization','resilience']
+              const termsB = ['outcomes','value','growth','impact','excellence','velocity','time-to-value']
+              const sentence = () => `Leverage ${termsA[Math.floor(Math.random()*termsA.length)]} to drive ${termsB[Math.floor(Math.random()*termsB.length)]}.`
+              const paragraph = Array.from({length:5}).map(sentence).join(' ')
+              return <p id="buzzword-paragraph" className="text-sm leading-6 text-muted-foreground">{paragraph}</p>
+            })()}
           </CardContent>
         </Card>
       </div>
