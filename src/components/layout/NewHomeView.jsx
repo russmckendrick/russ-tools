@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +16,8 @@ import {
   Copy,
   Fingerprint,
   PanelsTopLeft,
-  Users
+  Users,
+  RefreshCw
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -80,107 +82,14 @@ const stats = [
 ]
 
 export function NewHomeView() {
+  const [buzzSeed, setBuzzSeed] = useState(0)
   return (
     <div className="space-y-6">
 
-      {/* Recent activity */}
-      <div>
-        <h2 className="text-xl font-semibold mb-3">Recent activity</h2>
-        <div className="grid gap-3 lg:grid-cols-2">
-          {(() => {
-            const items = []
-            try {
-              const dns = JSON.parse(localStorage.getItem('dns-lookup-history') || '[]')
-              dns.slice(0,5).forEach((h) => items.push({
-                label: h.query || h.domain,
-                meta: 'DNS Lookup',
-                to: '/dns-lookup',
-              }))
-            } catch {}
-            try {
-              const whois = JSON.parse(localStorage.getItem('whois-lookup-history') || '[]')
-              whois.slice(0,5).forEach((h) => items.push({
-                label: h.query,
-                meta: 'WHOIS',
-                to: '/whois-lookup',
-              }))
-            } catch {}
-            try {
-              const ssl = JSON.parse(localStorage.getItem('ssl-checker-domain-history') || '[]')
-              ssl.slice(0,5).forEach((h) => items.push({
-                label: h.domain,
-                meta: `SSL ${h.grade || ''}`.trim(),
-                to: `/ssl-checker/${encodeURIComponent(h.domain)}`,
-              }))
-            } catch {}
-            try {
-              const tenants = JSON.parse(localStorage.getItem('tenant-lookup-saved') || '[]')
-              tenants.slice(0,5).forEach((h) => items.push({
-                label: h.domain || h.name,
-                meta: 'Tenant Lookup',
-                to: '/tenant-lookup',
-              }))
-            } catch {}
-            try {
-              const portals = JSON.parse(localStorage.getItem('microsoft-portals-history') || '[]')
-              portals.slice(0,5).forEach((h) => items.push({
-                label: h.domain,
-                meta: 'Portals',
-                to: '/microsoft-portals',
-              }))
-            } catch {}
-            try {
-              const kqlFavs = JSON.parse(localStorage.getItem('azure-kql-custom-templates') || '[]')
-              kqlFavs.slice(0,5).forEach((t) => items.push({
-                label: t.name || 'Custom KQL Template',
-                meta: 'Azure KQL',
-                to: '/azure-kql',
-              }))
-            } catch {}
-
-            if (items.length === 0) {
-              return <Card><CardContent className="py-6 text-sm text-muted-foreground">No recent activity yet. Use a tool and it will appear here.</CardContent></Card>
-            }
-
-            const metaIcon = (meta) => {
-              if (meta.startsWith('DNS')) return Globe
-              if (meta.startsWith('WHOIS')) return Fingerprint
-              if (meta.startsWith('SSL')) return Shield
-              if (meta.startsWith('Portals')) return PanelsTopLeft
-              if (meta.startsWith('Tenant')) return Users
-              if (meta.startsWith('Azure KQL')) return FileCode2
-              return ArrowRight
-            }
-
-            return (
-              <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background"><CardContent className="p-0">
-                <ul className="divide-y">
-                  {items.slice(0,8).map((it, idx) => {
-                    const Icon = metaIcon(it.meta)
-                    return (
-                      <li key={idx} className="px-3 py-2 hover:bg-muted/50 transition-colors">
-                        <Link to={it.to} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Icon className="h-4 w-4 text-muted-foreground" />
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium truncate max-w-[26rem]">{it.label}</div>
-                              <div className="text-xs text-muted-foreground">{it.meta}</div>
-                            </div>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </CardContent></Card>
-            )
-          })()}
-        </div>
-      </div>
+      
 
       {/* Saved networks + quick generate sections */}
-      <div className="grid gap-3 lg:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-2">
         {/* Saved Networks */}
         <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background">
           <CardHeader className="pb-2">
@@ -220,6 +129,78 @@ export function NewHomeView() {
                   </ul>
                 )
               } catch { return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div> }
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* Recent activity */}
+        <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Recent activity</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {(() => {
+              const items = []
+              try {
+                const dns = JSON.parse(localStorage.getItem('dns-lookup-history') || '[]')
+                dns.slice(0,5).forEach((h) => items.push({ label: h.query || h.domain, meta: 'DNS Lookup', to: '/dns-lookup' }))
+              } catch {}
+              try {
+                const whois = JSON.parse(localStorage.getItem('whois-lookup-history') || '[]')
+                whois.slice(0,5).forEach((h) => items.push({ label: h.query, meta: 'WHOIS', to: '/whois-lookup' }))
+              } catch {}
+              try {
+                const ssl = JSON.parse(localStorage.getItem('ssl-checker-domain-history') || '[]')
+                ssl.slice(0,5).forEach((h) => items.push({ label: h.domain, meta: `SSL ${h.grade || ''}`.trim(), to: `/ssl-checker/${encodeURIComponent(h.domain)}` }))
+              } catch {}
+              try {
+                const tenants = JSON.parse(localStorage.getItem('tenant-lookup-saved') || '[]')
+                tenants.slice(0,5).forEach((h) => items.push({ label: h.domain || h.name, meta: 'Tenant Lookup', to: '/tenant-lookup' }))
+              } catch {}
+              try {
+                const portals = JSON.parse(localStorage.getItem('microsoft-portals-history') || '[]')
+                portals.slice(0,5).forEach((h) => items.push({ label: h.domain, meta: 'Portals', to: '/microsoft-portals' }))
+              } catch {}
+              try {
+                const kqlFavs = JSON.parse(localStorage.getItem('azure-kql-custom-templates') || '[]')
+                kqlFavs.slice(0,5).forEach((t) => items.push({ label: t.name || 'Custom KQL Template', meta: 'Azure KQL', to: '/azure-kql' }))
+              } catch {}
+
+              if (items.length === 0) {
+                return <div className="px-3 py-3 text-sm text-muted-foreground">No recent activity yet</div>
+              }
+
+              const metaIcon = (meta) => {
+                if (meta.startsWith('DNS')) return Globe
+                if (meta.startsWith('WHOIS')) return Fingerprint
+                if (meta.startsWith('SSL')) return Shield
+                if (meta.startsWith('Portals')) return PanelsTopLeft
+                if (meta.startsWith('Tenant')) return Users
+                if (meta.startsWith('Azure KQL')) return FileCode2
+                return ArrowRight
+              }
+
+              return (
+                <ul className="divide-y">
+                  {items.slice(0,6).map((it, idx) => {
+                    const Icon = metaIcon(it.meta)
+                    return (
+                      <li key={idx} className="px-3 py-1.5 hover:bg-muted/50 transition-colors">
+                        <Link to={it.to} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Icon className="h-4 w-4 text-muted-foreground" />
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate max-w-[26rem]">{it.label}</div>
+                              <div className="text-xs text-muted-foreground">{it.meta}</div>
+                            </div>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )
             })()}
           </CardContent>
         </Card>
@@ -272,6 +253,9 @@ export function NewHomeView() {
                 <Button size="sm" variant="outline" asChild>
                   <Link to="/buzzword-ipsum">Open</Link>
                 </Button>
+                <Button size="icon" variant="outline" onClick={() => setBuzzSeed((s) => s + 1)}>
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
                 <Button size="icon" variant="outline" onClick={() => { const text = document.getElementById('buzzword-paragraph')?.textContent || ''; navigator.clipboard.writeText(text); toast.success('Copied paragraph') }}>
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -283,8 +267,15 @@ export function NewHomeView() {
               const termsA = ['synergies','innovation','scalability','alignment','efficiencies','optimization','resilience']
               const termsB = ['outcomes','value','growth','impact','excellence','velocity','time-to-value']
               const sentence = () => `Leverage ${termsA[Math.floor(Math.random()*termsA.length)]} to drive ${termsB[Math.floor(Math.random()*termsB.length)]}.`
-              const paragraph = Array.from({length:5}).map(sentence).join(' ')
-              return <p id="buzzword-paragraph" className="text-sm leading-6 text-muted-foreground">{paragraph}</p>
+              const paragraph = () => Array.from({length:5}).map(sentence).join(' ')
+              // use seed to re-render
+              const _ = buzzSeed
+              return (
+                <div id="buzzword-paragraph" className="space-y-2">
+                  <p className="text-sm leading-6 text-muted-foreground">{paragraph()}</p>
+                  <p className="text-sm leading-6 text-muted-foreground">{paragraph()}</p>
+                </div>
+              )
             })()}
           </CardContent>
         </Card>
