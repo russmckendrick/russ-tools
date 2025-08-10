@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sidebar } from "./Sidebar"
+import { Toaster } from "sonner"
 
 export function NewLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -50,6 +51,7 @@ export function NewLayout() {
           </div>
         </main>
       </div>
+      <Toaster />
     </div>
   )
 }

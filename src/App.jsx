@@ -63,7 +63,7 @@ class LazyLoadErrorBoundary extends React.Component {
 
 // Lazy load tool components for code splitting with better error handling
 const NetworkDesignerTool = lazy(() => 
-  import('./components/tools/network-designer/NetworkDesignerTool').catch(() => ({
+  import('./components/tools/network-designer/NetworkDesignerShadcn').catch(() => ({
     default: () => <div>Error loading Network Designer Tool</div>
   }))
 );
