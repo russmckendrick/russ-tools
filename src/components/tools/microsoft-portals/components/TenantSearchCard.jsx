@@ -37,14 +37,14 @@ const TenantSearchCard = ({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Tenant Lookup & Portal Access</CardTitle>
-        <CardDescription>
+    <div>
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold">Tenant Lookup & Portal Access</h2>
+        <p className="text-muted-foreground">
           Enter a domain name or email address to find the tenant and generate portal links
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
+      </div>
+      <div>
         <div className="flex flex-col gap-4">
           <div className="flex gap-2">
             <div className="flex-1">
@@ -160,8 +160,8 @@ const TenantSearchCard = ({
             </Card>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
