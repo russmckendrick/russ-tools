@@ -4,6 +4,18 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import toolsConfig from "@/utils/toolsConfig.json"
+import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub } from "@tabler/icons-react"
+import Base64Icon from "@/components/tools/base64/Base64Icon"
+import JSONIcon from "@/components/tools/data-converter/JSONIcon"
+import DNSIcon from "@/components/tools/dns-lookup/DNSIcon"
+import WHOISIcon from "@/components/tools/whois/WHOISIcon"
+import PasswordIcon from "@/components/tools/password-generator/PasswordIcon"
+import JWTIcon from "@/components/tools/jwt/JWTIcon"
+import MicrosoftPortalsIcon from "@/components/tools/microsoft-portals/MicrosoftPortalsIcon"
+import TenantLookupIcon from "@/components/tools/tenant-lookup/TenantLookupIcon"
+import AzureKQLIcon from "@/components/tools/azure-kql/AzureKQLIcon"
+import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon"
 import { 
   Network, 
   Settings, 
@@ -15,60 +27,61 @@ import {
   ChevronDown,
   ChevronRight,
   Github,
-  X
+  X,
+  Clock
 } from "lucide-react"
 
+const categoryOrder = [
+  "Network Tools",
+  "Azure Tools",
+  "Microsoft Tools",
+  "Security Tools",
+  "Developer Tools",
+  "Content Tools",
+]
+
+const categoryIcons = {
+  "Network Tools": Network,
+  "Azure Tools": Database,
+  "Microsoft Tools": Settings,
+  "Security Tools": Shield,
+  "Developer Tools": Code,
+  "Content Tools": FileText,
+}
+
+const iconRegistry = {
+  DNSIcon: (props) => <svg {...props} viewBox="0 0 1 1" />, // placeholder, real icons rendered where needed
+}
+
+// Map string names in toolsConfig to actual components
+const iconByKey = {
+  IconNetwork: IconNetwork,
+  IconBrandAzure: IconBrandAzure,
+  IconChartDots3: IconChartDots3,
+  IconClock: IconClock,
+  IconShield: IconShield,
+  IconMessageCircle: IconMessageCircle,
+  IconBrandGithub: IconBrandGithub,
+  DNSIcon: DNSIcon,
+  WHOISIcon: WHOISIcon,
+  Base64Icon: Base64Icon,
+  JSONIcon: JSONIcon,
+  JWTIcon: JWTIcon,
+  PasswordIcon: PasswordIcon,
+  MicrosoftPortalsIcon: MicrosoftPortalsIcon,
+  TenantLookupIcon: TenantLookupIcon,
+  AzureKQLIcon: AzureKQLIcon,
+  BuzzwordIpsumIcon: BuzzwordIpsumIcon,
+}
+
 const toolCategories = [
-  {
-    name: "Dashboard",
-    icon: Home,
-    path: "/",
-    items: []
-  },
-  {
-    name: "Network Tools",
-    icon: Network,
-    items: [
-      { name: "Network Designer", path: "/network-designer" },
-      { name: "DNS Lookup", path: "/dns-lookup" },
-      { name: "WHOIS Lookup", path: "/whois-lookup" },
-      { name: "SSL Checker", path: "/ssl-checker" }
-    ]
-  },
-  {
-    name: "Azure Tools",
-    icon: Database,
-    items: [
-      { name: "Resource Naming", path: "/azure-naming" },
-      { name: "KQL Query Builder", path: "/azure-kql" }
-    ]
-  },
-  {
-    name: "Microsoft Tools",
-    icon: Settings,
-    items: [
-      { name: "Portals (GDAP)", path: "/microsoft-portals" },
-      { name: "Tenant Lookup", path: "/tenant-lookup" }
-    ]
-  },
-  {
-    name: "Security Tools",
-    icon: Shield,
-    items: [
-      { name: "Password Generator", path: "/password-generator" },
-      { name: "JWT Decoder", path: "/jwt" }
-    ]
-  },
-  {
-    name: "Developer Tools",
-    icon: Code,
-    items: [
-      { name: "Base64 Encoder", path: "/base64" },
-      { name: "Data Converter", path: "/data-converter" },
-      { name: "CRON Builder", path: "/cron" },
-      { name: "Buzzword Ipsum", path: "/buzzword-ipsum" }
-    ]
-  }
+  { name: "Dashboard", icon: Home, path: "/", items: [] },
+  ...categoryOrder.map((categoryName) => {
+    const items = toolsConfig
+      .filter((t) => t.category === categoryName && t.path && t.path.startsWith("/"))
+      .map((t) => ({ name: t.title, path: t.path, iconKey: t.icon }))
+    return { name: categoryName, icon: categoryIcons[categoryName] || FileText, items }
+  }).filter((c) => c.items.length > 0)
 ]
 
 export function Sidebar({ onClose, collapsed = false }) {
@@ -125,7 +138,7 @@ export function Sidebar({ onClose, collapsed = false }) {
                     <Button
                       variant={isCategoryActive(category) ? "secondary" : "ghost"}
                       className={cn(
-                        "w-full justify-start",
+                        "w-full justify-start h-9 px-2",
                         isCategoryActive(category) && "bg-muted font-medium",
                         collapsed && "justify-center"
                       )}
@@ -145,7 +158,7 @@ export function Sidebar({ onClose, collapsed = false }) {
                           <Button
                             variant="ghost"
                             className={cn(
-                              "w-full justify-between",
+                              "w-full justify-between h-9 px-2",
                               isCategoryActive(category) && "bg-muted/50",
                               collapsed && "justify-center"
                             )}
@@ -175,12 +188,17 @@ export function Sidebar({ onClose, collapsed = false }) {
                               key={item.path}
                               variant={isActiveItem(item.path) ? "secondary" : "ghost"}
                               className={cn(
-                                "w-full justify-start text-sm",
-                                isActiveItem(item.path) && "bg-muted font-medium"
+                                "w-full justify-start text-sm h-8 px-2 relative",
+                                isActiveItem(item.path) && "bg-muted font-medium before:absolute before:left-0 before:top-1 before:bottom-1 before:w-1 before:rounded-r before:bg-primary"
                               )}
                               asChild
                             >
                               <Link to={item.path} onClick={() => onClose && onClose()}>
+                                {(() => {
+                                  const Candidate = iconByKey[item.iconKey]
+                                  const ItemIcon = Candidate || (item.iconKey === 'IconBrandAzure' ? Database : FileText)
+                                  return <ItemIcon size={16} className="mr-2 h-4 w-4" />
+                                })()}
                                 {item.name}
                               </Link>
                             </Button>
@@ -194,12 +212,17 @@ export function Sidebar({ onClose, collapsed = false }) {
                               key={item.path}
                               variant={isActiveItem(item.path) ? "secondary" : "ghost"}
                               className={cn(
-                                "w-full justify-start text-sm font-normal",
-                                isActiveItem(item.path) && "bg-muted font-medium"
+                                "w-full justify-start text-sm font-normal h-8 px-2 relative",
+                                isActiveItem(item.path) && "bg-muted font-medium before:absolute before:left-0 before:top-1 before:bottom-1 before:w-1 before:rounded-r before:bg-primary"
                               )}
                               asChild
                             >
                               <Link to={item.path} onClick={() => onClose && onClose()}>
+                                {(() => {
+                                  const Candidate = iconByKey[item.iconKey]
+                                  const ItemIcon = Candidate || (item.iconKey === 'IconBrandAzure' ? Database : FileText)
+                                  return <ItemIcon size={16} className="mr-2 h-4 w-4" />
+                                })()}
                                 {item.name}
                               </Link>
                             </Button>

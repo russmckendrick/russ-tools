@@ -78,7 +78,7 @@ export function NewHomeView() {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <div className="text-center space-y-4">
+      <div className="text-center space-y-4 pt-4 lg:pt-6">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
             Professional Developer Tools
@@ -97,10 +97,10 @@ export function NewHomeView() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {stats.map((stat) => (
-          <Card key={stat.label} className="text-center">
-            <CardContent className="pt-6">
+          <Card key={stat.label} className="text-center border-muted/70">
+            <CardContent className="py-4 md:pt-6">
               <div className="flex items-center justify-center mb-2">
                 <stat.icon className="h-8 w-8 text-muted-foreground" />
               </div>
@@ -120,9 +120,9 @@ export function NewHomeView() {
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-6 md:gap-8 md:grid-cols-2">
           {toolCategories.map((category) => (
-            <Card key={category.title} className="group hover:shadow-md transition-shadow">
+            <Card key={category.title} className="group hover:shadow-sm transition-shadow border-muted/70">
               <CardHeader>
                 <div className="flex items-center space-x-3">
                   <div className={`p-2 rounded-lg ${category.bgColor}`}>
@@ -141,7 +141,7 @@ export function NewHomeView() {
                   <Link
                     key={tool.path}
                     to={tool.path}
-                    className="block p-3 rounded-lg border hover:bg-muted/50 transition-colors group"
+                    className="block p-3 rounded-lg border border-muted/70 hover:bg-muted/50 transition-colors group"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -161,7 +161,7 @@ export function NewHomeView() {
       </div>
 
       {/* Features */}
-      <Card className="bg-muted/30">
+      <Card className="bg-muted/30 border-muted/70">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Why RussTools?</CardTitle>
           <CardDescription>
