@@ -19,6 +19,7 @@ import {
   Share, 
   ExternalLink
 } from 'lucide-react';
+import AzureNamingIcon from './AzureNamingIcon';
 import SEOHead from '../../common/SEOHead';
 import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
