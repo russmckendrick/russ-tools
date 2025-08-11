@@ -130,4 +130,14 @@
     mask: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
     opacity: .25;
   }
+
+  .interactive {
+    @apply transition-all duration-150 ease-out;
+  }
+  .interactive:hover {
+    transform: translateY(-1px);
+  }
+  .interactive:active {
+    transform: scale(0.98);
+  }
 }

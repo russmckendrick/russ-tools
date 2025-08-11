@@ -385,10 +385,10 @@ const MicrosoftPortalsShadcn = () => {
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
+                  <Button className="interactive" variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
                     <Grid3X3 className="h-4 w-4" />
                   </Button>
-                  <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
+                  <Button className="interactive" variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
                     <List className="h-4 w-4" />
                   </Button>
                 </div>

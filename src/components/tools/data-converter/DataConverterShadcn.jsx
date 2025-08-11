@@ -410,7 +410,7 @@ const DataConverterShadcn = () => {
       />
 
       {/* Controls */}
-      <Card className="mb-6">
+      <Card className="mb-6 relative rounded-xl shadow-sm ring-1 ring-border/60">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Conversion Settings</CardTitle>
