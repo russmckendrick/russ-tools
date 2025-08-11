@@ -1,13 +1,8 @@
 import React, { Suspense, lazy } from 'react';
-import { MantineProvider } from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Layout } from './components/layout/Layout';
 import { NewLayout } from './components/layout/NewLayout';
 import { ThemeProvider } from './components/theme-provider';
-import { AzureNamingProvider } from './components/tools/azure-naming/context/AzureNamingContext';
 import { AzureNamingProviderShadcn } from './components/tools/azure-naming/context/AzureNamingContextShadcn';
-import HomeView from './components/layout/HomeView';
 import { NewHomeView } from './components/layout/NewHomeView';
 import ClearAllStorage from './components/common/ClearAllStorage';
 
@@ -171,183 +166,148 @@ const LazyRoute = ({ children }) => (
 export default function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <MantineProvider
-        theme={{
-          primaryColor: 'blue',
-          fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-          headings: {
-            fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-            fontWeight: '600',
-          },
-          defaultRadius: 'md',
-          cursorType: 'pointer',
-          respectReducedMotion: true,
-          focusRing: 'always',
-          activeClassName: 'mantine-active',
-        }}
-      >
-        <Notifications />
-        <AzureNamingProviderShadcn>
-          <BrowserRouter>
+      <AzureNamingProviderShadcn>
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<NewLayout />}>
-              {/* Default route - now points to NewHomeView */}
               <Route index element={<NewHomeView />} />
-            
-            {/* Network Designer route */}
-            <Route path="network-designer" element={
-              <LazyRoute>
-                <NetworkDesignerTool />
-              </LazyRoute>
-            } />
-            
-            {/* Azure Naming Tool route */}
-            <Route path="azure-naming" element={
-              <LazyRoute>
-                <AzureNamingTool />
-              </LazyRoute>
-            } />
-            
-            {/* Hidden route for clearing all local storage */}
-            <Route path="delete" element={<ClearAllStorage />} />
 
-            {/* Cron Builder Tool route */}
-            <Route path="cron" element={
-              <LazyRoute>
-                <CronBuilderTool />
-              </LazyRoute>
-            } />
+              <Route path="network-designer" element={
+                <LazyRoute>
+                  <NetworkDesignerTool />
+                </LazyRoute>
+              } />
 
-            {/* SSL Checker Tool route */}
-            <Route path="ssl-checker" element={
-              <LazyRoute>
-                <SSLCheckerTool />
-              </LazyRoute>
-            } />
-            <Route path="ssl-checker/:domain" element={
-              <LazyRoute>
-                <SSLCheckerTool />
-              </LazyRoute>
-            } />
+              <Route path="azure-naming" element={
+                <LazyRoute>
+                  <AzureNamingTool />
+                </LazyRoute>
+              } />
 
-            {/* DNS Lookup Tool route */}
-            <Route path="dns-lookup" element={
-              <LazyRoute>
-                <DNSLookupTool />
-              </LazyRoute>
-            } />
+              <Route path="delete" element={<ClearAllStorage />} />
 
-            {/* WHOIS Lookup Tool route */}
-            <Route path="whois-lookup" element={
-              <LazyRoute>
-                <WHOISLookupTool />
-              </LazyRoute>
-            } />
-            <Route path="whois-lookup/:query" element={
-              <LazyRoute>
-                <WHOISLookupTool />
-              </LazyRoute>
-            } />
+              <Route path="cron" element={
+                <LazyRoute>
+                  <CronBuilderTool />
+                </LazyRoute>
+              } />
 
-            {/* JSON Formatter Tool route */}
-            <Route path="data-converter" element={
-              <LazyRoute>
-                <DataConverterTool />
-              </LazyRoute>
-            } />
+              <Route path="ssl-checker" element={
+                <LazyRoute>
+                  <SSLCheckerTool />
+                </LazyRoute>
+              } />
+              <Route path="ssl-checker/:domain" element={
+                <LazyRoute>
+                  <SSLCheckerTool />
+                </LazyRoute>
+              } />
 
-            {/* Base64 Encoder/Decoder Tool route */}
-            <Route path="base64" element={
-              <LazyRoute>
-                <Base64Tool />
-              </LazyRoute>
-            } />
-            <Route path="base64/:input" element={
-              <LazyRoute>
-                <Base64Tool />
-              </LazyRoute>
-            } />
+              <Route path="dns-lookup" element={
+                <LazyRoute>
+                  <DNSLookupTool />
+                </LazyRoute>
+              } />
 
-            {/* JWT Decoder/Validator Tool route */}
-            <Route path="jwt" element={
-              <LazyRoute>
-                <JWTTool />
-              </LazyRoute>
-            } />
-            <Route path="jwt/:token" element={
-              <LazyRoute>
-                <JWTTool />
-              </LazyRoute>
-            } />
+              <Route path="whois-lookup" element={
+                <LazyRoute>
+                  <WHOISLookupTool />
+                </LazyRoute>
+              } />
+              <Route path="whois-lookup/:query" element={
+                <LazyRoute>
+                  <WHOISLookupTool />
+                </LazyRoute>
+              } />
 
-            {/* Password Generator Tool route */}
-            <Route path="password-generator" element={
-              <LazyRoute>
-                <PasswordGeneratorTool />
-              </LazyRoute>
-            } />
+              <Route path="data-converter" element={
+                <LazyRoute>
+                  <DataConverterTool />
+                </LazyRoute>
+              } />
 
-            {/* Microsoft Portals Tool route */}
-            <Route path="microsoft-portals" element={
-              <LazyRoute>
-                <MicrosoftPortalsTool />
-              </LazyRoute>
-            } />
-            <Route path="microsoft-portals/:domain" element={
-              <LazyRoute>
-                <MicrosoftPortalsTool />
-              </LazyRoute>
-            } />
+              <Route path="base64" element={
+                <LazyRoute>
+                  <Base64Tool />
+                </LazyRoute>
+              } />
+              <Route path="base64/:input" element={
+                <LazyRoute>
+                  <Base64Tool />
+                </LazyRoute>
+              } />
 
-            {/* Microsoft Tenant Lookup Tool route */}
-            <Route path="tenant-lookup" element={
-              <LazyRoute>
-                <TenantLookupTool />
-              </LazyRoute>
-            } />
-            <Route path="tenant-lookup/:domain" element={
-              <LazyRoute>
-                <TenantLookupTool />
-              </LazyRoute>
-            } />
+              <Route path="jwt" element={
+                <LazyRoute>
+                  <JWTTool />
+                </LazyRoute>
+              } />
+              <Route path="jwt/:token" element={
+                <LazyRoute>
+                  <JWTTool />
+                </LazyRoute>
+              } />
 
-            {/* Azure KQL Query Builder Tool route */}
-            <Route path="azure-kql" element={
-              <LazyRoute>
-                <AzureKQLTool />
-              </LazyRoute>
-            } />
-            <Route path="azure-kql/:service" element={
-              <LazyRoute>
-                <AzureKQLTool />
-              </LazyRoute>
-            } />
-            <Route path="azure-kql/:service/:template" element={
-              <LazyRoute>
-                <AzureKQLTool />
-              </LazyRoute>
-            } />
+              <Route path="password-generator" element={
+                <LazyRoute>
+                  <PasswordGeneratorTool />
+                </LazyRoute>
+              } />
 
-            {/* Buzzword Ipsum Tool route */}
-            <Route path="buzzword-ipsum" element={
-              <LazyRoute>
-                <BuzzwordIpsumTool />
-              </LazyRoute>
-            } />
+              <Route path="microsoft-portals" element={
+                <LazyRoute>
+                  <MicrosoftPortalsTool />
+                </LazyRoute>
+              } />
+              <Route path="microsoft-portals/:domain" element={
+                <LazyRoute>
+                  <MicrosoftPortalsTool />
+                </LazyRoute>
+              } />
 
-            {/* UI Demo route - temporary for testing new components */}
-            <Route path="ui-demo" element={
-              <LazyRoute>
-                <UIDemo />
-              </LazyRoute>
-            } />
+              <Route path="tenant-lookup" element={
+                <LazyRoute>
+                  <TenantLookupTool />
+                </LazyRoute>
+              } />
+              <Route path="tenant-lookup/:domain" element={
+                <LazyRoute>
+                  <TenantLookupTool />
+                </LazyRoute>
+              } />
 
-            {/* Add more routes here as needed */}
-          </Route>
-        </Routes>
+              <Route path="azure-kql" element={
+                <LazyRoute>
+                  <AzureKQLTool />
+                </LazyRoute>
+              } />
+              <Route path="azure-kql/:service" element={
+                <LazyRoute>
+                  <AzureKQLTool />
+                </LazyRoute>
+              } />
+              <Route path="azure-kql/:service/:template" element={
+                <LazyRoute>
+                  <AzureKQLTool />
+                </LazyRoute>
+              } />
+
+              <Route path="buzzword-ipsum" element={
+                <LazyRoute>
+                  <BuzzwordIpsumTool />
+                </LazyRoute>
+              } />
+
+              <Route path="ui-demo" element={
+                <LazyRoute>
+                  <UIDemo />
+                </LazyRoute>
+              } />
+
+            </Route>
+          </Routes>
         </BrowserRouter>
       </AzureNamingProviderShadcn>
-    </MantineProvider>
     </ThemeProvider>
   );
 }

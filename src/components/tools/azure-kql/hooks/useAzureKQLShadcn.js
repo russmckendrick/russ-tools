@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useLocalStorage } from '@mantine/hooks';
+import { useLocalStorage } from '../../../../lib/utils';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { generateKQLQuery } from '../utils/kqlGenerator';

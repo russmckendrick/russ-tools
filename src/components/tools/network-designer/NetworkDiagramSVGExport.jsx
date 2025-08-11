@@ -1,8 +1,9 @@
-import { useMantineTheme, useMantineColorScheme, Button, Modal } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 import { IconFileTypeSvg } from '@tabler/icons-react';
 import { devError } from '../../../utils/devLog';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Netmask } from 'netmask';
 import { ipToLong, longToIp, getSubnetBgColorHex } from '../../../utils';
 import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../../../utils/network/networkDiagramUtils';
@@ -21,11 +22,23 @@ const getContrastColor = (hexColor, theme) => {
   return luminance < 0.5 ? theme.white : theme.black;
 };
 
+// Minimal theme palette to replace Mantine theme values used in SVG
+const THEME = {
+  colors: {
+    gray: ['#f1f3f5','#e9ecef','#dee2e6','#ced4da','#adb5bd','#868e96','#495057','#343a40'],
+    dark: ['#c1c2c5','#a6a7ab','#909296','#5c5f66','#373A40','#2C2E33','#25262b','#1A1B1E'],
+    blue: ['#e7f5ff','#d0ebff','#a5d8ff','#74c0fc','#4dabf7','#339af0','#228be6','#1c7ed6']
+  },
+  white: '#ffffff',
+  black: '#000000',
+  fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+};
+
 // This component receives all props needed for SVG export
 export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = {} }) {
-  const theme = useMantineTheme();
-  const { colorScheme } = useMantineColorScheme();
   const [errorModal, setErrorModal] = useState({ opened: false, message: '' });
+  const colorScheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  const theme = THEME;
 
   // Extracted from NetworkDiagram.jsx
   function generateSVGMarkup() {
@@ -80,7 +93,7 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = 
     const headerHeight = 70; // icon (22) + title (24) + 2 lines + padding
     let currentY = outerPad + innerPad + headerHeight;
     // Calculate diagram height: header + all rows + spacing + footer
-    let diagramHeight = currentY + items.reduce((acc, item) => acc + (item.type === 'subnet' ? subnetHeight : freeSpaceHeight) + subnetSpacing, 0) + 18 + 32; // 18px footer margin, 32px footer height
+    let diagramHeight = currentY + items.reduce((acc, item) => acc + (item.type === 'subnet' ? subnetHeight : freeSpaceHeight) + subnetSpacing, 0) + 18 + 32;
     // SVG Markup
     let svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${width}" height="${diagramHeight}" viewBox="0 0 ${width} ${diagramHeight}" xmlns="http://www.w3.org/2000/svg">\n`;
     svg += `<rect x="0" y="0" width="${width}" height="${diagramHeight}" fill="${bgColor}"/>`;
@@ -154,11 +167,8 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = 
       document.body.removeChild(downloadLink);
       URL.revokeObjectURL(svgUrl);
       
-      notifications.show({
-        title: 'SVG Export Complete',
-        message: `Network diagram exported as ${filename}`,
-        color: 'green',
-        icon: <IconFileTypeSvg size={16} />
+      toast.success('SVG Export Complete', {
+        description: `Network diagram exported as ${filename}`
       });
     } catch (err) {
       devError('SVG export error:', err);
@@ -176,9 +186,14 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = 
           Export SVG
         </Button>
       )}
-      <Modal opened={errorModal.opened} onClose={() => setErrorModal({ opened: false, message: '' })} title="SVG Export Error">
-        {errorModal.message}
-      </Modal>
+      <Dialog open={errorModal.opened} onOpenChange={(v) => setErrorModal({ opened: v, message: '' })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>SVG Export Error</DialogTitle>
+          </DialogHeader>
+          {errorModal.message}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

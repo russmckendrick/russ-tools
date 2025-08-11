@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocalStorage } from '@mantine/hooks';
+import { useLocalStorage } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../ui/card';
 import { Button } from '../../../ui/button';
 import { Badge } from '../../../ui/badge';

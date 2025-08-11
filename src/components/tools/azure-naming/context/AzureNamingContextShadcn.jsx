@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
-import { useLocalStorage } from '@mantine/hooks';
+import { useLocalStorage } from '../../../../lib/utils';
 import { Cloud, X } from 'lucide-react';
 import { devLog, devWarn, devError } from '../../../../utils/devLog';
 import { RESOURCE_TYPES, generateResourceName } from '../../../../utils/azure/rules';

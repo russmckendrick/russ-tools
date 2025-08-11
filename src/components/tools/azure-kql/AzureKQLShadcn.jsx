@@ -19,7 +19,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
-import { useLocalStorage } from '@mantine/hooks';
+import { useLocalStorage } from '@/lib/utils';
 import { toast } from 'sonner';
 import { copyShareableURL } from '../../../utils/sharelink';
 import SEOHead from '../../common/SEOHead';

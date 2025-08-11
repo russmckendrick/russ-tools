@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Button, Paper, Text, Title, Center, Stack, ThemeIcon, Group, Alert, List, Modal, Grid, Card } from '@mantine/core';
-import { IconAlertTriangle, IconTrash, IconShield } from '@tabler/icons-react';
-import { useDisclosure } from '@mantine/hooks';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Shield, TriangleAlert, Trash2 } from 'lucide-react';
 
 export default function ClearAllStorage() {
   const [cleared, setCleared] = useState(false);
-  const [opened, { open, close }] = useDisclosure(false);
+  const [open, setOpen] = useState(false);
 
   const handleClear = () => {
     localStorage.clear();
@@ -14,143 +17,75 @@ export default function ClearAllStorage() {
   };
 
   return (
-    <>
-      <Paper p="xl" radius="lg" withBorder>
-        <Stack gap="xl">
-          {/* Header */}
-          <Group gap="md">
-            <ThemeIcon size={48} radius="md" color="red" variant="light">
-              <IconShield size={28} />
-            </ThemeIcon>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-red-600" />
+            Storage Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Manage locally stored data across all tools. All data is stored locally in your browser and never sent to external servers.
+          </p>
+          <ul className="list-disc pl-6 text-sm text-muted-foreground space-y-1">
+            <li>Azure naming tool configurations</li>
+            <li>Data converter history</li>
+            <li>DNS/WHOIS lookup history and cache</li>
+            <li>Network designer saved networks</li>
+            <li>Tool preferences and settings</li>
+          </ul>
+          <Separator />
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <Title order={2} fw={600}>
-                Storage Management
-              </Title>
-              <Text size="sm" c="dimmed">
-                Manage locally stored data across all tools
-              </Text>
+              <div className="flex items-center gap-2 text-red-600 font-medium mb-2">
+                <TriangleAlert className="h-4 w-4" />
+                Danger Zone
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Clear all locally stored data permanently. This action cannot be undone.
+              </p>
             </div>
-          </Group>
-
-          {/* Content Grid */}
-          <Grid gutter="lg">
-            <Grid.Col span={{ base: 12, md: 8 }}>
-              <Card withBorder p="lg" radius="md">
-                <Stack gap="md">
-                  <Group gap="xs">
-                    <Text fw={600} size="lg">Local Storage Overview</Text>
-                  </Group>
-                  
-                  <Text size="sm" c="dimmed">
-                    RussTools stores data locally in your browser to enhance your experience. This includes:
-                  </Text>
-                  
-                  <List size="sm" spacing="xs">
-                    <List.Item>Azure naming tool configurations</List.Item>
-                    <List.Item>Data converter history</List.Item>
-                    <List.Item>DNS lookup history and cache</List.Item>
-                    <List.Item>Network designer saved networks</List.Item>
-                    <List.Item>Tool preferences and settings</List.Item>
-                    <List.Item>WHOIS lookup history and cache</List.Item>
-                  </List>
-                  
-                  <Text size="sm" c="dimmed">
-                    All data is stored locally in your browser and never sent to external servers.
-                  </Text>
-                </Stack>
-              </Card>
-            </Grid.Col>
-            
-            <Grid.Col span={{ base: 12, md: 4 }}>
-              <Card withBorder p="lg" radius="md" style={{ height: '100%' }}>
-                <Stack gap="md" justify="space-between" style={{ height: '100%' }}>
-                  <div>
-                    <Group gap="xs" mb="md">
-                      <ThemeIcon size="sm" color="red" variant="light">
-                        <IconAlertTriangle size={14} />
-                      </ThemeIcon>
-                      <Text fw={600} size="sm" c="red">Danger Zone</Text>
-                    </Group>
-                    
-                    <Text size="sm" c="dimmed" mb="md">
-                      Clear all locally stored data permanently. This action cannot be undone.
-                    </Text>
-                  </div>
-                  
-                  <Button
-                    color="red"
-                    variant="light"
-                    leftSection={<IconTrash size={16} />}
-                    onClick={cleared ? undefined : open}
-                    disabled={cleared}
-                    fullWidth
-                  >
-                    {cleared ? 'Storage Cleared' : 'Clear All Data'}
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button variant="destructive" disabled={cleared}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {cleared ? 'Storage Cleared' : 'Clear All Data'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-red-600">
+                    <TriangleAlert className="h-4 w-4" />
+                    Confirm Data Deletion
+                  </DialogTitle>
+                </DialogHeader>
+                <Alert variant="destructive">
+                  <AlertDescription className="text-sm">
+                    You are about to permanently delete all locally stored data for all RussTools. This includes all history, cache, configurations, and preferences.
+                  </AlertDescription>
+                </Alert>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                  <Button variant="destructive" onClick={() => { handleClear(); setOpen(false); }}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Yes, Clear All Data
                   </Button>
-                </Stack>
-              </Card>
-            </Grid.Col>
-          </Grid>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
 
           {cleared && (
-            <Alert
-              icon={<IconTrash size={16} />}
-              title="Storage Cleared Successfully"
-              color="green"
-              variant="light"
-            >
-              All locally stored data has been permanently removed. You can refresh the page or continue using the tools with a clean slate.
+            <Alert className="mt-4">
+              <AlertDescription className="text-sm">
+                All locally stored data has been permanently removed. You can refresh the page or continue using the tools with a clean slate.
+              </AlertDescription>
             </Alert>
           )}
-        </Stack>
-      </Paper>
-
-      {/* Confirmation Modal */}
-      <Modal
-        opened={opened}
-        onClose={close}
-        title={
-          <Group gap="md">
-            <ThemeIcon size={32} radius="md" color="red" variant="light">
-              <IconAlertTriangle size={20} />
-            </ThemeIcon>
-            <Text fw={600} c="red">Confirm Data Deletion</Text>
-          </Group>
-        }
-        centered
-        size="md"
-      >
-        <Stack gap="lg">
-          <Alert
-            icon={<IconAlertTriangle size={16} />}
-            title="Warning: This action cannot be undone"
-            color="red"
-            variant="light"
-          >
-            <Text size="sm">
-              You are about to <Text span fw={600}>permanently delete</Text> all locally stored data for all RussTools. 
-              This includes all history, cache, configurations, and preferences.
-            </Text>
-          </Alert>
-          
-          <Text size="sm" c="dimmed">
-            Are you sure you want to proceed? This will clear all data and cannot be reversed.
-          </Text>
-          
-          <Group justify="flex-end" gap="md">
-            <Button variant="light" onClick={close}>
-              Cancel
-            </Button>
-            <Button 
-              color="red" 
-              leftSection={<IconTrash size={16} />}
-              onClick={handleClear}
-            >
-              Yes, Clear All Data
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-    </>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

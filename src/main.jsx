@@ -1,6 +1,3 @@
-import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
-import '@mantine/dropzone/styles.css';
 import './styles/global.css';
 import './styles/globals.css';
 import React from 'react'
