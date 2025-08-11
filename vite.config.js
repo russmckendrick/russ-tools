@@ -15,8 +15,7 @@ export default defineConfig({
         manualChunks: {
           // Keep React ecosystem together
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          // Mantine UI components (kept empty once migration is complete)
-          'vendor-mantine': [],
+          // (formerly Mantine) placeholder removed
           // Icons
           'vendor-icons': ['@tabler/icons-react'],
           // Data processing libraries (excluding ExcelJS)
@@ -64,7 +63,6 @@ export default defineConfig({
       'react-dom', 
       'react/jsx-runtime',
       'react-router-dom',
-      // Mantine deps removed after migration
       '@tabler/icons-react'
     ],
     exclude: ['exceljs']
