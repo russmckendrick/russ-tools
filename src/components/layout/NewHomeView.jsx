@@ -1,8 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { 
   Network, 
   Database, 
@@ -25,59 +23,38 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import toolsConfig from "@/utils/toolsConfig.json"
+import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub } from "@tabler/icons-react"
+import Base64Icon from "@/components/tools/base64/Base64Icon"
+import JSONIcon from "@/components/tools/data-converter/JSONIcon"
+import DNSIcon from "@/components/tools/dns-lookup/DNSIcon"
+import WHOISIcon from "@/components/tools/whois/WHOISIcon"
+import PasswordIcon from "@/components/tools/password-generator/PasswordIcon"
+import JWTIcon from "@/components/tools/jwt/JWTIcon"
+import MicrosoftPortalsIcon from "@/components/tools/microsoft-portals/MicrosoftPortalsIcon"
+import TenantLookupIcon from "@/components/tools/tenant-lookup/TenantLookupIcon"
+import AzureKQLIcon from "@/components/tools/azure-kql/AzureKQLIcon"
+import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon"
 
-const toolCategories = [
-  {
-    title: "Network Tools",
-    description: "Design networks, check domains, analyze SSL certificates",
-    icon: Network,
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
-    tools: [
-      { name: "Network Designer", path: "/network-designer", description: "Visual subnet planning with Terraform export" },
-      { name: "DNS Lookup", path: "/dns-lookup", description: "Comprehensive DNS queries" },
-      { name: "WHOIS Lookup", path: "/whois-lookup", description: "Domain registration info" },
-      { name: "SSL Checker", path: "/ssl-checker", description: "Certificate security analysis" }
-    ]
-  },
-  {
-    title: "Azure & Microsoft",
-    description: "Azure resource management and Microsoft 365 tools",
-    icon: Database,
-    color: "text-cyan-600 dark:text-cyan-400", 
-    bgColor: "bg-cyan-50 dark:bg-cyan-950/30",
-    tools: [
-      { name: "Azure Naming", path: "/azure-naming", description: "CAF-compliant resource naming" },
-      { name: "KQL Query Builder", path: "/azure-kql", description: "Build optimized KQL queries" },
-      { name: "Microsoft Portals", path: "/microsoft-portals", description: "GDAP tenant deep links" },
-      { name: "Tenant Lookup", path: "/tenant-lookup", description: "Microsoft tenant discovery" }
-    ]
-  },
-  {
-    title: "Security Tools", 
-    description: "Password generation, JWT validation, and security analysis",
-    icon: Shield,
-    color: "text-green-600 dark:text-green-400",
-    bgColor: "bg-green-50 dark:bg-green-950/30",
-    tools: [
-      { name: "Password Generator", path: "/password-generator", description: "Cryptographically secure passwords" },
-      { name: "JWT Decoder", path: "/jwt", description: "Decode and validate JWT tokens" }
-    ]
-  },
-  {
-    title: "Developer Tools",
-    description: "Encoding, data conversion, and development utilities", 
-    icon: Code,
-    color: "text-purple-600 dark:text-purple-400",
-    bgColor: "bg-purple-50 dark:bg-purple-950/30",
-    tools: [
-      { name: "Base64 Encoder", path: "/base64", description: "Encode/decode text and files" },
-      { name: "Data Converter", path: "/data-converter", description: "JSON, YAML, TOML conversion" },
-      { name: "CRON Builder", path: "/cron", description: "Build cron expressions" },
-      { name: "Buzzword Ipsum", path: "/buzzword-ipsum", description: "Corporate placeholder text" }
-    ]
-  }
-]
+const iconByKey = {
+  IconNetwork: IconNetwork,
+  IconBrandAzure: IconBrandAzure,
+  IconChartDots3: IconChartDots3,
+  IconClock: IconClock,
+  IconShield: IconShield,
+  IconMessageCircle: IconMessageCircle,
+  IconBrandGithub: IconBrandGithub,
+  DNSIcon: DNSIcon,
+  WHOISIcon: WHOISIcon,
+  Base64Icon: Base64Icon,
+  JSONIcon: JSONIcon,
+  JWTIcon: JWTIcon,
+  PasswordIcon: PasswordIcon,
+  MicrosoftPortalsIcon: MicrosoftPortalsIcon,
+  TenantLookupIcon: TenantLookupIcon,
+  AzureKQLIcon: AzureKQLIcon,
+  BuzzwordIpsumIcon: BuzzwordIpsumIcon,
+}
 
 const stats = [
   { label: "Tools", value: "14", icon: Zap },
@@ -100,13 +77,13 @@ export function NewHomeView() {
       <div className="pointer-events-none absolute -top-10 -right-10 h-52 w-52 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-10 -left-10 h-52 w-52 rounded-full bg-secondary/20 blur-3xl" />
 
-      {/* Hero */}
+      {/* Intro */}
       <Card className="border-muted/70 bg-gradient-to-r from-background to-muted/40">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">
             <div>
               <CardTitle className="text-xl">RussTools</CardTitle>
-              <CardDescription>Modern, client-side tools for networks and cloud</CardDescription>
+              <CardDescription>Practical client-side tools for networking and cloud</CardDescription>
             </div>
             <div className="hidden sm:flex gap-2">
               <Button asChild size="sm" variant="outline">
@@ -119,6 +96,33 @@ export function NewHomeView() {
           </div>
         </CardHeader>
       </Card>
+
+      {/* Tools grid */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {toolsConfig
+          .filter((t) => t.path && t.path.startsWith("/") && t.id !== "github-source" && t.id !== "ui-demo")
+          .map((t) => {
+            const Candidate = iconByKey[t.icon] || Network
+            const Icon = Candidate
+            return (
+              <Link key={t.id} to={t.path} className="group block">
+                <Card className="h-full transition-all duration-150 hover:shadow-md focus-visible:ring-2">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                        <Icon size={18} className="text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <CardTitle className="text-base truncate">{t.title}</CardTitle>
+                        <CardDescription className="truncate">{t.shortDescription || t.description}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+              </Link>
+            )
+          })}
+      </div>
 
       {/* Saved networks + quick generate sections */}
       <div className="grid gap-3 lg:grid-cols-2">
@@ -354,20 +358,9 @@ export function NewHomeView() {
         </Card>
       </div>
 
-      {/* Quick links to tools (compact, bottom) */}
-      <div>
-        <h2 className="text-sm font-medium mb-2 text-muted-foreground">Tools</h2>
-        <div className="flex flex-wrap gap-2">
-          {toolCategories.flatMap((c) => c.tools).map((tool) => (
-            <Button key={tool.path} size="sm" variant="outline" asChild>
-              <Link to={tool.path}>{tool.name}</Link>
-            </Button>
-          ))}
-        </div>
-      </div>
-
       {/* Footer note */}
       <p className="text-xs text-muted-foreground">All tools run locally in your browser.</p>
+
     </div>
   )
 }

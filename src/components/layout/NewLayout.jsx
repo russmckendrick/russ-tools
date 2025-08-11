@@ -27,7 +27,7 @@ export function NewLayout() {
       {/* Main content */}
       <div className={`ml-0 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
         {/* Global header */}
-        <div className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b bg-background/80 px-3 backdrop-blur lg:h-16 lg:px-4">
+        <div className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b bg-background/70 supports-[backdrop-filter]:bg-background/70 backdrop-blur px-3 lg:h-16 lg:px-4">
           <div className="flex items-center gap-2">
             {/* Mobile sidebar trigger */}
             <Dialog open={sidebarOpen} onOpenChange={setSidebarOpen}>
@@ -60,7 +60,7 @@ export function NewLayout() {
               )}
             </Button>
             <Separator orientation="vertical" className="h-6" />
-            <Link to="/" className="text-sm font-medium">RussTools</Link>
+            <Link to="/" className="text-sm font-semibold tracking-tight bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-300">RussTools</Link>
           </div>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
@@ -74,8 +74,8 @@ export function NewLayout() {
         </div>
 
         {/* Page content */}
-        <main className="p-4 lg:p-6">
-          <div className="mx-auto max-w-7xl">
+        <main className="p-4 lg:p-6 surface-bg grid-overlay">
+          <div className="mx-auto max-w-7xl space-y-6 relative z-10">
             <Outlet />
           </div>
         </main>

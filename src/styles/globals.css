@@ -100,3 +100,34 @@
     font-family: Inter, system-ui, -apple-system, sans-serif;
   }
 }
+
+@layer utilities {
+  .surface-bg {
+    position: relative;
+  }
+  .surface-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(600px 300px at 10% -10%, color-mix(in oklch, var(--color-primary) 12%, transparent), transparent 60%),
+      radial-gradient(600px 300px at 110% 110%, color-mix(in oklch, var(--color-accent) 12%, transparent), transparent 60%);
+    opacity: .6;
+  }
+  .grid-overlay {
+    position: relative;
+  }
+  .grid-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(var(--color-border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+    background-size: 28px 28px, 28px 28px;
+    mask: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+    opacity: .25;
+  }
+}
