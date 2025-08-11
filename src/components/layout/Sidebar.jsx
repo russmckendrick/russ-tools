@@ -66,7 +66,7 @@ export function Sidebar({ onClose, collapsed = false }) {
         </div>
       )}
       
-      <div className="flex-1 space-y-4 py-4">
+      <div className="flex-1 py-2 overflow-y-auto">
         <div className={cn("px-3 py-2", collapsed && "px-2")}>
           {!collapsed && (
             <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight lg:block hidden">

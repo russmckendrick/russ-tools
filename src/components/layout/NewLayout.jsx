@@ -4,6 +4,7 @@ import { Menu, ChevronLeft, ChevronRight, Github as GithubIcon } from "lucide-re
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Sidebar } from "./Sidebar"
 import { Toaster } from "sonner"
 
@@ -13,24 +14,12 @@ export function NewLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      
-      {/* Sidebar */}
+      {/* Desktop sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 border-r bg-background transform transition-transform duration-200 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0
-        ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'}
-      `}
+        className={`fixed inset-y-0 left-0 z-40 hidden border-r bg-background lg:block ${sidebarCollapsed ? 'w-16' : 'w-64'}`}
       >
-        <Sidebar 
-          onClose={() => setSidebarOpen(false)} 
+        <Sidebar
+          onClose={() => setSidebarOpen(false)}
           collapsed={sidebarCollapsed}
         />
       </aside>
@@ -40,16 +29,22 @@ export function NewLayout() {
         {/* Global header */}
         <div className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b bg-background/80 px-3 backdrop-blur lg:h-16 lg:px-4">
           <div className="flex items-center gap-2">
-            {/* Mobile open */}
-            <Button
-              className="lg:hidden"
-              variant="outline"
-              size="sm"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="h-4 w-4" />
-              <span className="ml-2">Menu</span>
-            </Button>
+            {/* Mobile sidebar trigger */}
+            <Dialog open={sidebarOpen} onOpenChange={setSidebarOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  className="lg:hidden"
+                  variant="outline"
+                  size="sm"
+                >
+                  <Menu className="h-4 w-4" />
+                  <span className="ml-2">Menu</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="p-0 w-72 max-w-[18rem] left-0 top-0 translate-x-0 translate-y-0 h-full rounded-none border-r">
+                <Sidebar onClose={() => setSidebarOpen(false)} />
+              </DialogContent>
+            </Dialog>
             {/* Desktop collapse toggle */}
             <Button
               className="hidden lg:inline-flex"
