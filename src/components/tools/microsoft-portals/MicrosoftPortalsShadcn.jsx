@@ -374,35 +374,27 @@ const MicrosoftPortalsShadcn = () => {
 
         {/* Portal Links Section */}
         {portalLinks && (
-          <Card>
-            <CardHeader>
+          <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60 before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r from-blue-500/60 to-cyan-400/60">
+            <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Microsoft Portals</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg">Microsoft Portals</CardTitle>
+                  <CardDescription className="mt-1">
                     {filteredPortals.length} portals available
                     {tenantInfo && ` for ${tenantInfo.displayName || tenantInfo.domain}`}
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                  >
+                  <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
                     <Grid3X3 className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                  >
+                  <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
                     <List className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               {/* Filters */}
               <PortalFilters 
                 selectedCategory={selectedCategory}
@@ -419,7 +411,7 @@ const MicrosoftPortalsShadcn = () => {
               {filteredPortals.length === 0 ? (
                 <EmptyState allPortals={allPortals} />
               ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredPortals.map((portal) => (
                     <PortalCard 
                       key={portal.key}

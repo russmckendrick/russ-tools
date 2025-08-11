@@ -404,7 +404,8 @@ const DataConverterShadcn = () => {
         icon={ArrowRightLeft}
         title="Data Format Converter"
         description="Convert between JSON, YAML, and TOML formats with validation and error checking"
-        iconColor="blue"
+        iconColor="yellow"
+        showTitle={false}
         standalone={true}
       />
 

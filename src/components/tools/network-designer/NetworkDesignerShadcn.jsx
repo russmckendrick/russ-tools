@@ -426,7 +426,9 @@ function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) {
 }
 
 const NetworkDesignerShadcn = () => {
-  const [activeTab, setActiveTab] = useState('setup');
+  const [activeTab, setActiveTab] = useState(() => {
+    try { return localStorage.getItem('nd-active-tab') || 'setup' } catch { return 'setup' }
+  });
   const [searchParams] = useSearchParams();
 
   // Get tool configuration for SEO
@@ -448,6 +450,10 @@ const NetworkDesignerShadcn = () => {
       });
     }
   }, [searchParams, setNetworks, setSelectedNetworkId]);
+
+  useEffect(() => {
+    try { localStorage.setItem('nd-active-tab', activeTab) } catch {}
+  }, [activeTab])
 
   // Get current network
   const current = networks.find(n => n.id === selectedNetworkId);
