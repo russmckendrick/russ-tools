@@ -383,7 +383,8 @@ const CronBuilderShadcn = () => {
           icon={Calendar}
           title="CRON Expression Builder"
           description="Build and validate cron expressions with ease"
-          iconColor="purple"
+          iconColor="orange"
+          showTitle={false}
           standalone={true}
         />
 

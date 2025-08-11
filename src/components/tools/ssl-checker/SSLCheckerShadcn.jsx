@@ -477,11 +477,7 @@ const SSLCheckerShadcn = () => {
           title="SSL Certificate Checker"
           description="Analyze SSL/TLS certificates and security configuration for any domain"
           iconColor="green"
-          badges={[
-            { text: "SSL Labs API", variant: "secondary" },
-            { text: "Security Analysis", variant: "secondary" },
-            { text: "Certificate Validation", variant: "secondary" }
-          ]}
+          showTitle={false}
           standalone={true}
         />
 

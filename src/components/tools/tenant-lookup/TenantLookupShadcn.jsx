@@ -402,15 +402,11 @@ const TenantLookupShadcn = () => {
       <div className="space-y-6">
         {/* Header */}
         <ToolHeader
-          icon={Building2}
+          icon={TenantLookupIcon}
           title="Microsoft Tenant Lookup"
           description="Discover Microsoft 365 and Azure AD tenant information from domain names or email addresses"
-          iconColor="cyan"
-          badges={[
-            { text: "Microsoft 365", variant: "secondary" },
-            { text: "Azure AD", variant: "secondary" },
-            { text: "Tenant Discovery", variant: "secondary" }
-          ]}
+          iconColor="blue"
+          showTitle={false}
           standalone={true}
         />
 

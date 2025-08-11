@@ -199,10 +199,11 @@ const BuzzwordIpsumShadcn = () => {
       <div className="space-y-6">
         {/* Header */}
         <ToolHeader
-          icon={FileText}
+          icon={BuzzwordIpsumIcon}
           title="Buzzword Ipsum"
           description="Generate corporate buzzword-filled placeholder text for mockups and presentations"
           iconColor="orange"
+          showTitle={false}
           actions={[
             {
               text: "API Usage",

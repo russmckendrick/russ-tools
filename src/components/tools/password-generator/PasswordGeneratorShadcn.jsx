@@ -371,14 +371,8 @@ Visit: https://russ.tools
           icon={PasswordIcon}
           title="Password Generator"
           description="Generate secure, random passwords with customizable options"
-          iconColor="green"
-          badges={[
-            { text: "Cryptographically Secure", variant: "secondary" }
-          ]}
-          alert={{
-            title: "Privacy Notice",
-            description: "All passwords are generated locally in your browser. Nothing is sent to any server."
-          }}
+          iconColor="violet"
+          showTitle={false}
           standalone={true}
         />
 

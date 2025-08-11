@@ -533,7 +533,8 @@ const Base64ToolShadcn = () => {
           icon={Base64Icon}
           title="Base64 Encoder/Decoder"
           description="Encode and decode text and files using Base64 encoding with multiple variants"
-          iconColor="blue"
+          iconColor="teal"
+          showTitle={false}
           standalone={true}
         />
 

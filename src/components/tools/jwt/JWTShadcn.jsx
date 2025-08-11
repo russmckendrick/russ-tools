@@ -264,13 +264,7 @@ const JWTShadcn = () => {
           title="JWT Decoder/Validator"
           description="Decode JWT tokens and validate signatures without sending to external services"
           iconColor="red"
-          badges={[
-            { text: "🔒 100% Client-Side • No External Requests • Privacy First", variant: "secondary" }
-          ]}
-          alert={{
-            title: "🔒 Your tokens stay private",
-            description: "All JWT processing happens locally in your browser. No tokens are sent to external servers or services. Perfect for analyzing sensitive authentication tokens safely."
-          }}
+          showTitle={false}
           standalone={true}
         />
 
