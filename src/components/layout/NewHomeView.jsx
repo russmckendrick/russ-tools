@@ -99,7 +99,25 @@ export function NewHomeView() {
       <div className="pointer-events-none absolute -top-10 -right-10 h-52 w-52 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-10 -left-10 h-52 w-52 rounded-full bg-secondary/20 blur-3xl" />
 
-      
+      {/* Hero */}
+      <Card className="border-muted/70 bg-gradient-to-r from-background to-muted/40">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <CardTitle className="text-xl">RussTools</CardTitle>
+              <CardDescription>Modern, client-side tools for networks and cloud</CardDescription>
+            </div>
+            <div className="hidden sm:flex gap-2">
+              <Button asChild size="sm" variant="outline">
+                <Link to="/network-designer">Open Network Designer</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link to="/azure-kql">Open KQL Builder</Link>
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
       {/* Saved networks + quick generate sections */}
       <div className="grid gap-3 lg:grid-cols-2">
