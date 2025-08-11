@@ -441,7 +441,9 @@ const SSLCheckerShadcn = () => {
                     <p className="text-sm text-muted-foreground mb-2">Supported Protocols</p>
                     <div className="flex gap-2 flex-wrap">
                       {endpoint.details.protocols.map((protocol, index) => (
-                        <Badge key={index} variant="outline">{protocol}</Badge>
+                        <Badge key={index} variant="outline">
+                          {typeof protocol === 'object' ? (protocol.name || protocol.version || JSON.stringify(protocol)) : protocol}
+                        </Badge>
                       ))}
                     </div>
                   </div>
@@ -451,7 +453,9 @@ const SSLCheckerShadcn = () => {
                     <p className="text-sm text-muted-foreground mb-2">Cipher Suites</p>
                     <div className="flex gap-2 flex-wrap">
                       {endpoint.details.suites.slice(0, 3).map((suite, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">{suite}</Badge>
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {typeof suite === 'object' ? (suite.name || suite.cipher || JSON.stringify(suite)) : suite}
+                        </Badge>
                       ))}
                       {endpoint.details.suites.length > 3 && (
                         <Badge variant="secondary">+{endpoint.details.suites.length - 3} more</Badge>
@@ -571,7 +575,7 @@ const SSLCheckerShadcn = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {domainHistory.slice(0, 10).map((item, index) => (
+                {Array.isArray(domainHistory) && domainHistory.slice(0, 10).map((item, index) => (
                   <div key={index} className="flex items-center justify-between p-3 border rounded-md">
                     <div className="flex items-center gap-3">
                       <Shield className="h-4 w-4 text-muted-foreground" />
