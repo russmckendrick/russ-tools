@@ -436,7 +436,7 @@ const SSLCheckerShadcn = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {endpoint.details.protocols && (
+                {endpoint.details?.protocols && Array.isArray(endpoint.details.protocols) && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Supported Protocols</p>
                     <div className="flex gap-2 flex-wrap">
@@ -446,7 +446,7 @@ const SSLCheckerShadcn = () => {
                     </div>
                   </div>
                 )}
-                {endpoint.details.suites && (
+                {endpoint.details?.suites && Array.isArray(endpoint.details.suites) && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Cipher Suites</p>
                     <div className="flex gap-2 flex-wrap">
