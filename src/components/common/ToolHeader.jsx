@@ -14,7 +14,6 @@ import { Info } from 'lucide-react';
  * @param {string} props.title - Tool title
  * @param {string} props.description - Tool description
  * @param {Array} props.actions - Array of action buttons (optional)
- * @param {Array} props.badges - Array of badge objects with text and variant (optional)
  * @param {Object} props.alert - Alert object with text and variant (optional)
  * @param {string} props.iconColor - Icon color theme: 'blue', 'green', 'purple', 'orange', 'red', 'cyan' (default: 'blue')
  * @param {boolean} props.standalone - If true, renders without Card wrapper (default: false)
@@ -54,19 +53,7 @@ const ToolHeader = ({
             <Icon className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-              {/* Badges next to title */}
-              {badges.map((badge, index) => (
-                <Badge 
-                  key={index} 
-                  variant={badge.variant || 'secondary'}
-                  className="h-6"
-                >
-                  {badge.text}
-                </Badge>
-              ))}
-            </div>
+            <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
             <p className="text-base text-muted-foreground max-w-2xl">
               {description}
             </p>

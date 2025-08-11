@@ -1017,11 +1017,6 @@ const NetworkDesignerShadcn = () => {
           title="Network Designer"
           description="Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, and export configurations for Azure, AWS, or VMware environments."
           iconColor="blue"
-          badges={[
-            { text: "Subnet Planning", variant: "secondary" },
-            { text: "Visual Diagrams", variant: "secondary" },
-            { text: "Terraform Export", variant: "secondary" }
-          ]}
           actions={[
             {
               text: "Copy Configuration Share URL",
@@ -1036,22 +1031,10 @@ const NetworkDesignerShadcn = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="setup" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Network Setup
-            </TabsTrigger>
-            <TabsTrigger value="design" className="flex items-center gap-2" disabled={!current?.parentNetwork}>
-              <Layers3 className="h-4 w-4" />
-              Subnet Design
-            </TabsTrigger>
-            <TabsTrigger value="visualization" className="flex items-center gap-2" disabled={!current?.parentNetwork}>
-              <BarChart3 className="h-4 w-4" />
-              Visualization
-            </TabsTrigger>
-            <TabsTrigger value="export" className="flex items-center gap-2" disabled={!current?.parentNetwork}>
-              <Download className="h-4 w-4" />
-              Export
-            </TabsTrigger>
+            <TabsTrigger value="setup">Network Setup</TabsTrigger>
+            <TabsTrigger value="design" disabled={!current?.parentNetwork}>Subnet Design</TabsTrigger>
+            <TabsTrigger value="visualization" disabled={!current?.parentNetwork}>Visualization</TabsTrigger>
+            <TabsTrigger value="export" disabled={!current?.parentNetwork}>Export</TabsTrigger>
           </TabsList>
 
           <TabsContent value="setup">

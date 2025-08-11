@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Outlet, Link } from "react-router-dom"
+import { Outlet, Link, useLocation } from "react-router-dom"
 import { Menu, ChevronLeft, ChevronRight, Github as GithubIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -7,10 +7,15 @@ import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Sidebar } from "./Sidebar"
 import { Toaster } from "sonner"
+import toolsConfig from "@/utils/toolsConfig.json"
 
 export function NewLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const location = useLocation()
+
+  const currentTool = toolsConfig.find(t => t.path && location.pathname.startsWith(t.path))
+  const headerTitle = location.pathname === "/" ? "Dashboard" : (currentTool?.title || "")
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -60,7 +65,9 @@ export function NewLayout() {
               )}
             </Button>
             <Separator orientation="vertical" className="h-6" />
-            <Link to="/" className="text-sm font-semibold tracking-tight bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-300">RussTools</Link>
+            <div className="text-sm font-medium truncate max-w-[50vw] lg:max-w-[40vw]">
+              {headerTitle || ""}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
