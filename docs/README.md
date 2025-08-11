@@ -67,7 +67,7 @@ Individual documentation for each major tool:
 
 RussTools is built as a modern React SPA with:
 
-- **Frontend**: React 19 + Vite + Mantine UI
+- **Frontend**: React 19 + Vite + Shadcn UI (Radix + Tailwind)
 - **Backend**: Cloudflare Workers for API proxying (SSL, Tenant, WHOIS services)
 - **State Management**: React Context + Local Storage
 - **Deployment**: Static hosting with edge functions

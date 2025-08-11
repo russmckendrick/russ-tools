@@ -252,32 +252,27 @@ Update `src/utils/api/apiConfig.json`:
 
 ### 4. Styling Guidelines
 
-#### Using Mantine Components
+#### Using Shadcn UI Components
 ```jsx
-import { Paper, Stack, Group, Button, TextInput } from '@mantine/core';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
-// Follow consistent spacing patterns
-<Paper withBorder p="xl" radius="lg">
-  <Stack gap="lg">
-    <Group gap="md">
-      {/* Content */}
-    </Group>
-  </Stack>
-</Paper>
+<Card>
+  <CardHeader>
+    <CardTitle>Section title</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-3">
+    <Input placeholder="Your input" />
+    <Button>Action</Button>
+  </CardContent>
+</Card>
 ```
 
 #### Dark Mode Support
+Tailwind + `ThemeProvider` handles theming. Prefer semantic classes and avoid hard-coded colors.
 ```jsx
-import { useMantineColorScheme } from '@mantine/core';
-
-const { colorScheme } = useMantineColorScheme();
-
-// Use conditional styling for custom backgrounds
-const customStyle = {
-  backgroundColor: colorScheme === 'dark' 
-    ? 'var(--mantine-color-dark-6)' 
-    : 'var(--mantine-color-gray-0)'
-};
+<div className="bg-background text-foreground">Content</div>
 ```
 
 #### CSS Modules (when needed)
@@ -394,12 +389,8 @@ VITE_FEATURE_FLAG_NEW_TOOL=true
 
 ### Common Issues
 
-#### Mantine Theme Issues
-```jsx
-// Always use Mantine's color system
-<Text c="dimmed">Text</Text> // ✅ Correct
-<Text color="dimmed">Text</Text> // ❌ Deprecated
-```
+#### Theming Issues
+Ensure you use semantic Tailwind tokens via `globals.css` theme variables and component tokens rather than hard-coded colors.
 
 #### State Not Persisting
 ```jsx
@@ -424,7 +415,8 @@ npm install
 
 ## Resources
 
-- [Mantine Documentation](https://mantine.dev/)
+- Shadcn UI components live under `src/components/ui/*`
+- [Radix Primitives](https://www.radix-ui.com/)
 - [React Router Documentation](https://reactrouter.com/)
 - [Vite Documentation](https://vitejs.dev/)
 - [ESLint Configuration](https://eslint.org/)

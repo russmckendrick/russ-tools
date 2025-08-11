@@ -22,7 +22,7 @@ The Azure KQL Query Builder follows a template-driven, component-based architect
 - **Progressive Disclosure**: Essential → Advanced → Expert tiers
 - **Real-Time Feedback**: Live preview and validation
 - **Consistent Patterns**: RussTools UI/UX standards
-- **Accessibility**: ARIA compliance through Mantine components
+- **Accessibility**: ARIA via Radix primitives
 
 ## Component Architecture
 

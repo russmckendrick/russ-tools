@@ -282,7 +282,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', '@mantine/core'],
+         vendor: ['react', 'react-dom'],
           networking: ['netmask'],
           crypto: ['jose', 'jwt-decode'],
           utils: ['js-yaml', '@iarna/toml']

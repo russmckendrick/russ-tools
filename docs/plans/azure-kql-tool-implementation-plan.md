@@ -476,7 +476,7 @@ const seoData = generateToolSEO({
 - Base64 encoding/decoding (built-in)
 
 ### 11.2 RussTools Dependencies
-- Mantine UI components
+- Shadcn UI components
 - SEO utilities
 - Storage utilities
 - Routing system

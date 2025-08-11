@@ -225,8 +225,8 @@ AzureNamingTool (Main Component)
 ### External Dependencies
 ```json
 {
-  "@mantine/core": "UI components",
-  "@mantine/hooks": "React hooks utilities",
+  "shadcn/ui": "UI components",
+  "radix-ui": "Accessible primitives",
   "react": "Core React framework"
 }
 ```
