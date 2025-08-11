@@ -46,12 +46,12 @@ const PortalFilters = ({
         {allTags.length > 0 && (
           <div className="flex-1">
             <Label htmlFor="tag-filter">Filter by Tag</Label>
-            <Select value={selectedTag || ''} onValueChange={(value) => setSelectedTag(value || null)}>
+            <Select value={selectedTag || 'all-tags'} onValueChange={(value) => setSelectedTag(value === 'all-tags' ? null : value)}>
               <SelectTrigger id="tag-filter">
                 <SelectValue placeholder="All Tags" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Tags</SelectItem>
+                <SelectItem value="all-tags">All Tags</SelectItem>
                 {allTags.map(tag => (
                   <SelectItem key={tag} value={tag.toLowerCase()}>
                     {tag}
