@@ -246,8 +246,7 @@ async function checkSSLLabs(domain, env) {
   let response = await fetch(analyzeUrl, {
     headers: {
       'User-Agent': getSSLLabsConfig(env).userAgent,
-      'Accept': 'application/json',
-      'email': getSSLLabsConfig(env).email
+      'Accept': 'application/json'
     }
   });
 
@@ -275,8 +274,7 @@ async function checkSSLLabs(domain, env) {
   response = await fetch(analyzeUrl, {
     headers: {
       'User-Agent': getSSLLabsConfig(env).userAgent,
-      'Accept': 'application/json',
-      'email': getSSLLabsConfig(env).email
+      'Accept': 'application/json'
     }
   });
 
@@ -339,8 +337,7 @@ async function enhanceReadyEndpoints(data, domain, env) {
           const endpointResponse = await fetch(endpointUrl, {
             headers: {
               'User-Agent': getSSLLabsConfig(env).userAgent,
-              'Accept': 'application/json',
-              'email': getSSLLabsConfig(env).email
+              'Accept': 'application/json'
             }
           });
 
@@ -385,8 +382,7 @@ async function enhanceWithEndpointDetails(data, domain, env) {
           const endpointResponse = await fetch(endpointUrl, {
             headers: {
               'User-Agent': getSSLLabsConfig(env).userAgent,
-              'Accept': 'application/json',
-              'email': getSSLLabsConfig(env).email
+              'Accept': 'application/json'
             }
           });
 
