@@ -13,6 +13,178 @@ This style guide ensures consistent design and user experience across all tools 
 - **SEO**: Include `<SEOHead {...seoData} />` in every tool
 - **Tabs**: Shadcn `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`
 
+### Shadcn Component Map
+- Buttons: `src/components/ui/button.jsx`
+- Cards: `src/components/ui/card.jsx`
+- Tabs: `src/components/ui/tabs.jsx`
+- Dialogs/Modals: `src/components/ui/dialog.jsx`
+- Alerts: `src/components/ui/alert.jsx`
+- Inputs: `src/components/ui/input.jsx`
+- Select: `src/components/ui/select.jsx`
+- Labels: `src/components/ui/label.jsx`
+- Switch/Slider/Progress: `src/components/ui/switch.jsx`, `src/components/ui/slider.jsx`, `src/components/ui/progress.jsx`
+- Table/Separator/Tooltip/Badge: `src/components/ui/table.jsx`, `src/components/ui/separator.jsx`, `src/components/ui/tooltip.jsx`, `src/components/ui/badge.jsx`
+- Theme Toggle: `src/components/ui/theme-toggle.jsx`
+
+## Common UI Patterns
+
+### Card with header, description and actions
+```jsx
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+
+export function SectionCard({ title, description, onPrimary, onSecondary, children }) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between gap-2">
+        <div>
+          <CardTitle>{title}</CardTitle>
+          {description && <CardDescription>{description}</CardDescription>}
+        </div>
+        <div className="flex gap-2">
+          {onSecondary && <Button variant="outline" size="sm" onClick={onSecondary.onClick}>{onSecondary.label}</Button>}
+          {onPrimary && <Button size="sm" onClick={onPrimary.onClick}>{onPrimary.label}</Button>}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">{children}</CardContent>
+    </Card>
+  )
+}
+```
+
+### Tabs layout
+```jsx
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+
+export function SectionTabs() {
+  return (
+    <Tabs defaultValue="one" className="w-full">
+      <TabsList>
+        <TabsTrigger value="one">Tab One</TabsTrigger>
+        <TabsTrigger value="two">Tab Two</TabsTrigger>
+        <TabsTrigger value="three">Tab Three</TabsTrigger>
+      </TabsList>
+      <TabsContent value="one" className="pt-4">Content A</TabsContent>
+      <TabsContent value="two" className="pt-4">Content B</TabsContent>
+      <TabsContent value="three" className="pt-4">Content C</TabsContent>
+    </Tabs>
+  )
+}
+```
+
+### Confirm dialog pattern
+```jsx
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+
+export function ConfirmDelete({ onConfirm }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="destructive">Delete</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete item</DialogTitle>
+          <DialogDescription>This action cannot be undone.</DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))}>Cancel</Button>
+          <Button variant="destructive" onClick={onConfirm}>Confirm</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+### Form section with labels, helper text and validation
+```jsx
+import { useState } from 'react'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
+
+export function SettingsForm({ onSubmit }) {
+  const [name, setName] = useState('')
+  const [env, setEnv] = useState('dev')
+  const [error, setError] = useState('')
+
+  const handleSave = () => {
+    if (!name.trim()) {
+      setError('Name is required')
+      return
+    }
+    setError('')
+    onSubmit({ name, env })
+  }
+
+  return (
+    <div className="grid gap-4">
+      <div className="grid gap-2">
+        <Label htmlFor="name">Name</Label>
+        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="My resource" />
+        <p className="text-xs text-muted-foreground">A descriptive name for this configuration.</p>
+        {error && <p className="text-xs text-destructive">{error}</p>}
+      </div>
+      <div className="grid gap-2">
+        <Label>Environment</Label>
+        <Select value={env} onValueChange={setEnv}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select environment" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="dev">Development</SelectItem>
+            <SelectItem value="test">Test</SelectItem>
+            <SelectItem value="prod">Production</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={() => { setName(''); setEnv('dev'); setError('') }}>Reset</Button>
+        <Button onClick={handleSave} disabled={!name.trim()}>Save</Button>
+      </div>
+    </div>
+  )
+}
+```
+
+### Toolbar with search and actions
+```jsx
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+
+export function Toolbar({ query, setQuery, filter, setFilter, onAdd }) {
+  return (
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex w-full gap-2 sm:max-w-md">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search..."
+        />
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger className="w-36">
+            <SelectValue placeholder="Filter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="archived">Archived</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex gap-2 justify-end">
+        <Button variant="outline" onClick={() => { setQuery(''); setFilter('all') }}>Reset</Button>
+        <Button onClick={onAdd}>Add New</Button>
+      </div>
+    </div>
+  )
+}
+```
+
 ## Layout Structure
 
 ### Main Container
