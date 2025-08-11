@@ -52,7 +52,6 @@ const AzureKQLShadcn = () => {
     generateQuery,
     saveQuery,
     loadQuery,
-    generateShareableURL
   } = useAzureKQLShadcn();
 
   // Favorites management
@@ -173,82 +172,90 @@ const AzureKQLShadcn = () => {
       />
       
       {/* Main Interface */}
-      <Tabs defaultValue="builder" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="builder">Query Builder</TabsTrigger>
-              <TabsTrigger value="favorites">Favorites</TabsTrigger>
-              <TabsTrigger value="history">Query History</TabsTrigger>
-              <TabsTrigger value="templates">Template Editor</TabsTrigger>
+      <div className="container mx-auto max-w-7xl p-6">
+        <Tabs defaultValue="builder" className="w-full space-y-8">
+          <div className="flex justify-center">
+            <TabsList className="inline-flex h-12 items-center justify-center rounded-xl bg-muted/50 p-1.5 text-muted-foreground backdrop-blur-sm border border-border/50">
+              <TabsTrigger value="builder" className="px-6 py-2.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                Query Builder
+              </TabsTrigger>
+              <TabsTrigger value="favorites" className="px-6 py-2.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                Favorites
+              </TabsTrigger>
+              <TabsTrigger value="history" className="px-6 py-2.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                Query History
+              </TabsTrigger>
+              <TabsTrigger value="templates" className="px-6 py-2.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                Template Editor
+              </TabsTrigger>
             </TabsList>
+          </div>
 
-            <TabsContent value="builder" className="mt-6">
-              <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-1">
-                  <div className="space-y-4">
-                    <ServiceSelectorShadcn 
-                      value={selectedService}
-                      onChange={setSelectedService}
-                    />
-                    <ParameterFormShadcn
-                      service={selectedService}
-                      template={selectedTemplate}
-                      parameters={parameters}
-                      onParameterChange={updateParameter}
-                      onTemplateChange={setSelectedTemplate}
-                      onGenerate={generateQuery}
-                    />
-                  </div>
-                </div>
-                <div className="lg:col-span-2">
-                  <div className="space-y-4">
-                    <QueryPreviewShadcn 
-                      query={generatedQuery}
-                      service={selectedService}
-                      parameters={parameters}
-                      template={currentTemplate}
-                    />
-                    <ExportOptionsShadcn 
-                      query={generatedQuery}
-                      onSave={saveQuery}
-                      onAddToFavorites={addToFavorites}
-                    />
-                  </div>
-                </div>
+          <TabsContent value="builder" className="space-y-0">
+            <div className="grid gap-8 xl:grid-cols-5 lg:grid-cols-3">
+              <div className="xl:col-span-2 lg:col-span-1 space-y-6">
+                <ServiceSelectorShadcn 
+                  value={selectedService}
+                  onChange={setSelectedService}
+                />
+                <ParameterFormShadcn
+                  service={selectedService}
+                  template={selectedTemplate}
+                  parameters={parameters}
+                  onParameterChange={updateParameter}
+                  onTemplateChange={setSelectedTemplate}
+                  onGenerate={generateQuery}
+                />
               </div>
-            </TabsContent>
+              <div className="xl:col-span-3 lg:col-span-2 space-y-6">
+                <QueryPreviewShadcn 
+                  query={generatedQuery}
+                  service={selectedService}
+                  parameters={parameters}
+                  template={currentTemplate}
+                />
+                <ExportOptionsShadcn 
+                  query={generatedQuery}
+                  onSave={saveQuery}
+                  onAddToFavorites={addToFavorites}
+                />
+              </div>
+            </div>
+          </TabsContent>
 
-            <TabsContent value="favorites" className="mt-6">
-              <QueryFavoritesShadcn 
-                onLoadQuery={loadQuery}
-                currentQuery={generatedQuery}
-                currentService={selectedService}
-                currentTemplate={selectedTemplate}
-                currentParameters={parameters}
-              />
-            </TabsContent>
+          <TabsContent value="favorites" className="space-y-0">
+            <QueryFavoritesShadcn 
+              onLoadQuery={loadQuery}
+              currentQuery={generatedQuery}
+              currentService={selectedService}
+              currentTemplate={selectedTemplate}
+              currentParameters={parameters}
+            />
+          </TabsContent>
 
-            <TabsContent value="history" className="mt-6">
-              <QueryHistoryShadcn 
-                history={queryHistory}
-                onLoadQuery={loadQuery}
-              />
-            </TabsContent>
+          <TabsContent value="history" className="space-y-0">
+            <QueryHistoryShadcn 
+              history={queryHistory}
+              onLoadQuery={loadQuery}
+            />
+          </TabsContent>
 
-            <TabsContent value="templates" className="mt-6">
-              <TemplateEditorShadcn 
-                onTemplateCreate={(template) => {
-                  toast.success('Template Available', {
-                    description: `New template "${template.service.name}" is now available in the service selector`
-                  });
-                }}
-                onTemplateUpdate={(template) => {
-                  toast.info('Template Updated', {
-                    description: `Template "${template.service.name}" has been updated`
-                  });
-                }}
-              />
-            </TabsContent>
-          </Tabs>
+          <TabsContent value="templates" className="space-y-0">
+            <TemplateEditorShadcn 
+              onTemplateCreate={(template) => {
+                toast.success('Template Available', {
+                  description: `New template "${template.service.name}" is now available in the service selector`
+                });
+              }}
+              onTemplateUpdate={(template) => {
+                toast.info('Template Updated', {
+                  description: `Template "${template.service.name}" has been updated`
+                });
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
 
       {/* Help System */}
       <HelpSystemShadcn 

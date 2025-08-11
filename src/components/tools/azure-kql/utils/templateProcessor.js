@@ -75,8 +75,8 @@ export const getServiceTemplates = (serviceId) => {
   }
 
   return Object.keys(serviceTemplate.templates).map(templateId => ({
-    id: templateId,
-    name: serviceTemplate.templates[templateId].name,
+    value: templateId,
+    label: serviceTemplate.templates[templateId].name,
     description: serviceTemplate.templates[templateId].description
   }));
 };

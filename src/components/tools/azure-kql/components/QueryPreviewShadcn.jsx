@@ -50,17 +50,17 @@ const QueryPreviewShadcn = ({ query, service, parameters, template }) => {
 
   if (!query) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Code2 className="w-5 h-5" />
+      <Card className="border-border/50 shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <Code2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             Query Preview
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
+          <Alert className="border-cyan-200 bg-cyan-50/50 dark:border-cyan-800/50 dark:bg-cyan-950/50">
+            <Info className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+            <AlertDescription className="text-cyan-800 dark:text-cyan-200">
               Configure parameters and click "Generate KQL Query" to see the preview
             </AlertDescription>
           </Alert>
@@ -70,30 +70,38 @@ const QueryPreviewShadcn = ({ query, service, parameters, template }) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-border/50 shadow-sm">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Code2 className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <Code2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             Query Preview
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {metrics && (
               <>
-                <Badge variant="secondary">{metrics.lines} lines</Badge>
-                <Badge variant="secondary">{metrics.complexity}</Badge>
+                <Badge variant="secondary" className="h-6 px-2.5 text-xs">
+                  {metrics.lines} lines
+                </Badge>
+                <Badge 
+                  variant={metrics.complexity === 'Complex' ? 'destructive' : metrics.complexity === 'Moderate' ? 'default' : 'secondary'}
+                  className="h-6 px-2.5 text-xs"
+                >
+                  {metrics.complexity}
+                </Badge>
               </>
             )}
             <Button
               size="sm"
               variant="outline"
               onClick={handleCopy}
+              className="h-8 px-3"
             >
               {copied ? (
-                <>✓ Copied</>
+                <span className="text-green-600 dark:text-green-400 font-medium">✓ Copied</span>
               ) : (
                 <>
-                  <Copy className="w-4 h-4 mr-2" />
+                  <Copy className="w-3.5 h-3.5 mr-2" />
                   Copy
                 </>
               )}
@@ -101,26 +109,26 @@ const QueryPreviewShadcn = ({ query, service, parameters, template }) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <div className="relative">
-          <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-sm">
+          <pre className="overflow-x-auto rounded-xl bg-slate-950 dark:bg-slate-900 p-5 text-sm border border-slate-800">
             <code 
-              className="language-kql text-slate-100"
+              className="language-kql text-slate-100 dark:text-slate-200"
               dangerouslySetInnerHTML={{ __html: highlighted }}
             />
           </pre>
         </div>
         
         {metrics && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge variant="outline">
-              <FileText className="w-3 h-3 mr-1" />
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Badge variant="outline" className="h-7 px-3 text-xs">
+              <FileText className="w-3 h-3 mr-1.5" />
               {metrics.operators} operators
             </Badge>
-            <Badge variant="outline">
+            <Badge variant="outline" className="h-7 px-3 text-xs">
               {metrics.filters} filters
             </Badge>
-            <Badge variant="outline">
+            <Badge variant="outline" className="h-7 px-3 text-xs">
               {metrics.projections} projections
             </Badge>
           </div>

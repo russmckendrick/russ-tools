@@ -10,7 +10,7 @@ import { generateShareableURL, parseConfigFromURL, updateURLWithConfig } from '.
 export const useAzureKQLShadcn = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedService, setSelectedService] = useState('azure-firewall');
-  const [selectedTemplate, setSelectedTemplate] = useState('basic');
+  const [selectedTemplate, setSelectedTemplate] = useState('');
   const [parameters, setParameters] = useState({});
   const [generatedQuery, setGeneratedQuery] = useState('');
   const [currentTemplate, setCurrentTemplate] = useState(null);
@@ -36,9 +36,9 @@ export const useAzureKQLShadcn = () => {
         const template = await loadTemplate(selectedService);
         setCurrentTemplate(template);
         
-        // Reset template to first available when service changes
+        // Set template to first available when service changes or no template is selected
         const availableTemplates = Object.keys(template?.templates || {});
-        if (availableTemplates.length > 0 && !availableTemplates.includes(selectedTemplate)) {
+        if (availableTemplates.length > 0 && (!selectedTemplate || !availableTemplates.includes(selectedTemplate))) {
           setSelectedTemplate(availableTemplates[0]);
         }
       } catch (error) {
