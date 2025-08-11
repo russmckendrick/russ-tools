@@ -464,15 +464,11 @@ const WHOISLookupShadcn = () => {
       <div className="space-y-6">
         {/* Header */}
         <ToolHeader
-          icon={Search}
+          icon={WHOISIcon}
           title="WHOIS Lookup Tool"
           description="Get detailed registration information for domains and IP addresses"
-          iconColor="blue"
-          badges={[
-            { text: "Domain Lookup", variant: "secondary" },
-            { text: "IP Information", variant: "secondary" },
-            { text: "Registration Data", variant: "secondary" }
-          ]}
+          iconColor="violet"
+          showTitle={false}
           standalone={true}
         />
 

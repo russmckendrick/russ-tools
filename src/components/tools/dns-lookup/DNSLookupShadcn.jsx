@@ -458,15 +458,11 @@ const DNSLookupShadcn = () => {
       <div className="space-y-6">
         {/* Header */}
         <ToolHeader
-          icon={Globe}
+          icon={DNSIcon}
           title="DNS Lookup Tool"
           description="Perform DNS queries for various record types using different DNS providers"
-          iconColor="blue"
-          badges={[
-            { text: "DNS over HTTPS", variant: "secondary" },
-            { text: "Multiple Providers", variant: "secondary" },
-            { text: "Cached Results", variant: "secondary" }
-          ]}
+          iconColor="indigo"
+          showTitle={false}
           standalone={true}
         />
 

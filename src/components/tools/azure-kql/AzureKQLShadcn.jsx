@@ -27,6 +27,7 @@ import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { useAzureKQLShadcn } from './hooks/useAzureKQLShadcn';
+import AzureKQLIcon from './AzureKQLIcon';
 import ServiceSelectorShadcn from './components/ServiceSelectorShadcn';
 import ParameterFormShadcn from './components/ParameterFormShadcn';
 import QueryPreviewShadcn from './components/QueryPreviewShadcn';
@@ -142,10 +143,11 @@ const AzureKQLShadcn = () => {
     <>
       <SEOHead {...seoData} />
       <ToolHeader
-        icon={BarChart3}
+        icon={AzureKQLIcon}
         title="Azure KQL Query Builder"
         description="Build optimized KQL queries for Azure services with guided forms"
         iconColor="cyan"
+        showTitle={false}
         actions={[
           {
             text: "Copy Configuration Share URL",

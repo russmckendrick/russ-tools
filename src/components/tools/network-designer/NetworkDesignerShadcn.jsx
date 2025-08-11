@@ -1017,6 +1017,7 @@ const NetworkDesignerShadcn = () => {
           title="Network Designer"
           description="Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, and export configurations for Azure, AWS, or VMware environments."
           iconColor="blue"
+          showTitle={false}
           actions={[
             {
               text: "Copy Configuration Share URL",

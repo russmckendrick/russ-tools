@@ -26,6 +26,7 @@ import PortalTable from './components/PortalTable';
 import EmptyState from './components/EmptyState';
 import SEOHead from '../../common/SEOHead';
 import ToolHeader from '../../common/ToolHeader';
+import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 
@@ -350,10 +351,11 @@ const MicrosoftPortalsShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         <ToolHeader
-          icon={Building2}
+          icon={MicrosoftPortalsIcon}
           title="Microsoft Portals (GDAP)"
           description="Quick access to Microsoft admin portals with GDAP tenant switching"
-          iconColor="cyan"
+          iconColor="indigo"
+          showTitle={false}
           standalone={true}
         />
 

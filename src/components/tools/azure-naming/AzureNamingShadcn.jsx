@@ -86,10 +86,11 @@ const AzureNamingShadcn = () => {
     <>
       <SEOHead {...seoData} />
       <ToolHeader
-        icon={Cloud}
+        icon={AzureNamingIcon}
         title="Azure Resource Naming Tool"
         description="Generate consistent, compliant Azure resource names following best practices"
         iconColor="cyan"
+        showTitle={false}
         actions={[
           {
             text: "Copy Configuration Share URL",
