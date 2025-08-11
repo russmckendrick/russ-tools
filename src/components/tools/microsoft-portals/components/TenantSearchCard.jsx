@@ -37,14 +37,14 @@ const TenantSearchCard = ({
   };
 
   return (
-    <div>
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">Tenant Lookup & Portal Access</h2>
-        <p className="text-muted-foreground">
+    <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Tenant Lookup & Portal Access</CardTitle>
+        <CardDescription>
           Enter a domain name or email address to find the tenant and generate portal links
-        </p>
-      </div>
-      <div>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
         <div className="flex flex-col gap-4">
           <div className="flex gap-2">
             <div className="flex-1">
@@ -67,7 +67,7 @@ const TenantSearchCard = ({
 
           {/* Recent Searches */}
           {lookupHistory.length > 0 && (
-            <div className="border rounded-lg p-3">
+            <div className="rounded-lg p-3 ring-1 ring-border/60">
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-sm font-medium">Recent Searches</Label>
                 <Button variant="outline" size="sm" onClick={onClearHistory}>
@@ -116,7 +116,7 @@ const TenantSearchCard = ({
 
           {/* Tenant Info */}
           {tenantInfo && (
-            <Card>
+            <Card className="rounded-xl shadow-sm ring-1 ring-border/60">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">Tenant Information</CardTitle>
               </CardHeader>
@@ -160,8 +160,8 @@ const TenantSearchCard = ({
             </Card>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
