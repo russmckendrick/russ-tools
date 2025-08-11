@@ -12,6 +12,18 @@ Welcome to the comprehensive documentation for RussTools - a modern suite of web
 ### Component Documentation
 - **[API Configuration System](api/API_CONFIG.md)** - Centralized API endpoint management
 - **[Design Style Guide](components/STYLE_GUIDE.md)** - UI/UX patterns and design system
+ - **Shadcn Component Map**
+   - Buttons: `src/components/ui/button.jsx`
+   - Cards: `src/components/ui/card.jsx`
+   - Tabs: `src/components/ui/tabs.jsx`
+   - Dialogs/Modals: `src/components/ui/dialog.jsx`
+   - Alerts: `src/components/ui/alert.jsx`
+   - Inputs: `src/components/ui/input.jsx`
+   - Select: `src/components/ui/select.jsx`
+   - Labels: `src/components/ui/label.jsx`
+   - Switch/Slider/Progress: `src/components/ui/switch.jsx`, `src/components/ui/slider.jsx`, `src/components/ui/progress.jsx`
+   - Table/Separator/Tooltip/Badge: `src/components/ui/table.jsx`, `src/components/ui/separator.jsx`, `src/components/ui/tooltip.jsx`, `src/components/ui/badge.jsx`
+   - Theme Toggle: `src/components/ui/theme-toggle.jsx`
 
 ### Tool Documentation
 Individual documentation for each major tool:
