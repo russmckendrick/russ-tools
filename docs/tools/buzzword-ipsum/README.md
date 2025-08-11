@@ -372,7 +372,7 @@ Invalid parameters are automatically corrected:
 ### Architecture
 - **Client-Side Generation**: All processing happens in your browser for privacy
 - **Configurable Word Lists**: Buzzwords stored in separate JSON configuration files
-- **React-Based UI**: Modern, responsive interface built with Mantine components
+- **React-Based UI**: Modern, responsive interface built with Shadcn components
 - **Smart Algorithm**: Intelligent word combination logic for realistic output
 
 ### Word Generation Logic
