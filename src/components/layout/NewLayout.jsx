@@ -11,7 +11,9 @@ import toolsConfig from "@/utils/toolsConfig.json"
 
 export function NewLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return localStorage.getItem('rt-sidebar-collapsed') === '1' } catch { return true }
+  })
   const location = useLocation()
 
   const currentTool = toolsConfig.find(t => t.path && location.pathname.startsWith(t.path))
@@ -55,7 +57,13 @@ export function NewLayout() {
               className="hidden lg:inline-flex"
               variant="ghost"
               size="sm"
-              onClick={() => setSidebarCollapsed((v) => !v)}
+              onClick={() => {
+                setSidebarCollapsed((v) => {
+                  const next = !v
+                  try { localStorage.setItem('rt-sidebar-collapsed', next ? '1' : '0') } catch {}
+                  return next
+                })
+              }}
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               {sidebarCollapsed ? (
