@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, Group, Button, Tabs, ActionIcon, Tooltip, Text, Title, Box, Select, TextInput } from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { loadPrismLanguages, highlightCode } from '../../../utils/prismLoader';
 import '../../../styles/prism-theme.css';
-import { useComputedColorScheme } from '@mantine/core';
+import { cn } from '@/lib/utils';
 
 import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform, IconServer } from '@tabler/icons-react';
-import { notifications } from '@mantine/notifications';
+import { toast } from 'sonner';
 import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/network/terraformExport';
 import { loadAzureRegions } from '../../../utils/regions/AzureRegions';
 import { loadAwsRegions } from '../../../utils/regions/AwsRegions';
 
 export function TerraformExportSection({ network, subnets }) {
-  const colorScheme = useComputedColorScheme('light');
+  const colorScheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
   const [activeTab, setActiveTab] = useState('azure');
   const [copied, setCopied] = useState(false);
   // Azure region selection with persistence and dynamic loading
@@ -153,147 +157,98 @@ export function TerraformExportSection({ network, subnets }) {
     const platformName = activeTab === 'azure' ? 'Azure' : 
                         activeTab === 'aws' ? 'AWS' : 'vCloud Director';
     
-    notifications.show({
-      title: 'Terraform Code Copied',
-      message: `${platformName} Terraform configuration copied to clipboard`,
-      color: 'green',
-      icon: <IconCopy size={16} />
+    toast.success('Terraform Code Copied', {
+      description: `${platformName} Terraform configuration copied to clipboard`
     });
   };
 
   return (
-    <Paper p="lg" radius="md" withBorder>
-      <Group justify="space-between" mb="lg">
-        <Group gap="sm">
-          <IconBrandTerraform size={20} color="#7B42F6" />
-          <Title order={4}>Terraform Export</Title>
-        </Group>
-        <Button 
-          size="sm" 
-          variant="light" 
-          onClick={handleCopy} 
-          leftSection={<IconCopy size={16} />}
-        >
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
+          <IconBrandTerraform size={18} color="#7B42F6" />
+          Terraform Export
+        </CardTitle>
+        <Button size="sm" onClick={handleCopy}>
+          <IconCopy size={16} className="mr-2" />
           {copied ? 'Copied!' : 'Copy Code'}
         </Button>
-      </Group>
-      <Tabs value={activeTab} onChange={setActiveTab}>
-        <Tabs.List>
-          <Tabs.Tab value="azure" leftSection={<IconBrandAzure size={16} color="#0078D4" />}>
-            Microsoft Azure
-          </Tabs.Tab>
-          <Tabs.Tab value="aws" leftSection={<IconBrandAws size={16} color="#FF9900" />}>
-            Amazon Web Services
-          </Tabs.Tab>
-          <Tabs.Tab value="vcd" leftSection={<IconServer size={16} color="#4A5568" />}>
-            VMware Cloud Director
-          </Tabs.Tab>
-        </Tabs.List>
-        <Tabs.Panel value="aws" pt="md">
-          <Box mb="xs" style={{ maxWidth: 340 }}>
-            <Select
-              label="AWS Region"
-              data={regionListAws}
-              value={awsRegion}
-              onChange={handleAwsRegionChange}
-              searchable
-              nothingFound={loadingRegionsAws ? 'Loading...' : 'No region found'}
-              withinPortal
-              disabled={loadingRegionsAws}
-              error={regionErrorAws}
-              placeholder={loadingRegionsAws ? 'Loading regions...' : undefined}
-              maxDropdownHeight={350}
-            />
-          </Box>
-          <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
-            <pre style={{ margin: 0, padding: 0, background: 'none' }}>
-              <code
-                className="language-hcl"
-                style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
-                dangerouslySetInnerHTML={{ __html: highlightedAws }}
-              />
-            </pre>
-          </div>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="azure">Microsoft Azure</TabsTrigger>
+            <TabsTrigger value="aws">Amazon Web Services</TabsTrigger>
+            <TabsTrigger value="vcd">VMware Cloud Director</TabsTrigger>
+          </TabsList>
 
-        </Tabs.Panel>
-        <Tabs.Panel value="azure" pt="md">
-          <Box mb="xs" style={{ maxWidth: 340 }}>
-            <Select
-              label="Azure Region"
-              data={regionList}
-              value={azureRegion}
-              onChange={handleRegionChange}
-              searchable
-              nothingFound={loadingRegions ? 'Loading...' : 'No region found'}
-              withinPortal
-              disabled={loadingRegions}
-              error={regionError}
-              placeholder={loadingRegions ? 'Loading regions...' : undefined}
-              maxDropdownHeight={350}
-            />
-          </Box>
-          <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
-            <pre style={{ margin: 0, padding: 0, background: 'none' }}>
-              <code
-                className="language-hcl"
-                style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
-                dangerouslySetInnerHTML={{ __html: highlightedAzure }}
-              />
-            </pre>
-          </div>
+          <TabsContent value="aws" className="pt-4">
+            <div className="mb-2 max-w-xs">
+              <Select value={awsRegion} onValueChange={handleAwsRegionChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingRegionsAws ? 'Loading regions...' : 'AWS Region'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {regionListAws.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className={cn(colorScheme === 'dark' && 'prism-dark')}>
+              <pre style={{ margin: 0, padding: 0, background: 'none' }}>
+                <code className="language-hcl" style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }} dangerouslySetInnerHTML={{ __html: highlightedAws }} />
+              </pre>
+            </div>
+          </TabsContent>
 
-        </Tabs.Panel>
-        <Tabs.Panel value="vcd" pt="md">
-          <Group gap="md" mb="md">
-            <Select
-              label="Network Type"
-              data={[
-                { value: 'routed', label: 'Routed Network' },
-                { value: 'isolated', label: 'Isolated Network' }
-              ]}
-              value={vcdNetworkType}
-              onChange={handleVcdNetworkTypeChange}
-              style={{ width: 160 }}
-              size="sm"
-            />
-            <TextInput
-              label="Organization"
-              value={vcdOrg}
-              onChange={(e) => handleVcdOrgChange(e.target.value)}
-              placeholder="my-org"
-              style={{ width: 140 }}
-              size="sm"
-            />
-            <TextInput
-              label="VDC"
-              value={vcdVdc}
-              onChange={(e) => handleVcdVdcChange(e.target.value)}
-              placeholder="my-vdc"
-              style={{ width: 140 }}
-              size="sm"
-            />
-            {vcdNetworkType === 'routed' && (
-              <TextInput
-                label="Edge Gateway"
-                value={vcdEdgeGateway}
-                onChange={(e) => handleVcdEdgeGatewayChange(e.target.value)}
-                placeholder="edge-gateway"
-                style={{ width: 160 }}
-                size="sm"
-              />
-            )}
-          </Group>
-          <div className={colorScheme === 'dark' ? 'prism-dark' : ''}>
-            <pre style={{ margin: 0, padding: 0, background: 'none' }}>
-              <code
-                className="language-hcl"
-                style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }}
-                dangerouslySetInnerHTML={{ __html: highlightedVcd }}
-              />
-            </pre>
-          </div>
-        </Tabs.Panel>
-      </Tabs>
-    </Paper>
+          <TabsContent value="azure" className="pt-4">
+            <div className="mb-2 max-w-xs">
+              <Select value={azureRegion} onValueChange={handleRegionChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingRegions ? 'Loading regions...' : 'Azure Region'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {regionList.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className={cn(colorScheme === 'dark' && 'prism-dark')}>
+              <pre style={{ margin: 0, padding: 0, background: 'none' }}>
+                <code className="language-hcl" style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }} dangerouslySetInnerHTML={{ __html: highlightedAzure }} />
+              </pre>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="vcd" className="pt-4">
+            <div className="flex flex-wrap gap-3 mb-3">
+              <div className="w-40">
+                <Select value={vcdNetworkType} onValueChange={handleVcdNetworkTypeChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Network Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="routed">Routed Network</SelectItem>
+                    <SelectItem value="isolated">Isolated Network</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Input className="w-36" value={vcdOrg} onChange={(e) => handleVcdOrgChange(e.target.value)} placeholder="Organization" />
+              <Input className="w-36" value={vcdVdc} onChange={(e) => handleVcdVdcChange(e.target.value)} placeholder="VDC" />
+              {vcdNetworkType === 'routed' && (
+                <Input className="w-40" value={vcdEdgeGateway} onChange={(e) => handleVcdEdgeGatewayChange(e.target.value)} placeholder="Edge Gateway" />
+              )}
+            </div>
+            <div className={cn(colorScheme === 'dark' && 'prism-dark')}>
+              <pre style={{ margin: 0, padding: 0, background: 'none' }}>
+                <code className="language-hcl" style={{ fontSize: 13, whiteSpace: 'pre-wrap', display: 'block' }} dangerouslySetInnerHTML={{ __html: highlightedVcd }} />
+              </pre>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 }

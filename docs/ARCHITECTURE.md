@@ -4,10 +4,10 @@
 
 ### Technology Stack
 - **Frontend Framework**: React 19 with Vite build system
-- **UI Library**: Mantine v8 (comprehensive component library)
+- **UI Library**: Shadcn UI (Radix primitives + Tailwind)
 - **Routing**: React Router v7 with nested routing
 - **State Management**: React Context API + Hooks + Local Storage
-- **Styling**: Mantine's CSS-in-JS + CSS Modules + Global CSS
+- **Styling**: Tailwind CSS + small global CSS utilities
 - **Build Tool**: Vite with ES modules
 - **Backend Services**: Cloudflare Workers for API proxying
 
@@ -20,7 +20,7 @@ src/App.jsx - Main application component
 ├── Notifications (Global notification system)
 ├── AzureNamingProvider (Context for Azure naming tool)
 └── BrowserRouter
-    └── Layout (AppShell with header/navigation)
+└── Layout (Shadcn layout with sidebar/header)
         └── Routes (Individual tool routes)
 ```
 
@@ -45,10 +45,9 @@ src/components/
 │   ├── SEOHead.jsx   # Dynamic meta tag management
 │   └── ClearAllStorage.jsx # Data management utility
 ├── layout/           # Layout components
-│   ├── Layout.jsx    # Main app shell
-│   ├── HomeView.jsx  # Landing page with tool grid
-│   ├── NavbarMinimal.jsx # Navigation header
-│   └── PageTitle.jsx # Dynamic page titles
+│   ├── NewLayout.jsx    # Main app shell (Shadcn)
+│   ├── NewHomeView.jsx  # Landing page with tool cards (Shadcn)
+│   └── Sidebar.jsx      # Navigation sidebar (Shadcn)
 └── tools/           # Individual tool implementations
     ├── [tool-name]/
     │   ├── [Tool]Tool.jsx    # Main tool component
@@ -60,7 +59,7 @@ src/components/
 ```
 
 ### Component Design Patterns
-- **Atomic Design**: Components built from Mantine's atomic components
+- **Atomic Design**: Components built from Shadcn primitives
 - **Composition over Inheritance**: Tools compose multiple smaller components
 - **Single Responsibility**: Each component has a focused purpose
 - **Props Interface**: Consistent prop patterns across similar components
@@ -70,7 +69,7 @@ src/components/
 ### Multi-Layer State Strategy
 1. **Local Component State**: `useState` for UI state and temporary data
 2. **URL State**: Route parameters for shareable/bookmarkable states
-3. **Local Storage**: `@mantine/hooks` `useLocalStorage` for persistence
+3. **Local Storage**: internal `useLocalStorage` in `src/lib/utils.js` for persistence
 4. **Context State**: React Context for complex shared state (Azure Naming)
 5. **Server State**: API calls with manual caching strategies
 

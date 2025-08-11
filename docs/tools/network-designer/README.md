@@ -135,7 +135,7 @@ NetworkDesignerTool (Main Component)
 
 ### Core Technologies
 - **React 18**: Modern functional components with hooks
-- **Mantine UI**: Comprehensive component library
+- **Shadcn UI**: Accessible components with Tailwind styling
 - **Netmask Library**: IP address calculations and validation
 - **UUID**: Unique identifiers for networks and subnets
 - **SVG**: Scalable vector graphics for diagrams
@@ -196,7 +196,7 @@ NetworkDesignerTool (Main Component)
 ### External Dependencies
 - **Netmask**: `npm install netmask`
 - **UUID**: `npm install uuid`
-- **Mantine**: `npm install @mantine/core @mantine/hooks`
+- **UI**: Already included Shadcn components under `src/components/ui/*`
 
 ## Data Storage and Privacy
 
@@ -298,7 +298,7 @@ Parent Network: 10.0.0.0/16
 
 ### Code Style
 - Follow existing React patterns
-- Use Mantine components consistently
+- Use Shadcn components consistently (`Card`, `Tabs`, `Select`, `Dialog`, etc.)
 - Implement proper error handling
 - Add comprehensive comments
 

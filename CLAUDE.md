@@ -2,65 +2,43 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Current Status (2025-08-11)
+
+**🎉 PHASE 1 MIGRATION COMPLETE:** Successfully migrated from Mantine to shadcn/ui infrastructure
+- ✅ Modern sidebar navigation with full-height design
+- ✅ Complete dark/light theme implementation
+- ✅ Tailwind CSS v4 with shadcn/ui components
+- ✅ Professional dashboard-style home page
+
+**🚀 READY FOR PHASE 2:** Individual tool migration from Mantine to shadcn/ui components
+
 ## Development Commands
 
-### Core Development
 - `npm run dev` - Start development server with Vite
-- `npm run build` - Build for production (includes sitemap generation)
-- `npm run generate:sitemap` - Generate sitemap.xml file
-- `npm run lint` - Run ESLint code linting
+- `npm run build` - Build for production (includes automatic sitemap generation via scripts/generate-sitemap.js)
+- `npm run lint` - Run ESLint code linting  
 - `npm run preview` - Preview production build locally
-
-### Testing
-The project does not currently have a formal test framework configured. When adding tests, check the project structure to determine the appropriate testing approach.
+- `npm run generate:sitemap` - Manually generate sitemap.xml file
 
 ## Architecture Overview
 
-This is a React 19 single-page application (SPA) built with Vite that provides a suite of network and cloud professional tools. The application follows a modular architecture with tool-specific components.
+This is a React 19 single-page application (SPA) built with Vite that provides a suite of network and cloud professional tools. The application has completed infrastructure migration to shadcn/ui and is now ready for individual tool migrations.
 
 ### Key Technologies
 - **React 19** - Modern React with native metadata support
 - **Vite** - Build tool with optimized chunking strategy
-- **Mantine** - UI framework for consistent design
+- **shadcn/ui** - Modern component library with Radix UI primitives
+- **Tailwind CSS v4** - CSS-first configuration with custom design system
 - **React Router DOM** - Client-side routing
-
-### Project Structure
-
-```
-src/
-├── components/
-│   ├── common/           # Shared components (SEO, storage management)
-│   ├── layout/           # Layout components (navigation, home view)
-│   └── tools/            # Individual tool implementations
-│       ├── azure-kql/    # Azure KQL Query Builder
-│       ├── azure-naming/ # Azure Resource Naming Tool
-│       ├── base64/       # Base64 Encoder/Decoder
-│       ├── cron/         # CRON Expression Builder
-│       ├── data-converter/ # Data format converter
-│       ├── dns-lookup/   # DNS Lookup Tool
-│       ├── jwt/          # JWT Decoder/Validator
-│       ├── microsoft-portals/ # Microsoft Portals (GDAP)
-│       ├── network-designer/  # Network Designer & Subnet Calculator
-│       ├── password-generator/ # Password Generator
-│       ├── ssl-checker/  # SSL Certificate Checker
-│       ├── tenant-lookup/ # Microsoft Tenant Lookup
-│       └── whois/        # WHOIS Lookup Tool
-├── utils/                # Shared utilities and configurations
-│   ├── api/             # API utilities and configuration
-│   ├── azure/           # Azure-specific utilities
-│   ├── network/         # Network calculation utilities
-│   └── regions/         # Cloud provider region data
-└── data/                # Static data files
-```
 
 ### Tool Architecture Pattern
 
-Each tool follows a consistent pattern:
-- **Main Component** - Primary tool interface (e.g., `AzureKQLTool.jsx`)
-- **Sub-components** - Specialized UI components for complex tools
-- **Hooks** - Custom React hooks for state management (`useToolName.js`)
-- **Utils** - Tool-specific utility functions
-- **Context** - React context for complex state sharing (when needed)
+Each tool in `src/components/tools/[tool-name]/` follows this structure:
+- **[ToolName]Tool.jsx** - Main component entry point
+- **components/** - Sub-components for complex tools
+- **hooks/useToolName.js** - Custom React hooks for state management
+- **utils/** - Tool-specific utility functions
+- **context/** - React context for complex state sharing (when needed)
 
 ### State Management
 - **localStorage** - Persistent storage for user preferences and tool state
@@ -68,20 +46,15 @@ Each tool follows a consistent pattern:
 - **Custom Hooks** - Encapsulated tool-specific state logic
 
 ### Build Configuration
-The Vite configuration includes:
-- **Manual Chunking** - Optimized vendor chunks for performance
-- **Asset Organization** - Structured output for images, CSS, and JS
-- **Source Maps** - Enabled for production debugging
-- **Dependency Optimization** - React deduplication and proper bundling
-
-### SEO System
-- **Dynamic Meta Tags** - Tool-specific SEO metadata via `toolsConfig.json`
-- **Schema.org** - Structured data for search engines  
-- **Open Graph** - Social media sharing optimization
-- **React 19 Compatible** - Future-ready metadata approach
+The Vite configuration (vite.config.js) includes:
+- **Manual Chunking** - Vendor chunks split by: react ecosystem, icons, data processing, UI utilities, syntax highlighting
+- **ExcelJS** - Excluded from optimization due to size, loaded dynamically
+- **Asset Organization** - Images in img/, CSS in css/, JS in js/ folders
+- **React Deduplication** - Ensures single React instance across chunks
+- **Path Alias** - `@` alias for src directory imports
 
 ### Backend Services
-External services are accessed through Cloudflare Workers for:
+External services are accessed through Cloudflare Workers (configured in src/utils/api/apiConfig.json):
 - SSL certificate analysis (SSL Labs API)
 - DNS lookups (multiple providers)
 - WHOIS/tenant information (RDAP protocol)
@@ -90,38 +63,72 @@ External services are accessed through Cloudflare Workers for:
 ## Development Guidelines
 
 ### Adding New Tools
-1. Create tool directory in `src/components/tools/`
-2. Add tool configuration to `src/utils/toolsConfig.json`
+1. Create tool directory in `src/components/tools/[tool-name]/`
+2. Add tool configuration to `src/utils/toolsConfig.json` with required fields:
+   - id, title, description, shortDescription, icon, iconColor
+   - badges, path, seoTitle, seoKeywords, category, features
 3. Implement main component following existing patterns
-4. Add routing configuration
-5. Update navigation if needed
+4. Add routing in App.jsx
+5. Icons are imported centrally in `src/utils/_iconImports.js`
 
 ### Code Conventions
-- Use functional components with hooks
-- Follow existing naming patterns (PascalCase for components, camelCase for utilities)
-- Implement proper error handling and loading states
-- Use Mantine components for UI consistency
-- Add tool-specific SEO metadata
+- Use functional components with hooks only
+- Component files use `.jsx` extension
+- Utility files use `.js` extension  
+- PascalCase for components, camelCase for utilities
+- NO COMMENTS unless explicitly requested
+- Always prefer editing existing files over creating new ones
+- Never create documentation files unless explicitly requested
 
 ### External Dependencies
-The project uses specific libraries for different tools:
+Check existing usage before adding new dependencies:
 - **netmask** - IPv4 subnet calculations (Network Designer)
 - **js-yaml, @ltd/j-toml** - Data format parsing (Data Converter)
 - **jose, jwt-decode** - JWT processing (JWT Tool)
-- **prismjs** - Syntax highlighting
+- **prismjs** - Syntax highlighting with custom KQL language support
 - **@dnd-kit** - Drag and drop functionality
 - **ajv** - JSON schema validation
+- **html2canvas** - Export visualizations
+- **@svgdotjs/svg.js** - SVG generation for network diagrams
 
-Always check existing usage before adding new dependencies.
+### SEO System
+- **Dynamic Meta Tags** - Tool-specific SEO metadata via `toolsConfig.json`
+- **SEOHead Component** - Manages meta tags, Open Graph, and Schema.org data
+- **React 19 Compatible** - Future-ready metadata approach using native support
+- **Sitemap Generation** - Automatic sitemap.xml generation during build
 
-### File Structure Conventions
-- Component files use `.jsx` extension
-- Utility files use `.js` extension
-- Test files use `.test.js` extension (when implemented)
-- Configuration files use `.json` extension
+## Current Layout System (NEW)
+
+### Sidebar Navigation (`src/components/layout/NewLayout.jsx`)
+- **Full-height sidebar** with collapsible tool categories
+- **GitHub link and theme toggle** integrated at bottom
+- **Clean, header-free design** maximizing content space
+- **Professional appearance** matching modern applications (VS Code, GitHub)
+
+### Theme System (`src/components/theme-provider.jsx`)
+- **Custom theme provider** with localStorage persistence
+- **System preference detection** with manual override
+- **Smooth transitions** between light/dark themes
+- **Complete CSS variable cascading** for all components
+
+### Available shadcn/ui Components (`src/components/ui/`)
+- **Button, Card, Input, Textarea, Select** - Form and interaction components
+- **Alert, Badge** - Feedback and status components
+- **Theme Toggle** - Dark/light mode switcher
+- **Ready for tool migration** - All base components implemented
+
+## Migration Strategy
+
+### Phase 2: Tool Migration (Current Phase)
+Migrate tools individually to shadcn/ui components:
+
+1. **Recommended order**: Base64 → Password Generator → CRON Builder → Buzzword Ipsum
+2. **Process**: Update components to use shadcn/ui while maintaining functionality
+3. **Testing**: Ensure functional parity and consistent styling
+4. **Cleanup**: Remove any remaining legacy component imports
 
 ### Performance Considerations
-- The build is optimized with chunking strategies defined in `vite.config.js`
-- ExcelJS is excluded from optimization due to size
 - Large dependencies are dynamically imported when possible
 - Tool state is persisted to localStorage for better UX
+- Tailwind CSS v4 optimizes CSS generation and bundle size
+- Source maps enabled for production debugging

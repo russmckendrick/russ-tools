@@ -1,6 +1,6 @@
 # 🧰 Russ Tools
 
-[Russ Tools](https://www.russ.tools/) is a suite of modern, web-based tools for network and cloud professionals. Built with React 19, Vite, and Mantine for a fast, responsive, and professional experience.
+[Russ Tools](https://www.russ.tools/) is a suite of modern, web-based tools for network and cloud professionals. Built with React 19, Vite, and Shadcn UI (Radix + Tailwind) for a fast, responsive, and modern experience.
 
 ## 🧰 Available Tools
 
@@ -35,8 +35,10 @@ Visit [https://www.russ.tools/](https://www.russ.tools/) to start using the tool
 
 - ⚛️ **React 19** - Modern SPA framework with native metadata support
 - ⚡ **Vite** - Lightning-fast build tool with optimized chunking
-- 🎨 **Mantine** - Professional UI framework for consistent design
-- 🏷️ **Tabler Icons** - Beautiful SVG icons
+- 🧩 **Shadcn UI** - Radix primitives styled with Tailwind for accessible, composable components
+- 🎛 **Tailwind CSS** - Utility-first styling and design tokens
+- 🏷️ **Tabler/Lucide Icons** - Beautiful SVG icons
+- 🔔 **Sonner** - Lightweight toasts for inline feedback
 - 🔍 **Custom SEO System** - Dynamic meta tag management for each tool
 
 ## 📦 Development

@@ -15,8 +15,7 @@ export default defineConfig({
         manualChunks: {
           // Keep React ecosystem together
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          // Mantine UI components
-          'vendor-mantine': ['@mantine/core', '@mantine/hooks', '@mantine/notifications', '@mantine/dates', '@mantine/dropzone'],
+          // (formerly Mantine) placeholder removed
           // Icons
           'vendor-icons': ['@tabler/icons-react'],
           // Data processing libraries (excluding ExcelJS)
@@ -64,9 +63,6 @@ export default defineConfig({
       'react-dom', 
       'react/jsx-runtime',
       'react-router-dom',
-      '@mantine/core',
-      '@mantine/hooks',
-      '@mantine/notifications',
       '@tabler/icons-react'
     ],
     exclude: ['exceljs']
@@ -75,6 +71,8 @@ export default defineConfig({
     // Ensure React consistency across chunks
     dedupe: ['react', 'react-dom', 'react-router-dom'],
     alias: {
+      // Add @ alias for src directory
+      '@': resolve(fileURLToPath(new URL('.', import.meta.url)), 'src'),
       // Ensure consistent React imports
       'react': resolve(fileURLToPath(new URL('.', import.meta.url)), 'node_modules/react'),
       'react-dom': resolve(fileURLToPath(new URL('.', import.meta.url)), 'node_modules/react-dom')

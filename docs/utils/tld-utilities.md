@@ -17,7 +17,8 @@ This module provides utilities for working with Top Level Domains (TLDs), includ
 
 ```jsx
 import React, { useState } from 'react';
-import { Autocomplete } from '@mantine/core';
+// Use Shadcn Select or Command for search UIs
+// Example: import { Select } from '@/components/ui/select'
 import { useTLDs } from '../utils';
 
 const DomainInput = () => {

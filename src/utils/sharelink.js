@@ -1,4 +1,3 @@
-import { notifications } from '@mantine/notifications';
 import * as pako from 'pako';
 
 /**
@@ -184,19 +183,9 @@ export const copyShareableURL = async (config, baseUrl) => {
 
   try {
     await navigator.clipboard.writeText(shareableUrl);
-    notifications.show({
-      title: 'URL Copied',
-      message: 'Shareable URL has been copied to clipboard',
-      color: 'green'
-    });
     return true;
   } catch (error) {
     console.error('Failed to copy URL to clipboard:', error);
-    notifications.show({
-      title: 'Copy Failed',
-      message: 'Failed to copy URL to clipboard',
-      color: 'red'
-    });
     return false;
   }
 };
