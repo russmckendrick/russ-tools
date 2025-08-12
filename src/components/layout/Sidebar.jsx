@@ -78,11 +78,11 @@ export function Sidebar({ onClose, collapsed = false }) {
                   >
                     <Link to="/" onClick={() => onClose && onClose()}>
                       <Home className={cn("h-4 w-4", !collapsed && "mr-2")} />
-                      {!collapsed && "Dashboard"}
+                      {!collapsed && "Home"}
                     </Link>
                   </Button>
                 </TooltipTrigger>
-                {collapsed && <TooltipContent side="right">Dashboard</TooltipContent>}
+                {collapsed && <TooltipContent side="right">Home</TooltipContent>}
               </Tooltip>
 
               {toolItems

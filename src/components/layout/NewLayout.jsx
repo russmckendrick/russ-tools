@@ -17,7 +17,7 @@ export function NewLayout() {
   const location = useLocation()
 
   const currentTool = toolsConfig.find(t => t.path && location.pathname.startsWith(t.path))
-  const headerTitle = location.pathname === "/" ? "Dashboard" : (currentTool?.title || "")
+  const headerTitle = location.pathname === "/" ? "Home" : (currentTool?.title || "")
 
   return (
     <div className="min-h-screen bg-background text-foreground">

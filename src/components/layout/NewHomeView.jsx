@@ -22,6 +22,7 @@ import {
   MessageSquareQuote
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
 import { toast } from "sonner"
 import toolsConfig from "@/utils/toolsConfig.json"
 import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub, IconTools } from "@tabler/icons-react"
@@ -64,13 +65,32 @@ const iconByKey = {
 
 export function NewHomeView() {
   const [buzzSeed, setBuzzSeed] = useState(0)
+  const [ipsumSentences, setIpsumSentences] = useState(4)
+  const [tones, setTones] = useState({ strategy: true, agile: false, ai: false })
   const generateSecure = (len = 16) => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+'
     const bytes = new Uint8Array(len)
     crypto.getRandomValues(bytes)
     return Array.from(bytes, b => chars[b % chars.length]).join('')
   }
-  const [passwords] = useState(() => Array.from({ length: 5 }).map(() => generateSecure(16)))
+  const [pwdLength, setPwdLength] = useState(16)
+  const [pwdOpts, setPwdOpts] = useState({ upper: true, lower: true, digits: true, symbols: true })
+  const buildPwdChars = () => {
+    let s = ''
+    if (pwdOpts.upper) s += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    if (pwdOpts.lower) s += 'abcdefghijklmnopqrstuvwxyz'
+    if (pwdOpts.digits) s += '0123456789'
+    if (pwdOpts.symbols) s += '!@#$%^&*()-_=+'
+    return s || 'abcdefghijklmnopqrstuvwxyz'
+  }
+  const generatePwd = (len = pwdLength) => {
+    const chars = buildPwdChars()
+    const bytes = new Uint8Array(len)
+    crypto.getRandomValues(bytes)
+    return Array.from(bytes, b => chars[b % chars.length]).join('')
+  }
+  const [passwords, setPasswords] = useState(() => Array.from({ length: 5 }).map(() => generatePwd(16)))
+  useEffect(() => { setPasswords(Array.from({ length: 5 }).map(() => generatePwd())) }, [pwdLength, pwdOpts.upper, pwdOpts.lower, pwdOpts.digits, pwdOpts.symbols])
   const visibleTools = toolsConfig.filter((t) => t.path && t.path.startsWith("/") && t.id !== "github-source" && t.id !== "ui-demo")
 
   const seededRandom = (seed) => {
@@ -345,19 +365,32 @@ export function NewHomeView() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <ul className="divide-y">
-              {passwords.map((pwd, i) => (
-                (
-                  <li key={i} className="px-3 py-1.5 flex items-center justify-between">
-                    <span className="font-mono text-sm truncate mr-2">{pwd}</span>
-                    <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(pwd); toast.success('Copied password') }}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </li>
+          <CardContent className="p-3 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Length {pwdLength}</span>
+                <Slider value={[pwdLength]} min={8} max={32} step={1} onValueChange={(v) => setPwdLength(v[0])} className="w-40" />
+              </div>
+              <div className="flex items-center gap-1">
+                <Button size="xs" variant="outline" className={pwdOpts.upper ? 'toggle-on' : ''} onClick={() => setPwdOpts(o => ({ ...o, upper: !o.upper }))}>A‑Z</Button>
+                <Button size="xs" variant="outline" className={pwdOpts.lower ? 'toggle-on' : ''} onClick={() => setPwdOpts(o => ({ ...o, lower: !o.lower }))}>a‑z</Button>
+                <Button size="xs" variant="outline" className={pwdOpts.digits ? 'toggle-on' : ''} onClick={() => setPwdOpts(o => ({ ...o, digits: !o.digits }))}>0‑9</Button>
+                <Button size="xs" variant="outline" className={pwdOpts.symbols ? 'toggle-on' : ''} onClick={() => setPwdOpts(o => ({ ...o, symbols: !o.symbols }))}>#</Button>
+              </div>
+              <Button size="icon" variant="outline" onClick={() => setPasswords(Array.from({ length: 5 }).map(() => generatePwd()))}>
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {passwords.map((pwd, i) => {
+                const delay = -Math.random() * 3
+                return (
+                  <button key={i} className="keycap" style={{ animationDelay: `${delay}s` }} onClick={() => { navigator.clipboard.writeText(pwd); toast.success('Copied password') }}>
+                    {pwd}
+                  </button>
                 )
-              ))}
-            </ul>
+              })}
+            </div>
           </CardContent>
         </Card>
 
@@ -378,26 +411,49 @@ export function NewHomeView() {
                 <Button size="sm" variant="outline" asChild>
                   <Link to="/buzzword-ipsum">Open</Link>
                 </Button>
-                <Button size="icon" variant="outline" onClick={() => setBuzzSeed((s) => s + 1)}>
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="outline" onClick={() => { const text = document.getElementById('buzzword-paragraph')?.textContent || ''; navigator.clipboard.writeText(text); toast.success('Copied paragraph') }}>
-                  <Copy className="h-4 w-4" />
-                </Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-3">
+          <CardContent className="p-3 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Sentences {ipsumSentences}</span>
+                <Slider value={[ipsumSentences]} min={1} max={5} step={1} onValueChange={(v) => setIpsumSentences(v[0])} className="w-40" />
+              </div>
+              <div className="flex items-center gap-1">
+                <Button size="xs" variant="outline" className={tones.strategy ? 'toggle-on' : ''} onClick={() => setTones(t => ({ ...t, strategy: !t.strategy }))}>Strategy</Button>
+                <Button size="xs" variant="outline" className={tones.agile ? 'toggle-on' : ''} onClick={() => setTones(t => ({ ...t, agile: !t.agile }))}>Agile</Button>
+                <Button size="xs" variant="outline" className={tones.ai ? 'toggle-on' : ''} onClick={() => setTones(t => ({ ...t, ai: !t.ai }))}>AI</Button>
+              </div>
+              <Button size="icon" variant="outline" onClick={() => setBuzzSeed((s) => s + 1)}>
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button size="icon" variant="outline" onClick={() => { const text = document.getElementById('buzzword-paragraph')?.textContent || ''; navigator.clipboard.writeText(text); toast.success('Copied paragraph') }}>
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
             {(() => {
-              const termsA = ['synergies','innovation','scalability','alignment','efficiencies','optimization','resilience']
-              const termsB = ['outcomes','value','growth','impact','excellence','velocity','time-to-value']
+              const baseA = ['synergies','innovation','scalability','alignment','efficiencies','optimization','resilience']
+              const stratA = ['governance','roadmaps','operating models','value streams','stakeholder alignment']
+              const agileA = ['sprints','backlogs','iterations','velocity','standups']
+              const aiA = ['LLMs','embeddings','inference','fine‑tuning','vector search']
+              let termsA = [...baseA]
+              if (tones.strategy) termsA = [...termsA, ...stratA]
+              if (tones.agile) termsA = [...termsA, ...agileA]
+              if (tones.ai) termsA = [...termsA, ...aiA]
+              const baseB = ['outcomes','value','growth','impact','excellence','velocity','time-to-value']
+              const stratB = ['governance maturity','portfolio health','risk posture']
+              const agileB = ['delivery cadence','team autonomy','throughput']
+              const aiB = ['model performance','accuracy','hallucination rate']
+              let termsB = [...baseB]
+              if (tones.strategy) termsB = [...termsB, ...stratB]
+              if (tones.agile) termsB = [...termsB, ...agileB]
+              if (tones.ai) termsB = [...termsB, ...aiB]
               const sentence = () => `Leverage ${termsA[Math.floor(Math.random()*termsA.length)]} to drive ${termsB[Math.floor(Math.random()*termsB.length)]}.`
-              const paragraph = () => Array.from({length:5}).map(sentence).join(' ')
-              // use seed to re-render
+              const paragraph = () => Array.from({length:ipsumSentences}).map(sentence).join(' ')
               const _ = buzzSeed
               return (
                 <div id="buzzword-paragraph" className="space-y-2">
-                  <p className="text-sm leading-6 text-muted-foreground">{paragraph()}</p>
                   <p className="text-sm leading-6 text-muted-foreground">{paragraph()}</p>
                 </div>
               )

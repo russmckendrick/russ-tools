@@ -238,6 +238,21 @@
   }
   .icon-token .icon-el { animation: idleDrift var(--idle-dur, 6s) ease-in-out var(--idle-delay, 0s) infinite; will-change: transform; }
 
+  /* Blueprint widget styling */
+  .keycap {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: .8rem;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: color-mix(in oklch, var(--color-secondary) 35%, transparent);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 0 color-mix(in oklch, var(--color-border) 70%, transparent);
+    transition: transform .15s ease, box-shadow .15s ease;
+    animation: idleDrift var(--idle-dur, 5s) ease-in-out var(--idle-delay, 0s) infinite;
+  }
+  .keycap:hover { transform: translateY(-2px); box-shadow: 0 8px 12px color-mix(in oklch, var(--color-primary) 16%, transparent); }
+  .toggle-on { background: color-mix(in oklch, var(--color-primary) 16%, transparent); }
+
   /* Idle drift animation */
   @keyframes drift {
     0% { transform: translate(0, 0) rotate(0); }
