@@ -210,15 +210,12 @@ export function NewHomeView() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-primary" />
+                <Database className="h-6 w-6 md:h-7 md:w-7 text-primary" />
                 <div>
                   <CardTitle className="text-base">Saved data</CardTitle>
-                  <CardDescription>From your tools</CardDescription>
                 </div>
               </div>
-              <Button size="sm" variant="outline" asChild>
-                <Link to="/network-designer">Open</Link>
-              </Button>
+              <div />
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -234,56 +231,45 @@ export function NewHomeView() {
                   try { return JSON.parse(localStorage.getItem('dataConverter_history') || '[]') } catch { return [] }
                 })()
                 return (
-                  <ul className="divide-y">
-                    {networks.slice(0,4).map((n) => {
-                      const IconComp = getToolIconForPath('/network-designer') || Network
-                      return (
-                      <li key={n.id} className="group px-3 py-2 hover:bg-muted/50 transition-colors">
-                        <Link to="/network-designer" className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <IconComp className="h-4 w-4 text-primary" />
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">{n?.name || 'Saved network'}{n?.id === selectedId ? ' • current' : ''}</div>
-                              <div className="text-xs text-muted-foreground truncate">{n?.parentNetwork ? `${n.parentNetwork.ip}/${n.parentNetwork.cidr}` : ''}</div>
-                            </div>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </Link>
-                      </li>)
-                    })}
-                    {azureNaming.slice(0,2).map((h, i) => {
-                      const IconComp = getToolIconForPath('/azure-naming') || IconBrandAzure
-                      return (
-                      <li key={`azn-${i}`} className="group px-3 py-2 hover:bg-muted/50 transition-colors">
-                        <Link to="/azure-naming" className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <IconComp className="h-4 w-4 text-primary" />
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">Azure Naming</div>
-                              <div className="text-xs text-muted-foreground truncate">{h?.result || h?.name || 'Previous session'}</div>
-                            </div>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </Link>
-                      </li>)
-                    })}
-                    {dataConv.slice(0,2).map((h, i) => {
-                      const IconComp = getToolIconForPath('/data-converter') || JSONIcon
-                      return (
-                      <li key={`dc-${i}`} className="group px-3 py-2 hover:bg-muted/50 transition-colors">
-                        <Link to="/data-converter" className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <IconComp className="h-4 w-4 text-primary" />
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">Data Converter</div>
-                              <div className="text-xs text-muted-foreground truncate">{h?.from || ''} → {h?.to || ''}</div>
-                            </div>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </Link>
-                      </li>)
-                    })}
-                  </ul>
+                  (() => {
+                    const merged = []
+                    const IconND = getToolIconForPath('/network-designer') || Network
+                    const IconAN = getToolIconForPath('/azure-naming') || IconBrandAzure
+                    const IconDC = getToolIconForPath('/data-converter') || JSONIcon
+                    networks.forEach((n) => {
+                      merged.push({
+                        key: n.id,
+                        to: '/network-designer',
+                        Icon: IconND,
+                        primary: n?.name || 'Saved network' + (n?.id === selectedId ? ' • current' : ''),
+                        secondary: n?.parentNetwork ? `${n.parentNetwork.ip}/${n.parentNetwork.cidr}` : ''
+                      })
+                    })
+                    azureNaming.forEach((h, i) => {
+                      merged.push({ key: `azn-${i}`, to: '/azure-naming', Icon: IconAN, primary: 'Azure Naming', secondary: h?.result || h?.name || 'Previous session' })
+                    })
+                    dataConv.forEach((h, i) => {
+                      merged.push({ key: `dc-${i}`, to: '/data-converter', Icon: IconDC, primary: 'Data Converter', secondary: `${h?.from || ''} → ${h?.to || ''}` })
+                    })
+                    return (
+                      <ul className="divide-y">
+                        {merged.slice(0,3).map((it) => (
+                          <li key={it.key} className="group px-3 py-2 hover:bg-muted/50 transition-colors">
+                            <Link to={it.to} className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <it.Icon className="h-4 w-4 text-primary" />
+                                <div className="min-w-0">
+                                  <div className="text-sm font-medium truncate">{it.primary}</div>
+                                  <div className="text-xs text-muted-foreground truncate">{it.secondary}</div>
+                                </div>
+                              </div>
+                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )
+                  })()
                 )
               } catch { return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div> }
             })()}
@@ -294,7 +280,7 @@ export function NewHomeView() {
         <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <History className="h-5 w-5 text-primary" />
+              <History className="h-6 w-6 md:h-7 md:w-7 text-primary" />
               <CardTitle className="text-base">Recent activity</CardTitle>
             </div>
           </CardHeader>
@@ -332,13 +318,13 @@ export function NewHomeView() {
 
               return (
                 <ul className="divide-y">
-                  {items.slice(0,6).map((it, idx) => {
-                    const Icon = getToolIconForPath(it.to) || ArrowRight
+                  {items.slice(0,3).map((it, idx) => {
+                    const IconComp = getToolIconForPath(it.to) || ArrowRight
                     return (
                       <li key={idx} className="group px-3 py-2 hover:bg-muted/50 transition-colors">
                         <Link to={it.to} className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
-                            <Icon className="h-4 w-4 text-muted-foreground" />
+                            <IconComp className="h-4 w-4 text-primary" />
                             <div className="min-w-0">
                               <div className="text-sm font-medium truncate max-w-[26rem]">{it.label}</div>
                               <div className="text-xs text-muted-foreground">{it.meta}</div>
@@ -360,7 +346,7 @@ export function NewHomeView() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <PasswordIcon className="h-6 w-6 text-primary" />
+                <PasswordIcon className="h-6 w-6 md:h-7 md:w-7 text-primary" />
                 <div>
                   <CardTitle className="text-base">Random passwords</CardTitle>
                   <CardDescription>Quick copy, or open generator</CardDescription>
@@ -417,7 +403,7 @@ export function NewHomeView() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BuzzwordIpsumIcon size={24} className="text-primary" />
+                <BuzzwordIpsumIcon size={28} className="text-primary" />
                 <div>
                   <CardTitle className="text-base">Buzzword ipsum</CardTitle>
                   <CardDescription>One paragraph, quick copy</CardDescription>
