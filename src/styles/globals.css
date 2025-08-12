@@ -147,3 +147,102 @@
   .dark .surface-bg::before { opacity: .28; }
   .dark .grid-overlay::after { opacity: .10; }
 }
+
+@layer utilities {
+  /* Rails canvas: fixed row heights and horizontal blueprint rails */
+  .tools-canvas { min-height: 28rem; }
+  .tools-rows { grid-auto-rows: 110px; }
+  @media (min-width: 640px) { .tools-rows { grid-auto-rows: 120px; } }
+  @media (min-width: 1024px) { .tools-rows { grid-auto-rows: 126px; } }
+  .rails-grid { position: relative; }
+
+  .blueprint-card {
+    background: linear-gradient(
+      to bottom right,
+      color-mix(in oklch, var(--color-card) 90%, transparent),
+      color-mix(in oklch, var(--color-secondary) 30%, transparent)
+    );
+    border: 1px solid color-mix(in oklch, var(--color-border) 90%, transparent);
+  }
+  .blueprint-dots {
+    background-image: radial-gradient(color-mix(in oklch, var(--color-border) 60%, transparent) 1px, transparent 1px);
+    background-size: 10px 10px;
+    mask: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+    opacity: .35;
+    pointer-events: none;
+  }
+  .bp-corner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid color-mix(in oklch, var(--color-primary) 50%, var(--color-border));
+    opacity: .55;
+  }
+  .bp-tl { top: 6px; left: 6px; border-right: 0; border-bottom: 0; border-radius: 3px 0 0 0; }
+  .bp-tr { top: 6px; right: 6px; border-left: 0; border-bottom: 0; border-radius: 0 3px 0 0; }
+  .bp-bl { bottom: 6px; left: 6px; border-right: 0; border-top: 0; border-radius: 0 0 0 3px; }
+  .bp-br { bottom: 6px; right: 6px; border-left: 0; border-top: 0; border-radius: 0 0 3px 0; }
+  .blueprint-label {
+    border-color: color-mix(in oklch, var(--color-primary) 30%, var(--color-border));
+    background-color: color-mix(in oklch, var(--color-secondary) 40%, transparent);
+  }
+
+  /* Rail connectors for each card */
+  .rail-port {
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    background: color-mix(in oklch, var(--color-primary) 45%, var(--color-secondary));
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-border) 80%, transparent);
+  }
+  .rail-connector {
+    position: absolute;
+    left: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 2px;
+    background: color-mix(in oklch, var(--color-primary) 60%, var(--color-border));
+    transition: width .18s ease;
+  }
+  .interactive:hover .rail-connector { width: 20px; }
+
+  /* Node map layer */
+  .icon-grid { padding: 8px 8px 0; }
+  .icon-token {
+    width: 88px; height: 88px; display: grid; place-items: center;
+    border-radius: 14px;
+    transition: transform .2s ease, filter .2s ease, background-color .2s ease;
+    text-decoration: none;
+    transform: rotate(var(--base-rot, 0deg)) scale(var(--base-scale, 1));
+  }
+  .icon-el { width: 54px; height: 54px; color: var(--color-primary); filter: drop-shadow(0 2px 0 color-mix(in oklch, var(--color-border) 60%, transparent)); }
+  .icon-token:hover { transform: translateY(-3px) scale(1.05); background: color-mix(in oklch, var(--color-secondary) 20%, transparent); }
+  .icon-token:hover .icon-el { filter: drop-shadow(0 10px 12px color-mix(in oklch, var(--color-primary) 22%, transparent)); }
+
+  @keyframes floaty {
+    0% { transform: translateY(0) }
+    50% { transform: translateY(-6px) }
+    100% { transform: translateY(0) }
+  }
+  .icon-token:hover .icon-el { animation: floaty 1.8s ease-in-out infinite; }
+
+  @keyframes idleDrift {
+    0% { transform: translate(0, 0) rotate(0); }
+    50% { transform: translate(var(--idle-dx, 0), var(--idle-dy, 0)) rotate(var(--idle-rot, 0)); }
+    100% { transform: translate(0, 0) rotate(0); }
+  }
+  .icon-token .icon-el { animation: idleDrift var(--idle-dur, 6s) ease-in-out var(--idle-delay, 0s) infinite; will-change: transform; }
+
+  /* Idle drift animation */
+  @keyframes drift {
+    0% { transform: translate(0, 0) rotate(0); }
+    50% { transform: translate(var(--dx), var(--dy)) rotate(var(--drot)); }
+    100% { transform: translate(0, 0) rotate(0); }
+  }
+  .drift { animation: drift var(--dur) ease-in-out var(--delay) infinite; will-change: transform; }
+}
