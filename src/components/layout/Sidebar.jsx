@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -16,7 +15,7 @@ import MicrosoftPortalsIcon from "@/components/tools/microsoft-portals/Microsoft
 import TenantLookupIcon from "@/components/tools/tenant-lookup/TenantLookupIcon"
 import AzureKQLIcon from "@/components/tools/azure-kql/AzureKQLIcon"
 import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon"
-import { FileText, Home, X, Trash2, Search } from "lucide-react"
+import { FileText, Home, Trash2 } from "lucide-react"
 
 // Map string names in toolsConfig to actual components
 const iconByKey = {
@@ -47,7 +46,6 @@ const toolItems = toolsConfig
 
 export function Sidebar({ onClose, collapsed = false }) {
   const location = useLocation()
-  const [query, setQuery] = useState("")
 
   const isActiveItem = (path) => {
     return location.pathname === path
@@ -57,35 +55,12 @@ export function Sidebar({ onClose, collapsed = false }) {
 
   return (
     <div className={cn("flex flex-col h-full min-h-0", collapsed ? "w-16" : "w-64") }>
-      {/* Mobile close button */}
-      {onClose && (
-        <div className="flex justify-between items-center p-4 border-b lg:hidden">
-          <h2 className="text-lg font-semibold">RussTools</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
       
       <div
         className="flex-1 py-2 overflow-y-auto overscroll-y-contain min-h-0 touch-pan-y"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <div className={cn("px-3 py-2", collapsed && "px-2")}>
-          {!collapsed && (
-            <div className="px-4 mb-2">
-              <h2 className="text-lg font-semibold tracking-tight">RussTools</h2>
-              <div className="mt-2 relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Filter tools"
-                  className="w-full h-8 pl-8 pr-2 rounded-md bg-muted/50 text-sm outline-none ring-1 ring-transparent focus:ring-ring transition"
-                />
-              </div>
-            </div>
-          )}
           <div className="space-y-1">
             <TooltipProvider>
               <Tooltip delayDuration={150}>
@@ -106,7 +81,6 @@ export function Sidebar({ onClose, collapsed = false }) {
 
               {toolItems
                 .filter((t) => t.path !== "/ui-demo")
-                .filter((t) => t.name.toLowerCase().includes(query.toLowerCase()))
                 .map((item) => (
                 <Tooltip key={item.path} delayDuration={150}>
                   <TooltipTrigger asChild>
