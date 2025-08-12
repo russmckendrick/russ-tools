@@ -123,9 +123,9 @@ const ToolHeader = ({
   const HeaderContent = () => (
     <div className="space-y-4">
       {/* Main header row */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         {/* Left side: Icon + Title + Description */}
-        <div className="flex items-start gap-4">
+        <div className="flex items-center gap-4">
           <div
             className="icon-token"
             style={{
