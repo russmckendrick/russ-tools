@@ -110,6 +110,15 @@ export function NewHomeView() {
     for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0
     return h
   }
+
+  const getToolIconForPath = (path) => {
+    try {
+      const tool = toolsConfig.find((t) => t.path && path.startsWith(t.path))
+      if (!tool) return null
+      const Candidate = iconByKey[tool.icon]
+      return Candidate || null
+    } catch { return null }
+  }
   
   return (
     <div className="space-y-6 relative">
@@ -201,9 +210,7 @@ export function NewHomeView() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
-                  <Database className="h-4 w-4 text-primary" />
-                </div>
+                <Database className="h-5 w-5 text-primary" />
                 <div>
                   <CardTitle className="text-base">Saved data</CardTitle>
                   <CardDescription>From your tools</CardDescription>
@@ -228,43 +235,54 @@ export function NewHomeView() {
                 })()
                 return (
                   <ul className="divide-y">
-                    {networks.slice(0,4).map((n) => (
-                      <li key={n.id} className="px-3 py-1.5">
+                    {networks.slice(0,4).map((n) => {
+                      const IconComp = getToolIconForPath('/network-designer') || Network
+                      return (
+                      <li key={n.id} className="group px-3 py-2 hover:bg-muted/50 transition-colors">
                         <Link to="/network-designer" className="flex items-center justify-between">
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium truncate">
-                              {n?.name || 'Saved network'}{n?.id === selectedId ? ' • current' : ''}
-                            </div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              {n?.parentNetwork ? `${n.parentNetwork.ip}/${n.parentNetwork.cidr}` : ''}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <IconComp className="h-4 w-4 text-primary" />
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">{n?.name || 'Saved network'}{n?.id === selectedId ? ' • current' : ''}</div>
+                              <div className="text-xs text-muted-foreground truncate">{n?.parentNetwork ? `${n.parentNetwork.ip}/${n.parentNetwork.cidr}` : ''}</div>
                             </div>
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         </Link>
-                      </li>
-                    ))}
-                    {azureNaming.slice(0,2).map((h, i) => (
-                      <li key={`azn-${i}`} className="px-3 py-1.5">
+                      </li>)
+                    })}
+                    {azureNaming.slice(0,2).map((h, i) => {
+                      const IconComp = getToolIconForPath('/azure-naming') || IconBrandAzure
+                      return (
+                      <li key={`azn-${i}`} className="group px-3 py-2 hover:bg-muted/50 transition-colors">
                         <Link to="/azure-naming" className="flex items-center justify-between">
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium truncate">Azure Naming</div>
-                            <div className="text-xs text-muted-foreground truncate">{h?.result || h?.name || 'Previous session'}</div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <IconComp className="h-4 w-4 text-primary" />
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">Azure Naming</div>
+                              <div className="text-xs text-muted-foreground truncate">{h?.result || h?.name || 'Previous session'}</div>
+                            </div>
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         </Link>
-                      </li>
-                    ))}
-                    {dataConv.slice(0,2).map((h, i) => (
-                      <li key={`dc-${i}`} className="px-3 py-1.5">
+                      </li>)
+                    })}
+                    {dataConv.slice(0,2).map((h, i) => {
+                      const IconComp = getToolIconForPath('/data-converter') || JSONIcon
+                      return (
+                      <li key={`dc-${i}`} className="group px-3 py-2 hover:bg-muted/50 transition-colors">
                         <Link to="/data-converter" className="flex items-center justify-between">
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium truncate">Data Converter</div>
-                            <div className="text-xs text-muted-foreground truncate">{h?.from || ''} → {h?.to || ''}</div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <IconComp className="h-4 w-4 text-primary" />
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">Data Converter</div>
+                              <div className="text-xs text-muted-foreground truncate">{h?.from || ''} → {h?.to || ''}</div>
+                            </div>
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         </Link>
-                      </li>
-                    ))}
+                      </li>)
+                    })}
                   </ul>
                 )
               } catch { return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div> }
@@ -276,9 +294,7 @@ export function NewHomeView() {
         <Card className="border-muted/70 bg-gradient-to-b from-muted/20 to-background shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
-                <History className="h-4 w-4 text-primary" />
-              </div>
+              <History className="h-5 w-5 text-primary" />
               <CardTitle className="text-base">Recent activity</CardTitle>
             </div>
           </CardHeader>
@@ -314,22 +330,12 @@ export function NewHomeView() {
                 return <div className="px-3 py-3 text-sm text-muted-foreground">No recent activity yet</div>
               }
 
-              const metaIcon = (meta) => {
-                if (meta.startsWith('DNS')) return Globe
-                if (meta.startsWith('WHOIS')) return Fingerprint
-                if (meta.startsWith('SSL')) return Shield
-                if (meta.startsWith('Portals')) return PanelsTopLeft
-                if (meta.startsWith('Tenant')) return Users
-                if (meta.startsWith('Azure KQL')) return FileCode2
-                return ArrowRight
-              }
-
               return (
                 <ul className="divide-y">
                   {items.slice(0,6).map((it, idx) => {
-                    const Icon = metaIcon(it.meta)
+                    const Icon = getToolIconForPath(it.to) || ArrowRight
                     return (
-                      <li key={idx} className="group px-3 py-1.5 hover:bg-muted/50 transition-colors">
+                      <li key={idx} className="group px-3 py-2 hover:bg-muted/50 transition-colors">
                         <Link to={it.to} className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
                             <Icon className="h-4 w-4 text-muted-foreground" />
