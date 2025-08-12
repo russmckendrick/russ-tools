@@ -119,7 +119,7 @@ const TenantLookupTool = lazy(() =>
   }))
 );
 const AzureKQLTool = lazy(() => 
-  import('./components/tools/azure-kql/AzureKQLShadcn').catch(() => ({
+  import('./components/tools/azure-kql/AzureKQLTool').catch(() => ({
     default: () => <div>Error loading Azure KQL Tool</div>
   }))
 );
