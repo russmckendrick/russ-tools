@@ -11,7 +11,7 @@ Welcome to the comprehensive documentation for RussTools - a modern suite of web
 
 ### Component Documentation
 - **[API Configuration System](api/API_CONFIG.md)** - Centralized API endpoint management
-- **[Design Style Guide](components/STYLE_GUIDE.md)** - UI/UX patterns and design system
+- **[Design Style Guide](STYLE_GUIDE.md)** - UI/UX patterns and design system
  - **Shadcn Component Map**
    - Buttons: `src/components/ui/button.jsx`
    - Cards: `src/components/ui/card.jsx`
