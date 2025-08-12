@@ -81,8 +81,43 @@ const ToolHeader = ({
     return fromConfig || Icon || Info;
   }, [detectedTool, Icon]);
 
-  // Use blueprint-themed styling for all icons
-  const iconClasses = 'bg-accent text-primary border border-border/50';
+  
+
+  const seededRandom = (seed) => {
+    let t = seed + 0x6D2B79F5;
+    return () => {
+      t |= 0;
+      t = (t + 0x6D2B79F5) | 0;
+      let r = Math.imul(t ^ (t >>> 15), 1 | t);
+      r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+      return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+  const stringToSeed = (str) => {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    return h;
+  };
+  const tokenStyle = React.useMemo(() => {
+    const seedBase = detectedTool?.id || location.pathname || 'tool';
+    const rnd = seededRandom(stringToSeed(seedBase));
+    const baseRot = (rnd() - 0.5) * 10;
+    const baseScale = 0.95 + rnd() * 0.18;
+    const dx = 2 + rnd() * 6;
+    const dy = 2 + rnd() * 6;
+    const drot = (rnd() - 0.5) * 1.8;
+    const dur = 4.2 + rnd() * 4.8;
+    const delay = -rnd() * 5;
+    return {
+      '--base-rot': `${baseRot}deg`,
+      '--base-scale': `${baseScale}`,
+      '--idle-dx': `${dx}px`,
+      '--idle-dy': `${dy}px`,
+      '--idle-rot': `${drot}deg`,
+      '--idle-dur': `${dur}s`,
+      '--idle-delay': `${delay}s`,
+    };
+  }, [detectedTool, location.pathname]);
 
   // Header content structure
   const HeaderContent = () => (
@@ -91,8 +126,19 @@ const ToolHeader = ({
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         {/* Left side: Icon + Title + Description */}
         <div className="flex items-start gap-4">
-          <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${iconClasses}`}>
-            <ResolvedIcon className="h-7 w-7" />
+          <div
+            className="icon-token"
+            style={{
+              ...tokenStyle,
+              background: 'transparent',
+              border: 'none',
+              width: 'auto',
+              height: 'auto',
+              padding: 0,
+              boxShadow: 'none'
+            }}
+          >
+            <ResolvedIcon className="icon-el" />
           </div>
           <div className="space-y-1">
             {showTitle && (
