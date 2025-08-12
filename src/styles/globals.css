@@ -220,9 +220,9 @@
     text-decoration: none;
     transform: rotate(var(--base-rot, 0deg)) scale(var(--base-scale, 1));
   }
-  .icon-el { width: 54px; height: 54px; color: var(--color-primary); filter: drop-shadow(0 2px 0 color-mix(in oklch, var(--color-border) 60%, transparent)); }
+  .icon-el { width: 64px; height: 64px; color: var(--color-primary); }
   .icon-token:hover { transform: translateY(-3px) scale(1.05); background: color-mix(in oklch, var(--color-secondary) 20%, transparent); }
-  .icon-token:hover .icon-el { filter: drop-shadow(0 10px 12px color-mix(in oklch, var(--color-primary) 22%, transparent)); }
+  .icon-token:hover .icon-el { filter: none; }
 
   @keyframes floaty {
     0% { transform: translateY(0) }

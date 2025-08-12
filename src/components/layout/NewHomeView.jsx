@@ -22,10 +22,9 @@ import {
   MessageSquareQuote
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import toolsConfig from "@/utils/toolsConfig.json"
-import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub } from "@tabler/icons-react"
+import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub, IconTools } from "@tabler/icons-react"
 import Base64Icon from "@/components/tools/base64/Base64Icon"
 import JSONIcon from "@/components/tools/data-converter/JSONIcon"
 import DNSIcon from "@/components/tools/dns-lookup/DNSIcon"
@@ -63,12 +62,6 @@ const iconByKey = {
   NetworkDesignerIcon: NetworkDesignerIcon,
 }
 
-const stats = [
-  { label: "Tools", value: "14", icon: Zap },
-  { label: "Client-Side", value: "100%", icon: Lock },
-  { label: "Open Source", value: "Yes", icon: Globe }
-]
-
 export function NewHomeView() {
   const [buzzSeed, setBuzzSeed] = useState(0)
   const generateSecure = (len = 16) => {
@@ -104,27 +97,17 @@ export function NewHomeView() {
 
       {/* Intro */}
       <Card className="border-muted/70 bg-gradient-to-r from-background to-muted/40">
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <CardTitle className="text-xl">RussTools</CardTitle>
-              <CardDescription>Practical client-side tools for networking and cloud</CardDescription>
+        <CardHeader className="py-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <IconTools className="h-9 w-9 md:h-11 md:w-11 text-primary" />
+              <div className="flex items-center gap-4 flex-wrap">
+                <CardTitle className="text-primary text-3xl md:text-4xl font-extrabold tracking-tight">RussTools</CardTitle>
+                <span className="text-sm text-muted-foreground hidden sm:inline-block">A collection of random tools for day-to-day use</span>
+              </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex flex-wrap gap-2">
-            {stats.map((s, i) => {
-              const Icon = s.icon
-              return (
-                <Badge key={i} variant="secondary" className="bg-secondary/60">
-                  <Icon className="h-3.5 w-3.5 mr-1.5" />
-                  {s.label}: {s.value}
-                </Badge>
-              )
-            })}
-          </div>
-        </CardContent>
       </Card>
 
       {(() => {
