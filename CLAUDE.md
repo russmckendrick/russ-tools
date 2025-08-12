@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Current Status (2025-08-11)
+## Current Status (2025-08-12)
 
 **🎉 PHASE 1 MIGRATION COMPLETE:** Successfully migrated from Mantine to shadcn/ui infrastructure
 - ✅ Modern sidebar navigation with full-height design
@@ -87,9 +87,14 @@ Check existing usage before adding new dependencies:
 - **jose, jwt-decode** - JWT processing (JWT Tool)
 - **prismjs** - Syntax highlighting with custom KQL language support
 - **@dnd-kit** - Drag and drop functionality
-- **ajv** - JSON schema validation
+- **ajv, ajv-formats, better-ajv-errors** - JSON schema validation
 - **html2canvas** - Export visualizations
 - **@svgdotjs/svg.js** - SVG generation for network diagrams
+- **exceljs** - Excel file generation (dynamically imported, excluded from build optimization)
+- **uuid** - Unique identifier generation
+- **pako** - Compression/decompression
+- **zustand** - Lightweight state management
+- **framer-motion** - Animation library
 
 ### SEO System
 - **Dynamic Meta Tags** - Tool-specific SEO metadata via `toolsConfig.json`
@@ -132,3 +137,53 @@ Migrate tools individually to shadcn/ui components:
 - Tool state is persisted to localStorage for better UX
 - Tailwind CSS v4 optimizes CSS generation and bundle size
 - Source maps enabled for production debugging
+- Lazy loading implemented for all tool components with error boundaries
+- Manual chunking strategy optimizes vendor dependencies by category
+
+## Important Notes for Development
+
+### Tool Status Summary
+The codebase contains 14 main tools, most already using shadcn/ui components (indicated by "Shadcn" suffix in filenames):
+- ✅ **Already migrated**: Network Designer, Azure Naming, Cron Builder, SSL Checker, DNS Lookup, WHOIS Lookup, Data Converter, Base64, JWT, Password Generator, Microsoft Portals, Tenant Lookup, Buzzword Ipsum
+- 🔄 **In progress**: Azure KQL (uses original component, not shadcn version)
+
+### Key Architecture Patterns
+1. **Tool Configuration System**: All tools defined in `src/utils/toolsConfig.json` with complete metadata for routing, SEO, and UI
+2. **Lazy Loading**: All tools use React.lazy() with error boundaries and fallback components
+3. **URL Routing**: Tools support parameterized URLs (e.g., `/ssl-checker/:domain`, `/jwt/:token`)
+4. **API Integration**: External services via Cloudflare Workers configured in `src/utils/api/apiConfig.json`
+5. **State Persistence**: Tools use localStorage for user preferences and state
+6. **Icon Management**: Icons centrally imported via `src/utils/_iconImports.js`
+
+## Documentation References
+
+The `docs/` directory contains comprehensive documentation for different aspects of the project:
+
+### Core Documentation
+- **`docs/ARCHITECTURE.md`** - Complete architectural overview including component patterns, state management strategies, API integration, and tool-specific implementations
+- **`docs/DEVELOPMENT.md`** - Detailed development guide with setup instructions, tool creation workflow, testing guidelines, and troubleshooting
+- **`docs/DESIGN_SYSTEM.md`** - Design system specification including typography, color tokens, spacing, animation patterns, and component designs
+- **`docs/STYLE_GUIDE.md`** - Implementation guide for UI components and styling patterns
+- **`docs/DEPLOYMENT.md`** - Deployment and build configuration details
+- **`docs/README.md`** - Overview of documentation structure
+
+### API Documentation
+- **`docs/api/API_CONFIG.md`** - API configuration and external service integration details
+- **`docs/cloudflare-workers/README.md`** - Cloudflare Workers implementation for backend services
+
+### Tool-Specific Documentation
+Each tool has dedicated documentation in `docs/tools/[tool-name]/`:
+- **Azure KQL**: `docs/tools/azure-kql/` - Architecture, template development, query patterns, and user guide
+- **Azure Naming**: `docs/tools/azure-naming/` - CAF compliance and naming conventions
+- **Network Designer**: `docs/tools/network-designer/` - Network visualization and Terraform export
+- **Security Tools**: SSL Checker, JWT, Password Generator documentation
+- **Data Tools**: Base64, Data Converter, and processing utilities
+- **Microsoft Tools**: Portals and tenant lookup integration
+
+### Utility Documentation
+- **`docs/utils/sharelink.md`** - URL sharing and deep linking utilities
+- **`docs/utils/tld-utilities.md`** - Top-level domain processing utilities
+
+### Implementation Plans
+- **`docs/plans/azure-kql-tool-implementation-plan.md`** - Detailed implementation roadmap for Azure KQL tool
+- **`docs/research/azure-kql-tool.md`** - Research and requirements analysis
