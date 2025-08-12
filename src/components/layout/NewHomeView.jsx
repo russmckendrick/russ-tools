@@ -23,6 +23,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import toolsConfig from "@/utils/toolsConfig.json"
 import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub, IconTools } from "@tabler/icons-react"
@@ -89,8 +91,8 @@ export function NewHomeView() {
     crypto.getRandomValues(bytes)
     return Array.from(bytes, b => chars[b % chars.length]).join('')
   }
-  const [passwords, setPasswords] = useState(() => Array.from({ length: 5 }).map(() => generatePwd(16)))
-  useEffect(() => { setPasswords(Array.from({ length: 5 }).map(() => generatePwd())) }, [pwdLength, pwdOpts.upper, pwdOpts.lower, pwdOpts.digits, pwdOpts.symbols])
+  const [passwords, setPasswords] = useState(() => Array.from({ length: 6 }).map(() => generatePwd(16)))
+  useEffect(() => { setPasswords(Array.from({ length: 6 }).map(() => generatePwd())) }, [pwdLength, pwdOpts.upper, pwdOpts.lower, pwdOpts.digits, pwdOpts.symbols])
   const visibleTools = toolsConfig.filter((t) => t.path && t.path.startsWith("/") && t.id !== "github-source" && t.id !== "ui-demo")
 
   const seededRandom = (seed) => {
@@ -352,9 +354,7 @@ export function NewHomeView() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
-                  <Key className="h-4 w-4 text-primary" />
-                </div>
+                <PasswordIcon className="h-6 w-6 text-primary" />
                 <div>
                   <CardTitle className="text-base">Random passwords</CardTitle>
                   <CardDescription>Quick copy, or open generator</CardDescription>
@@ -366,16 +366,28 @@ export function NewHomeView() {
             </div>
           </CardHeader>
           <CardContent className="p-3 space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Length {pwdLength}</span>
                 <Slider value={[pwdLength]} min={8} max={32} step={1} onValueChange={(v) => setPwdLength(v[0])} className="w-40" />
               </div>
-              <div className="flex items-center gap-1">
-                <Button size="xs" variant="outline" className={pwdOpts.upper ? 'toggle-on' : ''} onClick={() => setPwdOpts(o => ({ ...o, upper: !o.upper }))}>A‑Z</Button>
-                <Button size="xs" variant="outline" className={pwdOpts.lower ? 'toggle-on' : ''} onClick={() => setPwdOpts(o => ({ ...o, lower: !o.lower }))}>a‑z</Button>
-                <Button size="xs" variant="outline" className={pwdOpts.digits ? 'toggle-on' : ''} onClick={() => setPwdOpts(o => ({ ...o, digits: !o.digits }))}>0‑9</Button>
-                <Button size="xs" variant="outline" className={pwdOpts.symbols ? 'toggle-on' : ''} onClick={() => setPwdOpts(o => ({ ...o, symbols: !o.symbols }))}>#</Button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Switch id="sw-upper" checked={pwdOpts.upper} onCheckedChange={(v) => setPwdOpts(o => ({ ...o, upper: v }))} />
+                  <Label htmlFor="sw-upper" className="text-xs">A‑Z</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch id="sw-lower" checked={pwdOpts.lower} onCheckedChange={(v) => setPwdOpts(o => ({ ...o, lower: v }))} />
+                  <Label htmlFor="sw-lower" className="text-xs">a‑z</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch id="sw-digits" checked={pwdOpts.digits} onCheckedChange={(v) => setPwdOpts(o => ({ ...o, digits: v }))} />
+                  <Label htmlFor="sw-digits" className="text-xs">0‑9</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch id="sw-symbols" checked={pwdOpts.symbols} onCheckedChange={(v) => setPwdOpts(o => ({ ...o, symbols: v }))} />
+                  <Label htmlFor="sw-symbols" className="text-xs">#</Label>
+                </div>
               </div>
               <Button size="icon" variant="outline" onClick={() => setPasswords(Array.from({ length: 5 }).map(() => generatePwd()))}>
                 <RefreshCw className="h-4 w-4" />
@@ -399,9 +411,7 @@ export function NewHomeView() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
-                  <MessageSquareQuote className="h-4 w-4 text-primary" />
-                </div>
+                <BuzzwordIpsumIcon size={24} className="text-primary" />
                 <div>
                   <CardTitle className="text-base">Buzzword ipsum</CardTitle>
                   <CardDescription>One paragraph, quick copy</CardDescription>
@@ -415,15 +425,24 @@ export function NewHomeView() {
             </div>
           </CardHeader>
           <CardContent className="p-3 space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Sentences {ipsumSentences}</span>
                 <Slider value={[ipsumSentences]} min={1} max={5} step={1} onValueChange={(v) => setIpsumSentences(v[0])} className="w-40" />
               </div>
-              <div className="flex items-center gap-1">
-                <Button size="xs" variant="outline" className={tones.strategy ? 'toggle-on' : ''} onClick={() => setTones(t => ({ ...t, strategy: !t.strategy }))}>Strategy</Button>
-                <Button size="xs" variant="outline" className={tones.agile ? 'toggle-on' : ''} onClick={() => setTones(t => ({ ...t, agile: !t.agile }))}>Agile</Button>
-                <Button size="xs" variant="outline" className={tones.ai ? 'toggle-on' : ''} onClick={() => setTones(t => ({ ...t, ai: !t.ai }))}>AI</Button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Switch id="tone-strategy" checked={tones.strategy} onCheckedChange={(v) => setTones(t => ({ ...t, strategy: v }))} />
+                  <Label htmlFor="tone-strategy" className="text-xs">Strategy</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch id="tone-agile" checked={tones.agile} onCheckedChange={(v) => setTones(t => ({ ...t, agile: v }))} />
+                  <Label htmlFor="tone-agile" className="text-xs">Agile</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch id="tone-ai" checked={tones.ai} onCheckedChange={(v) => setTones(t => ({ ...t, ai: v }))} />
+                  <Label htmlFor="tone-ai" className="text-xs">AI</Label>
+                </div>
               </div>
               <Button size="icon" variant="outline" onClick={() => setBuzzSeed((s) => s + 1)}>
                 <RefreshCw className="h-4 w-4" />

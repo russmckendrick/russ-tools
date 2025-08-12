@@ -244,14 +244,23 @@
     font-size: .8rem;
     padding: 8px 10px;
     border-radius: 10px;
-    background: color-mix(in oklch, var(--color-secondary) 35%, transparent);
-    border: 1px solid var(--color-border);
-    box-shadow: 0 1px 0 color-mix(in oklch, var(--color-border) 70%, transparent);
+    background: color-mix(in oklch, var(--color-secondary) 25%, transparent);
+    border: 1px solid color-mix(in oklch, var(--color-border) 85%, transparent);
+    box-shadow: none;
     transition: transform .15s ease, box-shadow .15s ease;
     animation: idleDrift var(--idle-dur, 5s) ease-in-out var(--idle-delay, 0s) infinite;
   }
   .keycap:hover { transform: translateY(-2px); box-shadow: 0 8px 12px color-mix(in oklch, var(--color-primary) 16%, transparent); }
   .toggle-on { background: color-mix(in oklch, var(--color-primary) 16%, transparent); }
+
+  /* Saved data timeline style */
+  .timeline { position: relative; }
+  .timeline::before {
+    content: ""; position: absolute; left: 16px; top: 6px; bottom: 6px; width: 2px;
+    background: color-mix(in oklch, var(--color-border) 90%, transparent);
+  }
+  .timeline-item { position: relative; padding-left: 36px; }
+  .timeline-bullet { position: absolute; left: 10px; top: 8px; width: 10px; height: 10px; border-radius: 9999px; background: var(--color-primary); }
 
   /* Idle drift animation */
   @keyframes drift {
