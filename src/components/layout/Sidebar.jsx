@@ -56,7 +56,7 @@ export function Sidebar({ onClose, collapsed = false }) {
   
 
   return (
-    <div className={cn("flex flex-col h-screen", collapsed ? "w-16" : "w-64") }>
+    <div className={cn("flex flex-col h-full min-h-0", collapsed ? "w-16" : "w-64") }>
       {/* Mobile close button */}
       {onClose && (
         <div className="flex justify-between items-center p-4 border-b lg:hidden">
@@ -67,7 +67,10 @@ export function Sidebar({ onClose, collapsed = false }) {
         </div>
       )}
       
-      <div className="flex-1 py-2 overflow-y-auto">
+      <div
+        className="flex-1 py-2 overflow-y-auto overscroll-y-contain min-h-0 touch-pan-y"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         <div className={cn("px-3 py-2", collapsed && "px-2")}>
           {!collapsed && (
             <div className="px-4 mb-2">

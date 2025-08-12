@@ -48,7 +48,7 @@ export function NewLayout() {
                   <span className="ml-2">Menu</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="p-0 w-72 max-w-[18rem] left-0 top-0 translate-x-0 translate-y-0 h-full rounded-none border-r">
+              <DialogContent className="p-0 w-72 max-w-[18rem] left-0 top-0 translate-x-0 translate-y-0 h-[100dvh] overflow-hidden rounded-none border-r">
                 <Sidebar onClose={() => setSidebarOpen(false)} />
               </DialogContent>
             </Dialog>
