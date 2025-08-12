@@ -1,15 +1,13 @@
 import azureFirewall from '../templates/azure-firewall.json';
 import azureVirtualDesktop from '../templates/azure-virtual-desktop.json';
 import azureApplicationGateway from '../templates/azure-application-gateway.json';
-import multiServiceCorrelation from '../templates/multi-service-correlation.json';
 
 const TEMPLATE_CACHE = new Map();
 
 const TEMPLATES = {
   'azure-firewall': azureFirewall,
   'azure-virtual-desktop': azureVirtualDesktop,
-  'azure-application-gateway': azureApplicationGateway,
-  'multi-service': multiServiceCorrelation
+  'azure-application-gateway': azureApplicationGateway
 };
 
 export function loadTemplate(service, templateName) {
@@ -122,6 +120,12 @@ function mergeFields(schemaFields = {}, templateFields = []) {
   // Merge with any template-specific field overrides
   for (const templateField of templateFields || []) {
     const existingIndex = fields.findIndex(f => f.name === templateField.name);
+    if (templateField && templateField.exclude) {
+      if (existingIndex >= 0) {
+        fields.splice(existingIndex, 1);
+      }
+      continue;
+    }
     if (existingIndex >= 0) {
       fields[existingIndex] = { ...fields[existingIndex], ...templateField };
     } else {

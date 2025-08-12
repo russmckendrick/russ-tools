@@ -2,244 +2,53 @@
   "service": {
     "id": "azure-virtual-desktop",
     "name": "Azure Virtual Desktop",
-    "description": "Azure Virtual Desktop (AVD) connection and error logs analysis",
-    "category": "Virtual Desktop Infrastructure",
-    "version": "1.0.0",
-    "documentation": "https://docs.microsoft.com/en-us/azure/virtual-desktop/diagnostics-log-analytics"
+    "description": "Query AVD connection logs",
+    "category": "Virtual Desktop Infrastructure"
   },
   "schema": {
     "tables": {
-      "primary": "WVDConnections",
-      "secondary": ["WVDErrors", "WVDCheckpoints", "WVDManagement"]
+      "primary": "WVDConnections"
     },
     "fields": {
       "UserName": {
         "type": "string",
-        "required": false,
-        "description": "User Principal Name (UPN) of the connecting user",
-        "kqlField": "UserName",
-        "category": "user",
-        "examples": ["user@domain.com", "john.doe@company.com"]
+        "description": "User principal name",
+        "kqlField": "UserName"
       },
       "ClientIPAddress": {
         "type": "ipaddress",
-        "required": false,
-        "description": "Client IP address from where the user is connecting",
+        "description": "Client IP",
         "kqlField": "ClientIPAddress",
-        "supportsCIDR": true,
-        "category": "network",
-        "examples": ["192.168.1.1", "10.0.0.0/8"]
-      },
-      "ClientSideIPAddress": {
-        "type": "ipaddress",
-        "required": false,
-        "description": "Client-side IP address (alternative field name)",
-        "kqlField": "ClientSideIPAddress",
-        "supportsCIDR": true,
-        "category": "network",
-        "examples": ["192.168.1.1", "10.0.0.0/8"]
+        "supportsCIDR": true
       },
       "State": {
         "type": "select",
-        "required": false,
         "description": "Connection state",
         "kqlField": "State",
-        "options": ["Connected", "Completed", "Failed", "Started"],
-        "category": "connection"
-      },
-      "ConnectionType": {
-        "type": "select",
-        "required": false,
-        "description": "Type of connection",
-        "kqlField": "ConnectionType",
-        "options": ["RemoteApp", "Desktop"],
-        "category": "connection"
-      },
-      "ClientOS": {
-        "type": "string",
-        "required": false,
-        "description": "Client operating system",
-        "kqlField": "ClientOS",
-        "category": "client",
-        "examples": ["Windows 10", "Windows 11", "macOS", "iOS", "Android"]
-      },
-      "ClientType": {
-        "type": "string",
-        "required": false,
-        "description": "Type of client application",
-        "kqlField": "ClientType",
-        "category": "client",
-        "examples": ["Desktop", "Web", "Mobile"]
-      },
-      "HostPool": {
-        "type": "string",
-        "required": false,
-        "description": "Host pool name or identifier",
-        "kqlField": "_ResourceId",
-        "category": "resource",
-        "transform": "toupper(strcat(split(_ResourceId, \"/\")[4], \".\", split(_ResourceId, \"/\")[8]))"
-      },
-      "CodeSymbolic": {
-        "type": "string",
-        "required": false,
-        "description": "Error code for WVDErrors table",
-        "kqlField": "CodeSymbolic",
-        "category": "error",
-        "examples": ["ConnectionFailedClientDisconnect", "ConnectionFailedTimeout"]
-      },
-      "CorrelationId": {
-        "type": "string",
-        "required": false,
-        "description": "Correlation ID for matching connection events",
-        "kqlField": "CorrelationId",
-        "category": "correlation"
-      },
-      "limit": {
-        "type": "select",
-        "required": false,
-        "description": "Maximum number of results to return",
-        "category": "essential",
-        "default": "1000",
-        "options": ["500", "1000", "5000", "15000", "0", "custom"],
-        "optionLabels": {
-          "500": "500",
-          "1000": "1,000",
-          "5000": "5,000", 
-          "15000": "15,000",
-          "0": "Max. limit",
-          "custom": "Custom"
-        }
+        "options": ["Connected", "Completed", "Failed", "Started"]
       }
     },
     "filterOrder": [
       "timeRange",
+      "SubscriptionId",
+      "ResourceGroup",
+      "ResourceId",
       "UserName",
       "State",
-      "ClientIPAddress",
-      "ClientSideIPAddress",
-      "ConnectionType",
-      "HostPool",
-      "ClientOS",
-      "ClientType",
-      "CodeSymbolic"
+      "ClientIPAddress"
     ]
   },
   "templates": {
-    "ip-addresses-analysis": {
-      "name": "IP Addresses Analysis (30 days)",
-      "description": "Find all IP addresses used for connections in the last 30 days with geolocation data",
+    "basic": {
+      "name": "Basic AVD Query",
+      "description": "Time range with optional user/state/IP filters",
       "table": "WVDConnections",
       "defaultParameters": {
-        "timeRange": "30d",
+        "timeRange": "24h",
         "limit": "1000"
-      },
-      "query": "let daysAgo = 30d;\nWVDConnections\n| where TimeGenerated > ago(daysAgo)\n| summarize NumberOfConnections = count() by UserName, ClientIPAddress\n| order by NumberOfConnections desc\n| extend ip_location = parse_json(geo_info_from_ip_address(ClientIPAddress))\n| extend\n    Country = tostring(ip_location.country),\n    State = tostring(ip_location.state),\n    City = tostring(ip_location.city)\n| project ClientIPAddress, NumberOfConnections, Country, State, City",
-      "aggregations": ["count by ClientIPAddress", "count by Country"]
-    },
-    "users-ip-analysis": {
-      "name": "Users and IP Addresses (30 days)",
-      "description": "Analyze all users and their IP addresses with connection counts and geolocation",
-      "table": "WVDConnections",
-      "defaultParameters": {
-        "timeRange": "30d",
-        "limit": "1000"
-      },
-      "query": "let daysAgo = 30d;\nWVDConnections\n| where TimeGenerated > ago(daysAgo)\n| summarize NumberOfConnections = count() by UserName, ClientIPAddress\n| order by NumberOfConnections desc\n| extend ip_location = parse_json(geo_info_from_ip_address(ClientIPAddress))\n| extend\n    Country = tostring(ip_location.country),\n    State = tostring(ip_location.state),\n    City = tostring(ip_location.city)\n| project UserName, ClientIPAddress, NumberOfConnections, Country, State, City",
-      "commonFilters": ["UserName"],
-      "aggregations": ["count by UserName", "count by Country"]
-    },
-    "user-ip-locations": {
-      "name": "User Connection Locations",
-      "description": "Find IP addresses where a specific user is connecting from with geolocation",
-      "table": "WVDConnections",
-      "defaultParameters": {
-        "timeRange": "30d",
-        "limit": "500"
-      },
-      "query": "let userSearch = \"{UserName}\";\nlet daysAgo = 30d;\nWVDConnections\n| where TimeGenerated > ago(daysAgo)\n| where UserName contains userSearch\n| summarize NumberOfConnections = count() by ClientIPAddress\n| order by NumberOfConnections desc\n| extend ip_location = parse_json(geo_info_from_ip_address(ClientIPAddress))\n| extend\n    Country = tostring(ip_location.country),\n    State = tostring(ip_location.state),\n    City = tostring(ip_location.city)\n| project ClientIPAddress, NumberOfConnections, Country, State, City",
-      "requiredFields": ["UserName"],
-      "commonFilters": ["UserName"]
-    },
-    "errors-by-ip": {
-      "name": "Errors from Specific IP",
-      "description": "Get all errors for users connecting from a specific IP address",
-      "table": "WVDErrors",
-      "defaultParameters": {
-        "timeRange": "30d",
-        "limit": "500"
-      },
-      "query": "let ipAddress = \"{ClientSideIPAddress}\";\nlet daysAgo = 30d;\nlet users =\n    WVDConnections\n    | where TimeGenerated > ago(daysAgo)\n    | where ClientSideIPAddress contains ipAddress\n    | summarize by UserName;\nWVDErrors\n| where TimeGenerated > ago(daysAgo)\n| where UserName in (users)\n| summarize ErrorCount = count() by UserName, CodeSymbolic\n| order by ErrorCount desc",
-      "requiredFields": ["ClientSideIPAddress"],
-      "commonFilters": ["ClientSideIPAddress", "CodeSymbolic"]
-    },
-    "session-duration": {
-      "name": "Total Session Time Analysis",
-      "description": "Calculate total session durations for users over the past month",
-      "table": "WVDConnections",
-      "defaultParameters": {
-        "timeRange": "31d",
-        "limit": "1000"
-      },
-      "query": "let daysAgo = 31d;\nWVDConnections\n| where TimeGenerated > ago(daysAgo)\n| where State == \"Connected\"\n| project CorrelationId, UserName, ConnectionType, StartTime=TimeGenerated\n| join (WVDConnections\n    | where State == \"Completed\"\n    | project EndTime=TimeGenerated, CorrelationId)\n    on CorrelationId\n| extend SessionDuration = EndTime - StartTime\n| summarize TotalDuration = sum(SessionDuration) by UserName, ConnectionType\n| extend \n    DurationHours = round(TotalDuration / 1h, 2),\n    DurationDays = round(TotalDuration / 1d, 2)\n| project UserName, ConnectionType, DurationHours, DurationDays\n| sort by DurationHours desc",
-      "commonFilters": ["UserName", "ConnectionType"],
-      "aggregations": ["sum by UserName", "avg by ConnectionType"]
-    },
-    "sessions-per-hostpool": {
-      "name": "Sessions per Host Pool",
-      "description": "Count distinct users per host pool over the past month",
-      "table": "WVDConnections",
-      "defaultParameters": {
-        "timeRange": "31d",
-        "limit": "500"
-      },
-      "query": "let daysAgo = 31d;\nWVDConnections \n| where TimeGenerated > ago(daysAgo)\n| where State == \"Connected\" \n| project _ResourceId, UserName \n| project-rename Hostpool = _ResourceId \n| summarize DistinctUsers= dcount(UserName) by Hostpool \n| extend HostPool=toupper(strcat(split(Hostpool, \"/\")[4], \".\", split(Hostpool, \"/\")[8])) \n| project HostPool, DistinctUsers",
-      "aggregations": ["dcount by HostPool"]
-    },
-    "recent-sessions": {
-      "name": "Recent Completed Sessions",
-      "description": "View recent completed sessions with client and host pool details",
-      "table": "WVDConnections",
-      "defaultParameters": {
-        "timeRange": "1d",
-        "State": "Completed",
-        "limit": "500"
-      },
-      "query": "let daysAgo = 1d;\nWVDConnections\n| where TimeGenerated > ago(daysAgo) and State contains \"Completed\"\n| project-rename Hostpool = _ResourceId\n| extend HostPool=toupper(strcat(split(Hostpool, \"/\")[4], \".\", split(Hostpool, \"/\")[8]))\n| project TimeGenerated, UserName, ClientOS, ClientType, ConnectionType, HostPool",
-      "commonFilters": ["UserName", "ClientOS", "ConnectionType"]
-    },
-    "errors-per-hostpool": {
-      "name": "Errors per Host Pool",
-      "description": "Analyze error patterns across different host pools",
-      "table": "WVDErrors",
-      "defaultParameters": {
-        "timeRange": "1d",
-        "limit": "500"
-      },
-      "query": "let daysAgo = 1d;\nWVDErrors\n| where TimeGenerated > ago(daysAgo) \n| project _ResourceId, CodeSymbolic\n| project-rename Hostpool = _ResourceId\n| extend HostPool=toupper(strcat(split(Hostpool, \"/\")[4], \".\", split(Hostpool, \"/\")[8]))\n| summarize Count=count() by CodeSymbolic, HostPool",
-      "commonFilters": ["CodeSymbolic"],
-      "aggregations": ["count by CodeSymbolic", "count by HostPool"]
-    }
-  },
-  "queryExamples": {
-    "top-users-by-sessions": {
-      "name": "Top Users by Session Count",
-      "description": "Find users with the most AVD sessions",
-      "query": "WVDConnections | where TimeGenerated >= ago(7d) | where State == \"Connected\" | summarize SessionCount = count() by UserName | top 10 by SessionCount"
-    },
-    "failed-connections": {
-      "name": "Failed Connection Analysis",
-      "description": "Analyze failed connection attempts with error details",
-      "query": "WVDConnections | where TimeGenerated >= ago(24h) | where State == \"Failed\" | summarize FailureCount = count() by UserName, ClientIPAddress | order by FailureCount desc"
-    },
-    "geographic-distribution": {
-      "name": "Geographic Distribution of Connections",
-      "description": "Show geographic distribution of AVD connections",
-      "query": "WVDConnections | where TimeGenerated >= ago(7d) | extend ip_location = parse_json(geo_info_from_ip_address(ClientIPAddress)) | extend Country = tostring(ip_location.country) | summarize Connections = count() by Country | order by Connections desc"
-    },
-    "connection-duration-stats": {
-      "name": "Connection Duration Statistics",
-      "description": "Statistical analysis of connection durations",
-      "query": "WVDConnections | where TimeGenerated >= ago(7d) | where State == \"Connected\" | project CorrelationId, UserName, StartTime=TimeGenerated | join (WVDConnections | where State == \"Completed\" | project EndTime=TimeGenerated, CorrelationId) on CorrelationId | extend Duration = EndTime - StartTime | summarize AvgDuration = avg(Duration), MaxDuration = max(Duration), MinDuration = min(Duration) by UserName"
+      }
     }
   }
-} 
+}
+
+
