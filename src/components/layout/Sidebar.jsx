@@ -15,6 +15,8 @@ import MicrosoftPortalsIcon from "@/components/tools/microsoft-portals/Microsoft
 import TenantLookupIcon from "@/components/tools/tenant-lookup/TenantLookupIcon"
 import AzureKQLIcon from "@/components/tools/azure-kql/AzureKQLIcon"
 import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon"
+import SSLCheckerIcon from "@/components/tools/ssl-checker/SSLCheckerIcon"
+import CronIcon from "@/components/tools/cron/CronIcon"
 import { FileText, Home, Trash2 } from "lucide-react"
 
 // Map string names in toolsConfig to actual components
@@ -36,6 +38,8 @@ const iconByKey = {
   TenantLookupIcon: TenantLookupIcon,
   AzureKQLIcon: AzureKQLIcon,
   BuzzwordIpsumIcon: BuzzwordIpsumIcon,
+  SSLCheckerIcon: SSLCheckerIcon,
+  CronIcon: CronIcon,
 }
 
 // Flat list of tools from config

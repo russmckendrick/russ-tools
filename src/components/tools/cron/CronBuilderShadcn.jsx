@@ -23,6 +23,7 @@ import SEOHead from '../../common/SEOHead';
 import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
+import CronIcon from './CronIcon';
 
 const defaultFields = {
   minute: '*',
@@ -380,7 +381,7 @@ const CronBuilderShadcn = () => {
       <div className="space-y-6">
         {/* Header */}
         <ToolHeader
-          icon={Calendar}
+          icon={CronIcon}
           title="CRON Expression Builder"
           description="Build and validate cron expressions with ease"
           iconColor="orange"

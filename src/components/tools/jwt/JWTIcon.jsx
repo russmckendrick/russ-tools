@@ -1,7 +1,7 @@
-import { IconKey } from '@tabler/icons-react';
+import { IconUserCode } from '@tabler/icons-react';
 
 const JWTIcon = (props) => {
-  return <IconKey {...props} />;
+  return <IconUserCode {...props} />;
 };
 
 export default JWTIcon; 

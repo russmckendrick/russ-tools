@@ -33,6 +33,7 @@ import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import { useTLDs } from '../../../utils';
+import SSLCheckerIcon from './SSLCheckerIcon';
 
 const SSL_GRADES = {
   'A+': { color: 'bg-green-500', textColor: 'text-white', description: 'Exceptional' },
@@ -477,7 +478,7 @@ const SSLCheckerShadcn = () => {
       <div className="space-y-6">
         {/* Header */}
         <ToolHeader
-          icon={Shield}
+          icon={SSLCheckerIcon}
           title="SSL Certificate Checker"
           description="Analyze SSL/TLS certificates and security configuration for any domain"
           iconColor="green"

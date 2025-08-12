@@ -1,6 +1,8 @@
 import React from 'react';
-import { IconMessageCircle } from '@tabler/icons-react';
+import { IconBubbleTextFilled } from '@tabler/icons-react';
 
-export default function BuzzwordIpsumIcon({ size = 24, ...props }) {
-  return <IconMessageCircle size={size} {...props} />;
-}
+const BuzzwordIpsumIcon = ({ size = 24, ...props }) => (
+  <IconBubbleTextFilled size={size} {...props} />
+);
+
+export default BuzzwordIpsumIcon;

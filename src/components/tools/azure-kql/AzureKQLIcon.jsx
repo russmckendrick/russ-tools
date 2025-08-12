@@ -1,8 +1,8 @@
 import React from 'react';
-import { IconChartDots3 } from '@tabler/icons-react';
+import { IconSquareAsteriskFilled } from '@tabler/icons-react';
 
 const AzureKQLIcon = ({ size = 24, ...props }) => (
-  <IconChartDots3 size={size} {...props} />
+  <IconSquareAsteriskFilled size={size} {...props} />
 );
 
 export default AzureKQLIcon;
