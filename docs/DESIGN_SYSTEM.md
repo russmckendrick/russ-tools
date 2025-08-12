@@ -4,6 +4,8 @@
 
 Transform Russ Tools into a premium, modern developer toolkit with a sophisticated design language that emphasizes clarity, consistency, and delight. The new design will feature subtle animations, thoughtful micro-interactions, and a refined color palette that works beautifully in both light and dark modes.
 
+> Scope: This document defines principles, tokens, motion, accessibility, and system-wide patterns. For implementation details and component usage, see `STYLE_GUIDE.md`.
+
 ## Core Design Principles
 
 ### 1. **Clarity First**
@@ -34,55 +36,39 @@ Transform Russ Tools into a premium, modern developer toolkit with a sophisticat
 
 ### Color System
 
-#### Primary Palette
-```css
-/* Blue - Primary brand color */
---primary-50: #eff6ff;
---primary-100: #dbeafe;
---primary-200: #bfdbfe;
---primary-300: #93c5fd;
---primary-400: #60a5fa;
---primary-500: #3b82f6;  /* Main */
---primary-600: #2563eb;
---primary-700: #1d4ed8;
---primary-800: #1e40af;
---primary-900: #1e3a8a;
+#### Semantic Tokens
+We use a semantic token set defined in `src/styles/globals.css` and exposed via Tailwind class names. These tokens have light and dark values and are toggled by the app's `ThemeProvider`.
 
-/* Neutral - Grays */
---neutral-50: #fafafa;
---neutral-100: #f4f4f5;
---neutral-200: #e4e4e7;
---neutral-300: #d4d4d8;
---neutral-400: #a1a1aa;
---neutral-500: #71717a;
---neutral-600: #52525b;
---neutral-700: #3f3f46;
---neutral-800: #27272a;
---neutral-900: #18181b;
+```css
+--color-background;
+--color-foreground;
+--color-card;
+--color-card-foreground;
+--color-popover;
+--color-popover-foreground;
+--color-primary;
+--color-primary-foreground;
+--color-secondary;
+--color-secondary-foreground;
+--color-muted;
+--color-muted-foreground;
+--color-accent;
+--color-accent-foreground;
+--color-destructive;
+--color-destructive-foreground;
+--color-border;
+--color-input;
+--color-ring;
+--radius;
 ```
 
-#### Semantic Colors
-```css
-/* Success - Green */
---success: #10b981;
---success-light: #34d399;
---success-dark: #059669;
+These map directly to Tailwind class names (examples):
 
-/* Warning - Amber */
---warning: #f59e0b;
---warning-light: #fbbf24;
---warning-dark: #d97706;
-
-/* Error - Red */
---error: #ef4444;
---error-light: #f87171;
---error-dark: #dc2626;
-
-/* Info - Blue */
---info: #3b82f6;
---info-light: #60a5fa;
---info-dark: #2563eb;
-```
+- `bg-background` → `--color-background`
+- `text-foreground` → `--color-foreground`
+- `bg-card` / `text-card-foreground` → card surfaces
+- `bg-primary` / `text-primary-foreground` → primary actions
+- `border` / `ring-ring` → borders and focus rings
 
 #### Tool-Specific Accent Colors
 Each tool category has its own accent color for visual distinction:
@@ -232,36 +218,13 @@ Each tool category has its own accent color for visual distinction:
 ```
 
 #### Common Animations
+Use the predefined utilities from `src/styles/globals.css` (e.g., `.interactive`, `.icon-token`, `.surface-bg`, `.grid-overlay`) along with Tailwind transitions.
+
 ```css
-/* Fade */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Scale */
-@keyframes scale-up {
-  from { transform: scale(0.95); }
-  to { transform: scale(1); }
-}
-
-/* Slide */
-@keyframes slide-up {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* Pulse */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Spin */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+/* See globals.css for full definitions */
+.interactive { transition: all 150ms ease-out; }
+.interactive:hover { transform: translateY(-1px); }
+.interactive:active { transform: scale(.98); }
 ```
 
 ## Component Patterns
@@ -333,16 +296,15 @@ Each tool category has its own accent color for visual distinction:
 ### Navigation
 
 #### Top Navigation Bar
-- Fixed height: 64px
-- Blur backdrop for scroll
-- Logo on left, tools in center, actions on right
-- Mobile hamburger menu
+- 56–64px height
+- Backdrop blur on scroll
+- Title on the left; actions (GitHub, theme) on the right
+- Mobile: dialog-driven sidebar
 
 #### Sidebar
-- 280px width on desktop
+- 64px collapsed, 256px expanded
 - Collapsible with animation
-- Tool categories with icons
-- Active state highlighting
+- Tool list with icons and active state
 
 ### Data Display
 
@@ -472,10 +434,10 @@ export function Button({
 ### File Organization
 ```
 components/
-├── ui/           # Base UI components
+├── ui/           # Base UI components (shadcn/ui)
 ├── common/       # Shared components
 ├── tools/        # Tool-specific components
-└── layouts/      # Layout components
+└── layout/       # Layout components
 ```
 
 ## Future Enhancements

@@ -3,6 +3,8 @@
 ## Overview
 This style guide ensures consistent design and user experience across all tools in the RussTools application. All tools should follow these patterns for a cohesive look and feel.
 
+> Scope: This guide focuses on practical implementation patterns (components, layouts, utilities) using shadcn/ui + Tailwind. For foundational tokens, principles, and motion, see `DESIGN_SYSTEM.md`.
+
 ## Quick Reference
 
 ### Essential Patterns
@@ -201,7 +203,7 @@ export function Toolbar({ query, setQuery, filter, setFilter, onAdd }) {
 ### Input Areas
 - Group related inputs in cards
 - Use descriptive labels and helper text
-- Consistent spacing with `Stack` and `gap="md"`
+- Use Tailwind spacing utilities: `space-y-3`, `gap-4`
 
 ### Action Buttons
 - Primary actions: `Button` default
@@ -212,11 +214,10 @@ export function Toolbar({ query, setQuery, filter, setFilter, onAdd }) {
 All tools with shareable configurations should follow this consistent pattern:
 
 #### Header Placement
-- Located in header section alongside other action buttons (Help, etc.)
-- Use `Group gap="sm"` to group header buttons
+- Place alongside other header actions (e.g., Help) in a `flex` container with `gap-2`
 - Button text: "Copy Configuration Share URL"
-- Icon: `<IconShare size={16} />`
-- Variant: `variant="light"`
+- Icon: `<IconShare className="mr-2 h-4 w-4" />`
+- Variant: `variant="outline"` (or `ghost` when secondary)
 
 #### Disable Conditions
 Each tool should disable the share button until meaningful content exists:
@@ -227,11 +228,11 @@ Each tool should disable the share button until meaningful content exists:
 #### Implementation Pattern
 ```jsx
 <Button
-  variant="light"
-  leftSection={<IconShare size={16} />}
+  variant="outline"
   onClick={handleShareConfiguration}
   disabled={/* tool-specific condition */}
 >
+  <IconShare className="mr-2 h-4 w-4" />
   Copy Configuration Share URL
 </Button>
 ```
@@ -265,7 +266,7 @@ const handleShareConfiguration = async () => {
 ```jsx
 import { IconShare } from '@tabler/icons-react'
 import { toast } from 'sonner'
-import { copyShareableURL } from '../../../utils/sharelink'
+import { copyShareableURL } from '@/utils/sharelink'
 ```
 
 ## Color Scheme
@@ -304,70 +305,55 @@ import { copyShareableURL } from '../../../utils/sharelink'
 ## Dark Mode Support
 
 ### Color Scheme Awareness
-All tools must support both light and dark modes. Follow these guidelines:
+All tools must support both light and dark modes using the app theme:
 
-#### Import Requirements
+- Use semantic Tailwind classes backed by CSS tokens: `bg-background`, `text-foreground`, `border`, `bg-card`, `text-muted-foreground`, etc.
+- Avoid hardcoded color values. Prefer component variants and tokens.
+- Theme is controlled by `ThemeProvider` which toggles `light`/`dark` classes on `html` and `body`.
+
+#### Minimal Theme Toggle
 ```jsx
-import { useMantineColorScheme } from '@mantine/core';
+import { Button } from '@/components/ui/button'
+import { useTheme } from '@/components/theme-provider'
 
-// In component:
-const { colorScheme } = useMantineColorScheme();
+export function ThemeSwitcher() {
+  const { theme, setTheme } = useTheme()
+  return (
+    <Button variant="outline" size="sm" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+      Toggle theme
+    </Button>
+  )
+}
 ```
 
-#### Background Colors
-- **Never use hardcoded colors** like `var(--mantine-color-gray-0)`
-- Use conditional backgrounds:
-  ```jsx
-  backgroundColor: colorScheme === 'dark' 
-    ? 'var(--mantine-color-dark-6)' 
-    : 'var(--mantine-color-gray-0)'
-  ```
-
-#### Text Colors
-- Use `c="dimmed"` instead of `color="dimmed"` for proper dark mode support
-- Avoid hardcoded text colors - let Mantine handle theme-aware colors
-
-#### Common Dark Mode Patterns
-- Light backgrounds: `gray-0` → `dark-6`
-- Card backgrounds: `gray-1` → `dark-7` 
-- Subtle backgrounds: `gray-2` → `dark-8`
-- Border colors: Let Mantine handle automatically with `withBorder`
-
 #### Testing Requirements
-- Always test tools in both light and dark modes
-- Check for proper contrast and readability
-- Ensure all interactive elements are visible in both themes
-- Verify that custom background colors adapt to theme changes
-
-#### Theme Configuration
-- App theme uses Inter font family with proper fallbacks
-- Default border radius is `md` for consistency
-- Avoid hardcoded theme colors in App.jsx global styles
-- Use CSS custom properties and `light-dark()` function for theme-aware styling
+- Verify contrast and focus states in both themes
+- Check borders, subtle backgrounds, and disabled states on dark
+- Respect `prefers-reduced-motion` in animations
 
 ## Spacing
 
-### Stack Gaps
-- Main sections: `gap="xl"`
-- Card content: `gap="lg"`
-- Form elements: `gap="md"`
-- Small elements: `gap="sm"` or `gap="xs"`
+### Recommended Gaps
+- Main sections: `space-y-6` to `space-y-8`
+- Card content: `space-y-4`
+- Forms and stacks: `gap-4`
+- Small inline spacing: `gap-2`
 
 ### Grid Layout
-- Use responsive spans: `span={{ base: 12, md: 6 }}` for two-column layouts
-- Consistent gutters: `gutter="lg"`
+- Two-column: `grid grid-cols-1 md:grid-cols-2 gap-6`
+- Three-column: `grid grid-cols-1 md:grid-cols-3 gap-6`
 
 ## Interactive Elements
 
 ### Buttons
-- Primary actions: Full-width or appropriately sized
-- Icon buttons: Use `ActionIcon` with consistent sizing
-- Button groups: Use `Group` with appropriate spacing
+- Primary actions: `<Button>` default variant
+- Secondary actions: `variant="outline"` or `variant="ghost"`
+- Icon-only: `size="icon"`
+- Group with `flex` and `gap-2`
 
 ### Alerts
-- Use appropriate colors for context
-- Include relevant icons
-- Consistent styling with `variant="light"` or `variant="filled"`
+- Use `Alert` with optional `variant="destructive"`
+- Include a leading icon (e.g., lucide `AlertCircle`)
 
 ### Badges
 - Status indicators: Use appropriate colors
@@ -375,36 +361,20 @@ const { colorScheme } = useMantineColorScheme();
 - Consistent variant usage
 
 ### Tabs
-- Use default Mantine tabs styling (no variant prop)
-- Standard pattern:
-  ```jsx
-  <Tabs defaultValue="tab1">
-    <Tabs.List mb="lg">
-      <Tabs.Tab value="tab1" leftSection={<IconName size={18} />}>
-        Tab Name
-      </Tabs.Tab>
-    </Tabs.List>
-    <Tabs.Panel value="tab1" pt="lg">
-      {/* Tab content */}
-    </Tabs.Panel>
-  </Tabs>
-  ```
-- Icon size: `size={18}` for tab icons
-- List spacing: `mb="lg"` for margin bottom
-- Panel spacing: `pt="lg"` for padding top
-- **Avoid**: `variant="pills"` and `grow` props for consistency
+- Use shadcn Tabs (see example earlier in this guide)
+- Keep content spacing with `pt-4`
 
 ## Code Display
 
 ### Code Blocks
-- Use `Code` component with `block` prop
-- Consistent font family and sizing
-- Appropriate background colors for theme
+- Use `<pre><code>` with `font-mono text-sm` or `Textarea` for editable content
+- Use `bg-muted/30` backgrounds for read-only blocks
+- PrismJS is available; highlight where helpful
 
 ### JSON Display
-- Use `JsonInput` for editable JSON
-- Use `Code` for read-only JSON display
-- Consistent formatting and indentation
+- Editable: `Textarea` with `font-mono`
+- Read-only: `<pre>` + Prism or `Textarea` readOnly
+- Keep indentation and provide copy/download actions when relevant
 
 ## Responsive Design
 
@@ -432,21 +402,21 @@ const { colorScheme } = useMantineColorScheme();
 - Respect `prefers-reduced-motion` setting
 
 ### Navigation
-- Header includes subtle backdrop blur: `backdrop-filter: blur(8px)`
-- Semi-transparent background for modern glassmorphism effect
+- Header uses subtle backdrop blur and token-based backgrounds
 
 ## Brand Consistency
 
 ### Logo and Branding
-- RussTools title uses gradient styling:
+- Use a token-driven gradient for brand text:
   ```css
-  background: linear-gradient(45deg, var(--mantine-color-blue-6), var(--mantine-color-cyan-5));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  .brand-text {
+    background-image: linear-gradient(to right, var(--color-primary), color-mix(in oklch, var(--color-accent) 60%, var(--color-primary)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
   ```
-- Apply to both home page title and navigation header
-- Font weight: `fw={700}` for brand emphasis
+- Apply to home page title and navigation header
 
 ### Home Page Typography
 - Main title: `size="3rem"` with gradient effect
@@ -461,9 +431,8 @@ const { colorScheme } = useMantineColorScheme();
 - Consistent icon sizing
 
 ### Color Contrast
-- Ensure sufficient contrast for all text
-- Use Mantine's built-in color system
-- Test with both light and dark themes
+- Ensure sufficient contrast for all text and interactive elements
+- Use app tokens and test in both light and dark themes
 
 ## Error Handling
 
@@ -473,9 +442,9 @@ const { colorScheme } = useMantineColorScheme();
 - Clear, actionable error messages
 
 ### Loading States
-- Use `LoadingOverlay` for full component loading
-- Use `loading` prop on buttons for action loading
-- Consistent loading indicators
+- For global areas: use skeletons or spinners within content
+- Buttons: disable and show an `animate-spin` icon
+- Keep messaging concise via `sonner` toasts where appropriate
 
 ## Best Practices
 
@@ -539,11 +508,10 @@ microsoft-portals/
 
 ## Implementation Notes
 
-- Always use Mantine's design tokens for spacing, colors, and typography
-- Maintain consistent prop patterns across similar components
-- Test all tools in both light and dark themes
-- Ensure proper keyboard navigation
-- Use semantic HTML structure where possible
+- Use the CSS tokens defined in `src/styles/globals.css` via semantic classes
+- Prefer shadcn/ui components and Tailwind utilities for layout and spacing
+- Test in both light and dark themes; check focus and keyboard navigation
+- Use semantic HTML and ARIA where needed
 - Consider data-driven approaches for complex tools with many options
-- Implement proper error handling for external API calls
-- Use JSON files for configuration data that changes frequently 
+- Provide clear error handling and use `sonner` for feedback
+- Keep frequently changing configuration in JSON files

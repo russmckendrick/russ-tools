@@ -68,7 +68,7 @@ Individual documentation for each major tool:
 ### For Developers
 1. Read the [Architecture Guide](ARCHITECTURE.md) for technical overview
 2. Follow the [Development Guide](DEVELOPMENT.md) for setup instructions
-3. Review the [Design Style Guide](components/STYLE_GUIDE.md) for UI patterns
+3. Review the [Design Style Guide](STYLE_GUIDE.md) for UI patterns
 
 ### For DevOps/Deployment
 1. Review the [Deployment Guide](DEPLOYMENT.md) for infrastructure setup
@@ -123,14 +123,14 @@ Cron expression builder for scheduling automation tasks.
 - **Development Setup** → [Development Guide](DEVELOPMENT.md)
 - **API Integration** → [API Configuration](api/API_CONFIG.md)
 - **Backend Services** → [Cloudflare Workers](cloudflare-workers/README.md)
-- **UI Components** → [Style Guide](components/STYLE_GUIDE.md)
+- **UI Components** → [Style Guide](STYLE_GUIDE.md)
 - **Deployment** → [Deployment Guide](DEPLOYMENT.md)
 - **Specific Tool** → `tools/[tool-name]/README.md`
 
 ### By Role
 - **End Users** → Individual tool documentation in `tools/`
 - **Developers** → [Development Guide](DEVELOPMENT.md) + [Architecture](ARCHITECTURE.md)
-- **Designers** → [Style Guide](components/STYLE_GUIDE.md)
+- **Designers** → [Style Guide](STYLE_GUIDE.md)
 - **DevOps** → [Deployment Guide](DEPLOYMENT.md)
 - **API Users** → [API Configuration](api/API_CONFIG.md)
 
@@ -167,16 +167,21 @@ const response = await apiFetch(endpoint.url);
 
 ### Following Design Patterns
 ```jsx
-<Paper withBorder p="xl" radius="lg">
-  <Stack gap="lg">
-    <Group gap="md">
-      <ThemeIcon size={48} color="blue">
-        <IconTool />
-      </ThemeIcon>
-      <Title order={2}>Tool Name</Title>
-    </Group>
-  </Stack>
-</Paper>
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+
+export function Example() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Tool Name</CardTitle>
+        <CardDescription>Short description</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {/* Implementation */}
+      </CardContent>
+    </Card>
+  )
+}
 ```
 
 ## 🔒 Security Considerations
@@ -236,7 +241,7 @@ const response = await apiFetch(endpoint.url);
 
 ### Code Contributions
 1. Follow the [Development Guide](DEVELOPMENT.md)
-2. Adhere to the [Style Guide](components/STYLE_GUIDE.md)
+2. Adhere to the [Style Guide](STYLE_GUIDE.md)
 3. Update documentation for new features
 4. Include comprehensive testing
 
