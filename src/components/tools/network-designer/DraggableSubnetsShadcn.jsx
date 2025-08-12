@@ -70,11 +70,11 @@ function SortableSubnet({ subnet, index, onRemoveSubnet }) {
             {/* Header with drag handle and subnet name */}
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2 flex-1">
-                <div 
+                 <div 
                   {...listeners} 
-                  className="p-1 rounded hover:bg-gray-100 cursor-grab active:cursor-grabbing transition-colors"
-                >
-                  <GripVertical className="h-4 w-4 text-gray-400" />
+                  className="p-1 rounded cursor-grab active:cursor-grabbing transition-colors hover:bg-muted"
+                 >
+                   <GripVertical className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ function SortableSubnet({ subnet, index, onRemoveSubnet }) {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
+                 className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                 onClick={() => onRemoveSubnet(index)}
               >
                 <Trash2 className="h-3 w-3" />

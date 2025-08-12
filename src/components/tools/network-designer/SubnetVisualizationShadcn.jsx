@@ -101,8 +101,9 @@ export function SubnetVisualizationShadcn({ parentNetwork, subnets }) {
     });
   }
 
-  const unusedColor = '#e5e7eb'; // gray-200
-  const borderColor = '#d1d5db'; // gray-300
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const unusedColor = isDark ? 'var(--color-muted)' : '#e5e7eb';
+  const borderColor = isDark ? 'var(--color-border)' : '#d1d5db';
 
   // Calculate percent free
   const usedAddresses = subnetBlocks.reduce((acc, s) => acc + (s.end - s.start + 1), 0);
@@ -122,9 +123,10 @@ export function SubnetVisualizationShadcn({ parentNetwork, subnets }) {
       </CardHeader>
       <CardContent>
         <div
-          className="h-16 flex items-center rounded border overflow-hidden shadow-sm bg-gray-50"
+          className="h-16 flex items-center rounded border overflow-hidden shadow-sm bg-secondary"
           style={{
             border: `1px solid ${borderColor}`,
+            backgroundColor: 'var(--color-secondary)'
           }}
         >
           {segments.map((seg, idx) => {
@@ -151,12 +153,12 @@ export function SubnetVisualizationShadcn({ parentNetwork, subnets }) {
             return (
               <div
                 key={idx}
-                className="h-full flex items-center justify-center relative transition-all duration-700 ease-out cursor-help"
+                 className="h-full flex items-center justify-center relative transition-all duration-700 ease-out cursor-help"
                 style={{
                   width: `${widthPct(seg.start, seg.end)}%`,
                   backgroundColor: color,
                   opacity: animate ? 1 : 0,
-                  borderRight: idx < segments.length - 1 ? `1px solid ${borderColor}` : undefined,
+                   borderRight: idx < segments.length - 1 ? `1px solid ${borderColor}` : undefined,
                 }}
                 title={getSubnetTooltip(seg)}
               >

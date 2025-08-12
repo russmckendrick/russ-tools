@@ -102,11 +102,13 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
   const exportDiagram = () => {
     if (!diagramRef.current) return;
     
+    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+
     html2canvas(diagramRef.current, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#ffffff'
+      backgroundColor: isDark ? '#073642' : '#ffffff'
     }).then(canvas => {
       const image = canvas.toDataURL('image/png');
       const link = document.createElement('a');
@@ -239,22 +241,24 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
       <CardContent>
         <div 
           ref={diagramRef}
-          className="p-6 bg-gray-50 rounded-lg shadow-sm"
+          className="p-6 rounded-lg shadow-sm bg-secondary"
+          style={{ backgroundColor: 'var(--color-secondary)' }}
         >
           {/* Parent Network Container */}
           <div
-            className={`p-4 mb-4 border-2 border-blue-600 rounded-lg bg-white transition-all duration-300 ${
+            className={`p-4 mb-4 border-2 border-primary rounded-lg bg-card transition-all duration-300 ${
               animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
             }`}
+            style={{ backgroundColor: 'var(--color-card)' }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <Network className="h-5 w-5 text-blue-600" />
+              <Network className="h-5 w-5 text-primary" />
               <h3 className="text-lg font-semibold">{parentNetwork.name || 'Parent Network'}</h3>
-              <Badge variant="outline" className="text-xs border-gray-400 text-gray-600">
+              <Badge variant="outline" className="text-xs">
                 {parentBlock.base}/{parentNetwork.cidr}
               </Badge>
             </div>
-            <div className="text-sm text-gray-600 ml-7 space-y-1">
+            <div className="text-sm text-muted-foreground ml-7 space-y-1">
               <div>Range: {parentBlock.first} - {parentBlock.last}</div>
               <div>Total IPs: {totalParentSize.toLocaleString()} ({freePercentage}% free)</div>
             </div>
@@ -291,10 +295,10 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
                             <Layers3 className="h-4 w-4" style={{ color: borderColor }} />
                             <div>
                               <div className="font-semibold text-sm">{subnet.name}</div>
-                              <div className="text-xs text-gray-600">
+                              <div className="text-xs text-muted-foreground">
                                 Range: {subnet.block.base} - {subnet.block.broadcast} ({subnet.block.mask})
                               </div>
-                              <div className="text-xs text-gray-600">
+                              <div className="text-xs text-muted-foreground">
                                 Usable IPs: {Math.max(0, subnet.block.size - 2).toLocaleString()}
                               </div>
                             </div>
@@ -311,16 +315,16 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
                     return (
                       <div
                         key={`free-${index}`}
-                        className={`p-3 rounded border border-dashed border-gray-400 bg-gray-100 transition-all duration-500 ${
+                        className={`p-3 rounded border border-dashed bg-muted transition-all duration-500 ${
                           animate ? 'opacity-80' : 'opacity-0'
                         }`}
-                        style={{ animationDelay: `${index * 100}ms` }}
+                        style={{ animationDelay: `${index * 100}ms`, borderColor: 'var(--color-border)', backgroundColor: 'var(--color-muted)' }}
                       >
                         <div className="flex items-center gap-2">
-                          <Square className="h-4 w-4 text-gray-500" />
+                          <Square className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <div className="font-semibold text-sm text-gray-700">Free Space</div>
-                            <div className="text-xs text-gray-600">
+                            <div className="font-semibold text-sm text-foreground">Free Space</div>
+                            <div className="text-xs text-muted-foreground">
                               Range: {space.startIp} - {space.endIp} ({space.size.toLocaleString()} IPs)
                             </div>
                           </div>
@@ -336,7 +340,7 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
         </div>
         
         {/* Summary Footer */}
-        <div className="flex justify-center gap-4 mt-6 text-sm text-gray-600">
+        <div className="flex justify-center gap-4 mt-6 text-sm text-muted-foreground">
           <span>Total subnets: {subnets.length}</span>
           <span>•</span>
           <span>Total IPs: {parentBlock.size.toLocaleString()}</span>
