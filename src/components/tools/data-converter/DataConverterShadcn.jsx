@@ -48,6 +48,7 @@ import {
   TOML_SAMPLES
 } from './samples';
 import ToolHeader from '../../common/ToolHeader';
+import JSONIcon from './JSONIcon';
 
 const DataConverterShadcn = () => {
   // Core state
@@ -401,7 +402,7 @@ const DataConverterShadcn = () => {
   return (
     <div className="space-y-6">
       <ToolHeader
-        icon={ArrowRightLeft}
+        icon={JSONIcon}
         title="Data Format Converter"
         description="Convert between JSON, YAML, and TOML formats with validation and error checking"
         iconColor="yellow"

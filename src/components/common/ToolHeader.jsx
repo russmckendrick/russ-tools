@@ -17,6 +17,9 @@ import MicrosoftPortalsIcon from '@/components/tools/microsoft-portals/Microsoft
 import TenantLookupIcon from '@/components/tools/tenant-lookup/TenantLookupIcon';
 import AzureKQLIcon from '@/components/tools/azure-kql/AzureKQLIcon';
 import BuzzwordIpsumIcon from '@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon';
+import SSLCheckerIcon from '@/components/tools/ssl-checker/SSLCheckerIcon';
+import CronIcon from '@/components/tools/cron/CronIcon';
+import NetworkDesignerIcon from '@/components/tools/network-designer/NetworkDesignerIcon';
 
 /**
  * Unified Tool Header Component
@@ -62,6 +65,9 @@ const ToolHeader = ({
     TenantLookupIcon: TenantLookupIcon,
     AzureKQLIcon: AzureKQLIcon,
     BuzzwordIpsumIcon: BuzzwordIpsumIcon,
+    SSLCheckerIcon: SSLCheckerIcon,
+    CronIcon: CronIcon,
+    NetworkDesignerIcon: NetworkDesignerIcon,
   };
 
   const detectedTool = React.useMemo(() => {

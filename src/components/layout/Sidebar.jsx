@@ -17,6 +17,7 @@ import AzureKQLIcon from "@/components/tools/azure-kql/AzureKQLIcon"
 import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon"
 import SSLCheckerIcon from "@/components/tools/ssl-checker/SSLCheckerIcon"
 import CronIcon from "@/components/tools/cron/CronIcon"
+import NetworkDesignerIcon from "@/components/tools/network-designer/NetworkDesignerIcon"
 import { FileText, Home, Trash2 } from "lucide-react"
 
 // Map string names in toolsConfig to actual components
@@ -40,6 +41,7 @@ const iconByKey = {
   BuzzwordIpsumIcon: BuzzwordIpsumIcon,
   SSLCheckerIcon: SSLCheckerIcon,
   CronIcon: CronIcon,
+  NetworkDesignerIcon: NetworkDesignerIcon,
 }
 
 // Flat list of tools from config

@@ -37,6 +37,7 @@ import AzureKQLIcon from "@/components/tools/azure-kql/AzureKQLIcon"
 import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon"
 import SSLCheckerIcon from "@/components/tools/ssl-checker/SSLCheckerIcon"
 import CronIcon from "@/components/tools/cron/CronIcon"
+import NetworkDesignerIcon from "@/components/tools/network-designer/NetworkDesignerIcon"
 
 const iconByKey = {
   IconNetwork: IconNetwork,
@@ -58,6 +59,7 @@ const iconByKey = {
   BuzzwordIpsumIcon: BuzzwordIpsumIcon,
   SSLCheckerIcon: SSLCheckerIcon,
   CronIcon: CronIcon,
+  NetworkDesignerIcon: NetworkDesignerIcon,
 }
 
 const stats = [

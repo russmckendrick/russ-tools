@@ -4,7 +4,7 @@
     "title": "Network Designer",
     "description": "Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, and export configurations for Azure, AWS, or VMware environments.",
     "shortDescription": "Plan your cloud network and subnets",
-    "icon": "IconNetwork",
+    "icon": "NetworkDesignerIcon",
     "badges": ["Subnet Planning", "Visual Diagrams", "Terraform Export"],
     "path": "/network-designer",
     "seoTitle": "Network Subnet Designer - Plan & Visualize IP Networks",

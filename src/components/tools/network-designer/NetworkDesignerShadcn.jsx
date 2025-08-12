@@ -26,6 +26,7 @@ import {
 
 import SEOHead from '../../common/SEOHead';
 import ToolHeader from '../../common/ToolHeader';
+import NetworkDesignerIcon from './NetworkDesignerIcon';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 import { parseConfigFromURL, copyShareableURL } from '../../../utils/sharelink';
@@ -1019,7 +1020,7 @@ const NetworkDesignerShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         <ToolHeader
-          icon={Network}
+          icon={NetworkDesignerIcon}
           title="Network Designer"
           description="Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, and export configurations for Azure, AWS, or VMware environments."
           iconColor="blue"
