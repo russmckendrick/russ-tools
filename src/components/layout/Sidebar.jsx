@@ -103,7 +103,7 @@ export function Sidebar({ onClose, collapsed = false }) {
                         {(() => {
                           const Candidate = iconByKey[item.iconKey]
                           const ItemIcon = Candidate || FileText
-                          return <ItemIcon size={16} className={cn(!collapsed && "mr-2")} />
+                          return <ItemIcon size={16} className={cn("text-primary", !collapsed && "mr-2")} />
                         })()}
                         {!collapsed && item.name}
                       </Link>
