@@ -6,32 +6,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Search,
   Building,
   Globe,
-  Shield,
-  Copy,
-  Check,
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
-  Info,
-  ExternalLink,
-  Save,
   History,
   Trash2,
   RotateCcw,
-  Building2,
   HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import TenantLookupIcon from './TenantLookupIcon';
 import HelpSystemShadcn from './components/HelpSystemShadcn';
+import TenantInfoDisplay from './components/TenantInfoDisplay';
+import DNSAnalysisDisplay from './components/DNSAnalysisDisplay';
+import ServiceVerificationDisplay from './components/ServiceVerificationDisplay';
+import APIResultsDisplay from './components/APIResultsDisplay';
+import RawDataDisplay from './components/RawDataDisplay';
 import SEOHead from '../../common/SEOHead';
 import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
@@ -47,7 +42,6 @@ const TenantLookupShadcn = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [showRawData, setShowRawData] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   
   // Saved lookups storage
@@ -222,182 +216,6 @@ const TenantLookupShadcn = () => {
     }
   };
 
-  const copyToClipboard = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success('Copied to clipboard');
-    } catch (error) {
-      toast.error('Failed to copy to clipboard');
-    }
-  };
-
-  const TenantInfoDisplay = ({ data }) => {
-    if (!data) return null;
-
-    return (
-      <div className="space-y-6">
-        {/* Basic Tenant Information */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                Tenant Information
-              </h3>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleSaveLookup}
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Save Lookup
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Domain</p>
-                <p className="font-medium font-mono">{data.domain}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Display Name</p>
-                <p className="font-medium">{data.displayName || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tenant ID</p>
-                <div className="flex items-center gap-2">
-                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                    {data.tenantId}
-                  </code>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copyToClipboard(data.tenantId)}
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tenant Type</p>
-                <Badge className={getTenantTypeColor(data.tenantType)}>
-                  {data.tenantType || 'Unknown'}
-                </Badge>
-              </div>
-              {data.federationBrandName && (
-                <div className="md:col-span-2">
-                  <p className="text-sm text-muted-foreground">Federation Brand Name</p>
-                  <p className="font-medium">{data.federationBrandName}</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Authentication Endpoints */}
-        {data.authUrl && (
-          <Card>
-            <CardHeader>
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Authentication Endpoints
-              </h3>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">Authorization URL</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 bg-muted px-2 py-1 rounded text-xs font-mono break-all">
-                      {data.authUrl}
-                    </code>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => copyToClipboard(data.authUrl)}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      asChild
-                    >
-                      <a href={data.authUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-                {data.tokenUrl && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Token URL</p>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 bg-muted px-2 py-1 rounded text-xs font-mono break-all">
-                        {data.tokenUrl}
-                      </code>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(data.tokenUrl)}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Raw Response Data */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Raw Response Data</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowRawData(!showRawData)}
-              >
-                {showRawData ? (
-                  <ChevronUp className="mr-2 h-4 w-4" />
-                ) : (
-                  <ChevronDown className="mr-2 h-4 w-4" />
-                )}
-                {showRawData ? 'Hide' : 'Show'} Raw Data
-              </Button>
-            </div>
-          </CardHeader>
-          {showRawData && (
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">JSON Response</span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copyToClipboard(JSON.stringify(data, null, 2))}
-                  >
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copy JSON
-                  </Button>
-                </div>
-                <Textarea
-                  value={JSON.stringify(data, null, 2)}
-                  readOnly
-                  rows={12}
-                  className="font-mono text-xs"
-                />
-              </div>
-            </CardContent>
-          )}
-        </Card>
-      </div>
-    );
-  };
 
   return (
     <TooltipProvider>
@@ -485,7 +303,47 @@ const TenantLookupShadcn = () => {
 
         {/* Results */}
         {result && !loading && (
-          <TenantInfoDisplay data={result} />
+          <Tabs defaultValue="tenant" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="tenant">Tenant Info</TabsTrigger>
+              {result.dnsInfo && (
+                <TabsTrigger value="dns">DNS Analysis</TabsTrigger>
+              )}
+              {result.dnsInfo?.txtRecords && (
+                <TabsTrigger value="verification">Service Verification</TabsTrigger>
+              )}
+              {result.apiResults && (
+                <TabsTrigger value="api">API Results</TabsTrigger>
+              )}
+              <TabsTrigger value="raw">Raw Data</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="tenant">
+              <TenantInfoDisplay data={result} onSave={handleSaveLookup} />
+            </TabsContent>
+
+            {result.dnsInfo && (
+              <TabsContent value="dns">
+                <DNSAnalysisDisplay dnsInfo={result.dnsInfo} />
+              </TabsContent>
+            )}
+
+            {result.dnsInfo?.txtRecords && (
+              <TabsContent value="verification">
+                <ServiceVerificationDisplay txtRecords={result.dnsInfo.txtRecords} />
+              </TabsContent>
+            )}
+
+            {result.apiResults && (
+              <TabsContent value="api">
+                <APIResultsDisplay apiResults={result.apiResults} />
+              </TabsContent>
+            )}
+
+            <TabsContent value="raw">
+              <RawDataDisplay data={result} />
+            </TabsContent>
+          </Tabs>
         )}
 
         {/* Saved Lookups */}
@@ -549,24 +407,6 @@ const TenantLookupShadcn = () => {
             </CardContent>
           </Card>
         )}
-
-        {/* Information Card */}
-        <Card className="border-l-4 border-l-blue-500">
-          <CardContent className="pt-6">
-            <div className="flex gap-3">
-              <Info className="h-5 w-5 text-blue-500 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-blue-900 dark:text-blue-100">About Microsoft Tenant Lookup</h4>
-                <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                  This tool helps you discover Microsoft 365 and Azure Active Directory tenant information 
-                  using publicly available metadata endpoints. The information returned includes tenant IDs, 
-                  authentication URLs, and federation details that are essential for configuring applications 
-                  and integrations.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Help System */}
         <HelpSystemShadcn 
