@@ -1,7 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -13,7 +12,7 @@ import {
   ArrowRightLeft 
 } from 'lucide-react';
 import { toast } from 'sonner';
-import Prism from 'prismjs';
+import CodeEditor from './CodeEditor';
 
 const FORMAT_OPTIONS = [
   { value: 'auto', label: 'Auto Detect' },
@@ -37,26 +36,6 @@ const ConversionForm = ({
   onFileUpload,
   validationResult
 }) => {
-  const inputTextareaRef = useRef(null);
-  const outputTextareaRef = useRef(null);
-
-  // Apply syntax highlighting
-  useEffect(() => {
-    if (inputTextareaRef.current && inputData) {
-      const format = detectedFormat || inputFormat;
-      if (format && format !== 'auto') {
-        Prism.highlightElement(inputTextareaRef.current);
-      }
-    }
-  }, [inputData, detectedFormat, inputFormat]);
-
-  useEffect(() => {
-    if (outputTextareaRef.current && outputData) {
-      if (outputFormat && outputFormat !== 'auto') {
-        Prism.highlightElement(outputTextareaRef.current);
-      }
-    }
-  }, [outputData, outputFormat]);
 
   const copyToClipboard = async (text) => {
     try {
@@ -109,11 +88,6 @@ const ConversionForm = ({
     event.target.value = '';
   };
 
-  const getLanguageClass = (format) => {
-    if (format === 'auto') return '';
-    return `language-${format}`;
-  };
-
   const inputFormatDisplay = detectedFormat || inputFormat;
 
   return (
@@ -153,13 +127,12 @@ const ConversionForm = ({
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="relative">
-            <Textarea
-              ref={inputTextareaRef}
-              placeholder="Enter your JSON, YAML, or TOML data here..."
+            <CodeEditor
               value={inputData}
               onChange={(e) => setInputData(e.target.value)}
-              className={`min-h-96 font-mono text-sm ${getLanguageClass(inputFormatDisplay)}`}
-              style={{ whiteSpace: 'pre-wrap' }}
+              language={inputFormatDisplay === 'auto' ? 'json' : inputFormatDisplay}
+              placeholder="Enter your JSON, YAML, or TOML data here..."
+              minHeight="384px"
             />
             {validationResult && !validationResult.success && (
               <div className="absolute top-2 right-2">
@@ -239,13 +212,12 @@ const ConversionForm = ({
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="relative">
-            <Textarea
-              ref={outputTextareaRef}
-              placeholder="Converted data will appear here..."
+            <CodeEditor
               value={outputData}
+              language={outputFormat}
+              placeholder="Converted data will appear here..."
               readOnly
-              className={`min-h-96 font-mono text-sm bg-muted/50 ${getLanguageClass(outputFormat)}`}
-              style={{ whiteSpace: 'pre-wrap' }}
+              minHeight="384px"
             />
           </div>
           

@@ -1,0 +1,99 @@
+/* Custom PrismJS theme that adapts to light/dark mode */
+.code-highlight {
+  /* Remove any background or border from PrismJS */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Light mode colors */
+.code-highlight .token.string,
+.code-highlight .token.attr-value {
+  color: #22863a; /* green for strings */
+}
+
+.code-highlight .token.number,
+.code-highlight .token.boolean {
+  color: #005cc5; /* blue for numbers and booleans */
+}
+
+.code-highlight .token.property,
+.code-highlight .token.attr-name {
+  color: #6f42c1; /* purple for property names */
+}
+
+.code-highlight .token.punctuation {
+  color: #586069; /* gray for punctuation */
+}
+
+.code-highlight .token.operator,
+.code-highlight .token.entity,
+.code-highlight .token.url {
+  color: #d73a49; /* red for operators */
+}
+
+.code-highlight .token.comment,
+.code-highlight .token.prolog,
+.code-highlight .token.doctype,
+.code-highlight .token.cdata {
+  color: #6a737d; /* light gray for comments */
+}
+
+/* Dark mode colors */
+.dark .code-highlight .token.string,
+.dark .code-highlight .token.attr-value {
+  color: #9ecbff; /* light blue for strings */
+}
+
+.dark .code-highlight .token.number,
+.dark .code-highlight .token.boolean {
+  color: #79b8ff; /* light blue for numbers and booleans */
+}
+
+.dark .code-highlight .token.property,
+.dark .code-highlight .token.attr-name {
+  color: #b392f0; /* light purple for property names */
+}
+
+.dark .code-highlight .token.punctuation {
+  color: #e1e4e8; /* light gray for punctuation */
+}
+
+.dark .code-highlight .token.operator,
+.dark .code-highlight .token.entity,
+.dark .code-highlight .token.url {
+  color: #f97583; /* light red for operators */
+}
+
+.dark .code-highlight .token.comment,
+.dark .code-highlight .token.prolog,
+.dark .code-highlight .token.doctype,
+.dark .code-highlight .token.cdata {
+  color: #8b949e; /* gray for comments */
+}
+
+/* YAML specific tokens */
+.code-highlight .token.key {
+  color: #6f42c1; /* purple for YAML keys */
+}
+
+.dark .code-highlight .token.key {
+  color: #b392f0; /* light purple for YAML keys in dark mode */
+}
+
+/* TOML specific tokens */
+.code-highlight .token.section {
+  color: #005cc5; /* blue for TOML sections */
+}
+
+.dark .code-highlight .token.section {
+  color: #79b8ff; /* light blue for TOML sections in dark mode */
+}
+
+/* Ensure no default styles interfere */
+.code-highlight * {
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}

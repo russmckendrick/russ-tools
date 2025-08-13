@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-toml';
+import { loadPrismLanguages } from '@/utils/prismLoader';
 import yaml from 'js-yaml';
 import * as TOML from '@ltd/j-toml';
 
@@ -78,6 +75,9 @@ const DataConverterShadcn = () => {
         localStorage.removeItem('dataConverter_history');
       }
     }
+    
+    // Preload PrismJS languages for better performance
+    loadPrismLanguages(['json', 'yaml', 'toml']);
   }, []);
   
   // Save settings to localStorage
