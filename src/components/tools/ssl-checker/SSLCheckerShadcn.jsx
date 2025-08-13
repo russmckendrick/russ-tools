@@ -14,7 +14,8 @@ import {
   History,
   Trash2,
   RotateCcw,
-  X
+  X,
+  Award
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import SEOHead from '../../common/SEOHead';
@@ -25,6 +26,7 @@ import { useTLDs } from '../../../utils';
 import { useSSLChecker } from './hooks/useSSLChecker';
 import SSLResultsDisplay from './components/SSLResultsDisplay';
 import SSLCheckerIcon from './SSLCheckerIcon';
+import { getGradeInfo } from './utils/sslUtils';
 
 const SSLCheckerShadcn = () => {
   // Get tool configuration for SEO
@@ -78,6 +80,23 @@ const SSLCheckerShadcn = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     handleDomainSubmit();
+  };
+
+  // Grade badge component to match main results
+  const getGradeBadge = (grade) => {
+    if (!grade || grade === '-') return null;
+    
+    const gradeInfo = getGradeInfo(grade);
+    
+    return (
+      <Badge 
+        variant="outline" 
+        className={`${gradeInfo.color} text-white border-0 text-sm px-2 py-1 font-bold`}
+      >
+        <Award className="w-3 h-3 mr-1" />
+        {grade}
+      </Badge>
+    );
   };
 
   return (
@@ -203,9 +222,7 @@ const SSLCheckerShadcn = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={item.hasWarnings ? "destructive" : "default"}>
-                        {item.grade}
-                      </Badge>
+                      {getGradeBadge(item.grade)}
                       <Button
                         variant="outline"
                         size="sm"
