@@ -700,6 +700,504 @@ const SSLCheckerShadcn = () => {
     );
   };
 
+  // Certificates Tab Component
+  const CertificatesTab = ({ data }) => {
+    const endpoint = data.endpoints?.[0];
+    const certs = data.certs || [];
+
+    return (
+      <div className="space-y-4">
+        {/* Certificate Chains */}
+        {endpoint?.details?.certChains && (
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Certificate Chains</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {endpoint.details.certChains.map((chain, index) => (
+                  <div key={index} className="border rounded-lg p-4">
+                    <h4 className="font-medium mb-3">Chain {index + 1}</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Issues</p>
+                        <Badge variant={chain.issues === 0 ? "default" : "destructive"}>
+                          {chain.issues === 0 ? "No Issues" : `${chain.issues} Issues`}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">SNI Required</p>
+                        <Badge variant={chain.noSni ? "destructive" : "default"}>
+                          {chain.noSni ? "SNI Required" : "SNI Optional"}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    {/* Trust Paths */}
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Trust Stores</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {chain.trustPaths?.slice(0, 5).map((path, pathIndex) => {
+                          const trust = path.trust?.[0];
+                          return (
+                            <Badge key={pathIndex} variant={trust?.isTrusted ? "default" : "destructive"}>
+                              {trust?.rootStore} {trust?.isTrusted ? "✓" : "✗"}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Certificate Details */}
+        {certs.length > 0 && (
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Certificate Details</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {certs.map((cert, index) => (
+                  <div key={index} className="border rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Subject</p>
+                        <p className="font-medium font-mono text-sm">{cert.subject}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Issuer</p>
+                        <p className="font-medium font-mono text-sm">{cert.issuerSubject}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valid From</p>
+                        <p className="font-medium">{formatDate(cert.notBefore)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valid Until</p>
+                        <p className="font-medium">{formatDate(cert.notAfter)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Key Algorithm</p>
+                        <p className="font-medium">{cert.keyAlg || 'Unknown'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Key Size</p>
+                        <p className="font-medium">{cert.keySize ? `${cert.keySize} bits` : 'Unknown'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
+  // Security Tab Component
+  const SecurityTab = ({ data }) => {
+    const endpoint = data.endpoints?.[0];
+    const details = endpoint?.details;
+
+    if (!details) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground text-center">No security details available</p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    const vulnerabilities = [
+      { name: 'Heartbleed', status: details.heartbleed, critical: true },
+      { name: 'POODLE', status: details.poodle, critical: true },
+      { name: 'BEAST', status: details.vulnBeast, critical: false },
+      { name: 'FREAK', status: details.freak, critical: true },
+      { name: 'Logjam', status: details.logjam, critical: true },
+      { name: 'RC4 Support', status: details.supportsRc4, critical: false },
+      { name: 'Ticketbleed', status: details.ticketbleed === 2, critical: false },
+    ];
+
+    const securityFeatures = [
+      { name: 'Forward Secrecy', status: details.forwardSecrecy >= 2, level: details.forwardSecrecy },
+      { name: 'OCSP Stapling', status: details.ocspStapling, level: null },
+      { name: 'Session Tickets', status: details.sessionTickets === 1, level: null },
+      { name: 'AEAD Support', status: details.supportsAead, level: null },
+      { name: 'TLS 1.3 Ready', status: details.implementsTLS13MandatoryCS, level: null },
+      { name: 'SNI Required', status: details.sniRequired, level: null },
+    ];
+
+    return (
+      <div className="space-y-4">
+        {/* Vulnerabilities */}
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">Vulnerability Assessment</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {vulnerabilities.map((vuln, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <span className="font-medium">{vuln.name}</span>
+                  <Badge variant={vuln.status ? "destructive" : "default"}>
+                    {vuln.status ? "Vulnerable" : "Safe"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Security Features */}
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">Security Features</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {securityFeatures.map((feature, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <span className="font-medium">{feature.name}</span>
+                  <div className="flex items-center gap-2">
+                    {feature.level !== null && (
+                      <span className="text-sm text-muted-foreground">Level {feature.level}</span>
+                    )}
+                    <Badge variant={feature.status ? "default" : "secondary"}>
+                      {feature.status ? "Enabled" : "Disabled"}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* HSTS Policy */}
+        {details.hstsPolicy && (
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">HSTS Policy</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <Badge variant={details.hstsPolicy.status === 'present' ? "default" : "secondary"}>
+                    {details.hstsPolicy.status}
+                  </Badge>
+                </div>
+                {details.hstsPolicy.maxAge && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Max Age</p>
+                    <p className="font-medium">{Math.round(details.hstsPolicy.maxAge / 86400)} days</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
+  // Protocols Tab Component
+  const ProtocolsTab = ({ data }) => {
+    const endpoint = data.endpoints?.[0];
+    const details = endpoint?.details;
+
+    if (!details) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground text-center">No protocol details available</p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {/* Supported Protocols */}
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">Supported Protocols</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2 flex-wrap">
+              {details.protocols?.map((protocol, index) => (
+                <Badge key={index} variant="outline" className="text-sm">
+                  {protocol.name} {protocol.version}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cipher Suites */}
+        {details.suites?.list && details.suites.list.length > 0 && (
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Cipher Suites ({details.suites.list.length})</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {details.suites.list.slice(0, 20).map((suite, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 border rounded text-sm">
+                    <span className="font-mono">{suite.name}</span>
+                    <div className="flex gap-2">
+                      <Badge variant="outline">{suite.kxType}</Badge>
+                      <Badge variant="outline">{suite.kxStrength} bits</Badge>
+                    </div>
+                  </div>
+                ))}
+                {details.suites.list.length > 20 && (
+                  <p className="text-sm text-muted-foreground text-center pt-2">
+                    + {details.suites.list.length - 20} more cipher suites
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Named Groups */}
+        {details.namedGroups?.list && (
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Named Groups</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {details.namedGroups.list.map((group, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <span className="font-medium">{group.name}</span>
+                    <div className="flex gap-2">
+                      <Badge variant="outline">{group.bits} bits</Badge>
+                      <Badge variant="outline">{group.namedGroupType}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
+  // Compatibility Tab Component
+  const CompatibilityTab = ({ data }) => {
+    const endpoint = data.endpoints?.[0];
+    const sims = endpoint?.details?.sims;
+
+    if (!sims?.results) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground text-center">No compatibility test results available</p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    const successful = sims.results.filter(sim => sim.errorCode === 0);
+    const failed = sims.results.filter(sim => sim.errorCode !== 0);
+
+    return (
+      <div className="space-y-4">
+        {/* Summary */}
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">Compatibility Summary</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-2xl font-bold text-green-600">{successful.length}</p>
+                <p className="text-sm text-muted-foreground">Compatible</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-red-600">{failed.length}</p>
+                <p className="text-sm text-muted-foreground">Incompatible</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{sims.results.length}</p>
+                <p className="text-sm text-muted-foreground">Total Tested</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Successful Connections */}
+        {successful.length > 0 && (
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Compatible Clients ({successful.length})</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {successful.map((sim, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{sim.client.name} {sim.client.version}</p>
+                      {sim.suiteName && (
+                        <p className="text-xs text-muted-foreground">{sim.suiteName}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Badge variant="default">✓ Compatible</Badge>
+                      {sim.protocolId && (
+                        <Badge variant="outline">
+                          TLS {sim.protocolId === 772 ? '1.3' : sim.protocolId === 771 ? '1.2' : '1.x'}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Failed Connections */}
+        {failed.length > 0 && (
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Incompatible Clients ({failed.length})</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {failed.map((sim, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{sim.client.name} {sim.client.version}</p>
+                      {sim.errorMessage && (
+                        <p className="text-xs text-muted-foreground">{sim.errorMessage}</p>
+                      )}
+                    </div>
+                    <Badge variant="destructive">✗ Incompatible</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
+  // Headers Tab Component  
+  const HeadersTab = ({ data }) => {
+    const endpoint = data.endpoints?.[0];
+    const httpTransaction = endpoint?.details?.httpTransactions?.[0];
+
+    if (!httpTransaction) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground text-center">No HTTP transaction data available</p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {/* Request Information */}
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">HTTP Request</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-muted-foreground">URL</p>
+                <p className="font-medium font-mono text-sm">{httpTransaction.requestUrl}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Request Line</p>
+                <p className="font-medium font-mono text-sm">{httpTransaction.requestLine}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Request Headers</p>
+                <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+                  {httpTransaction.requestHeaders?.map((header, index) => (
+                    <div key={index}>{header}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Response Information */}
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">HTTP Response</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Status Code</p>
+                  <Badge variant={httpTransaction.statusCode === 200 ? "default" : "destructive"}>
+                    {httpTransaction.statusCode}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Response Line</p>
+                  <p className="font-medium font-mono text-sm">{httpTransaction.responseLine}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Response Headers</p>
+                <div className="bg-muted p-3 rounded font-mono text-xs space-y-1 max-h-96 overflow-y-auto">
+                  {httpTransaction.responseHeaders?.map((header, index) => (
+                    <div key={index} className="break-all">
+                      <span className="text-primary font-medium">{header.name}:</span> {header.value}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Security Headers Analysis */}
+        {endpoint?.details && (
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold">Security Headers</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span className="font-medium">HSTS</span>
+                  <Badge variant={endpoint.details.hstsPolicy?.status === 'present' ? "default" : "destructive"}>
+                    {endpoint.details.hstsPolicy?.status === 'present' ? "Present" : "Missing"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span className="font-medium">HPKP</span>
+                  <Badge variant={endpoint.details.hpkpPolicy?.status === 'present' ? "default" : "secondary"}>
+                    {endpoint.details.hpkpPolicy?.status === 'present' ? "Present" : "Not Set"}
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
   return (
     <TooltipProvider>
       <SEOHead {...seoData} />
