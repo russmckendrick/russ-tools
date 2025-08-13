@@ -24,12 +24,14 @@ import {
   History,
   Trash2,
   RotateCcw,
-  Building2
+  Building2,
+  HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useParams, Link } from 'react-router-dom';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 import TenantLookupIcon from './TenantLookupIcon';
+import HelpSystemShadcn from './components/HelpSystemShadcn';
 import SEOHead from '../../common/SEOHead';
 import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
@@ -46,6 +48,7 @@ const TenantLookupShadcn = () => {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [showRawData, setShowRawData] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   
   // Saved lookups storage
   const [savedLookups, setSavedLookups] = useState(() => {
@@ -408,6 +411,15 @@ const TenantLookupShadcn = () => {
           iconColor="blue"
           showTitle={false}
           standalone={true}
+          actions={[
+            {
+              text: "Help",
+              icon: HelpCircle,
+              onClick: () => setShowHelp(true),
+              variant: "outline",
+              size: "sm"
+            }
+          ]}
         />
 
         {/* Lookup Form */}
@@ -555,6 +567,12 @@ const TenantLookupShadcn = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Help System */}
+        <HelpSystemShadcn 
+          opened={showHelp} 
+          onClose={() => setShowHelp(false)} 
+        />
       </div>
     </TooltipProvider>
   );

@@ -4,7 +4,8 @@ import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '../ui/tooltip';
+import { Info, HelpCircle } from 'lucide-react';
 import toolsConfig from '@/utils/toolsConfig.json';
 import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub } from '@tabler/icons-react';
 import Base64Icon from '@/components/tools/base64/Base64Icon';
@@ -34,6 +35,7 @@ import NetworkDesignerIcon from '@/components/tools/network-designer/NetworkDesi
  * @param {boolean} props.standalone - If true, renders without Card wrapper (default: false)
  * @param {boolean} props.showTitle - If false, hides the big title (for when top bar shows page name). Default: true
  * @param {string} props.toolId - Optional tool id to resolve icon from toolsConfig
+ * @param {Object} props.helpButton - Help button configuration (optional, alternative to actions)
  */
 const ToolHeader = ({
   icon: Icon,
@@ -43,7 +45,8 @@ const ToolHeader = ({
   alert = null,
   standalone = false,
   showTitle = true,
-  toolId
+  toolId,
+  helpButton = null
 }) => {
   // Resolve icon/color from toolsConfig for consistency
   const location = useLocation();
@@ -150,9 +153,10 @@ const ToolHeader = ({
           </div>
         </div>
 
-        {/* Right side: Action buttons */}
-        {actions.length > 0 && (
+        {/* Right side: Action buttons or Help button */}
+        {(actions.length > 0 || helpButton) && (
           <div className="flex flex-wrap gap-2">
+            {/* Render action buttons */}
             {actions.map((action, index) => (
               <Button
                 key={index}
@@ -165,6 +169,26 @@ const ToolHeader = ({
                 {action.text}
               </Button>
             ))}
+            
+            {/* Render help button if provided */}
+            {helpButton && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={helpButton.onClick}
+                    >
+                      <HelpCircle className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{helpButton.tooltip || "Get help"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         )}
       </div>
