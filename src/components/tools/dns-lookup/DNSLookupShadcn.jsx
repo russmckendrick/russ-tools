@@ -522,7 +522,7 @@ const DNSLookupShadcn = () => {
                   className="w-full"
                 >
                   {loading ? (
-                    <RotateCcw className="mr-2 h-4 w-4 animate-spin" />
+                    <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />
                   ) : (
                     <Search className="mr-2 h-4 w-4" />
                   )}

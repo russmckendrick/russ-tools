@@ -685,7 +685,7 @@ const DataConverterShadcn = () => {
             <Button onClick={handleConvert} disabled={isConverting || !inputData.trim()}>
               {isConverting ? (
                 <>
-                  <RotateCcw className="h-4 w-4 mr-2 animate-spin" />
+                  <RotateCcw className="h-4 w-4 mr-2 animate-spin-ccw" />
                   Converting...
                 </>
               ) : (

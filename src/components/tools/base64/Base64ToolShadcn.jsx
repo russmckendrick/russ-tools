@@ -770,7 +770,7 @@ const Base64ToolShadcn = () => {
             className="px-8"
           >
             {loading ? (
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin-ccw" />
             ) : mode === 'encode' ? (
               <Upload className="mr-2 h-4 w-4" />
             ) : (

@@ -540,7 +540,7 @@ Visit: https://russ.tools
                 size="lg"
               >
                 {isGenerating ? (
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin-ccw" />
                 ) : (
                   <RefreshCw className="mr-2 h-4 w-4" />
                 )}

@@ -443,7 +443,7 @@ export function ThemeSwitcher() {
 
 ### Loading States
 - For global areas: use skeletons or spinners within content
-- Buttons: disable and show an `animate-spin` icon
+- Buttons: disable and show an `animate-spin-ccw` icon
 - Keep messaging concise via `sonner` toasts where appropriate
 
 ## Best Practices

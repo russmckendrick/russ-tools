@@ -269,4 +269,11 @@
     100% { transform: translate(0, 0) rotate(0); }
   }
   .drift { animation: drift var(--dur) ease-in-out var(--delay) infinite; will-change: transform; }
+
+  /* Correct counter-clockwise spin animation */
+  @keyframes spin-ccw {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+  }
+  .animate-spin-ccw { animation: spin-ccw 1s linear infinite; }
 }

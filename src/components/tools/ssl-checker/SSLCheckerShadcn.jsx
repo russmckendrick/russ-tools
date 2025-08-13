@@ -54,7 +54,6 @@ const SSLCheckerShadcn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [validationError, setValidationError] = useState('');
-  const [autocompleteData, setAutocompleteData] = useState([]);
 
   // Get tool configuration for SEO
   const toolConfig = toolsConfig.find(tool => tool.id === 'ssl-checker');
@@ -67,8 +66,8 @@ const SSLCheckerShadcn = () => {
   let tldHookResult = {};
   try {
     tldHookResult = useTLDs() || {};
-  } catch (error) {
-    console.error('Error loading TLD utilities:', error);
+  } catch {
+    // Silently handle TLD utilities error
     tldHookResult = {};
   }
   const { generateSubdomainSuggestions, isReady: tldReady } = tldHookResult;
@@ -106,16 +105,13 @@ const SSLCheckerShadcn = () => {
   useEffect(() => {
     if (tldReady && generateSubdomainSuggestions) {
       try {
-        const suggestions = generateSubdomainSuggestions(domain, 10);
-        setAutocompleteData(Array.isArray(suggestions) ? suggestions : []);
-      } catch (error) {
-        console.error('Error generating domain suggestions:', error);
-        setAutocompleteData([]);
+        generateSubdomainSuggestions(domain, 10);
+        // Note: Autocomplete functionality disabled for now
+      } catch {
+        // Silently handle suggestion generation error
       }
-    } else {
-      setAutocompleteData([]);
     }
-  }, [domain, tldReady]);
+  }, [domain, tldReady, generateSubdomainSuggestions]);
 
   // Effect to handle URL domain parameter
   useEffect(() => {
@@ -147,8 +143,29 @@ const SSLCheckerShadcn = () => {
     setDomainHistory(newHistory);
   };
 
+  // Helper function to check if SSL data is complete and ready for caching
+  const isSSLDataComplete = (sslData) => {
+    if (!sslData) return false;
+    
+    // Browser-based checks are always complete
+    if (sslData.browserCheck) return true;
+    
+    // For API checks, ensure we have complete data
+    if (sslData.status === 'READY') return true;
+    
+    // Check if all endpoints are complete
+    const allEndpointsComplete = sslData.endpoints?.every(endpoint => endpoint.isComplete === true);
+    return sslData.endpoints?.length > 0 && allEndpointsComplete;
+  };
+
   // Helper function to cache SSL data
   const cacheSSLData = (domainName, sslData) => {
+    // Only cache complete data
+    if (!isSSLDataComplete(sslData)) {
+      console.log(`🚫 Not caching incomplete SSL data for ${domainName}`);
+      return;
+    }
+    
     const cacheItem = {
       ...sslData,
       timestamp: Date.now()
@@ -157,6 +174,7 @@ const SSLCheckerShadcn = () => {
       ...prev,
       [domainName]: cacheItem
     }));
+    console.log(`💾 Cached complete SSL data for ${domainName}`);
   };
 
   // Helper function to remove domain from history
@@ -328,8 +346,18 @@ const SSLCheckerShadcn = () => {
         currentResult = await response.json();
         
         // Check if analysis is complete
-        if (currentResult.status === 'READY' || !currentResult.pollInfo?.shouldPoll) {
+        // SSL Labs analysis is complete when either:
+        // 1. Status is READY, OR
+        // 2. shouldPoll is false, OR 
+        // 3. All endpoints are complete (even if status is still IN_PROGRESS)
+        const allEndpointsComplete = currentResult.endpoints?.every(endpoint => endpoint.isComplete === true);
+        const isAnalysisComplete = currentResult.status === 'READY' || 
+                                   !currentResult.pollInfo?.shouldPoll ||
+                                   (currentResult.endpoints?.length > 0 && allEndpointsComplete);
+                                   
+        if (isAnalysisComplete) {
           console.log(`✅ SSL Labs analysis completed for ${domainToCheck} after ${attempts} attempts`);
+          console.log(`Final status: ${currentResult.status}, shouldPoll: ${currentResult.pollInfo?.shouldPoll}, endpoints complete: ${allEndpointsComplete}`);
           return currentResult;
         }
         
@@ -359,7 +387,7 @@ const SSLCheckerShadcn = () => {
     
     try {
       // First attempt: no-cors mode for basic connectivity test
-      const response = await fetch(testUrl, { 
+      await fetch(testUrl, { 
         method: 'HEAD',
         mode: 'no-cors',
         cache: 'no-cache'
@@ -390,11 +418,11 @@ const SSLCheckerShadcn = () => {
         note: 'Basic SSL validation - certificate details limited in browser environment'
       };
       
-    } catch (error) {
+    } catch {
       // Second attempt: try with a different approach using an image load test
       try {
         return await testSSLWithImageLoad(domainToCheck);
-      } catch (secondError) {
+      } catch {
         throw new Error(`SSL connection failed: Unable to establish secure connection to ${domainToCheck}. This may indicate SSL/TLS configuration issues.`);
       }
     }
@@ -634,7 +662,7 @@ const SSLCheckerShadcn = () => {
                     disabled={loading}
                   >
                     {loading ? (
-                      <RotateCcw className="mr-2 h-4 w-4 animate-spin" />
+                      <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />
                     ) : (
                       <Search className="mr-2 h-4 w-4" />
                     )}
@@ -659,7 +687,7 @@ const SSLCheckerShadcn = () => {
               <div className="flex items-center justify-center p-8">
                 <div className="flex flex-col items-center gap-3 text-center">
                   <div className="flex items-center gap-3">
-                    <RotateCcw className="h-5 w-5 animate-spin" />
+                    <RotateCcw className="h-5 w-5 animate-spin-ccw" />
                     <span>Analyzing SSL certificate for {domain}...</span>
                   </div>
                   <p className="text-sm text-muted-foreground max-w-md">

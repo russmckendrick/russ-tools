@@ -57,7 +57,7 @@ const TenantSearchCard = ({
             </div>
             <Button onClick={onSearch} disabled={loading}>
               {loading ? (
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin-ccw" />
               ) : (
                 <Search className="h-4 w-4 mr-2" />
               )}

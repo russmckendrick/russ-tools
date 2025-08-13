@@ -445,7 +445,7 @@ const TenantLookupShadcn = () => {
                     disabled={loading}
                   >
                     {loading ? (
-                      <RotateCcw className="mr-2 h-4 w-4 animate-spin" />
+                      <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />
                     ) : (
                       <Search className="mr-2 h-4 w-4" />
                     )}
@@ -466,7 +466,7 @@ const TenantLookupShadcn = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-center p-8">
                 <div className="flex items-center gap-3">
-                  <RotateCcw className="h-5 w-5 animate-spin" />
+                  <RotateCcw className="h-5 w-5 animate-spin-ccw" />
                   <span>Looking up tenant information for {domain}...</span>
                 </div>
               </div>
