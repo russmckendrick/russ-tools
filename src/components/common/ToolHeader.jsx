@@ -21,6 +21,7 @@ import BuzzwordIpsumIcon from '@/components/tools/buzzword-ipsum/BuzzwordIpsumIc
 import SSLCheckerIcon from '@/components/tools/ssl-checker/SSLCheckerIcon';
 import CronIcon from '@/components/tools/cron/CronIcon';
 import NetworkDesignerIcon from '@/components/tools/network-designer/NetworkDesignerIcon';
+import CertificateIcon from '@/components/tools/certificate-chain-analyzer/CertificateIcon';
 
 /**
  * Unified Tool Header Component
@@ -71,6 +72,7 @@ const ToolHeader = ({
     SSLCheckerIcon: SSLCheckerIcon,
     CronIcon: CronIcon,
     NetworkDesignerIcon: NetworkDesignerIcon,
+    CertificateIcon: CertificateIcon,
   };
 
   const detectedTool = React.useMemo(() => {

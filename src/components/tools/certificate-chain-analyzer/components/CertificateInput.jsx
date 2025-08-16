@@ -233,6 +233,14 @@ const CertificateInput = ({
             </div>
           )}
 
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>API Integration:</strong> This tool attempts to retrieve real certificate data via Cloudflare Worker API. 
+              If the API is unavailable, it will fall back to realistic mock data to demonstrate functionality.
+            </AlertDescription>
+          </Alert>
+
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />

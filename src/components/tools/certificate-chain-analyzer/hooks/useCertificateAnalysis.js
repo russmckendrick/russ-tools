@@ -8,6 +8,16 @@ import {
   validateCertificateChain, 
   buildCertificateChain 
 } from '../utils/chainValidator';
+// API Configuration
+const apiConfig = {
+  endpoints: {
+    certificate: {
+      url: 'https://certificate-chain-russ-tools-dev.russ-mckendricks-account.workers.dev/',
+      timeout: 30000,
+      retries: 2
+    }
+  }
+};
 
 export const useCertificateAnalysis = () => {
   const [analysis, setAnalysis] = useState(null);
@@ -141,123 +151,45 @@ export const useCertificateAnalysis = () => {
 
 const retrieveCertificatesFromDomain = async (domain, port) => {
   try {
-    const url = `https://${domain}:${port}`;
+    console.log(`Analyzing certificate chain for ${domain}:${port} using Cloudflare Worker`);
     
-    const response = await fetch(url, {
-      method: 'HEAD',
-      mode: 'cors',
-      cache: 'no-cache'
+    // Try to use the real Cloudflare Worker API first
+    const certificateApiUrl = apiConfig.endpoints.certificate.url;
+    const timeout = apiConfig.endpoints.certificate.timeout || 30000;
+    
+    const response = await fetch(`${certificateApiUrl}analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        domain,
+        port: parseInt(port)
+      }),
+      signal: AbortSignal.timeout(timeout)
     });
-
-    if (!response.ok && response.status !== 0) {
-      throw new Error(`Failed to connect to ${domain}:${port}`);
+    
+    if (!response.ok) {
+      throw new Error(`Certificate API returned ${response.status}: ${response.statusText}`);
     }
-
-    return await mockCertificateRetrieval(domain);
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'Certificate analysis failed');
+    }
+    
+    console.log(`Successfully retrieved certificate data from Cloudflare Worker for ${domain}:${port}`);
+    return data.certificates;
     
   } catch (error) {
-    if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-      return await mockCertificateRetrieval(domain);
-    }
-    throw error;
+    console.error(`Certificate API failed for ${domain}:${port}:`, error.message);
+    throw new Error(`Failed to retrieve certificates: ${error.message}`);
   }
 };
 
-const mockCertificateRetrieval = async (domain) => {
-  const mockLeafCert = createMockCertificate(domain, 'leaf', {
-    issuer: 'DigiCert TLS RSA SHA256 2020 CA1',
-    validFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    validTo: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-    keySize: 2048,
-    algorithm: 'SHA256withRSA'
-  });
-
-  const mockIntermediateCert = createMockCertificate('DigiCert TLS RSA SHA256 2020 CA1', 'intermediate', {
-    issuer: 'DigiCert Global Root CA',
-    validFrom: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
-    validTo: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-    keySize: 2048,
-    algorithm: 'SHA256withRSA'
-  });
-
-  const mockRootCert = createMockCertificate('DigiCert Global Root CA', 'root', {
-    issuer: 'DigiCert Global Root CA',
-    validFrom: new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000),
-    validTo: new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000),
-    keySize: 2048,
-    algorithm: 'SHA256withRSA'
-  });
-
-  return [mockLeafCert, mockIntermediateCert, mockRootCert];
-};
-
-const createMockCertificate = (commonName, type, options = {}) => {
-  const {
-    issuer = commonName,
-    validFrom = new Date(),
-    validTo = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-    keySize = 2048,
-    algorithm = 'SHA256withRSA'
-  } = options;
-
-  return {
-    id: `${type}-${commonName.replace(/\s+/g, '-').toLowerCase()}`,
-    type,
-    raw: new Uint8Array(0),
-    details: {
-      subject: {
-        CN: commonName,
-        O: type === 'leaf' ? 'Example Organization' : 'Certificate Authority',
-        OU: '',
-        C: 'US',
-        ST: '',
-        L: '',
-        emailAddress: '',
-        raw: `CN=${commonName}, O=${type === 'leaf' ? 'Example Organization' : 'Certificate Authority'}, C=US`
-      },
-      issuer: {
-        CN: issuer,
-        O: 'Certificate Authority',
-        OU: '',
-        C: 'US',
-        ST: '',
-        L: '',
-        emailAddress: '',
-        raw: `CN=${issuer}, O=Certificate Authority, C=US`
-      },
-      validity: {
-        notBefore: validFrom,
-        notAfter: validTo
-      },
-      keyInfo: {
-        algorithm,
-        keySize,
-        publicKey: new Uint8Array(256)
-      },
-      extensions: {
-        subjectAltName: type === 'leaf' ? [
-          { type: 'DNS', value: commonName },
-          { type: 'DNS', value: `www.${commonName}` }
-        ] : [],
-        keyUsage: type === 'leaf' ? 
-          ['Digital Signature', 'Key Encipherment'] : 
-          ['Key Cert Sign', 'CRL Sign'],
-        extendedKeyUsage: type === 'leaf' ? ['Server Authentication'] : [],
-        basicConstraints: type !== 'leaf' ? { isCA: true, pathLenConstraint: null } : null,
-        authorityKeyIdentifier: '',
-        subjectKeyIdentifier: '',
-        certificatePolicies: []
-      },
-      serialNumber: Math.random().toString(36).substring(2, 15),
-      version: 3
-    },
-    fingerprints: {
-      sha256: Array.from({ length: 32 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join(':'),
-      sha1: Array.from({ length: 20 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join(':')
-    },
-    issues: []
-  };
-};
+// NO MOCK DATA - Real certificates only!
 
 const processCertificateFile = async (file) => {
   return new Promise((resolve, reject) => {
@@ -329,6 +261,7 @@ const processPEMData = async (pemData) => {
 
 const processDERData = async (derData) => {
   try {
+    const { parseX509Certificate } = await import('../utils/certificateParser');
     const cert = parseX509Certificate(derData);
     cert.id = 'cert-0';
     return [cert];

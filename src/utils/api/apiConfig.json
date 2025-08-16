@@ -18,6 +18,12 @@
       "timeout": 10000,
       "retries": 2
     },
+    "certificate": {
+      "url": "https://certificate.russ.tools/",
+      "description": "Certificate Chain Analysis API",
+      "timeout": 30000,
+      "retries": 2
+    },
     "dns": {
       "google": "https://dns.google/resolve",
       "cloudflare": "https://cloudflare-dns.com/dns-query",
