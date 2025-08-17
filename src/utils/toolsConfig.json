@@ -78,19 +78,6 @@
     "features": ["Visual cron builder", "Expression validation", "Human-readable descriptions", "Common schedule presets", "Real-time preview", "Copy-paste ready output"]
   },
   {
-    "id": "certificate-chain-analyzer",
-    "title": "Certificate Chain Analyzer",
-    "description": "Comprehensive analysis of SSL/TLS certificate chains including validation, trust paths, security issues, and detailed certificate information. Process certificates from domains or uploaded files with complete client-side analysis.",
-    "shortDescription": "Analyze SSL certificate chains and trust paths",
-    "icon": "CertificateIcon",
-    "badges": ["Client-Side Analysis", "Trust Path Validation", "Security Assessment"],
-    "path": "/certificate-chain-analyzer",
-    "seoTitle": "Certificate Chain Analyzer - SSL/TLS Certificate Trust Path Analysis",
-    "seoKeywords": ["certificate chain", "ssl analysis", "certificate validation", "trust path", "certificate security", "ssl certificate", "tls analysis", "certificate transparency", "cert chain", "ssl trust"],
-    "category": "Security Tools",
-    "features": ["Complete chain analysis", "Trust path validation", "Security vulnerability detection", "Certificate transparency checking", "File upload support", "Visual chain representation"]
-  },
-  {
     "id": "ssl-checker",
     "title": "SSL Certificate Checker",
     "description": "Analyze and validate SSL certificates for any domain. Get detailed security analysis, certificate information, and vulnerability testing using industry-standard SSL Labs API.",
@@ -193,6 +180,29 @@
     "seoKeywords": ["buzzword ipsum", "corporate lorem ipsum", "business jargon generator", "buzzword generator", "corporate placeholder", "business ipsum", "mockup content", "corporate speak", "professional text", "lorem ipsum alternative"],
     "category": "Content Tools",
     "features": ["Corporate buzzword generation", "Multiple output formats", "Customizable length options", "Professional placeholder text", "Perfect for mockups", "Client-side generation"]
+  },
+  {
+    "id": "markdown-table-tool",
+    "title": "Markdown Table Tool",
+    "description": "Create, format, and validate markdown tables with real-time preview and advanced editing features",
+    "shortDescription": "Markdown table creator and formatter",
+    "icon": "IconTable",
+    "iconColor": "text-blue-600",
+    "badges": ["Editor", "Formatter", "Validator"],
+    "path": "/markdown-table-tool",
+    "seoTitle": "Markdown Table Creator & Formatter - Professional Table Generator",
+    "seoKeywords": "markdown table, table creator, table formatter, markdown editor, table generator, csv to markdown",
+    "category": "Developer Tools",
+    "features": [
+      "Visual table editor with drag-and-drop",
+      "Real-time markdown preview",
+      "CSV/TSV import and export",
+      "Table validation and linting",
+      "Multiple alignment options",
+      "Bulk formatting and optimization",
+      "Copy to clipboard functionality",
+      "Template library for common tables"
+    ]
   },
   {
     "id": "github-source",
