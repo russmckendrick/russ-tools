@@ -18,6 +18,7 @@
 | 🔒 **Password Generator** | Generate cryptographically secure passwords with advanced analysis | [📖 Docs](docs/tools/password-generator/) |
 | 💬 **Buzzword Ipsum** | Generate corporate buzzword-filled placeholder text with API access | [📖 Docs](docs/tools/buzzword-ipsum/) |
 | ⏰ **CRON Expression Builder** | Build and validate cron job expressions with intuitive interface | [📖 Docs](docs/tools/cron-builder/) |
+| 📊 **Markdown Table Tool** | Create, format, and validate markdown tables with visual editor and real-time preview | [📖 Docs](docs/tools/markdown-table/) |
 | 🏢 **Microsoft Portals (GDAP)** | Generate tenant-specific deep links to Microsoft admin portals | [📖 Docs](docs/tools/microsoft-portals/) |
 | 🔍 **Microsoft Tenant Lookup** | Discover comprehensive Microsoft tenant information for any domain | [📖 Docs](docs/tools/tenant-lookup/) |
 
