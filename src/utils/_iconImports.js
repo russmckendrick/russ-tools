@@ -1,1 +1,1 @@
-import { IconCopy, IconServer, IconChartDots3, IconCertificate } from '@tabler/icons-react';
+import { IconCopy, IconServer, IconChartDots3, IconCertificate, IconTable, IconTableFilled } from '@tabler/icons-react';

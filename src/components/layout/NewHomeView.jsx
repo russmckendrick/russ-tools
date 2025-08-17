@@ -41,6 +41,7 @@ import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIc
 import SSLCheckerIcon from "@/components/tools/ssl-checker/SSLCheckerIcon"
 import CronIcon from "@/components/tools/cron/CronIcon"
 import NetworkDesignerIcon from "@/components/tools/network-designer/NetworkDesignerIcon"
+import MarkdownTableIcon from "@/components/tools/markdown-table-tool/MarkdownTableIcon"
 
 const iconByKey = {
   IconNetwork: IconNetwork,
@@ -63,6 +64,7 @@ const iconByKey = {
   SSLCheckerIcon: SSLCheckerIcon,
   CronIcon: CronIcon,
   NetworkDesignerIcon: NetworkDesignerIcon,
+  MarkdownTableIcon: MarkdownTableIcon,
 }
 
 export function NewHomeView() {
