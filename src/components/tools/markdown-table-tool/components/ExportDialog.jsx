@@ -16,6 +16,7 @@ import {
   IconCode,
   IconBraces
 } from '@tabler/icons-react';
+import { toast } from 'sonner';
 import { convertToCSV, convertToTSV, convertToJSON } from '../utils/csvParser';
 
 const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdown }) => {
@@ -39,6 +40,62 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
   }, [resetState, onClose]);
 
   const generateExportData = useCallback(() => {
+    const generateHTMLTable = (data, aligns, hasHeaderRow) => {
+      if (!data || data.length === 0) return '';
+
+      const getAlignmentClass = (alignment) => {
+        switch (alignment) {
+          case 'center': return 'text-center';
+          case 'right': return 'text-right';
+          default: return 'text-left';
+        }
+      };
+
+      let html = '<!DOCTYPE html>\n<html>\n<head>\n';
+      html += '  <title>Exported Table</title>\n';
+      html += '  <style>\n';
+      html += '    table { border-collapse: collapse; width: 100%; }\n';
+      html += '    th, td { border: 1px solid #ddd; padding: 8px; }\n';
+      html += '    th { background-color: #f2f2f2; font-weight: bold; }\n';
+      html += '    .text-left { text-align: left; }\n';
+      html += '    .text-center { text-align: center; }\n';
+      html += '    .text-right { text-align: right; }\n';
+      html += '  </style>\n</head>\n<body>\n';
+      html += '<table>\n';
+
+      if (hasHeaderRow && data.length > 0) {
+        html += '  <thead>\n    <tr>\n';
+        data[0].forEach((cell, index) => {
+          const alignment = aligns[index] || 'left';
+          html += `      <th class="${getAlignmentClass(alignment)}">${escapeHtml(cell)}</th>\n`;
+        });
+        html += '    </tr>\n  </thead>\n';
+        html += '  <tbody>\n';
+        
+        for (let i = 1; i < data.length; i++) {
+          html += '    <tr>\n';
+          data[i].forEach((cell, index) => {
+            const alignment = aligns[index] || 'left';
+            html += `      <td class="${getAlignmentClass(alignment)}">${escapeHtml(cell)}</td>\n`;
+          });
+          html += '    </tr>\n';
+        }
+      } else {
+        html += '  <tbody>\n';
+        data.forEach(row => {
+          html += '    <tr>\n';
+          row.forEach((cell, index) => {
+            const alignment = aligns[index] || 'left';
+            html += `      <td class="${getAlignmentClass(alignment)}">${escapeHtml(cell)}</td>\n`;
+          });
+          html += '    </tr>\n';
+        });
+      }
+
+      html += '  </tbody>\n</table>\n</body>\n</html>';
+      return html;
+    };
+
     if (!tableData || tableData.length === 0) {
       return { content: '', mimeType: 'text/plain', extension: 'txt' };
     }
@@ -89,63 +146,7 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
           extension: 'md'
         };
     }
-  }, [tableData, exportFormat, includeHeader, hasHeader, csvDelimiter, alignments, markdown, generateHTMLTable]);
-
-  const generateHTMLTable = (data, aligns, hasHeaderRow) => {
-    if (!data || data.length === 0) return '';
-
-    const getAlignmentClass = (alignment) => {
-      switch (alignment) {
-        case 'center': return 'text-center';
-        case 'right': return 'text-right';
-        default: return 'text-left';
-      }
-    };
-
-    let html = '<!DOCTYPE html>\n<html>\n<head>\n';
-    html += '  <title>Exported Table</title>\n';
-    html += '  <style>\n';
-    html += '    table { border-collapse: collapse; width: 100%; }\n';
-    html += '    th, td { border: 1px solid #ddd; padding: 8px; }\n';
-    html += '    th { background-color: #f2f2f2; font-weight: bold; }\n';
-    html += '    .text-left { text-align: left; }\n';
-    html += '    .text-center { text-align: center; }\n';
-    html += '    .text-right { text-align: right; }\n';
-    html += '  </style>\n</head>\n<body>\n';
-    html += '<table>\n';
-
-    if (hasHeaderRow && data.length > 0) {
-      html += '  <thead>\n    <tr>\n';
-      data[0].forEach((cell, index) => {
-        const alignment = aligns[index] || 'left';
-        html += `      <th class="${getAlignmentClass(alignment)}">${escapeHtml(cell)}</th>\n`;
-      });
-      html += '    </tr>\n  </thead>\n';
-      html += '  <tbody>\n';
-      
-      for (let i = 1; i < data.length; i++) {
-        html += '    <tr>\n';
-        data[i].forEach((cell, index) => {
-          const alignment = aligns[index] || 'left';
-          html += `      <td class="${getAlignmentClass(alignment)}">${escapeHtml(cell)}</td>\n`;
-        });
-        html += '    </tr>\n';
-      }
-    } else {
-      html += '  <tbody>\n';
-      data.forEach(row => {
-        html += '    <tr>\n';
-        row.forEach((cell, index) => {
-          const alignment = aligns[index] || 'left';
-          html += `      <td class="${getAlignmentClass(alignment)}">${escapeHtml(cell)}</td>\n`;
-        });
-        html += '    </tr>\n';
-      });
-    }
-
-    html += '  </tbody>\n</table>\n</body>\n</html>';
-    return html;
-  };
+  }, [tableData, exportFormat, includeHeader, hasHeader, csvDelimiter, alignments, markdown]);
 
   const generateLaTeXTable = (data, aligns, hasHeaderRow) => {
     if (!data || data.length === 0) return '';
@@ -204,26 +205,44 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
   const handleCopy = useCallback(async () => {
     try {
       const { content } = generateExportData();
+      if (!content.trim()) {
+        toast.error('No content to copy');
+        return;
+      }
       await navigator.clipboard.writeText(content);
+      toast.success(`${exportFormat.toUpperCase()} content copied to clipboard`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
+      toast.error('Failed to copy to clipboard');
     }
-  }, [generateExportData]);
+  }, [generateExportData, exportFormat]);
 
   const handleDownload = useCallback(() => {
-    const { content, mimeType, extension } = generateExportData();
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${filename}.${extension}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      const { content, mimeType, extension } = generateExportData();
+      if (!content.trim()) {
+        toast.error('No content to download');
+        return;
+      }
+      
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${filename}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success(`File downloaded: ${filename}.${extension}`);
+    } catch (error) {
+      console.error('Failed to download file:', error);
+      toast.error('Failed to download file');
+    }
   }, [generateExportData, filename]);
 
   const getFormatIcon = (format) => {
@@ -311,11 +330,11 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-sm text-gray-500">{getFormatDescription(exportFormat)}</p>
+            <p className="text-sm text-muted-foreground">{getFormatDescription(exportFormat)}</p>
           </div>
 
           {/* Export Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
             <div className="space-y-3">
               <Label className="flex items-center space-x-2">
                 <Switch
@@ -351,7 +370,7 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
                 onChange={(e) => setFilename(e.target.value)}
                 placeholder="Enter filename"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Will be saved as: {filename}.{exportData.extension}
               </p>
             </div>
@@ -360,7 +379,7 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
           {/* Preview */}
           <div className="space-y-3">
             <Label>Preview</Label>
-            <div className="border rounded-lg bg-gray-50 dark:bg-gray-900 p-4 max-h-64 overflow-auto">
+            <div className="border rounded-lg bg-muted/30 p-4 max-h-64 overflow-auto">
               <pre className="text-sm font-mono whitespace-pre-wrap break-all">
                 {exportData.content.length > 2000 
                   ? exportData.content.substring(0, 2000) + '\n... (truncated for display)'

@@ -186,7 +186,7 @@
     "title": "Markdown Table Tool",
     "description": "Create, format, and validate markdown tables with real-time preview and advanced editing features",
     "shortDescription": "Markdown table creator and formatter",
-    "icon": "IconTable",
+    "icon": "MarkdownTableIcon",
     "iconColor": "text-blue-600",
     "badges": ["Editor", "Formatter", "Validator"],
     "path": "/markdown-table-tool",

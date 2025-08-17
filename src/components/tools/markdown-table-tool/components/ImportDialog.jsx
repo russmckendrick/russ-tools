@@ -15,6 +15,7 @@ import {
   IconCheck,
   IconX
 } from '@tabler/icons-react';
+import { toast } from 'sonner';
 import { 
   parseCSV, 
   detectDelimiter, 
@@ -152,6 +153,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
 
   const handleImport = useCallback(() => {
     if (!preview?.fullData) {
+      toast.error('No data to import');
       setError('No data to import');
       return;
     }
@@ -181,9 +183,12 @@ const ImportDialog = ({ open, onClose, onImport }) => {
       
       const markdown = markdownLines.join('\n');
       onImport(markdown);
+      toast.success(`Successfully imported ${tableData.length} rows`);
       handleClose();
     } catch (err) {
-      setError(`Import failed: ${err.message}`);
+      const errorMsg = `Import failed: ${err.message}`;
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -199,7 +204,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">Preview ({data.length} of {totalRows} rows)</Label>
           {totalRows > 10 && (
-            <span className="text-xs text-gray-500">Showing first 10 rows</span>
+            <span className="text-xs text-muted-foreground">Showing first 10 rows</span>
           )}
         </div>
         
@@ -210,12 +215,12 @@ const ImportDialog = ({ open, onClose, onImport }) => {
                 <tr 
                   key={rowIndex} 
                   className={`border-b ${
-                    hasHeader && rowIndex === 0 ? 'bg-gray-50 dark:bg-gray-800 font-medium' : ''
+                    hasHeader && rowIndex === 0 ? 'bg-muted/50 font-medium' : ''
                   }`}
                 >
                   {row.map((cell, cellIndex) => (
                     <td key={cellIndex} className="border-r p-2 min-w-[100px]">
-                      {cell || <span className="text-gray-400 italic">empty</span>}
+                      {cell || <span className="text-muted-foreground italic">empty</span>}
                     </td>
                   ))}
                 </tr>
@@ -261,7 +266,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
                   rows={8}
                   className="font-mono text-sm"
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Supports CSV, TSV, JSON arrays, and Markdown tables
                 </p>
               </div>
@@ -270,9 +275,9 @@ const ImportDialog = ({ open, onClose, onImport }) => {
             <TabsContent value="file" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="file-input">Upload a file</Label>
-                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
                   <div className="text-center">
-                    <IconUpload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                    <IconUpload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                     <input
                       id="file-input"
                       type="file"
@@ -281,13 +286,13 @@ const ImportDialog = ({ open, onClose, onImport }) => {
                       className="mb-4"
                     />
                     {selectedFile && (
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="text-sm text-muted-foreground">
                         Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
                       </div>
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Supports CSV, TSV, TXT, XLSX, XLS, and JSON files (max 10MB)
                 </p>
               </div>
@@ -295,7 +300,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
           </Tabs>
 
           {/* Import Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
             <div className="space-y-2">
               <Label htmlFor="delimiter-select">Delimiter (for CSV/TSV)</Label>
               <Select value={delimiter} onValueChange={handleDelimiterChange}>

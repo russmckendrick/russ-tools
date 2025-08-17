@@ -128,11 +128,6 @@ const BuzzwordIpsumTool = lazy(() =>
     default: () => <div>Error loading Buzzword Ipsum Tool</div>
   }))
 );
-const CertificateChainAnalyzerTool = lazy(() => 
-  import('./components/tools/certificate-chain-analyzer/CertificateChainAnalyzerTool').catch(() => ({
-    default: () => <div>Error loading Certificate Chain Analyzer Tool</div>
-  }))
-);
 const MarkdownTableTool = lazy(() => 
   import('./components/tools/markdown-table-tool/MarkdownTableTool').catch(() => ({
     default: () => <div>Error loading Markdown Table Tool</div>
@@ -210,17 +205,6 @@ export default function App() {
               <Route path="ssl-checker/:domain" element={
                 <LazyRoute>
                   <SSLCheckerTool />
-                </LazyRoute>
-              } />
-
-              <Route path="certificate-chain-analyzer" element={
-                <LazyRoute>
-                  <CertificateChainAnalyzerTool />
-                </LazyRoute>
-              } />
-              <Route path="certificate-chain-analyzer/:domain" element={
-                <LazyRoute>
-                  <CertificateChainAnalyzerTool />
                 </LazyRoute>
               } />
 

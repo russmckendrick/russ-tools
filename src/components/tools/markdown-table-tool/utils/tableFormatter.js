@@ -31,11 +31,12 @@ export const formatMarkdownTable = (data, alignments = [], hasHeader = true) => 
       }
       
       switch (alignment) {
-        case 'center':
+        case 'center': {
           const totalPadding = width - content.length;
           const leftPadding = Math.floor(totalPadding / 2);
           const rightPadding = totalPadding - leftPadding;
           return ` ${' '.repeat(leftPadding)}${content}${' '.repeat(rightPadding)} `;
+        }
         case 'right':
           return ` ${content.padStart(width)} `;
         default: // left

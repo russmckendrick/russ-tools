@@ -18,6 +18,7 @@ import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIc
 import SSLCheckerIcon from "@/components/tools/ssl-checker/SSLCheckerIcon"
 import CronIcon from "@/components/tools/cron/CronIcon"
 import NetworkDesignerIcon from "@/components/tools/network-designer/NetworkDesignerIcon"
+import MarkdownTableIcon from "@/components/tools/markdown-table-tool/MarkdownTableIcon"
 import { FileText, Home, Trash2 } from "lucide-react"
 
 // Map string names in toolsConfig to actual components
@@ -42,6 +43,7 @@ const iconByKey = {
   SSLCheckerIcon: SSLCheckerIcon,
   CronIcon: CronIcon,
   NetworkDesignerIcon: NetworkDesignerIcon,
+  MarkdownTableIcon: MarkdownTableIcon,
 }
 
 // Flat list of tools from config

@@ -72,11 +72,11 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
         <table className="w-full border-collapse">
           {headerRow && (
             <thead>
-              <tr className="bg-gray-50 dark:bg-gray-800">
+              <tr className="bg-muted/50">
                 {parseRow(headerRow).map((cell, index) => (
                   <th
                     key={index}
-                    className={`border border-gray-200 dark:border-gray-700 p-3 font-medium ${
+                    className={`border border-border p-3 font-medium ${
                       alignments[index] === 'center' ? 'text-center' :
                       alignments[index] === 'right' ? 'text-right' : 'text-left'
                     }`}
@@ -89,11 +89,11 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
           )}
           <tbody>
             {dataRows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+              <tr key={rowIndex} className="hover:bg-muted/30">
                 {parseRow(row).map((cell, cellIndex) => (
                   <td
                     key={cellIndex}
-                    className={`border border-gray-200 dark:border-gray-700 p-3 ${
+                    className={`border border-border p-3 ${
                       alignments[cellIndex] === 'center' ? 'text-center' :
                       alignments[cellIndex] === 'right' ? 'text-right' : 'text-left'
                     }`}
@@ -252,7 +252,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
               {renderMarkdownTable(markdown)}
               
               {/* Mobile Preview Note */}
-              <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
+              <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
                 <div className="flex items-start space-x-2">
                   <IconInfoCircle className="w-4 h-4 mt-0.5" />
                   <div>
@@ -263,7 +263,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <IconTable className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>No table data to preview</p>
               <p className="text-sm">Add some content to your table to see the preview</p>
@@ -279,13 +279,13 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
         </CardHeader>
         <CardContent>
           {markdown ? (
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+            <div className="bg-muted/30 rounded-lg p-4">
               <pre className="text-sm font-mono whitespace-pre-wrap break-all">
                 {markdown}
               </pre>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <IconFileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>No markdown generated</p>
             </div>
