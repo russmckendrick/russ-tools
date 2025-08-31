@@ -155,11 +155,10 @@ const DNSLookupShadcn = () => {
 
       console.log(`🔍 Performing DNS lookup for: ${cleanDomain} (${recordTypeToUse})`);
 
-      const dnsConfig = getApiEndpoint('dns');
+      const dnsConfig = getApiEndpoint('dns', providerToUse);
       const apiUrl = buildApiUrl(dnsConfig.url, {
         name: cleanDomain,
-        type: recordTypeToUse,
-        provider: providerToUse
+        type: recordTypeToUse
       });
 
       const response = await apiFetch(apiUrl, {
