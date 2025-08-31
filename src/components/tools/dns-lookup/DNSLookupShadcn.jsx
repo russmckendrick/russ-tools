@@ -161,11 +161,18 @@ const DNSLookupShadcn = () => {
         type: recordTypeToUse
       });
 
+      const fetchHeaders = {
+        ...dnsConfig.headers,
+        'Accept': 'application/dns-json'
+      };
+
+      // Cloudflare DNS requires specific headers
+      if (providerToUse === 'cloudflare') {
+        fetchHeaders['Accept'] = 'application/dns-json';
+      }
+
       const response = await apiFetch(apiUrl, {
-        headers: {
-          ...dnsConfig.headers,
-          'Accept': 'application/json'
-        }
+        headers: fetchHeaders
       });
 
       if (!response.ok) {
