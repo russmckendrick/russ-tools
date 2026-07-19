@@ -18,33 +18,39 @@ Two rules:
 
 ## Open — captured as KNOWN-BUG, not yet fixed
 
-### `cidrOptions` ignores gap alignment
+### `cidrOptions` ignores gap alignment — fixed in the extracted lib, lands at the component port
 
 | | |
 |---|---|
-| **Where** | `NetworkDesignerShadcn.jsx`, `SubnetForm.cidrOptions` |
-| **Pinned by** | not yet — owed by the Phase 5 allocator suite |
-| **Fix due** | Phase 5, network-designer port |
+| **Where** | was `NetworkDesignerShadcn.jsx` `SubnetForm.cidrOptions`; fix in `src/tools/network-designer/lib/allocator.js` |
+| **Pinned by** | `src/tools/network-designer/lib/allocator.test.js` (§A.6) |
+| **Fix due** | lands for users when the component wires onto `lib/allocator` |
 
-Computes `32 - Math.floor(Math.log2(largestGapSize))`, sizing the offered
-prefix lengths against a gap's **length** while ignoring its **alignment**. A
-128-address gap starting at `.64` cannot hold a `/25`, but `/25` is still
-offered; picking it then fails with "No available space for this subnet size."
+The inline copy computes `32 - Math.floor(Math.log2(largestGapSize))`, sizing
+the offered prefix lengths against a gap's **length** while ignoring its
+**alignment**. A 128-address gap starting at `.64` cannot hold a `/25`, but
+`/25` is still offered; picking it then fails with "No available space for
+this subnet size."
 
-Capture the current (wrong) option list first, then fix by computing the
-largest *aligned* block per gap. See [Deferred test
-coverage](plans/redesign-plan.md#deferred-test-coverage--the-two-missing-suites) §A.
+`availablePrefixLengths` in the extracted allocator computes the largest
+*aligned* block per gap (§A.6 pins the exact scenario, and the invariant that
+every offered size must allocate). The component still runs its inline copy;
+this entry moves to *Landed* when the port switches it over.
 
-### Trailing-gap measurement is off by one against middle gaps
+### ~~Trailing-gap measurement is off by one against middle gaps~~ — investigated: not a bug
 
 | | |
 |---|---|
 | **Where** | `NetworkDesignerShadcn.jsx`, gap measurement |
-| **Pinned by** | not yet — owed by the Phase 5 allocator suite |
-| **Fix due** | Phase 5, network-designer port |
+| **Pinned by** | `src/tools/network-designer/lib/allocator.test.js` (§A.7) |
 
-Middle gaps use `next.start - prev.end - 1`; the trailing gap uses
-`parentEnd - lastEnd`, with no `- 1`. Pin both, then reconcile.
+The plan flagged `next.start - prev.end - 1` (middle) vs `parentEnd - lastEnd`
+(trailing) as a suspected off-by-one. Measured inclusively they are **both
+correct address counts** — free middle addresses are `[end+1, start-1]`
+(count `start - end - 1`) and trailing are `[end+1, parentEnd]` (count
+`parentEnd - end`). The formulas look inconsistent and are not. §A.7 pins the
+reconciled single implementation to equal-sized middle and trailing gaps
+offering identical sizes.
 
 ---
 

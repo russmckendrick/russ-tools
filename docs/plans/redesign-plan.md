@@ -1349,3 +1349,74 @@ tools live in `src/tools/`**. Phase 4 complete.
 
 **Next: Phase 5** — data-converter, azure-naming, azure-kql, then
 network-designer last (allocator extraction + §A suite first).
+
+### 2026-07-19 — Session 7 (continued): Phase 5 — three heavy tools, and §A paid
+
+**Model:** Fable 5. **Branch:** `redesign/phase-0`. Four commits.
+
+**data-converter.** The keystroke costs are gone: validate-on-type is
+debounced (300 ms) and the auto-convert path records no history — only the
+Convert button does, so the full history array stops being rewritten to
+localStorage per character. Verified in the browser: typing auto-converts
+with zero history writes; Convert records exactly one. The ~450 lines of
+suggestion prose moved out of `validation.js` into `lib/errorSuggestions.js`
+**verbatim** — the conditions and their ordering are behaviour under
+`validation.test.js`, so they moved as blocks rather than being reshaped into
+a cleverer engine (769 → 512 + 298 lines). Storage under
+`rt:data-converter:*`, legacy keys read forward; the home page's saved-data
+card prefers the new keys.
+
+**azure-naming.** The port's whole point, done and proven in the browser:
+the provider mounts inside the island, App.jsx loses the wrapper, and
+`/azure-naming` fetches `azure-name-regions.tf` while `/base64` does not —
+the root-mount bug is unrepresentable. Share moved onto `core/`'s codec +
+clipboard (same wire format). Rules engine and CAF data untouched under
+their Phase 0 tests.
+
+**azure-kql.** Both owed fixes landed, ledgered, and pinned by a new suite:
+the `FILTER_PRIORITY` case mismatch (camelCase table, PascalCase fields —
+every lookup missed, ordering inert) is fixed with a first-letter
+normalisation, and custom templates round-trip — saved templates appear in
+their service's picker as category "Custom", load, and generate. Custom
+templates persist as `rt:azure-kql:custom-templates` (legacy key read
+forward); the zustand store was already `rt:azure-kql:store`. The `?config`
+share param deliberately stays uncompressed btoa — that is this tool's own
+existing wire format.
+
+**network-designer: §A is paid; the component port is next session's work.**
+`src/tools/network-designer/lib/allocator.js` + a 16-test suite covering all
+eight §A cases. Three findings worth recording:
+
+1. **The differential test passes.** The two inline copies share the same
+   first-fit core; their divergences (safety counter, redundant `contains`
+   checks) cannot change placements. The plan expected this test to fail —
+   the honest outcome is agreement, now proven rather than assumed.
+2. **The suspected middle-vs-trailing off-by-one is not a bug.** Measured
+   inclusively, `next.start - prev.end - 1` and `parentEnd - lastEnd` are
+   both correct counts. §A.7 pins the reconciled implementation;
+   BEHAVIOR_CHANGES strikes the entry with the reasoning.
+3. **The aligned-block bug is real and fixed in the lib** —
+   `availablePrefixLengths` computes the largest *aligned* block per gap
+   (§A.6 pins the plan's exact `/25`-offered-then-fails scenario, plus the
+   invariant that every offered size must allocate). The candidate arrays are
+   gone too: the scan jumps past blocking ranges, and §A.8 proves twenty
+   `/30` allocations in a `/8` complete in milliseconds where the old code
+   built a ~4M-entry array per allocation. **The component still runs its
+   inline copies** — the ledger entry stays Open until the port wires it up.
+
+**What remains for network-designer (deliberately not started):** split the
+1,065-line monolith onto `lib/allocator`, stable subnet ids, hex colours with
+the share-URL shape-upgrade for `{name,index}` payloads + fixtures (contract
+#2), @dnd-kit unchanged — and the four-slot/nine-key storage migration,
+which the plan says to write **against a real production localStorage
+export**. That export has to come from the owner; synthetic fixtures can
+cover the shapes, but the plan's bar is real data.
+
+**State at session end:** `pnpm test` **421 / 28 files** · `pnpm lint` 0
+errors, 14 warnings · both builds green · **fourteen of fifteen tools live in
+`src/tools/`**; `src/components/tools/` holds only network-designer.
+
+**For the next session:** the network-designer component port (above), then
+the Phase 2 closers that were always the owner's call — the Pages preview
+deploy + Playwright matrix — and the `ALLOWED_ORIGINS` decision for the
+shell's dev origin.
