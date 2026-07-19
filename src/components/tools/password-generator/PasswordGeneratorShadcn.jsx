@@ -30,6 +30,26 @@ import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';
 import toolsConfig from '../../../utils/toolsConfig.json';
 
+const secureRandomInt = (max) => {
+  const range = 0x100000000; // 2^32
+  const limit = range - (range % max);
+  const buffer = new Uint32Array(1);
+  let value;
+  do {
+    crypto.getRandomValues(buffer);
+    value = buffer[0];
+  } while (value >= limit);
+  return value % max;
+};
+
+const secureShuffle = (chars) => {
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = secureRandomInt(i + 1);
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  return chars;
+};
+
 const PasswordGeneratorShadcn = () => {
   // Get tool configuration for SEO
   const toolConfig = toolsConfig.find(tool => tool.id === 'password-generator');
@@ -248,10 +268,10 @@ const PasswordGeneratorShadcn = () => {
     
     // Ensure at least one character from each selected type
     const requiredChars = [];
-    if (includeUppercase) requiredChars.push(UPPERCASE[Math.floor(Math.random() * UPPERCASE.length)]);
-    if (includeLowercase) requiredChars.push(LOWERCASE[Math.floor(Math.random() * LOWERCASE.length)]);
-    if (includeNumbers) requiredChars.push(NUMBERS[Math.floor(Math.random() * NUMBERS.length)]);
-    if (includeSymbols) requiredChars.push(SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]);
+    if (includeUppercase) requiredChars.push(UPPERCASE[secureRandomInt(UPPERCASE.length)]);
+    if (includeLowercase) requiredChars.push(LOWERCASE[secureRandomInt(LOWERCASE.length)]);
+    if (includeNumbers) requiredChars.push(NUMBERS[secureRandomInt(NUMBERS.length)]);
+    if (includeSymbols) requiredChars.push(SYMBOLS[secureRandomInt(SYMBOLS.length)]);
 
     // Add required characters
     for (let i = 0; i < Math.min(requiredChars.length, currentLength); i++) {
@@ -260,11 +280,11 @@ const PasswordGeneratorShadcn = () => {
 
     // Fill the rest with random characters
     for (let i = password.length; i < currentLength; i++) {
-      password += charset[Math.floor(Math.random() * charset.length)];
+      password += charset[secureRandomInt(charset.length)];
     }
 
     // Shuffle the password to avoid predictable patterns
-    return password.split('').sort(() => Math.random() - 0.5).join('');
+    return secureShuffle(password.split('')).join('');
   }, [currentLength, includeUppercase, includeLowercase, includeNumbers, includeSymbols, excludeSimilar, excludeAmbiguous]);
 
   // Generate multiple passwords
