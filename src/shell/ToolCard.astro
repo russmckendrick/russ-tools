@@ -11,7 +11,7 @@ const { tool } = Astro.props;
 
 <a class="rt-card" href={tool.path} style={`--cat: var(--color-category-${tool.category})`}>
   <span class="rt-card-top">
-    <ToolIcon icon={tool.icon} />
+    <ToolIcon icon={tool.icon} size={25} />
     <span class="rt-card-name">{tool.title}</span>
   </span>
   <p>{tool.shortDescription}</p>

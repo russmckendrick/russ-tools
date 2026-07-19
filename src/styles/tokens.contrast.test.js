@@ -66,10 +66,25 @@ function resolve(tokens) {
 
 // Dark is the default theme: the generated @theme block plus globals.css's
 // aliases is already the dark theme. Light is an override on top of it.
-const base = { ...blockFrom(generated, '@theme {'), ...blockFrom(css, '@theme {') };
+const base = { ...blockFrom(generated, '@theme static {'), ...blockFrom(css, '@theme {') };
 const dark = resolve(base);
 const light = resolve({ ...base, ...blockFrom(css, '.light {') });
 const lightMedia = resolve({ ...base, ...blockFrom(css, ':root:not(.dark) {') });
+const PALETTES = [
+  ['Solarized', 'solarized'],
+  ['Catppuccin', 'catppuccin'],
+  ['Dracula', 'dracula'],
+  ['Nord', 'nord'],
+  ['Tokyo Night', 'tokyo-night'],
+  ['GitHub', 'github'],
+];
+
+const themes = PALETTES.flatMap(([label, id]) => {
+  return [
+    [`${label} light`, resolve({ ...base, ...blockFrom(css, `:root.light[data-palette="${id}"] {`) })],
+    [`${label} dark`, resolve({ ...base, ...blockFrom(css, `:root[data-palette="${id}"] {`) })],
+  ];
+});
 
 const channel = (v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
 const luminance = (hex) => {
@@ -149,10 +164,7 @@ for (const c of CATEGORIES) {
   );
 }
 
-describe.each([
-  ['light', light],
-  ['dark', dark],
-])('%s theme contrast', (mode, tokens) => {
+describe.each(themes)('%s theme contrast', (mode, tokens) => {
   it.each(PAIRS)('%s on %s >= %s:1 (%s)', (fg, bg, min) => {
     expect(tokens[fg], `--color-${fg} does not resolve in the ${mode} theme`).toBeDefined();
     expect(tokens[bg], `--color-${bg} does not resolve in the ${mode} theme`).toBeDefined();
@@ -187,6 +199,9 @@ describe('token layer integrity', () => {
     // light theme, not part of it.
     const names = (t) => Object.keys(t).filter((k) => !k.endsWith('-light')).sort();
     expect(names(light)).toEqual(names(dark));
+    for (let index = 0; index < themes.length; index += 2) {
+      expect(names(themes[index][1])).toEqual(names(themes[index + 1][1]));
+    }
   });
 
   it('keeps the prefers-color-scheme fallback in sync with .light', () => {
@@ -196,11 +211,21 @@ describe('token layer integrity', () => {
     expect(lightMedia).toEqual(light);
   });
 
-  it('leaves no trace of the abandoned Solarized palette', () => {
-    // Phase 1's rejected direction. Its ramp was exposed as --color-solar-*
-    // and referenced from a handful of utilities; both are gone.
-    expect(css).not.toMatch(/solar-/);
-    expect(css).not.toMatch(/#002b36|#fdf6e3|#eee8d5|#073642/i);
+  it('exposes the complete official Solarized ramp', () => {
+    const ramp = Object.keys(base).filter((key) => key.startsWith('solar-'));
+    expect(ramp).toHaveLength(16);
+    expect(base['solar-base03']).toBe('#002b36');
+    expect(base['solar-base3']).toBe('#fdf6e3');
+    expect(base['solar-blue']).toBe('#268bd2');
+  });
+
+  it('emits the complete token contract for runtime palette selection', () => {
+    expect(generated).toMatch(/@theme\s+static\s*\{/);
+    for (const [, tokens] of themes) {
+      for (const category of CATEGORIES) {
+        expect(tokens[`category-${category}`]).toBeDefined();
+      }
+    }
   });
 
   it('does not reintroduce a remote font import', () => {

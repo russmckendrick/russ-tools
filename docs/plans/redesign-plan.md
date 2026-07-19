@@ -1638,3 +1638,73 @@ the ready point.** The sequence, for whichever session runs it:
 
 Then Phase 6 demolition, with the react-router/`useDeepLinkParam` question
 asked before `src/bridge/` moves.
+
+### 2026-07-19 — Session 9: pre-launch visual pass
+
+The post-redesign polish pass is complete, driven from `DESIGN.md` rather than
+per-page overrides.
+
+- **Six selectable palette families, twelve audited themes:** Solarized
+  Dark/Light, Catppuccin Mocha/Latte, Dracula/Alucard, Nord Polar Night/Snow
+  Storm, Tokyo Night Night/Day and GitHub Dark/Light. Graphite was built during
+  the pass and then removed at the owner's request. Catppuccin is the default;
+  a stored removed/invalid palette falls back to Catppuccin without breaking
+  the independent `vite-ui-theme` mode preference. Solarized keeps the official
+  sixteen-colour ramp, while every rendered semantic value clears the existing
+  text and control-boundary floors. The contrast matrix now runs 694 assertions
+  across all twelve combinations.
+- **The theme switcher is now a real menu:** a terminal icon opens an accessible
+  radio menu of six miniature terminal previews, each drawn from generated
+  palette tokens and labelled with its dark/light variant names. Selection,
+  outside click, Escape, arrow keys, Home/End, focus restoration, storage and
+  cross-tab storage updates are wired in plain shell JavaScript. The adjacent
+  system/light/dark control remains independent.
+- **Header and footer were rebuilt.** The header follows the owner's russ.cloud
+  reference: a quiet brand at left and one icon toolbar at right. Toolbar icons
+  reveal their text labels on hover and keyboard focus; the Source action uses
+  the supplied GitHub silhouette. The footer stays compact and factual — mark,
+  existing client-side/privacy properties and navigation only.
+- **The site mark is the supplied toolbox silhouette.** `SiteMark.astro` uses
+  `currentColor`, so every palette controls it automatically; the standalone
+  SVG adapts to light/dark preference and the web manifest now uses the
+  Catppuccin Mocha ground. The rejected `r.t` ligature was removed completely.
+- **All fifteen tool icons were redrawn at their one shared source**
+  (`src/shell/icons.mjs`), enlarged in cards and tool headers, and freed from
+  the tinted tiles/borders visible in the review screenshot. Both Astro and
+  React render the same 1.75px geometry. No hero copy, capability claims,
+  slogans or other promotional content was added.
+- **Motion is shared CSS, not a new runtime dependency:** inputs ease focus and
+  boundary changes, buttons compress on press, tabs/results/alerts/cards and
+  table rows enter over 180–240ms, and progress updates ease. The existing
+  reduced-motion override disables the whole vocabulary.
+- **A token export bug surfaced and was fixed:** generated Tailwind tokens now
+  use `@theme static`, preventing runtime-selected category and palette custom
+  properties from being pruned when their names do not appear literally in a
+  utility class.
+
+Final gates: `pnpm test` **1008 / 30** · palette contrast **694** ·
+`pnpm test:e2e` **19/19** · `pnpm lint` 0 errors, 13 existing warnings · both
+SPA and Astro production builds green. Browser QA covered all twelve rendered
+palette/mode surfaces, picker mouse/keyboard behaviour, the tool index, a
+representative subnet-calculator input/result flow, the freestanding icons,
+toolbox mark and footer.
+
+**Follow-up — index, mobile menu and saved-data scope.** Azure and Microsoft
+now share one `Microsoft & Azure` presentation section and filter on the index;
+their manifests and per-card category hues remain separate. Tool counts were
+removed from the dividing rules (filter-chip counts remain). Below 720px the
+header toolbar becomes a burger disclosure with full labels, the same
+navigation and appearance controls, independent palette-menu Escape handling,
+and outside-click dismissal. `BaseLayout.astro` was split onto shared
+`HeaderActions` and `AppearanceControls` components while doing this, removing
+the duplicated palette data and inline controller.
+
+`/delete` now means tool data exactly: only manifest-declared storage keys are
+shown, counted and cleared. Appearance preferences and any unrelated origin
+storage are not surfaced under a "Not owned by a tool" section and survive the
+all-tools delete action. Two jsdom tests pin the storage boundary; three new
+Playwright cases pin the merged index/filter, divider rules, mobile disclosure,
+and hidden/preserved preference data.
+
+Follow-up gates: `pnpm test` **1010 / 31** · `pnpm test:e2e` **22/22** ·
+`pnpm lint` 0 errors, 13 existing warnings · both production builds green.

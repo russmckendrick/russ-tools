@@ -55,10 +55,7 @@
      — stepped down in light mode, where 13% is already dark enough to drop
      the hue below 4.5:1 on its own tint. Concrete values, because a tint is
      a mix of two tokens and cannot be an alias. */
-  --color-success-subtle: #1b3129;
-  --color-warning-subtle: #322d1d;
-  --color-info-subtle: #1e2939;
-  --color-danger-subtle: #322327;
+  --color-danger-subtle: var(--color-error-subtle);
 
   /* --- typography ---------------------------------------------------------
      Two families, strictly separated jobs: Inter for prose and UI, JetBrains
@@ -79,6 +76,10 @@
    repointed at its `-light` peer; the aliases above follow automatically
    because they reference rather than copy. */
 @layer theme {
+  :root {
+    color-scheme: dark;
+  }
+
   .light {
     --color-surface: var(--color-surface-light);
     --color-surface-raised: var(--color-surface-raised-light);
@@ -101,10 +102,10 @@
     --color-category-developer: var(--color-category-developer-light);
     --color-category-content: var(--color-category-content-light);
 
-    --color-success-subtle: #ecf5ef;
-    --color-warning-subtle: #faf3ee;
-    --color-info-subtle: #ebf1fd;
-    --color-danger-subtle: #fef6f6;
+    --color-success-subtle: var(--color-success-subtle-light);
+    --color-warning-subtle: var(--color-warning-subtle-light);
+    --color-info-subtle: var(--color-info-subtle-light);
+    --color-danger-subtle: var(--color-error-subtle-light);
 
     color-scheme: light;
   }
@@ -134,17 +135,343 @@
       --color-category-developer: var(--color-category-developer-light);
       --color-category-content: var(--color-category-content-light);
 
-      --color-success-subtle: #ecf5ef;
-      --color-warning-subtle: #faf3ee;
-      --color-info-subtle: #ebf1fd;
-      --color-danger-subtle: #fef6f6;
+      --color-success-subtle: var(--color-success-subtle-light);
+      --color-warning-subtle: var(--color-warning-subtle-light);
+      --color-info-subtle: var(--color-info-subtle-light);
+      --color-danger-subtle: var(--color-error-subtle-light);
 
       color-scheme: light;
     }
   }
 
-  :root {
-    color-scheme: dark;
+  :root[data-palette="solarized"] {
+    --color-surface: var(--color-solarized-surface);
+    --color-surface-raised: var(--color-solarized-surface-raised);
+    --color-surface-inset: var(--color-solarized-surface-inset);
+    --color-outline: var(--color-solarized-outline);
+    --color-outline-strong: var(--color-solarized-outline-strong);
+    --color-on-surface: var(--color-solarized-on-surface);
+    --color-on-surface-muted: var(--color-solarized-on-surface-muted);
+    --color-on-surface-faint: var(--color-solarized-on-surface-faint);
+    --color-primary: var(--color-solarized-primary);
+    --color-on-primary: var(--color-solarized-on-primary);
+    --color-success: var(--color-solarized-success);
+    --color-warning: var(--color-solarized-warning);
+    --color-error: var(--color-solarized-error);
+    --color-info: var(--color-solarized-info);
+    --color-category-network: var(--color-solarized-category-network);
+    --color-category-azure: var(--color-solarized-category-azure);
+    --color-category-microsoft: var(--color-solarized-category-microsoft);
+    --color-category-security: var(--color-solarized-category-security);
+    --color-category-developer: var(--color-solarized-category-developer);
+    --color-category-content: var(--color-solarized-category-content);
+    --color-success-subtle: var(--color-solarized-success-subtle);
+    --color-warning-subtle: var(--color-solarized-warning-subtle);
+    --color-info-subtle: var(--color-solarized-info-subtle);
+    --color-danger-subtle: var(--color-solarized-error-subtle);
+  }
+
+  :root.light[data-palette="solarized"] {
+    --color-surface: var(--color-solarized-surface-light);
+    --color-surface-raised: var(--color-solarized-surface-raised-light);
+    --color-surface-inset: var(--color-solarized-surface-inset-light);
+    --color-outline: var(--color-solarized-outline-light);
+    --color-outline-strong: var(--color-solarized-outline-strong-light);
+    --color-on-surface: var(--color-solarized-on-surface-light);
+    --color-on-surface-muted: var(--color-solarized-on-surface-muted-light);
+    --color-on-surface-faint: var(--color-solarized-on-surface-faint-light);
+    --color-primary: var(--color-solarized-primary-light);
+    --color-on-primary: var(--color-solarized-on-primary-light);
+    --color-success: var(--color-solarized-success-light);
+    --color-warning: var(--color-solarized-warning-light);
+    --color-error: var(--color-solarized-error-light);
+    --color-info: var(--color-solarized-info-light);
+    --color-category-network: var(--color-solarized-category-network-light);
+    --color-category-azure: var(--color-solarized-category-azure-light);
+    --color-category-microsoft: var(--color-solarized-category-microsoft-light);
+    --color-category-security: var(--color-solarized-category-security-light);
+    --color-category-developer: var(--color-solarized-category-developer-light);
+    --color-category-content: var(--color-solarized-category-content-light);
+    --color-success-subtle: var(--color-solarized-success-subtle-light);
+    --color-warning-subtle: var(--color-solarized-warning-subtle-light);
+    --color-info-subtle: var(--color-solarized-info-subtle-light);
+    --color-danger-subtle: var(--color-solarized-error-subtle-light);
+    color-scheme: light;
+  }
+
+  :root[data-palette="catppuccin"] {
+    --color-surface: var(--color-catppuccin-surface);
+    --color-surface-raised: var(--color-catppuccin-surface-raised);
+    --color-surface-inset: var(--color-catppuccin-surface-inset);
+    --color-outline: var(--color-catppuccin-outline);
+    --color-outline-strong: var(--color-catppuccin-outline-strong);
+    --color-on-surface: var(--color-catppuccin-on-surface);
+    --color-on-surface-muted: var(--color-catppuccin-on-surface-muted);
+    --color-on-surface-faint: var(--color-catppuccin-on-surface-faint);
+    --color-primary: var(--color-catppuccin-primary);
+    --color-on-primary: var(--color-catppuccin-on-primary);
+    --color-success: var(--color-catppuccin-success);
+    --color-warning: var(--color-catppuccin-warning);
+    --color-error: var(--color-catppuccin-error);
+    --color-info: var(--color-catppuccin-info);
+    --color-category-network: var(--color-catppuccin-category-network);
+    --color-category-azure: var(--color-catppuccin-category-azure);
+    --color-category-microsoft: var(--color-catppuccin-category-microsoft);
+    --color-category-security: var(--color-catppuccin-category-security);
+    --color-category-developer: var(--color-catppuccin-category-developer);
+    --color-category-content: var(--color-catppuccin-category-content);
+    --color-success-subtle: var(--color-catppuccin-success-subtle);
+    --color-warning-subtle: var(--color-catppuccin-warning-subtle);
+    --color-info-subtle: var(--color-catppuccin-info-subtle);
+    --color-danger-subtle: var(--color-catppuccin-error-subtle);
+  }
+
+  :root.light[data-palette="catppuccin"] {
+    --color-surface: var(--color-catppuccin-surface-light);
+    --color-surface-raised: var(--color-catppuccin-surface-raised-light);
+    --color-surface-inset: var(--color-catppuccin-surface-inset-light);
+    --color-outline: var(--color-catppuccin-outline-light);
+    --color-outline-strong: var(--color-catppuccin-outline-strong-light);
+    --color-on-surface: var(--color-catppuccin-on-surface-light);
+    --color-on-surface-muted: var(--color-catppuccin-on-surface-muted-light);
+    --color-on-surface-faint: var(--color-catppuccin-on-surface-faint-light);
+    --color-primary: var(--color-catppuccin-primary-light);
+    --color-on-primary: var(--color-catppuccin-on-primary-light);
+    --color-success: var(--color-catppuccin-success-light);
+    --color-warning: var(--color-catppuccin-warning-light);
+    --color-error: var(--color-catppuccin-error-light);
+    --color-info: var(--color-catppuccin-info-light);
+    --color-category-network: var(--color-catppuccin-category-network-light);
+    --color-category-azure: var(--color-catppuccin-category-azure-light);
+    --color-category-microsoft: var(--color-catppuccin-category-microsoft-light);
+    --color-category-security: var(--color-catppuccin-category-security-light);
+    --color-category-developer: var(--color-catppuccin-category-developer-light);
+    --color-category-content: var(--color-catppuccin-category-content-light);
+    --color-success-subtle: var(--color-catppuccin-success-subtle-light);
+    --color-warning-subtle: var(--color-catppuccin-warning-subtle-light);
+    --color-info-subtle: var(--color-catppuccin-info-subtle-light);
+    --color-danger-subtle: var(--color-catppuccin-error-subtle-light);
+    color-scheme: light;
+  }
+
+  :root[data-palette="dracula"] {
+    --color-surface: var(--color-dracula-surface);
+    --color-surface-raised: var(--color-dracula-surface-raised);
+    --color-surface-inset: var(--color-dracula-surface-inset);
+    --color-outline: var(--color-dracula-outline);
+    --color-outline-strong: var(--color-dracula-outline-strong);
+    --color-on-surface: var(--color-dracula-on-surface);
+    --color-on-surface-muted: var(--color-dracula-on-surface-muted);
+    --color-on-surface-faint: var(--color-dracula-on-surface-faint);
+    --color-primary: var(--color-dracula-primary);
+    --color-on-primary: var(--color-dracula-on-primary);
+    --color-success: var(--color-dracula-success);
+    --color-warning: var(--color-dracula-warning);
+    --color-error: var(--color-dracula-error);
+    --color-info: var(--color-dracula-info);
+    --color-category-network: var(--color-dracula-category-network);
+    --color-category-azure: var(--color-dracula-category-azure);
+    --color-category-microsoft: var(--color-dracula-category-microsoft);
+    --color-category-security: var(--color-dracula-category-security);
+    --color-category-developer: var(--color-dracula-category-developer);
+    --color-category-content: var(--color-dracula-category-content);
+    --color-success-subtle: var(--color-dracula-success-subtle);
+    --color-warning-subtle: var(--color-dracula-warning-subtle);
+    --color-info-subtle: var(--color-dracula-info-subtle);
+    --color-danger-subtle: var(--color-dracula-error-subtle);
+  }
+
+  :root.light[data-palette="dracula"] {
+    --color-surface: var(--color-dracula-surface-light);
+    --color-surface-raised: var(--color-dracula-surface-raised-light);
+    --color-surface-inset: var(--color-dracula-surface-inset-light);
+    --color-outline: var(--color-dracula-outline-light);
+    --color-outline-strong: var(--color-dracula-outline-strong-light);
+    --color-on-surface: var(--color-dracula-on-surface-light);
+    --color-on-surface-muted: var(--color-dracula-on-surface-muted-light);
+    --color-on-surface-faint: var(--color-dracula-on-surface-faint-light);
+    --color-primary: var(--color-dracula-primary-light);
+    --color-on-primary: var(--color-dracula-on-primary-light);
+    --color-success: var(--color-dracula-success-light);
+    --color-warning: var(--color-dracula-warning-light);
+    --color-error: var(--color-dracula-error-light);
+    --color-info: var(--color-dracula-info-light);
+    --color-category-network: var(--color-dracula-category-network-light);
+    --color-category-azure: var(--color-dracula-category-azure-light);
+    --color-category-microsoft: var(--color-dracula-category-microsoft-light);
+    --color-category-security: var(--color-dracula-category-security-light);
+    --color-category-developer: var(--color-dracula-category-developer-light);
+    --color-category-content: var(--color-dracula-category-content-light);
+    --color-success-subtle: var(--color-dracula-success-subtle-light);
+    --color-warning-subtle: var(--color-dracula-warning-subtle-light);
+    --color-info-subtle: var(--color-dracula-info-subtle-light);
+    --color-danger-subtle: var(--color-dracula-error-subtle-light);
+    color-scheme: light;
+  }
+
+  :root[data-palette="nord"] {
+    --color-surface: var(--color-nord-surface);
+    --color-surface-raised: var(--color-nord-surface-raised);
+    --color-surface-inset: var(--color-nord-surface-inset);
+    --color-outline: var(--color-nord-outline);
+    --color-outline-strong: var(--color-nord-outline-strong);
+    --color-on-surface: var(--color-nord-on-surface);
+    --color-on-surface-muted: var(--color-nord-on-surface-muted);
+    --color-on-surface-faint: var(--color-nord-on-surface-faint);
+    --color-primary: var(--color-nord-primary);
+    --color-on-primary: var(--color-nord-on-primary);
+    --color-success: var(--color-nord-success);
+    --color-warning: var(--color-nord-warning);
+    --color-error: var(--color-nord-error);
+    --color-info: var(--color-nord-info);
+    --color-category-network: var(--color-nord-category-network);
+    --color-category-azure: var(--color-nord-category-azure);
+    --color-category-microsoft: var(--color-nord-category-microsoft);
+    --color-category-security: var(--color-nord-category-security);
+    --color-category-developer: var(--color-nord-category-developer);
+    --color-category-content: var(--color-nord-category-content);
+    --color-success-subtle: var(--color-nord-success-subtle);
+    --color-warning-subtle: var(--color-nord-warning-subtle);
+    --color-info-subtle: var(--color-nord-info-subtle);
+    --color-danger-subtle: var(--color-nord-error-subtle);
+  }
+
+  :root.light[data-palette="nord"] {
+    --color-surface: var(--color-nord-surface-light);
+    --color-surface-raised: var(--color-nord-surface-raised-light);
+    --color-surface-inset: var(--color-nord-surface-inset-light);
+    --color-outline: var(--color-nord-outline-light);
+    --color-outline-strong: var(--color-nord-outline-strong-light);
+    --color-on-surface: var(--color-nord-on-surface-light);
+    --color-on-surface-muted: var(--color-nord-on-surface-muted-light);
+    --color-on-surface-faint: var(--color-nord-on-surface-faint-light);
+    --color-primary: var(--color-nord-primary-light);
+    --color-on-primary: var(--color-nord-on-primary-light);
+    --color-success: var(--color-nord-success-light);
+    --color-warning: var(--color-nord-warning-light);
+    --color-error: var(--color-nord-error-light);
+    --color-info: var(--color-nord-info-light);
+    --color-category-network: var(--color-nord-category-network-light);
+    --color-category-azure: var(--color-nord-category-azure-light);
+    --color-category-microsoft: var(--color-nord-category-microsoft-light);
+    --color-category-security: var(--color-nord-category-security-light);
+    --color-category-developer: var(--color-nord-category-developer-light);
+    --color-category-content: var(--color-nord-category-content-light);
+    --color-success-subtle: var(--color-nord-success-subtle-light);
+    --color-warning-subtle: var(--color-nord-warning-subtle-light);
+    --color-info-subtle: var(--color-nord-info-subtle-light);
+    --color-danger-subtle: var(--color-nord-error-subtle-light);
+    color-scheme: light;
+  }
+
+  :root[data-palette="tokyo-night"] {
+    --color-surface: var(--color-tokyo-night-surface);
+    --color-surface-raised: var(--color-tokyo-night-surface-raised);
+    --color-surface-inset: var(--color-tokyo-night-surface-inset);
+    --color-outline: var(--color-tokyo-night-outline);
+    --color-outline-strong: var(--color-tokyo-night-outline-strong);
+    --color-on-surface: var(--color-tokyo-night-on-surface);
+    --color-on-surface-muted: var(--color-tokyo-night-on-surface-muted);
+    --color-on-surface-faint: var(--color-tokyo-night-on-surface-faint);
+    --color-primary: var(--color-tokyo-night-primary);
+    --color-on-primary: var(--color-tokyo-night-on-primary);
+    --color-success: var(--color-tokyo-night-success);
+    --color-warning: var(--color-tokyo-night-warning);
+    --color-error: var(--color-tokyo-night-error);
+    --color-info: var(--color-tokyo-night-info);
+    --color-category-network: var(--color-tokyo-night-category-network);
+    --color-category-azure: var(--color-tokyo-night-category-azure);
+    --color-category-microsoft: var(--color-tokyo-night-category-microsoft);
+    --color-category-security: var(--color-tokyo-night-category-security);
+    --color-category-developer: var(--color-tokyo-night-category-developer);
+    --color-category-content: var(--color-tokyo-night-category-content);
+    --color-success-subtle: var(--color-tokyo-night-success-subtle);
+    --color-warning-subtle: var(--color-tokyo-night-warning-subtle);
+    --color-info-subtle: var(--color-tokyo-night-info-subtle);
+    --color-danger-subtle: var(--color-tokyo-night-error-subtle);
+  }
+
+  :root.light[data-palette="tokyo-night"] {
+    --color-surface: var(--color-tokyo-night-surface-light);
+    --color-surface-raised: var(--color-tokyo-night-surface-raised-light);
+    --color-surface-inset: var(--color-tokyo-night-surface-inset-light);
+    --color-outline: var(--color-tokyo-night-outline-light);
+    --color-outline-strong: var(--color-tokyo-night-outline-strong-light);
+    --color-on-surface: var(--color-tokyo-night-on-surface-light);
+    --color-on-surface-muted: var(--color-tokyo-night-on-surface-muted-light);
+    --color-on-surface-faint: var(--color-tokyo-night-on-surface-faint-light);
+    --color-primary: var(--color-tokyo-night-primary-light);
+    --color-on-primary: var(--color-tokyo-night-on-primary-light);
+    --color-success: var(--color-tokyo-night-success-light);
+    --color-warning: var(--color-tokyo-night-warning-light);
+    --color-error: var(--color-tokyo-night-error-light);
+    --color-info: var(--color-tokyo-night-info-light);
+    --color-category-network: var(--color-tokyo-night-category-network-light);
+    --color-category-azure: var(--color-tokyo-night-category-azure-light);
+    --color-category-microsoft: var(--color-tokyo-night-category-microsoft-light);
+    --color-category-security: var(--color-tokyo-night-category-security-light);
+    --color-category-developer: var(--color-tokyo-night-category-developer-light);
+    --color-category-content: var(--color-tokyo-night-category-content-light);
+    --color-success-subtle: var(--color-tokyo-night-success-subtle-light);
+    --color-warning-subtle: var(--color-tokyo-night-warning-subtle-light);
+    --color-info-subtle: var(--color-tokyo-night-info-subtle-light);
+    --color-danger-subtle: var(--color-tokyo-night-error-subtle-light);
+    color-scheme: light;
+  }
+
+  :root[data-palette="github"] {
+    --color-surface: var(--color-github-surface);
+    --color-surface-raised: var(--color-github-surface-raised);
+    --color-surface-inset: var(--color-github-surface-inset);
+    --color-outline: var(--color-github-outline);
+    --color-outline-strong: var(--color-github-outline-strong);
+    --color-on-surface: var(--color-github-on-surface);
+    --color-on-surface-muted: var(--color-github-on-surface-muted);
+    --color-on-surface-faint: var(--color-github-on-surface-faint);
+    --color-primary: var(--color-github-primary);
+    --color-on-primary: var(--color-github-on-primary);
+    --color-success: var(--color-github-success);
+    --color-warning: var(--color-github-warning);
+    --color-error: var(--color-github-error);
+    --color-info: var(--color-github-info);
+    --color-category-network: var(--color-github-category-network);
+    --color-category-azure: var(--color-github-category-azure);
+    --color-category-microsoft: var(--color-github-category-microsoft);
+    --color-category-security: var(--color-github-category-security);
+    --color-category-developer: var(--color-github-category-developer);
+    --color-category-content: var(--color-github-category-content);
+    --color-success-subtle: var(--color-github-success-subtle);
+    --color-warning-subtle: var(--color-github-warning-subtle);
+    --color-info-subtle: var(--color-github-info-subtle);
+    --color-danger-subtle: var(--color-github-error-subtle);
+  }
+
+  :root.light[data-palette="github"] {
+    --color-surface: var(--color-github-surface-light);
+    --color-surface-raised: var(--color-github-surface-raised-light);
+    --color-surface-inset: var(--color-github-surface-inset-light);
+    --color-outline: var(--color-github-outline-light);
+    --color-outline-strong: var(--color-github-outline-strong-light);
+    --color-on-surface: var(--color-github-on-surface-light);
+    --color-on-surface-muted: var(--color-github-on-surface-muted-light);
+    --color-on-surface-faint: var(--color-github-on-surface-faint-light);
+    --color-primary: var(--color-github-primary-light);
+    --color-on-primary: var(--color-github-on-primary-light);
+    --color-success: var(--color-github-success-light);
+    --color-warning: var(--color-github-warning-light);
+    --color-error: var(--color-github-error-light);
+    --color-info: var(--color-github-info-light);
+    --color-category-network: var(--color-github-category-network-light);
+    --color-category-azure: var(--color-github-category-azure-light);
+    --color-category-microsoft: var(--color-github-category-microsoft-light);
+    --color-category-security: var(--color-github-category-security-light);
+    --color-category-developer: var(--color-github-category-developer-light);
+    --color-category-content: var(--color-github-category-content-light);
+    --color-success-subtle: var(--color-github-success-subtle-light);
+    --color-warning-subtle: var(--color-github-warning-subtle-light);
+    --color-info-subtle: var(--color-github-info-subtle-light);
+    --color-danger-subtle: var(--color-github-error-subtle-light);
+    color-scheme: light;
   }
 }
 
@@ -173,6 +500,7 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.006em;
+    transition: background-color 240ms ease, color 180ms ease;
   }
 
   /* Headings run tight — this is what gives the interface its engineered
@@ -219,6 +547,54 @@
   ::selection {
     background: var(--color-info-subtle);
     color: var(--color-info);
+  }
+}
+
+@keyframes rt-surface-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rt-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer components {
+  .rt-enter-surface {
+    animation: rt-surface-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .rt-enter-content[data-state="active"] {
+    animation: rt-content-enter 180ms ease-out both;
+  }
+
+  .rt-enter-row {
+    animation: rt-content-enter 180ms ease-out both;
+  }
+
+  .rt-enter-row:nth-child(2) {
+    animation-delay: 24ms;
+  }
+
+  .rt-enter-row:nth-child(3) {
+    animation-delay: 48ms;
+  }
+
+  .rt-enter-row:nth-child(n + 4) {
+    animation-delay: 72ms;
   }
 }
 

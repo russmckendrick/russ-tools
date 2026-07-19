@@ -6,8 +6,7 @@
  * tool hand-rolls its own header, its own SEO ritual and its own idea of
  * hierarchy, and the crawler receives an empty div with no h1. Here the tool
  * supplies a manifest and gets: a real prerendered h1, its description,
- * schema.org markup, its category hue carried through the breadcrumb and the
- * icon tile.
+ * schema.org markup, its category hue carried through the breadcrumb and icon.
  *
  * A tool renders into one slot, full width, and composes its own body. It
  * cannot reach the head, cannot set its own colour, and cannot invent its own
@@ -60,7 +59,7 @@ const schema = {
       </nav>
 
       <div class="rt-tool-id">
-        <ToolIcon icon={tool.icon} size={22} />
+        <ToolIcon icon={tool.icon} size={34} />
         <h1>{tool.title}</h1>
       </div>
 

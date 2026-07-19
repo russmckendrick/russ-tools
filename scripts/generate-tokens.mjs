@@ -47,6 +47,8 @@ const header = `/* =============================================================
 // property prefix changes, to one Tailwind does not treat as a scale.
 let namespaced = theme.replace(/--spacing-/g, '--rt-space-');
 
+namespaced = namespaced.replace(/^@theme\s*\{/, '@theme static {');
+
 // Fold each typography scale into one Tailwind `text-*` utility, and delete
 // the per-scale font-family tokens.
 //

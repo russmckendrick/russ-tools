@@ -20,6 +20,7 @@ const Card = React.forwardRef(({ className, ...props }, ref) => (
     className={cn(
       "rounded-lg border border-outline bg-surface-raised text-on-surface",
       "shadow-[inset_0_1px_0_rgba(255,255,255,.05)]",
+      "rt-enter-surface transition-[border-color,background-color,box-shadow] duration-200 ease-out",
       className
     )}
     {...props}

@@ -1,7 +1,7 @@
 /**
  * The six categories. A tool's `category` selects its hue everywhere it
- * appears — icon tile, group rule, hover glow, primary button, record type
- * column — so a tool never picks its own colour. See DESIGN.md, "Colors".
+ * appears — tool icon, group rule, hover glow and record type column — so a
+ * tool never picks its own colour. See DESIGN.md, "Colors".
  *
  * The order here is the order the index renders in.
  */

@@ -7,8 +7,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../shell/ToolCard.astro';
 import { TOOLS, groupedByCategory } from '../tools/registry.mjs';
 
-const groups = groupedByCategory();
-const pad = (n) => String(n).padStart(2, '0');
+const categoryGroups = groupedByCategory();
+const azure = categoryGroups.find((group) => group.id === 'azure');
+const microsoft = categoryGroups.find((group) => group.id === 'microsoft');
+const groups = categoryGroups.flatMap((group) => {
+  if (group.id === 'microsoft') return [];
+  if (group.id !== 'azure') {
+    return [{ ...group, accent: `var(--color-category-${group.id})` }];
+  }
+
+  return [
+    {
+      id: 'microsoft-azure',
+      label: 'Microsoft & Azure',
+      accent: 'var(--color-primary)',
+      tools: [...azure.tools, ...microsoft.tools].sort((a, b) => a.title.localeCompare(b.title)),
+    },
+  ];
+});
 ---
 
 <BaseLayout
@@ -36,7 +52,7 @@ const pad = (n) => String(n).padStart(2, '0');
           type="button"
           data-filter={g.id}
           aria-pressed="false"
-          style={`--cat: var(--color-category-${g.id})`}
+          style={`--cat: ${g.accent}`}
         >
           <i aria-hidden="true" />
           {g.label} <em>{g.tools.length}</em>
@@ -48,11 +64,10 @@ const pad = (n) => String(n).padStart(2, '0');
   <div class="rt-board" id="board">
     {
       groups.map((g) => (
-        <section class="rt-group" data-category={g.id} style={`--cat: var(--color-category-${g.id})`}>
+        <section class="rt-group" data-category={g.id} style={`--cat: ${g.accent}`}>
           <div class="rt-group-head">
             <b>{g.label}</b>
             <hr />
-            <em>{pad(g.tools.length)}</em>
           </div>
           <div class="rt-grid">
             {g.tools.map((tool) => (

@@ -46,6 +46,53 @@ test.describe('home and shell pages', () => {
     }
   });
 
+  test('the index presents Microsoft and Azure together without divider counts', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    const platformFilter = page.getByRole('button', { name: 'Microsoft & Azure 4' });
+    await expect(platformFilter).toBeVisible();
+    await expect(page.locator('.rt-group-head', { hasText: 'Microsoft & Azure' })).toBeVisible();
+    await expect(page.locator('.rt-group-head em')).toHaveCount(0);
+    await expect(page.locator('.rt-group[data-category="azure"]')).toHaveCount(0);
+    await expect(page.locator('.rt-group[data-category="microsoft"]')).toHaveCount(0);
+
+    await platformFilter.click();
+    await expect(page.locator('.rt-group:not([hidden])')).toHaveCount(1);
+    await expect(page.locator('.rt-group[data-category="microsoft-azure"]')).toBeVisible();
+  });
+
+  test('the mobile burger exposes navigation and appearance controls', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+
+    const menuToggle = page.locator('[data-menu-toggle]');
+    await expect(menuToggle).toBeVisible();
+    await expect(menuToggle).toHaveAccessibleName('Open menu');
+    await expect(page.getByRole('navigation', { name: 'Primary' })).not.toBeVisible();
+
+    await menuToggle.click();
+    await expect(
+      page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Saved data' })
+    ).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Appearance' })).toBeVisible();
+
+    const paletteToggle = page.locator('[data-palette-toggle]');
+    await paletteToggle.click();
+    await expect(page.getByRole('menu', { name: 'Color palette' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(paletteToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
+
+    await page.keyboard.press('Escape');
+    await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
+
+    await menuToggle.click();
+    await page.locator('h1').click();
+    await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('/delete serves the saved-data page, noindex', async ({ page }) => {
     const response = await page.goto('/delete');
     expect(response.status()).toBe(200);
@@ -54,6 +101,25 @@ test.describe('home and shell pages', () => {
       'content',
       /noindex/
     );
+  });
+
+  test('/delete hides and preserves storage not owned by a tool', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('russ-tools-palette', 'nord');
+      localStorage.setItem('vite-ui-theme', 'dark');
+    });
+    await page.goto('/delete');
+
+    await expect(page.getByText('Nothing stored')).toBeVisible();
+    await expect(page.getByText('Not owned by a tool')).toHaveCount(0);
+    await expect(page.getByText('russ-tools-palette')).toHaveCount(0);
+    await expect(page.getByText('vite-ui-theme')).toHaveCount(0);
+    expect(
+      await page.evaluate(() => ({
+        palette: localStorage.getItem('russ-tools-palette'),
+        mode: localStorage.getItem('vite-ui-theme'),
+      }))
+    ).toEqual({ palette: 'nord', mode: 'dark' });
   });
 
   test('an unknown path is a real 404, not a soft one', async ({ page }) => {

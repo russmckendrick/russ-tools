@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
  */
 const alertVariants = cva(
   cn(
-    "relative w-full rounded-lg border p-4 text-body-sm",
+    "rt-enter-surface relative w-full rounded-lg border p-4 text-body-sm",
     "[&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:size-4",
     "[&>svg~*]:pl-7 [&>svg+div]:translate-y-[-2px]"
   ),

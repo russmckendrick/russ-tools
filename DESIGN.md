@@ -28,6 +28,10 @@ colors:
   category-security: "#fbbf24"
   category-developer: "#4ade80"
   category-content: "#f472b6"
+  success-subtle: "#1b3129"
+  warning-subtle: "#322d1d"
+  info-subtle: "#1e2939"
+  error-subtle: "#322327"
 
   # ---- Light theme (peer; `-light` suffix) ----
   surface-light: "#fafafb"
@@ -50,6 +54,329 @@ colors:
   category-security-light: "#b45309"
   category-developer-light: "#15803d"
   category-content-light: "#be1a63"
+  success-subtle-light: "#ecf5ef"
+  warning-subtle-light: "#faf3ee"
+  info-subtle-light: "#ebf1fd"
+  error-subtle-light: "#fef6f6"
+  # ---- Solarized ramp (Ethan Schoonover, verbatim) ----
+  solar-base03: "#002b36"
+  solar-base02: "#073642"
+  solar-base01: "#586e75"
+  solar-base00: "#657b83"
+  solar-base0: "#839496"
+  solar-base1: "#93a1a1"
+  solar-base2: "#eee8d5"
+  solar-base3: "#fdf6e3"
+  solar-yellow: "#b58900"
+  solar-orange: "#cb4b16"
+  solar-red: "#dc322f"
+  solar-magenta: "#d33682"
+  solar-violet: "#6c71c4"
+  solar-blue: "#268bd2"
+  solar-cyan: "#2aa198"
+  solar-green: "#859900"
+
+  # ---- Solarized dark theme (accessible semantic mapping) ----
+  solarized-surface: "#002b36"
+  solarized-surface-raised: "#073642"
+  solarized-surface-inset: "#0b3e4b"
+  solarized-outline: "#1b4a55"
+  solarized-outline-strong: "#71858a"
+  solarized-on-surface: "#d6d6c9"
+  solarized-on-surface-muted: "#a1adab"
+  solarized-on-surface-faint: "#97a4a3"
+  solarized-primary: "#76b0d3"
+  solarized-on-primary: "#002b36"
+  solarized-success: "#a3b03e"
+  solarized-warning: "#c4a237"
+  solarized-error: "#e47e75"
+  solarized-info: "#76b0d3"
+  solarized-category-network: "#55b1a5"
+  solarized-category-azure: "#66a9d3"
+  solarized-category-microsoft: "#9d9eca"
+  solarized-category-security: "#c19d2d"
+  solarized-category-developer: "#9baa2d"
+  solarized-category-content: "#df88a8"
+  solarized-success-subtle: "#1a4538"
+  solarized-warning-subtle: "#214238"
+  solarized-info-subtle: "#0c4358"
+  solarized-error-subtle: "#27353f"
+
+  # ---- Solarized light theme (accessible semantic mapping) ----
+  solarized-surface-light: "#eee8d5"
+  solarized-surface-raised-light: "#fdf6e3"
+  solarized-surface-inset-light: "#e4dcc4"
+  solarized-outline-light: "#d9d2bd"
+  solarized-outline-strong-light: "#657b83"
+  solarized-on-surface-light: "#2f494f"
+  solarized-on-surface-muted-light: "#465e66"
+  solarized-on-surface-faint-light: "#4d656d"
+  solarized-primary-light: "#1a6da2"
+  solarized-on-primary-light: "#fdf6e3"
+  solarized-success-light: "#557113"
+  solarized-warning-light: "#766813"
+  solarized-error-light: "#bb3130"
+  solarized-info-light: "#1a6da2"
+  solarized-category-network-light: "#176c6c"
+  solarized-category-azure-light: "#176695"
+  solarized-category-microsoft-light: "#4e5d9c"
+  solarized-category-security-light: "#6b6216"
+  solarized-category-developer-light: "#4c6a17"
+  solarized-category-content-light: "#a73472"
+  solarized-success-subtle-light: "#efebc8"
+  solarized-warning-subtle-light: "#f4e9c8"
+  solarized-info-subtle-light: "#e3e9e1"
+  solarized-error-subtle-light: "#f9decd"
+
+  # ---- Catppuccin Mocha / Latte ------------------------------------------
+  catppuccin-surface: "#1e1e2e"
+  catppuccin-surface-raised: "#313244"
+  catppuccin-surface-inset: "#181825"
+  catppuccin-outline: "#45475a"
+  catppuccin-outline-strong: "#9399b2"
+  catppuccin-on-surface: "#cdd6f4"
+  catppuccin-on-surface-muted: "#bac2de"
+  catppuccin-on-surface-faint: "#949ab3"
+  catppuccin-primary: "#89b4fa"
+  catppuccin-on-primary: "#111111"
+  catppuccin-success: "#a6e3a1"
+  catppuccin-warning: "#f9e2af"
+  catppuccin-error: "#f491ac"
+  catppuccin-info: "#89b4fa"
+  catppuccin-category-network: "#94e2d5"
+  catppuccin-category-azure: "#89b4fa"
+  catppuccin-category-microsoft: "#cba6f7"
+  catppuccin-category-security: "#f9e2af"
+  catppuccin-category-developer: "#a6e3a1"
+  catppuccin-category-content: "#f5c2e7"
+  catppuccin-success-subtle: "#404950"
+  catppuccin-warning-subtle: "#4b4952"
+  catppuccin-info-subtle: "#3c435c"
+  catppuccin-error-subtle: "#4a3e52"
+  catppuccin-surface-light: "#eff1f5"
+  catppuccin-surface-raised-light: "#ffffff"
+  catppuccin-surface-inset-light: "#e6e9ef"
+  catppuccin-outline-light: "#ccd0da"
+  catppuccin-outline-strong-light: "#7c7f93"
+  catppuccin-on-surface-light: "#4c4f69"
+  catppuccin-on-surface-muted-light: "#5c5f77"
+  catppuccin-on-surface-faint-light: "#65677c"
+  catppuccin-primary-light: "#1e66f5"
+  catppuccin-on-primary-light: "#ffffff"
+  catppuccin-success-light: "#327723"
+  catppuccin-warning-light: "#8f5d18"
+  catppuccin-error-light: "#cc0f38"
+  catppuccin-info-light: "#1d5fe3"
+  catppuccin-category-network-light: "#16747a"
+  catppuccin-category-azure-light: "#1d5fe3"
+  catppuccin-category-microsoft-light: "#8638eb"
+  catppuccin-category-security-light: "#8f5d18"
+  catppuccin-category-developer-light: "#327723"
+  catppuccin-category-content-light: "#985084"
+  catppuccin-success-subtle-light: "#e4ede2"
+  catppuccin-warning-subtle-light: "#f0eae1"
+  catppuccin-info-subtle-light: "#e2eafb"
+  catppuccin-error-subtle-light: "#f8e0e5"
+
+  # ---- Dracula / Alucard -------------------------------------------------
+  dracula-surface: "#282a36"
+  dracula-surface-raised: "#30323f"
+  dracula-surface-inset: "#44475a"
+  dracula-outline: "#44475a"
+  dracula-outline-strong: "#8894ba"
+  dracula-on-surface: "#f8f8f2"
+  dracula-on-surface-muted: "#d7d7d2"
+  dracula-on-surface-faint: "#b1b6c8"
+  dracula-primary: "#bd93f9"
+  dracula-on-primary: "#111111"
+  dracula-success: "#50fa7b"
+  dracula-warning: "#ffb86c"
+  dracula-error: "#ff9b9b"
+  dracula-info: "#8be9fd"
+  dracula-category-network: "#8be9fd"
+  dracula-category-azure: "#8be9fd"
+  dracula-category-microsoft: "#caa8fa"
+  dracula-category-security: "#f1fa8c"
+  dracula-category-developer: "#50fa7b"
+  dracula-category-content: "#ff94d1"
+  dracula-success-subtle: "#344c47"
+  dracula-warning-subtle: "#4b4345"
+  dracula-info-subtle: "#3c4a58"
+  dracula-error-subtle: "#4b404b"
+  dracula-surface-light: "#fffbeb"
+  dracula-surface-raised-light: "#ffffff"
+  dracula-surface-inset-light: "#f4efd9"
+  dracula-outline-light: "#d8d2bd"
+  dracula-outline-strong-light: "#6c664b"
+  dracula-on-surface-light: "#1f1f1f"
+  dracula-on-surface-muted-light: "#4d4939"
+  dracula-on-surface-faint-light: "#6c664b"
+  dracula-primary-light: "#644ac9"
+  dracula-on-primary-light: "#ffffff"
+  dracula-success-light: "#14710a"
+  dracula-warning-light: "#7e6915"
+  dracula-error-light: "#be3728"
+  dracula-info-light: "#036a96"
+  dracula-category-network-light: "#036a96"
+  dracula-category-azure-light: "#036a96"
+  dracula-category-microsoft-light: "#644ac9"
+  dracula-category-security-light: "#7f6a15"
+  dracula-category-developer-light: "#14710a"
+  dracula-category-content-light: "#a3144d"
+  dracula-success-subtle-light: "#e0eddf"
+  dracula-warning-subtle-light: "#eeece1"
+  dracula-info-subtle-light: "#deecf1"
+  dracula-error-subtle-light: "#f7e5e3"
+
+  # ---- Nord Polar Night / Snow Storm ------------------------------------
+  nord-surface: "#2e3440"
+  nord-surface-raised: "#3b4252"
+  nord-surface-inset: "#252b35"
+  nord-outline: "#4c566a"
+  nord-outline-strong: "#808da5"
+  nord-on-surface: "#eceff4"
+  nord-on-surface-muted: "#d8dee9"
+  nord-on-surface-faint: "#aeb7c8"
+  nord-primary: "#88c0d0"
+  nord-on-primary: "#111111"
+  nord-success: "#b8cda6"
+  nord-warning: "#ebcb8b"
+  nord-error: "#e4bdc0"
+  nord-info: "#a2ceda"
+  nord-category-network: "#8fbcbb"
+  nord-category-azure: "#96b1cc"
+  nord-category-microsoft: "#c3a5bd"
+  nord-category-security: "#ebcb8b"
+  nord-category-developer: "#a3be8c"
+  nord-category-content: "#c3a5bd"
+  nord-success-subtle: "#4b545d"
+  nord-warning-subtle: "#525459"
+  nord-info-subtle: "#485464"
+  nord-error-subtle: "#515260"
+  nord-surface-light: "#eceff4"
+  nord-surface-raised-light: "#ffffff"
+  nord-surface-inset-light: "#e5e9f0"
+  nord-outline-light: "#d8dee9"
+  nord-outline-strong-light: "#4c566a"
+  nord-on-surface-light: "#2e3440"
+  nord-on-surface-muted-light: "#3b4252"
+  nord-on-surface-faint-light: "#4c566a"
+  nord-primary-light: "#5676a0"
+  nord-on-primary-light: "#ffffff"
+  nord-success-light: "#56713f"
+  nord-warning-light: "#88621f"
+  nord-error-light: "#9d3f48"
+  nord-info-light: "#486c8e"
+  nord-category-network-light: "#4e6f6e"
+  nord-category-azure-light: "#4f6b8d"
+  nord-category-microsoft-light: "#875c75"
+  nord-category-security-light: "#88621f"
+  nord-category-developer-light: "#56713f"
+  nord-category-content-light: "#875c75"
+  nord-success-subtle-light: "#e9ede6"
+  nord-warning-subtle-light: "#f0ebe2"
+  nord-info-subtle-light: "#e7ecf0"
+  nord-error-subtle-light: "#f2e6e7"
+
+  # ---- Tokyo Night / Day -------------------------------------------------
+  tokyo-night-surface: "#1a1b26"
+  tokyo-night-surface-raised: "#24283b"
+  tokyo-night-surface-inset: "#16161e"
+  tokyo-night-outline: "#3b4261"
+  tokyo-night-outline-strong: "#7a82a8"
+  tokyo-night-on-surface: "#c0caf5"
+  tokyo-night-on-surface-muted: "#a9b1d6"
+  tokyo-night-on-surface-faint: "#8b93b8"
+  tokyo-night-primary: "#7aa2f7"
+  tokyo-night-on-primary: "#111111"
+  tokyo-night-success: "#9ece6a"
+  tokyo-night-warning: "#e0af68"
+  tokyo-night-error: "#f7768e"
+  tokyo-night-info: "#7dcfff"
+  tokyo-night-category-network: "#73daca"
+  tokyo-night-category-azure: "#7aa2f7"
+  tokyo-night-category-microsoft: "#bb9af7"
+  tokyo-night-category-security: "#e0af68"
+  tokyo-night-category-developer: "#9ece6a"
+  tokyo-night-category-content: "#f7768e"
+  tokyo-night-success-subtle: "#343e41"
+  tokyo-night-warning-subtle: "#3c3a41"
+  tokyo-night-info-subtle: "#303e54"
+  tokyo-night-error-subtle: "#3f3246"
+  tokyo-night-surface-light: "#e1e2e7"
+  tokyo-night-surface-raised-light: "#f4f5f8"
+  tokyo-night-surface-inset-light: "#d5d6db"
+  tokyo-night-outline-light: "#c4c8da"
+  tokyo-night-outline-strong-light: "#6975a1"
+  tokyo-night-on-surface-light: "#343b58"
+  tokyo-night-on-surface-muted-light: "#4c5580"
+  tokyo-night-on-surface-faint-light: "#525b81"
+  tokyo-night-primary-light: "#2b73d6"
+  tokyo-night-on-primary-light: "#ffffff"
+  tokyo-night-success-light: "#4c6432"
+  tokyo-night-warning-light: "#725935"
+  tokyo-night-error-light: "#a92e4a"
+  tokyo-night-info-light: "#026587"
+  tokyo-night-category-network-light: "#116857"
+  tokyo-night-category-azure-light: "#255da8"
+  tokyo-night-category-microsoft-light: "#7442b5"
+  tokyo-night-category-security-light: "#725935"
+  tokyo-night-category-developer-light: "#4c6432"
+  tokyo-night-category-content-light: "#9c3768"
+  tokyo-night-success-subtle-light: "#dee2de"
+  tokyo-night-warning-subtle-light: "#e3e1df"
+  tokyo-night-info-subtle-light: "#d5e2e9"
+  tokyo-night-error-subtle-light: "#eadbe1"
+
+  # ---- GitHub dark / light -----------------------------------------------
+  github-surface: "#0d1117"
+  github-surface-raised: "#161b22"
+  github-surface-inset: "#010409"
+  github-outline: "#30363d"
+  github-outline-strong: "#6e7681"
+  github-on-surface: "#f0f6fc"
+  github-on-surface-muted: "#b1bac4"
+  github-on-surface-faint: "#8b949e"
+  github-primary: "#58a6ff"
+  github-on-primary: "#111111"
+  github-success: "#3fb950"
+  github-warning: "#d29922"
+  github-error: "#f8534b"
+  github-info: "#58a6ff"
+  github-category-network: "#39c5cf"
+  github-category-azure: "#58a6ff"
+  github-category-microsoft: "#bc8cff"
+  github-category-security: "#d29922"
+  github-category-developer: "#3fb950"
+  github-category-content: "#f778ba"
+  github-success-subtle: "#1b3028"
+  github-warning-subtle: "#2e2b22"
+  github-info-subtle: "#1f2d3f"
+  github-error-subtle: "#332227"
+  github-surface-light: "#f6f8fa"
+  github-surface-raised-light: "#ffffff"
+  github-surface-inset-light: "#eef1f4"
+  github-outline-light: "#d0d7de"
+  github-outline-strong-light: "#656d76"
+  github-on-surface-light: "#1f2328"
+  github-on-surface-muted-light: "#4b535d"
+  github-on-surface-faint-light: "#656d76"
+  github-primary-light: "#0969da"
+  github-on-primary-light: "#ffffff"
+  github-success-light: "#1a7a35"
+  github-warning-light: "#906101"
+  github-error-light: "#c9212d"
+  github-info-light: "#0966d4"
+  github-category-network-light: "#097885"
+  github-category-azure-light: "#0969da"
+  github-category-microsoft-light: "#814fdd"
+  github-category-security-light: "#956401"
+  github-category-developer-light: "#1a7e37"
+  github-category-content-light: "#bd3988"
+  github-success-subtle-light: "#e1eee5"
+  github-warning-subtle-light: "#f1eade"
+  github-info-subtle-light: "#dfebf9"
+  github-error-subtle-light: "#f8e2e4"
 
 typography:
   display:
@@ -235,8 +562,16 @@ glance, and should never have to hover to find out what something is.**
 
 ## Colors
 
-The palette is a cool near-black neutral ramp with a blue-violet house accent,
-plus six fixed category hues.
+Colour has two independent axes. **Mode** chooses light, dark or the visitor's
+system preference. **Palette** chooses Solarized, Catppuccin, Dracula, Nord,
+Tokyo Night or GitHub. The two controls sit together in the top bar and persist
+independently, producing twelve rendered themes without
+changing component markup.
+
+Catppuccin is the default selectable palette: Mocha in dark mode and Latte in
+light mode. The unsuffixed neutral ramp is an
+implementation fallback used before the pre-paint palette script runs; it is
+not exposed as a user-selectable theme.
 
 **Neutrals** carry almost the whole interface. They are cool and very slightly
 blue, chosen to sit under the accent rather than being a default grey.
@@ -257,7 +592,7 @@ identifying a tool is the category hues' job.
 
 **The division of labour is the important part.** The accent acts; the
 category hue labels. A category hue never becomes a large filled surface — it
-appears as the icon tile, badges, borders, small type and the hover glow. This
+appears on the tool icon, badges, borders, small type and the hover glow. This
 was learned the hard way: driving the primary button from the category hue
 meant every security tool's main action was `#b45309`, which is what amber
 becomes once it clears 4.5:1 in light mode, and it reads as brown. The
@@ -289,6 +624,37 @@ palette, not by meaning — do not substitute one for the other.
 The light values are independently chosen, not lightened versions: the category
 hues in particular are considerably darker, because the bright dark-theme
 values fall to around 3.5:1 on white and are unusable as text.
+
+**Solarized palette.** The sixteen `solar-*` tokens are Ethan Schoonover's
+[Solarized](https://github.com/altercation/solarized) ramp verbatim. Components
+never consume them directly. The `solarized-*` semantic tokens map the ramp onto
+this design system's three surfaces, action accent, statuses and six categories.
+The page/card grounds are the canonical `base03`/`base02` in dark mode and
+`base2`/`base3` in light mode. Text and category accents are derived toward the
+opposite end of the ramp until they clear the same accessibility floor as
+the base palette. Raw Solarized green, cyan and yellow are beautiful decoration but
+land near 3:1 as small text on `base3`; exposing them directly as category text
+would knowingly regress legibility.
+
+The other familiar palettes follow the same rule: recognise the source theme,
+then adjust only where this interface's text and control-boundary floors demand
+it. Their light and dark identities are explicit pairs, not calculated
+inversions:
+
+| Palette | Dark mode | Light mode |
+|---|---|---|
+| Solarized | Solarized Dark | Solarized Light |
+| Catppuccin | Mocha | Latte |
+| Dracula | Dracula | Alucard |
+| Nord | Polar Night | Snow Storm |
+| Tokyo Night | Night | Day |
+| GitHub | Dark | Light |
+
+The palette picker previews every family as a miniature terminal in the
+currently rendered mode. Those previews consume the same generated palette
+tokens as the page; they are not hand-coloured illustrations. The control is
+a radio menu with visible selection, arrow-key navigation, Escape dismissal
+and focus restoration. Mode remains a separate adjacent control.
 
 ## Typography
 
@@ -358,8 +724,11 @@ Tool cards sit in a responsive grid: one column below 600px, two to 940px,
 three above. Cards are uniform — no featured or double-width tiles — because
 every tool is equally reachable and hierarchy here would be a lie.
 
-Tools are always grouped by category, each group introduced by a coloured label,
-a hairline rule and a count. Category filter chips sit above the grid.
+Tools are grouped into scannable index sections, each introduced by a coloured
+label and a hairline rule. Azure and Microsoft share one presentation section
+and filter because they form one platform family; each card still keeps its
+manifest category and therefore its own category hue. Category filter chips sit
+above the grid and carry the only index counts.
 
 A tool page is **one full-width column**, and the tool composes its own body
 inside it. There is no prescribed control column.
@@ -414,7 +783,7 @@ The shape language is rectangular and lightly softened — engineered, not
 friendly.
 
 - `6px` (`sm`) — controls: buttons, inputs and chips.
-- `8px` (`md`) — icon tiles.
+- `8px` (`md`) — compact nested surfaces and icon buttons.
 - `10px` (`lg`) — cards and panels.
 - `12px` (`xl`) — the outermost application frame.
 - `9999px` (`full`) — only status dots and category markers.
@@ -427,14 +796,32 @@ Borders are always exactly `1px`. There are no thick borders and no double rules
 
 ## Components
 
-- **Card** — the tool tile, and the workhorse. A 32px category-tinted icon
-  tile, the tool name at `title-sm`, a two-line clamped description at
+- **Site header** — a sticky, translucent bar with the freestanding site mark
+  at left and one icon toolbar at right. Navigation and appearance controls
+  share the same 34px optical size. An icon reveals its real text label on
+  mouse hover and keyboard focus; the label is never replaced by a tooltip-only
+  mystery. The current route takes a 2px primary underline. Below 720px the
+  toolbar moves into a burger disclosure with permanently visible labels;
+  outside click and Escape close it without hiding any action from the keyboard.
+- **Palette menu** — opens from the terminal icon as a radio menu. Each family
+  has a miniature terminal drawn from that palette's generated semantic tokens,
+  plus the named dark/light pair and a visible checked state. The adjacent mode
+  control remains independent. Catppuccin (Mocha / Latte) is the default.
+- **Site footer** — the mark, three factual privacy properties and the same
+  three destinations as the header. Compact, navigational and non-promotional.
+- **Saved data** — reports only storage keys declared by tool manifests. Site
+  preferences and unrelated origin storage are neither shown nor counted, and
+  the all-tools delete action leaves them untouched.
+- **Card** — the tool tile, and the workhorse. A freestanding 24px category
+  icon, the tool name at `title-sm`, a two-line clamped description at
   `body-sm`, then a hairline-separated footer of monospace metadata. On hover
   the border takes the category hue, the card lifts 1px and the category glow
   appears; the route path fades in on the right. Never more than two lines of
   description — clamp rather than reflow, so the grid stays even.
-- **Icon tile** — the icon in its category hue on a 13% tint of the same hue,
-  with a 26% border. This is the only place a category hue is used as a fill.
+- **Tool icon** — a freestanding 24px category-coloured drawing, with no tile,
+  tinted box or border behind it. It is deliberately larger than a generic UI
+  glyph and lifts by 2px on card hover. The category label and distinct drawing
+  still carry identity without turning fifteen icons into fifteen badges.
 - **Panel** — a bordered container with an optional header bar in
   `surface-inset` carrying a `label-caps` title and an optional right-aligned
   status. Used for both inputs and results on tool pages.
@@ -526,7 +913,7 @@ by exactly one tool.
 - **Do** change a shared component when the interface should change. **Don't**
   override it at a call site — a `className` that re-rounds a card or recolours
   a button is a fifteenth of the design system quietly forking.
-- **Do** let the icon tile, default badge and hover glow pick up `--cat`,
+- **Do** let the tool icon, default badge and hover glow pick up `--cat`,
   which ToolLayout sets once per page from the manifest. **Don't** hardcode a
   hue in a tool, and don't pass one down as a prop.
 - **Do** keep actions and controls on the house accent — buttons, toggles,
@@ -535,9 +922,10 @@ by exactly one tool.
 
 ## Iconography
 
-Icons are a **bespoke set**, one per tool, drawn on a 24px grid with a `1.6px`
-stroke, round caps and round joins, and no fill. They inherit `currentColor` so
-the category hue applies automatically.
+Icons are a **bespoke set**, one per tool, drawn on a 24px grid with a `1.75px`
+stroke, round caps and round joins. Small filled nodes and punctuation are
+allowed inside the drawing; the overall silhouette remains open linework. They
+inherit `currentColor` so the category hue applies automatically.
 
 Each icon depicts what the tool operates on, not a generic abstraction: nested
 rectangles for subnet allocation, a three-segment bar for a JWT's header /
@@ -551,6 +939,24 @@ renders them into prerendered HTML and the React `ToolIcon`
 Before this, each tool wrapped a third-party glyph, so the icon in the page
 header and the icon inside the tool were two different pictures of the same
 thing.
+
+The site mark is a solid toolbox silhouette. In the shell it takes
+`currentColor`, so the active palette's primary token controls it without a
+separate asset variant; the standalone SVG follows the visitor's light/dark
+system preference. It stays freestanding in the menu bar rather than sitting
+inside another coloured box.
+
+## Motion
+
+Motion confirms state changes; it does not decorate idle time. Inputs ease
+their boundary and focus treatment, buttons compress slightly on press, active
+tab content fades up, and newly mounted cards, alerts and result rows enter over
+roughly 180–240ms. Tool icons borrow the old home hero's looser scale and lift
+on card hover, but do not drift continuously.
+
+No animation library is required for this vocabulary. CSS keeps the behaviour
+shared, avoids adding an island or runtime to shell pages, and lets the global
+reduced-motion rule collapse every transition in one place.
 
 Where a generic UI icon is needed (chevron, close, copy, external link), use
 **lucide-react**, which is the project's only icon dependency. `@tabler/icons-react`
