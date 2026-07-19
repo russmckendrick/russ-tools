@@ -22,6 +22,10 @@ graphify-out
 # Generated files
 public/sitemap.xml
 
+# Playwright
+test-results
+playwright-report
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
