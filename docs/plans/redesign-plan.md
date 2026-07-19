@@ -1614,7 +1614,27 @@ The plan's riskiest platform assumption — `_redirects` param handling on
 real Pages — is now proven **deployed**, closing the caveat session 4
 recorded. Phase 2's task board is complete.
 
-**Next:** cutover — PR → merge (CI's first run) → flip the Pages build
-settings (`pnpm build:astro` / `dist-astro`) → verify live → then Phase 6
-demolition, with the react-router/`useDeepLinkParam` question asked before
-`src/bridge/` moves.
+**Cutover is sequenced and deliberately on hold — the owner's call, made at
+the ready point.** The sequence, for whichever session runs it:
+
+1. **Open the PR** `redesign/phase-0` → `main` (~28 commits). This is CI's
+   first-ever run (it triggers on PRs and `main` only). A first-run failure
+   was already defused: `pnpm/action-setup` now reads the pnpm version from
+   `packageManager` instead of carrying its own conflicting `version: 11`.
+2. **Merge once CI is green.** Pages auto-builds `main` under the **old**
+   settings, so production redeploys as the SPA — zero visible change, and
+   the insurance the plan always intended: the SPA tree stays intact and
+   deployable until the flip is confirmed.
+3. **Owner flips the dashboard** (Workers & Pages → russ.tools → Settings →
+   Builds): build command `pnpm build:astro`, output directory `dist-astro`.
+   Check the build image's Node satisfies `engines` (≥20; CI uses 22 — set
+   `NODE_VERSION` if needed). Trigger a redeploy.
+4. **Verify live together:** rerun the matrix as
+   `PW_BASE_URL=https://russ.tools pnpm test:e2e`, browser pass, meta/
+   sitemap spot-checks. Rollback is the settings flipped back + redeploy.
+5. **Aftermath:** Search Console monitoring starts (4–6 weeks); delete the
+   `russ-tools-preview` project and drop its origin from `ALLOWED_ORIGINS`
+   at leisure; CI's SPA build step dies with the SPA in Phase 6.
+
+Then Phase 6 demolition, with the react-router/`useDeepLinkParam` question
+asked before `src/bridge/` moves.
