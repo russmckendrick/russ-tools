@@ -39,6 +39,21 @@ const lines = [
 ];
 
 let count = 0;
+
+// Retired paths first: real 301s, before any rewrite can match. Declared per
+// manifest as `redirectFrom` (e.g. /network-designer -> /subnet-calculator).
+const redirects = tools.flatMap((tool) =>
+  (tool.redirectFrom ?? []).map((from) => ({ from, to: tool.path }))
+);
+if (redirects.length) {
+  lines.push('# Retired paths');
+  for (const { from, to } of redirects) {
+    lines.push(`${from.padEnd(40)}${to.padEnd(24)}301`);
+    lines.push(`${`${from}/*`.padEnd(40)}${to.padEnd(24)}301`);
+  }
+  lines.push('');
+}
+
 for (const tool of tools) {
   if (!tool.params.length) continue;
   lines.push(`# ${tool.title}`);
@@ -52,4 +67,4 @@ for (const tool of tools) {
 }
 
 writeFileSync(out, lines.join('\n'));
-console.log(`wrote dist-astro/_redirects — ${count} param rewrites across ${tools.filter((t) => t.params.length).length} tools`);
+console.log(`wrote dist-astro/_redirects — ${count} param rewrites across ${tools.filter((t) => t.params.length).length} tools, ${redirects.length} retired paths`);

@@ -22,9 +22,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@ltd/j-toml": "^1.38.0",
@@ -52,7 +49,6 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
-    "html2canvas": "^1.4.1",
     "jose": "^6.0.11",
     "js-yaml": "^4.1.0",
     "js-yaml-source-map": "^0.2.2",
@@ -60,7 +56,6 @@
     "json-source-map": "^0.6.1",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.539.0",
-    "netmask": "^2.0.2",
     "pako": "^2.1.0",
     "prismjs": "^1.30.0",
     "react": "^19.0.0",

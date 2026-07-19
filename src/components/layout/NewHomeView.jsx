@@ -185,9 +185,6 @@ export function NewHomeView() {
           <CardContent className="p-0">
             {(() => {
               try {
-                const networks = JSON.parse(localStorage.getItem('networks') || '[]')
-                const selectedId = JSON.parse(localStorage.getItem('selectedNetworkId') || 'null')
-                if (!Array.isArray(networks) || networks.length === 0) return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div>
                 const azureNaming = (() => {
                   try { return JSON.parse(localStorage.getItem('rt:azure-naming:history') || localStorage.getItem('azure-naming-history') || '[]') } catch { return [] }
                 })()
@@ -197,24 +194,15 @@ export function NewHomeView() {
                 return (
                   (() => {
                     const merged = []
-                    const IconND = getToolIconForPath('/network-designer') || Network
                     const IconAN = getToolIconForPath('/azure-naming') || IconBrandAzure
                     const IconDC = getToolIconForPath('/data-converter') || toolIconByKey.JSONIcon
-                    networks.forEach((n) => {
-                      merged.push({
-                        key: n.id,
-                        to: '/network-designer',
-                        Icon: IconND,
-                        primary: n?.name || 'Saved network' + (n?.id === selectedId ? ' • current' : ''),
-                        secondary: n?.parentNetwork ? `${n.parentNetwork.ip}/${n.parentNetwork.cidr}` : ''
-                      })
-                    })
                     azureNaming.forEach((h, i) => {
                       merged.push({ key: `azn-${i}`, to: '/azure-naming', Icon: IconAN, primary: 'Azure Naming', secondary: h?.result || h?.name || 'Previous session' })
                     })
                     dataConv.forEach((h, i) => {
                       merged.push({ key: `dc-${i}`, to: '/data-converter', Icon: IconDC, primary: 'Data Converter', secondary: `${h?.from || ''} → ${h?.to || ''}` })
                     })
+                    if (merged.length === 0) return <div className="px-3 py-3 text-sm text-muted-foreground">No saved data</div>
                     return (
                       <ul className="divide-y">
                         {merged.slice(0,3).map((it) => (
@@ -235,7 +223,7 @@ export function NewHomeView() {
                     )
                   })()
                 )
-              } catch { return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div> }
+              } catch { return <div className="px-3 py-3 text-sm text-muted-foreground">No saved data</div> }
             })()}
           </CardContent>
         </Card>

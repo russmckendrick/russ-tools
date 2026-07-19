@@ -20,7 +20,6 @@ export default defineConfig({
           // Data processing libraries (excluding ExcelJS)
           'vendor-data': ['js-yaml', '@ltd/j-toml', 'ajv', 'ajv-formats', 'better-ajv-errors'],
           // UI utilities
-          'vendor-ui': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities', 'html2canvas'],
           // Syntax highlighting
           'vendor-syntax': ['prismjs']
         },

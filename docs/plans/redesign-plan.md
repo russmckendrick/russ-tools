@@ -1420,3 +1420,73 @@ errors, 14 warnings · both builds green · **fourteen of fifteen tools live in
 the Phase 2 closers that were always the owner's call — the Pages preview
 deploy + Playwright matrix — and the `ALLOWED_ORIGINS` decision for the
 shell's dev origin.
+
+### 2026-07-19 — Session 7 (continued): the owner retires the Network Designer
+
+**Model:** Fable 5. **Branch:** `redesign/phase-0`.
+
+**The decision.** Immediately after §A landed, the owner redirected: *"rip it
+out and replace it with a subnet calculator"*, pointing at mxtoolbox,
+subnet-calculator.com, calculator.net, davidc.net and SolarWinds as the
+reference set. Three sub-decisions asked and answered: new honest path
+(**`/subnet-calculator`**, with `/network-designer` as a 301), **pure
+calculator** (the Terraform generators and their Phase 0 tests go too), and
+**IPv4 + IPv6** from day one.
+
+This supersedes the Phase 5 network-designer port wholesale — the monolith
+split, hex-colour migration, share-URL shape upgrade and the nine-key
+storage merge (and the request for a production localStorage export) are all
+moot. §A's allocator lib and suite, green for a few hours, were deleted with
+the component they were extracted from; the aligned-block bug cannot exist
+in the new tool, whose divide table splits into exact halves. Sunk cost
+acknowledged and not mourned. Every consequence a user can notice is
+ledgered in BEHAVIOR_CHANGES.md — most importantly: **no saved-network data
+is deleted** (the legacy keys go inert and surface on `/delete` as
+unclaimed), but nothing reads it any more, and old designer share URLs no
+longer restore.
+
+**What was built.** `src/tools/subnet-calculator/` in the union shape of the
+reference sites:
+
+- **`lib/ipv4.js`** — pure 32-bit maths (`>>> 0` throughout): details panel
+  (network/broadcast/ranges, RFC 3021 `/31`, netmask + wildcard, binary/hex/
+  integer forms, classful letter, special-use classification, `in-addr.arpa`
+  PTR).
+- **`lib/ipv6.js`** — hand-rolled on **BigInt** rather than a dependency:
+  parser (`::`, embedded IPv4 tails, zone ids rejected), RFC 5952 canonical
+  formatting (longest run, leftmost tie, never a single group — all pinned),
+  special-use classification, nibble PTR.
+- **`lib/divide.js`** — the davidc-style split tree as a parent block plus a
+  Set of split node keys, generic over family via `{bits, format}` (IPv4 and
+  IPv6 share one implementation). Split, join-with-subtree-collapse, and a
+  prune that keeps stale share payloads from corrupting the walk.
+- **The island**: one input auto-detecting family, prefix select, details
+  table, divide table with Split/Join, share links through the standard
+  `?config` codec, and `/subnet-calculator/:ip/:prefix` deep links (IPv6
+  colons are legal path characters).
+- **`redirectFrom`** is now a manifest field: the `_redirects` generator
+  emits real 301s (`/network-designer` and `/network-designer/*`), the SPA
+  serves a `<Navigate>`, and the registry test treats declared redirect
+  sources as served — plus a new assertion that a redirect source can never
+  collide with a live route.
+
+**Deleted:** both network-designer folders, `src/utils/network/` (Terraform
+generators + diagram utils + their tests), the saved-networks block on the
+home page's card, and — with no remaining consumers — `@dnd-kit/*`,
+`netmask` and `html2canvas` (and the `vendor-ui` manualChunks entry, per the
+Session 1 gotcha).
+
+**Verified on the Astro shell:** IPv4 details for `192.168.1.130/25`
+(netmask, wildcard, 126 usable, RFC 1918, PTR), the davidc workflow
+(split → nested split → join collapses the pair and prunes descendants),
+IPv6 for `2001:db8:abcd::/48` (2^80 totals, `/49` halves split at the top
+bit of the fourth group), dark and light. 42 new tests across the three
+libs and the island; suite total **437**.
+
+**State:** `pnpm test` **437 / 30 files** · `pnpm lint` 0 errors, 13
+warnings · both builds green · `_redirects` now carries 10 param rewrites +
+1 retired path. **All fifteen tools live in `src/tools/`** —
+`src/components/tools/` is empty, and the tool ports are done.
+
+**Remaining, all owner-gated:** the Pages preview deploy + Playwright
+deep-link matrix, and the worker `ALLOWED_ORIGINS` decision. Then Phase 6.

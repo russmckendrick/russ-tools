@@ -18,43 +18,48 @@ Two rules:
 
 ## Open — captured as KNOWN-BUG, not yet fixed
 
-### `cidrOptions` ignores gap alignment — fixed in the extracted lib, lands at the component port
-
-| | |
-|---|---|
-| **Where** | was `NetworkDesignerShadcn.jsx` `SubnetForm.cidrOptions`; fix in `src/tools/network-designer/lib/allocator.js` |
-| **Pinned by** | `src/tools/network-designer/lib/allocator.test.js` (§A.6) |
-| **Fix due** | lands for users when the component wires onto `lib/allocator` |
-
-The inline copy computes `32 - Math.floor(Math.log2(largestGapSize))`, sizing
-the offered prefix lengths against a gap's **length** while ignoring its
-**alignment**. A 128-address gap starting at `.64` cannot hold a `/25`, but
-`/25` is still offered; picking it then fails with "No available space for
-this subnet size."
-
-`availablePrefixLengths` in the extracted allocator computes the largest
-*aligned* block per gap (§A.6 pins the exact scenario, and the invariant that
-every offered size must allocate). The component still runs its inline copy;
-this entry moves to *Landed* when the port switches it over.
-
-### ~~Trailing-gap measurement is off by one against middle gaps~~ — investigated: not a bug
-
-| | |
-|---|---|
-| **Where** | `NetworkDesignerShadcn.jsx`, gap measurement |
-| **Pinned by** | `src/tools/network-designer/lib/allocator.test.js` (§A.7) |
-
-The plan flagged `next.start - prev.end - 1` (middle) vs `parentEnd - lastEnd`
-(trailing) as a suspected off-by-one. Measured inclusively they are **both
-correct address counts** — free middle addresses are `[end+1, start-1]`
-(count `start - end - 1`) and trailing are `[end+1, parentEnd]` (count
-`parentEnd - end`). The formulas look inconsistent and are not. §A.7 pins the
-reconciled single implementation to equal-sized middle and trailing gaps
-offering identical sizes.
+*Nothing currently open.*
 
 ---
 
 ## Landed
+
+### Network Designer removed, replaced by the Subnet Calculator
+
+| | |
+|---|---|
+| **Where** | `src/tools/subnet-calculator/` (new); `src/components/tools/network-designer/`, `src/tools/network-designer/`, `src/utils/network/` (deleted) |
+| **Pinned by** | `src/tools/subnet-calculator/lib/*.test.js` + `__tests__/island.test.jsx` |
+| **Landed** | owner decision, 2026-07-19 (Session 7) |
+
+The Network Designer — saved multi-subnet plans, drag-reorder, diagram and
+Terraform export — is gone, replaced by a **Subnet Calculator** in the mould
+of the classic tools (mxtoolbox, calculator.net, davidc.net): full IPv4 *and*
+IPv6 details for any address and prefix, plus a visual divide table with
+split and join. `/subnet-calculator/:ip/:prefix` deep-links, and divide trees
+share via the standard `?config` codec.
+
+What a user can notice:
+
+- **`/network-designer` 301-redirects** to `/subnet-calculator` (declared as
+  `redirectFrom` in the manifest; the SPA serves a `<Navigate>`).
+- **Saved networks are not deleted** — contract #3 holds; the nine legacy
+  keys stay in localStorage and surface on `/delete` as unclaimed data — but
+  no tool reads them any more, so saved plans are unreachable.
+- **Old network-designer share URLs no longer restore a plan.**
+- **Terraform export (AWS/Azure/VCD) is gone** with its generators and their
+  Phase 0 characterization tests — the owner chose a pure calculator.
+- `@dnd-kit`, `netmask` and `html2canvas` leave the dependency tree (they had
+  no other consumers).
+
+The three allocator entries that used to sit under *Open* died with the tool:
+the aligned-block bug (`/25` offered for a 128-address gap at `.64` it could
+not hold) is *not carried into* the calculator — its divide table splits into
+exact halves, where the failure mode cannot exist — and the suspected
+middle-vs-trailing gap off-by-one had already been investigated and found to
+be no bug (both formulas were correct inclusive counts). The §A allocator lib
+and suite, built as that port's first task, were deleted along with the
+component they were extracted from.
 
 ### azure-kql filter ordering works, and custom templates round-trip
 
@@ -152,6 +157,6 @@ param behaves exactly as before.
 
 Called out in the plan so they are not mistaken for regressions when they land:
 
-- **network-designer subnet colours** (Phase 5) — Mantine-era `{name, index}`
-  colour objects become hex. Old share URLs carry the old shape, so this needs
-  a share-URL shape-upgrade function with fixtures, not a bare format change.
+- ~~**network-designer subnet colours** (Phase 5)~~ — withdrawn: the tool was
+  removed (see *Network Designer removed* above), so the `{name, index}` →
+  hex migration and its share-URL shape upgrade are moot.

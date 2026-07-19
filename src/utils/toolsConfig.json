@@ -1,16 +1,36 @@
 [
   {
-    "id": "network-designer",
-    "title": "Network Designer",
-    "description": "Plan and visualize your IP subnets interactively. Design network architectures, allocate subnets, and export configurations for Azure, AWS, or VMware environments.",
-    "shortDescription": "Plan your cloud network and subnets",
-    "icon": "NetworkDesignerIcon",
-    "badges": ["Subnet Planning", "Visual Diagrams", "Terraform Export"],
-    "path": "/network-designer",
-    "seoTitle": "Network Designer - Subnet Planning & IP Network Visualization",
-    "seoKeywords": ["network designer", "subnet planning", "ip calculator", "network visualization", "terraform export", "azure networking", "aws networking", "vmware networking", "cidr calculator", "network architecture"],
+    "id": "subnet-calculator",
+    "title": "Subnet Calculator",
+    "description": "Calculate IPv4 and IPv6 subnet details — netmask, wildcard, host ranges, binary forms and reverse DNS — and divide networks visually by splitting and joining subnets, entirely in the browser.",
+    "shortDescription": "IPv4 and IPv6 subnet details, with a visual split-and-join divide table.",
+    "icon": "SubnetCalculatorIcon",
+    "badges": [
+      "IPv4",
+      "IPv6",
+      "Visual split"
+    ],
+    "path": "/subnet-calculator",
+    "seoTitle": "Subnet Calculator - IPv4 & IPv6 CIDR and Visual Splitter",
+    "seoKeywords": [
+      "subnet calculator",
+      "ip subnet calculator",
+      "cidr calculator",
+      "ipv6 subnet calculator",
+      "subnet mask calculator",
+      "visual subnet splitter",
+      "network calculator",
+      "ip range calculator",
+      "wildcard mask",
+      "vlsm calculator"
+    ],
     "category": "Network Tools",
-    "features": ["Interactive subnet visualization", "CIDR notation support", "Multi-cloud export (Azure, AWS, VMware)", "Drag & drop interface", "Real-time IP calculations", "Terraform configuration export"]
+    "features": [
+      "IPv4 and IPv6",
+      "Netmask, wildcard, ranges, PTR",
+      "Visual split and join",
+      "Shareable deep links"
+    ]
   },
   {
     "id": "microsoft-portals",
@@ -18,12 +38,34 @@
     "description": "Generate deep links to various Microsoft portals based on domain/tenant information. Discover tenant details and create direct links to Azure, Microsoft 365, and Power Platform portals.",
     "shortDescription": "Generate deep links to Microsoft portals using tenant information",
     "icon": "MicrosoftPortalsIcon",
-    "badges": ["Tenant Discovery", "Deep Links", "Multi-Portal"],
+    "badges": [
+      "Tenant Discovery",
+      "Deep Links",
+      "Multi-Portal"
+    ],
     "path": "/microsoft-portals",
     "seoTitle": "Microsoft Portals (GDAP) - Deep Link Generator & Tenant Access",
-    "seoKeywords": ["microsoft portals", "gdap", "tenant links", "azure portal", "microsoft 365", "power platform", "deep links", "tenant discovery", "microsoft admin", "partner access"],
+    "seoKeywords": [
+      "microsoft portals",
+      "gdap",
+      "tenant links",
+      "azure portal",
+      "microsoft 365",
+      "power platform",
+      "deep links",
+      "tenant discovery",
+      "microsoft admin",
+      "partner access"
+    ],
     "category": "Microsoft Tools",
-    "features": ["Multi-portal deep linking", "Tenant information discovery", "GDAP partner support", "Azure portal access", "Microsoft 365 admin links", "Power Platform navigation"]
+    "features": [
+      "Multi-portal deep linking",
+      "Tenant information discovery",
+      "GDAP partner support",
+      "Azure portal access",
+      "Microsoft 365 admin links",
+      "Power Platform navigation"
+    ]
   },
   {
     "id": "tenant-lookup",
@@ -31,12 +73,34 @@
     "description": "Discover Microsoft tenant information for any domain. Get tenant ID, organization details, DNS configuration, and authentication settings using multiple Microsoft APIs.",
     "shortDescription": "Discover Microsoft tenant information for any domain",
     "icon": "TenantLookupIcon",
-    "badges": ["Tenant Discovery", "DNS Analysis", "API Integration"],
+    "badges": [
+      "Tenant Discovery",
+      "DNS Analysis",
+      "API Integration"
+    ],
     "path": "/tenant-lookup",
     "seoTitle": "Microsoft Tenant Lookup - Domain to Tenant Discovery Tool",
-    "seoKeywords": ["microsoft tenant", "tenant lookup", "tenant id", "domain lookup", "azure ad", "office 365", "tenant discovery", "dns analysis", "microsoft api", "organization lookup"],
+    "seoKeywords": [
+      "microsoft tenant",
+      "tenant lookup",
+      "tenant id",
+      "domain lookup",
+      "azure ad",
+      "office 365",
+      "tenant discovery",
+      "dns analysis",
+      "microsoft api",
+      "organization lookup"
+    ],
     "category": "Microsoft Tools",
-    "features": ["Domain to tenant mapping", "Tenant ID discovery", "Organization details", "DNS configuration analysis", "Authentication settings", "Multi-API integration"]
+    "features": [
+      "Domain to tenant mapping",
+      "Tenant ID discovery",
+      "Organization details",
+      "DNS configuration analysis",
+      "Authentication settings",
+      "Multi-API integration"
+    ]
   },
   {
     "id": "azure-kql",
@@ -44,12 +108,34 @@
     "description": "Build optimized KQL queries for Azure services with guided forms and real-time preview. Generate queries for Azure Firewall, Application Gateway, and other Azure monitoring services with automatic performance optimization.",
     "shortDescription": "Build KQL queries for Azure services with guided forms",
     "icon": "AzureKQLIcon",
-    "badges": ["KQL Generator", "Azure Services", "Query Optimization"],
+    "badges": [
+      "KQL Generator",
+      "Azure Services",
+      "Query Optimization"
+    ],
     "path": "/azure-kql",
     "seoTitle": "Azure KQL Query Builder - Kusto Query Language Generator",
-    "seoKeywords": ["kql query", "kusto query", "azure monitor", "log analytics", "azure firewall", "application gateway", "kql builder", "azure logs", "monitoring queries", "kusto explorer"],
+    "seoKeywords": [
+      "kql query",
+      "kusto query",
+      "azure monitor",
+      "log analytics",
+      "azure firewall",
+      "application gateway",
+      "kql builder",
+      "azure logs",
+      "monitoring queries",
+      "kusto explorer"
+    ],
     "category": "Azure Tools",
-    "features": ["Guided query building", "Real-time query preview", "Azure service templates", "Performance optimization", "Syntax highlighting", "Query validation"]
+    "features": [
+      "Guided query building",
+      "Real-time query preview",
+      "Azure service templates",
+      "Performance optimization",
+      "Syntax highlighting",
+      "Query validation"
+    ]
   },
   {
     "id": "azure-naming",
@@ -57,12 +143,34 @@
     "description": "Generate consistent Azure resource names following Cloud Adoption Framework best practices and your organizational conventions.",
     "shortDescription": "Generate and validate Azure resource names",
     "icon": "AzureNamingIcon",
-    "badges": ["CAF Compliant", "Best Practices", "Bulk Export"],
+    "badges": [
+      "CAF Compliant",
+      "Best Practices",
+      "Bulk Export"
+    ],
     "path": "/azure-naming",
     "seoTitle": "Azure Resource Naming Tool - CAF Compliant Name Generator",
-    "seoKeywords": ["azure naming", "cloud adoption framework", "azure resources", "naming conventions", "caf compliant", "azure best practices", "resource naming", "azure governance", "bulk naming", "azure standards"],
+    "seoKeywords": [
+      "azure naming",
+      "cloud adoption framework",
+      "azure resources",
+      "naming conventions",
+      "caf compliant",
+      "azure best practices",
+      "resource naming",
+      "azure governance",
+      "bulk naming",
+      "azure standards"
+    ],
     "category": "Azure Tools",
-    "features": ["Cloud Adoption Framework compliance", "Bulk name generation", "Custom naming patterns", "Resource type validation", "Export to multiple formats", "Organizational conventions support"]
+    "features": [
+      "Cloud Adoption Framework compliance",
+      "Bulk name generation",
+      "Custom naming patterns",
+      "Resource type validation",
+      "Export to multiple formats",
+      "Organizational conventions support"
+    ]
   },
   {
     "id": "cron-builder",
@@ -70,12 +178,34 @@
     "description": "Build and validate cron job expressions with an intuitive interface. Generate scheduling patterns for automated tasks and system jobs.",
     "shortDescription": "Build and validate cron job expressions",
     "icon": "CronIcon",
-    "badges": ["Schedule Builder", "Expression Validator", "Human Readable"],
+    "badges": [
+      "Schedule Builder",
+      "Expression Validator",
+      "Human Readable"
+    ],
     "path": "/cron",
     "seoTitle": "CRON Expression Builder - Free Cron Job Scheduler Tool",
-    "seoKeywords": ["cron expression", "cron builder", "cron generator", "cron job", "cron scheduler", "crontab", "task scheduler", "unix cron", "linux cron", "cron validator"],
+    "seoKeywords": [
+      "cron expression",
+      "cron builder",
+      "cron generator",
+      "cron job",
+      "cron scheduler",
+      "crontab",
+      "task scheduler",
+      "unix cron",
+      "linux cron",
+      "cron validator"
+    ],
     "category": "Developer Tools",
-    "features": ["Visual cron builder", "Expression validation", "Human-readable descriptions", "Common schedule presets", "Real-time preview", "Copy-paste ready output"]
+    "features": [
+      "Visual cron builder",
+      "Expression validation",
+      "Human-readable descriptions",
+      "Common schedule presets",
+      "Real-time preview",
+      "Copy-paste ready output"
+    ]
   },
   {
     "id": "ssl-checker",
@@ -83,12 +213,34 @@
     "description": "Analyze and validate SSL certificates for any domain. Get detailed security analysis, certificate information, and vulnerability testing using industry-standard SSL Labs API.",
     "shortDescription": "Analyze and validate SSL certificates",
     "icon": "SSLCheckerIcon",
-    "badges": ["SSL Labs API", "Security Analysis", "Certificate Info"],
+    "badges": [
+      "SSL Labs API",
+      "Security Analysis",
+      "Certificate Info"
+    ],
     "path": "/ssl-checker",
     "seoTitle": "SSL Certificate Checker - Free SSL Analysis & Validation Tool",
-    "seoKeywords": ["ssl checker", "ssl certificate", "ssl analysis", "ssl validation", "ssl labs", "certificate checker", "ssl security", "tls checker", "ssl report", "website security"],
+    "seoKeywords": [
+      "ssl checker",
+      "ssl certificate",
+      "ssl analysis",
+      "ssl validation",
+      "ssl labs",
+      "certificate checker",
+      "ssl security",
+      "tls checker",
+      "ssl report",
+      "website security"
+    ],
     "category": "Security Tools",
-    "features": ["SSL Labs API integration", "Comprehensive security analysis", "Certificate chain validation", "Vulnerability detection", "Detailed SSL reports", "Domain security scoring"]
+    "features": [
+      "SSL Labs API integration",
+      "Comprehensive security analysis",
+      "Certificate chain validation",
+      "Vulnerability detection",
+      "Detailed SSL reports",
+      "Domain security scoring"
+    ]
   },
   {
     "id": "dns-lookup",
@@ -96,12 +248,34 @@
     "description": "Perform comprehensive DNS queries for various record types using multiple DNS providers. Get detailed DNS information with caching and history tracking.",
     "shortDescription": "Perform DNS queries for various record types",
     "icon": "DNSIcon",
-    "badges": ["DNS over HTTPS", "Multiple Providers", "Record History"],
+    "badges": [
+      "DNS over HTTPS",
+      "Multiple Providers",
+      "Record History"
+    ],
     "path": "/dns-lookup",
     "seoTitle": "DNS Lookup Tool - Free DNS Record Checker & Analyzer",
-    "seoKeywords": ["dns lookup", "dns checker", "dns records", "dns analysis", "domain lookup", "dns resolver", "nslookup", "dig tool", "dns over https", "dns query"],
+    "seoKeywords": [
+      "dns lookup",
+      "dns checker",
+      "dns records",
+      "dns analysis",
+      "domain lookup",
+      "dns resolver",
+      "nslookup",
+      "dig tool",
+      "dns over https",
+      "dns query"
+    ],
     "category": "Network Tools",
-    "features": ["Multiple DNS providers", "All record types support", "DNS over HTTPS", "Query history tracking", "Response caching", "Detailed DNS analysis"]
+    "features": [
+      "Multiple DNS providers",
+      "All record types support",
+      "DNS over HTTPS",
+      "Query history tracking",
+      "Response caching",
+      "Detailed DNS analysis"
+    ]
   },
   {
     "id": "whois-lookup",
@@ -109,12 +283,34 @@
     "description": "Get detailed information about domains and IP addresses using modern RDAP protocol. View registration data, nameservers, and comprehensive geolocation information.",
     "shortDescription": "Get detailed information about domains and IP addresses",
     "icon": "WHOISIcon",
-    "badges": ["RDAP Protocol", "IP Geolocation", "Domain History"],
+    "badges": [
+      "RDAP Protocol",
+      "IP Geolocation",
+      "Domain History"
+    ],
     "path": "/whois-lookup",
     "seoTitle": "WHOIS Lookup Tool - Domain & IP Information Checker",
-    "seoKeywords": ["whois lookup", "domain lookup", "whois checker", "domain info", "ip lookup", "rdap", "domain registration", "nameservers", "domain owner", "ip geolocation"],
+    "seoKeywords": [
+      "whois lookup",
+      "domain lookup",
+      "whois checker",
+      "domain info",
+      "ip lookup",
+      "rdap",
+      "domain registration",
+      "nameservers",
+      "domain owner",
+      "ip geolocation"
+    ],
     "category": "Network Tools",
-    "features": ["RDAP protocol support", "Domain registration data", "IP geolocation information", "Nameserver details", "Registration history", "Comprehensive domain analysis"]
+    "features": [
+      "RDAP protocol support",
+      "Domain registration data",
+      "IP geolocation information",
+      "Nameserver details",
+      "Registration history",
+      "Comprehensive domain analysis"
+    ]
   },
   {
     "id": "data-converter",
@@ -122,12 +318,34 @@
     "description": "Convert between JSON, YAML, and TOML formats with validation and formatting. Features auto-detection, syntax highlighting, and structure analysis.",
     "shortDescription": "Convert between JSON, YAML, and TOML formats",
     "icon": "JSONIcon",
-    "badges": ["Multi-Format", "Auto-Detection", "Syntax Highlighting"],
+    "badges": [
+      "Multi-Format",
+      "Auto-Detection",
+      "Syntax Highlighting"
+    ],
     "path": "/data-converter",
     "seoTitle": "Data Converter - JSON, YAML & TOML Format Converter",
-    "seoKeywords": ["data converter", "json converter", "yaml converter", "toml converter", "json to yaml", "yaml to json", "json formatter", "yaml formatter", "data format", "config converter"],
+    "seoKeywords": [
+      "data converter",
+      "json converter",
+      "yaml converter",
+      "toml converter",
+      "json to yaml",
+      "yaml to json",
+      "json formatter",
+      "yaml formatter",
+      "data format",
+      "config converter"
+    ],
     "category": "Developer Tools",
-    "features": ["Multi-format support (JSON, YAML, TOML)", "Auto-format detection", "Syntax highlighting", "Data validation", "Structure analysis", "Error highlighting"]
+    "features": [
+      "Multi-format support (JSON, YAML, TOML)",
+      "Auto-format detection",
+      "Syntax highlighting",
+      "Data validation",
+      "Structure analysis",
+      "Error highlighting"
+    ]
   },
   {
     "id": "base64",
@@ -135,12 +353,34 @@
     "description": "Encode and decode text and files using Base64 with multiple variants. Features auto-detection, batch processing, and security-focused workflows.",
     "shortDescription": "Encode and decode text and files using Base64",
     "icon": "Base64Icon",
-    "badges": ["Multiple Variants", "File Support", "Batch Processing"],
+    "badges": [
+      "Multiple Variants",
+      "File Support",
+      "Batch Processing"
+    ],
     "path": "/base64",
     "seoTitle": "Base64 Encoder/Decoder - Free Online Base64 Tool",
-    "seoKeywords": ["base64 encoder", "base64 decoder", "base64 converter", "encode base64", "decode base64", "base64 tool", "base64 online", "text encoder", "file encoder", "base64 utility"],
+    "seoKeywords": [
+      "base64 encoder",
+      "base64 decoder",
+      "base64 converter",
+      "encode base64",
+      "decode base64",
+      "base64 tool",
+      "base64 online",
+      "text encoder",
+      "file encoder",
+      "base64 utility"
+    ],
     "category": "Developer Tools",
-    "features": ["Text and file encoding", "Multiple Base64 variants", "Batch processing", "Auto-detection", "Security-focused design", "Download encoded files"]
+    "features": [
+      "Text and file encoding",
+      "Multiple Base64 variants",
+      "Batch processing",
+      "Auto-detection",
+      "Security-focused design",
+      "Download encoded files"
+    ]
   },
   {
     "id": "jwt",
@@ -148,12 +388,34 @@
     "description": "Decode JWT tokens completely client-side without sending to external services. Validate signatures, expiration, claims and analyze token security for API debugging and auth troubleshooting.",
     "shortDescription": "Decode JWT tokens client-side without external services",
     "icon": "JWTIcon",
-    "badges": ["100% Client-Side", "Privacy First", "Security Analysis"],
+    "badges": [
+      "100% Client-Side",
+      "Privacy First",
+      "Security Analysis"
+    ],
     "path": "/jwt",
     "seoTitle": "JWT Decoder/Validator - Secure Client-Side JWT Token Analysis",
-    "seoKeywords": ["jwt decoder", "jwt validator", "json web token", "jwt debugger", "token decoder", "jwt parser", "auth debugging", "jwt security", "client side jwt", "token validation"],
+    "seoKeywords": [
+      "jwt decoder",
+      "jwt validator",
+      "json web token",
+      "jwt debugger",
+      "token decoder",
+      "jwt parser",
+      "auth debugging",
+      "jwt security",
+      "client side jwt",
+      "token validation"
+    ],
     "category": "Security Tools",
-    "features": ["100% client-side processing", "No data sent to servers", "JWT signature validation", "Claims analysis", "Expiration checking", "Token security analysis"]
+    "features": [
+      "100% client-side processing",
+      "No data sent to servers",
+      "JWT signature validation",
+      "Claims analysis",
+      "Expiration checking",
+      "Token security analysis"
+    ]
   },
   {
     "id": "password-generator",
@@ -161,12 +423,34 @@
     "description": "Generate secure, random passwords with customizable length and character types. Features strength analysis, bulk generation, and secure download options for password management.",
     "shortDescription": "Generate secure, random passwords with customizable options",
     "icon": "PasswordIcon",
-    "badges": ["Cryptographically Secure", "Bulk Generation", "Strength Analysis"],
+    "badges": [
+      "Cryptographically Secure",
+      "Bulk Generation",
+      "Strength Analysis"
+    ],
     "path": "/password-generator",
     "seoTitle": "Password Generator - Secure Random Password Creator",
-    "seoKeywords": ["password generator", "secure password", "random password", "password creator", "strong password", "password strength", "bulk passwords", "password tool", "secure generator", "password manager"],
+    "seoKeywords": [
+      "password generator",
+      "secure password",
+      "random password",
+      "password creator",
+      "strong password",
+      "password strength",
+      "bulk passwords",
+      "password tool",
+      "secure generator",
+      "password manager"
+    ],
     "category": "Security Tools",
-    "features": ["Cryptographically secure generation", "Customizable length and character sets", "Password strength analysis", "Bulk password generation", "Secure download options", "No server communication"]
+    "features": [
+      "Cryptographically secure generation",
+      "Customizable length and character sets",
+      "Password strength analysis",
+      "Bulk password generation",
+      "Secure download options",
+      "No server communication"
+    ]
   },
   {
     "id": "buzzword-ipsum",
@@ -174,12 +458,34 @@
     "description": "Generate corporate buzzword-filled ipsum text for mockups and presentations. Create professional-sounding but meaningless content perfect for design templates and business materials.",
     "shortDescription": "Generate corporate buzzword ipsum text",
     "icon": "BuzzwordIpsumIcon",
-    "badges": ["Lorem Ipsum Alternative", "Corporate Speak", "Business Jargon"],
+    "badges": [
+      "Lorem Ipsum Alternative",
+      "Corporate Speak",
+      "Business Jargon"
+    ],
     "path": "/buzzword-ipsum",
     "seoTitle": "Buzzword Ipsum - Corporate Lorem Ipsum Generator & Alternative",
-    "seoKeywords": ["buzzword ipsum", "corporate lorem ipsum", "business jargon generator", "buzzword generator", "corporate placeholder", "business ipsum", "mockup content", "corporate speak", "professional text", "lorem ipsum alternative"],
+    "seoKeywords": [
+      "buzzword ipsum",
+      "corporate lorem ipsum",
+      "business jargon generator",
+      "buzzword generator",
+      "corporate placeholder",
+      "business ipsum",
+      "mockup content",
+      "corporate speak",
+      "professional text",
+      "lorem ipsum alternative"
+    ],
     "category": "Content Tools",
-    "features": ["Corporate buzzword generation", "Multiple output formats", "Customizable length options", "Professional placeholder text", "Perfect for mockups", "Client-side generation"]
+    "features": [
+      "Corporate buzzword generation",
+      "Multiple output formats",
+      "Customizable length options",
+      "Professional placeholder text",
+      "Perfect for mockups",
+      "Client-side generation"
+    ]
   },
   {
     "id": "markdown-table-tool",
@@ -188,7 +494,11 @@
     "shortDescription": "Markdown table creator and formatter",
     "icon": "MarkdownTableIcon",
     "iconColor": "text-blue-600",
-    "badges": ["Editor", "Formatter", "Validator"],
+    "badges": [
+      "Editor",
+      "Formatter",
+      "Validator"
+    ],
     "path": "/markdown-table-tool",
     "seoTitle": "Markdown Table Tool - Table Creator, Formatter & Generator",
     "seoKeywords": [
@@ -220,4 +530,4 @@
     "badges": [],
     "path": "https://github.com/russmckendrick/russ-tools"
   }
-] 
+]

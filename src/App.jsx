@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { NewLayout } from './components/layout/NewLayout';
 import { ThemeProvider } from './components/theme-provider';
 import { NewHomeView } from './components/layout/NewHomeView';
@@ -60,11 +60,6 @@ class LazyLoadErrorBoundary extends React.Component {
 }
 
 // Lazy load tool components for code splitting with better error handling
-const NetworkDesignerTool = lazy(() => 
-  import('./components/tools/network-designer/NetworkDesignerShadcn').catch(() => ({
-    default: () => <div>Error loading Network Designer Tool</div>
-  }))
-);
 
 // Loading component for lazy-loaded routes
 const LoadingFallback = () => (
@@ -103,11 +98,22 @@ export default function App() {
             <Route path="/" element={<NewLayout />}>
               <Route index element={<NewHomeView />} />
 
-              <Route path="network-designer" element={
+              <Route path="subnet-calculator" element={
                 <LazyRoute>
-                  <NetworkDesignerTool />
+                  <SpaToolPage toolId="subnet-calculator" />
                 </LazyRoute>
               } />
+              <Route path="subnet-calculator/:ip" element={
+                <LazyRoute>
+                  <SpaToolPage toolId="subnet-calculator" />
+                </LazyRoute>
+              } />
+              <Route path="subnet-calculator/:ip/:prefix" element={
+                <LazyRoute>
+                  <SpaToolPage toolId="subnet-calculator" />
+                </LazyRoute>
+              } />
+              <Route path="network-designer" element={<Navigate to="/subnet-calculator" replace />} />
 
               <Route path="azure-naming" element={
                 <LazyRoute>

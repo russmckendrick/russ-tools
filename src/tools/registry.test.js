@@ -73,14 +73,25 @@ describe('frozen contract #1 — deep links', () => {
     .filter((p) => p !== '/' && p !== 'delete')
     .map((p) => `/${p}`);
 
+  // Paths a manifest has explicitly retired: served as a 301 by _redirects
+  // and as a <Navigate> by the SPA, never as a page of their own.
+  const redirectSources = new Set(TOOLS.flatMap((t) => t.redirectFrom ?? []));
+
   it('finds the current router table', () => {
-    expect(routerPaths.length).toBe(23);
+    expect(routerPaths.length).toBe(26);
   });
 
   it('serves every route the SPA serves today', () => {
     const owned = new Set(allRoutes().map((r) => r.path));
-    const missing = routerPaths.filter((p) => !owned.has(p));
+    const missing = routerPaths.filter((p) => !owned.has(p) && !redirectSources.has(p));
     expect(missing, `routes the registry would drop: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  it('redirect sources collide with nothing the registry serves', () => {
+    const owned = new Set(allRoutes().map((r) => r.path));
+    for (const from of redirectSources) {
+      expect(owned.has(from), `${from} is both a redirect and a served route`).toBe(false);
+    }
   });
 
   it('adds no route the SPA does not already serve', () => {
