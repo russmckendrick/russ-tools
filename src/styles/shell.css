@@ -40,7 +40,6 @@ body > main {
 
 .rt-topbar {
   position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -131,7 +130,25 @@ body > main {
 
 /* --- The one ambient element ---------------------------------------------
    A broad wash of the house accent behind the top of the page, low enough
-   that it never competes with content. DESIGN.md permits exactly this one. */
+   that it never competes with content. DESIGN.md permits exactly this one.
+
+   The page sections above it carry `position: relative` and deliberately
+   **no** `z-index`. They only need to paint after this wash, and a
+   positioned element with `z-index: auto` does exactly that — same painting
+   step, later in tree order — *without* creating a stacking context.
+
+   They each used to say `z-index: 1`, which did create one, and it took two
+   of them to produce the bug. The toaster asks for `z-index: 999999999`, but
+   it renders inside the island, so inside `.rt-tool-body`'s context that
+   counts for nothing outside it — the whole subtree is worth 1. The footer
+   was also 1 and comes later in the document, so it won, and its top hairline
+   drew straight across every toast that reached the bottom of the page.
+
+   Neither element was wrong on its own, which is why fixing one of them
+   still left the bug: the pair was. Removing the `z-index` from all of them
+   is the fix, and it also removes the ceiling for anything else a tool
+   renders in place rather than through a portal — sonner does not portal,
+   Radix dialogs do, which is why the dialogs never showed this. */
 
 .rt-ambient {
   position: absolute;
@@ -156,7 +173,6 @@ body > main {
 
 .rt-notfound {
   position: relative;
-  z-index: 1;
   padding-block: var(--rt-space-xl) var(--rt-space-md);
   display: grid;
   gap: var(--rt-space-sm);
@@ -176,7 +192,6 @@ body > main {
 
 .rt-index-title {
   position: relative;
-  z-index: 1;
   margin: 0;
   padding-block: var(--rt-space-xl) var(--rt-space-md);
   font-size: var(--text-headline-lg);
@@ -188,7 +203,6 @@ body > main {
 
 .rt-filters {
   position: relative;
-  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -236,7 +250,6 @@ body > main {
 
 .rt-board {
   position: relative;
-  z-index: 1;
   display: grid;
   gap: var(--rt-space-xl);
   padding-bottom: 30px;
@@ -396,7 +409,6 @@ body > main {
 
 .rt-tool-head {
   position: relative;
-  z-index: 1;
   padding-block: var(--rt-space-xl) 18px;
   border-bottom: 1px solid var(--color-outline);
   display: grid;
@@ -458,7 +470,6 @@ body > main {
    all of them is what Session 6 reverted. */
 .rt-tool-body {
   position: relative;
-  z-index: 1;
   padding-block: 18px var(--rt-space-xl);
   display: grid;
   gap: var(--rt-space-md);
@@ -501,7 +512,6 @@ body > main {
 
 .rt-shell-foot {
   position: relative;
-  z-index: 1;
   border-top: 1px solid var(--color-outline);
   margin-top: var(--rt-space-2xl);
   padding-block: 14px 40px;
