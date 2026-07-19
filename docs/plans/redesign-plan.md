@@ -188,14 +188,16 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] Bug fix: **Microsoft Portals** `undefined/…` base URL → 24 Azure links restored (`PortalLinkGenerator.jsx`)
 - [x] Bug fix: **sharelink** un-imported `notifications` ReferenceError removed (2 sites)
 - [x] Rewrite **CLAUDE.md** to reality + plan-awareness (removes the dead-dep/14-tool/next-themes lies)
-- [ ] Bug fix: **azure-kql** wrap `useKQLStore` in `persist()` (history/favourites lost on refresh)
-- [ ] Bug fix: **markdown-table** undo/redo off-by-one + literal `'\t'` CSV delimiter
-- [ ] Bug fix: **Password Generator** → `crypto.getRandomValues`
-- [ ] Characterization tests: subnet allocator (+ Terraform snapshots), markdown-table parse/format + csvParser, data-converter tri-format, azure-naming rules, base64 round-trips
+- [x] Bug fix: **azure-kql** wrap `useKQLStore` in `persist()` (history/favourites lost on refresh)
+- [x] Bug fix: **markdown-table** undo/redo off-by-one + literal `'\t'` CSV delimiter
+- [x] Bug fix: **Password Generator** → `crypto.getRandomValues` (+ unbiased Fisher–Yates shuffle)
+- [x] Dead-code purge — 23 files / ~3,300 LOC, verified by transitive reachability (now zero unreachable files)
+- [x] Dependency purge — 9 packages removed; `uuid` → `crypto.randomUUID`
+- [~] Characterization tests: **done** sharelink codec, markdown-table csvParser · **todo** subnet allocator (+ Terraform snapshots), tableFormatter parse/format, data-converter tri-format, azure-naming rules, base64 round-trips
 - [ ] Capture live worker response fixtures (ssl/whois/tenant) → MSW mocks
-- [ ] Dead-code purge (~3,500 lines): azure-kql `*Shadcn` stack, `cron.js`, `_iconImports.js`, `toolsUtils.js`, `generateSitemap.js`, ui-demo, `scroll-area.jsx`, certificate-chain remnants
-- [ ] Dependency purge: `dayjs`, `framer-motion`, `d3-force`, `@svgdotjs/svg.js`, `next-themes`, `tailwindcss-animate`, `uuid` (→`crypto.randomUUID`), `autoprefixer`; drop `@radix-ui/react-scroll-area`
-- [ ] Add `BEHAVIOR_CHANGES.md` ledger (started when the first deliberate fixture change lands)
+- [ ] Purge certificate-chain-analyzer remnants from `src/utils/api/apiConfig.json` (`certificate`, `hackertarget_ssl`) and the two docs that mention them
+- [ ] Investigate the 1 remaining ESLint parse-error file
+- [ ] Add `BEHAVIOR_CHANGES.md` ledger — first entry pending: `convertToCSV` drops falsy cells (`0`, `false`), captured as a KNOWN-BUG fixture in `csvParser.test.js`, to be fixed during the Phase 3 port
 
 ---
 
@@ -247,3 +249,51 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - Commit this foundation, then continue Phase 0 bug fixes: azure-kql `persist`, markdown-table
   undo/`\t`, password-generator crypto. Add characterization tests alongside each core before
   touching it. Investigate the 1 ESLint parse-error file. Then begin the dead-code purge.
+
+### 2026-07-19 — Session 1 (continued): remaining bug fixes + the purges
+
+**Model:** Opus 4.8. Committed as 8 commits on `redesign/phase-0`.
+
+**Bug fixes (each its own commit)**
+- **azure-kql `persist`:** the store imported `persist` but was never wrapped in it, so
+  `queryHistory` / `favorites` / `customTemplates` died on every reload. Wrapped and
+  `partialize`d to those three durable slices (selection + generated query stay transient),
+  keyed `rt:azure-kql:store` — already in the redesign's target namespace, so it needs no
+  later migration.
+- **password-generator:** replaced all six `Math.random()` draws with `secureRandomInt`
+  (rejection sampling over `Uint32Array` to avoid modulo bias) and swapped the
+  `sort(() => Math.random() - 0.5)` shuffle — which is neither secure nor unbiased — for
+  Fisher–Yates.
+- **markdown-table undo/redo:** root cause was that history recorded the state *before* each
+  change and started empty, so `history[historyIndex]` was never the state on screen: `undo`
+  jumped two steps back and the newest state was never stored at all. Fixed by seeding history
+  with the initial state and recording the *resulting* state after each change — which makes
+  the existing `undo`/`redo` symmetrical without touching them — plus a correct overflow cap.
+- **markdown-table tab export:** `<SelectItem value="\t">` — JSX attribute literals don't
+  process escapes, so "Tab" exported a literal backslash-t. Now `value={'\t'}`.
+
+**Purges (verified, not assumed)**
+- Wrote a transitive-reachability analyser (scratchpad) rather than trusting grep. First run
+  reported 126 dead files — obviously wrong (it flagged live files), because the regex missed
+  `lazy(() => import(...))`, so every lazily-routed tool cascaded. After fixing: **22 files /
+  3,241 LOC genuinely unreachable**, matching the audit's ~3,500 estimate. Deleted those plus
+  `demo.jsx` and its `/ui-demo` route (23 files). Post-purge the analyser reports **zero**
+  unreachable files. Confirmed no `import.meta.glob` exists, so static analysis is complete.
+- Removed 9 unused dependencies. **Gotcha:** removing `@svgdotjs/svg.js` broke the build —
+  `vite.config.js` `manualChunks` still listed it as a chunk entry, which becomes a hard
+  "Could not resolve entry module" error once the package is gone. Removed that entry.
+
+**State at session end**
+- `pnpm test` → 27 passing (2 files). `pnpm build` → green (~4.6s). `pnpm lint` → 94 errors.
+- 8 commits on `redesign/phase-0`, working tree clean. Not pushed; no PR opened yet.
+- Untracked `.gitattributes` is auto-generated by the local graphify hook (merge driver for
+  the gitignored `graphify-out/`) — intentionally left untracked.
+
+**Next session**
+1. Finish the Phase 0 characterization tests — highest value first: **subnet allocator**
+   (network-designer is the riskiest port and carries the most user data), then
+   `tableFormatter`, data-converter tri-format, azure-naming rules, base64.
+2. Purge the certificate-chain-analyzer remnants from `apiConfig.json` + docs.
+3. Chase the single ESLint parse-error file, then decide whether to start Phase 1
+   (toolchain to Vite 8 / ESLint 10 + flip CI lint to blocking) or go straight to the
+   Phase 1 design pass.
