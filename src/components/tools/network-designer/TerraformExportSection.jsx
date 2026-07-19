@@ -8,7 +8,7 @@ import { loadPrismLanguages, highlightCode } from '../../../utils/prismLoader';
 import '../../../styles/prism-theme.css';
 import { cn } from '@/lib/utils';
 
-import { IconBrandTerraform } from '@tabler/icons-react';
+import TerraformMark from './TerraformMark';
 import { Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/network/terraformExport';
@@ -167,7 +167,7 @@ export function TerraformExportSection({ network, subnets }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
-          <IconBrandTerraform size={18} color="#7B42F6" />
+          <TerraformMark size={18} />
           Terraform Export
         </CardTitle>
         <Button size="sm" onClick={handleCopy}>

@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { IconPlus, IconArrowLeft, IconArrowRight, IconDownload, IconUpload, IconCopy, IconCheck, IconAlertTriangle } from '@tabler/icons-react';
+import { ArrowLeft, ArrowRight, Check, Copy, Download, Plus, TriangleAlert, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import SEOHead from '@/components/common/SEOHead';
 import ToolHeader from '@/components/common/ToolHeader';
@@ -80,8 +80,8 @@ const MarkdownTableTool = () => {
   };
 
   const getValidationIcon = () => {
-    if (!validation.isValid) return <IconAlertTriangle className="w-4 h-4" />;
-    return <IconCheck className="w-4 h-4" />;
+    if (!validation.isValid) return <TriangleAlert className="w-4 h-4" />;
+    return <Check className="w-4 h-4" />;
   };
 
   return (
@@ -97,13 +97,13 @@ const MarkdownTableTool = () => {
           actions={[
             {
               text: "Import",
-              icon: IconUpload,
+              icon: Upload,
               onClick: () => setShowImportDialog(true),
               variant: "outline"
             },
             {
               text: "Export",
-              icon: IconDownload,
+              icon: Download,
               onClick: () => setShowExportDialog(true),
               variant: "outline"
             }
@@ -131,7 +131,7 @@ const MarkdownTableTool = () => {
               disabled={!canUndo}
               title="Undo last action"
             >
-              <IconArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             
             <Button
@@ -141,7 +141,7 @@ const MarkdownTableTool = () => {
               disabled={!canRedo}
               title="Redo last action"
             >
-              <IconArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" />
             </Button>
             
             <div className="h-6 w-px bg-border" />
@@ -151,7 +151,7 @@ const MarkdownTableTool = () => {
               size="sm"
               onClick={addRow}
             >
-              <IconPlus className="w-4 h-4 mr-1" />
+              <Plus className="w-4 h-4 mr-1" />
               Row
             </Button>
             
@@ -160,7 +160,7 @@ const MarkdownTableTool = () => {
               size="sm"
               onClick={addColumn}
             >
-              <IconPlus className="w-4 h-4 mr-1" />
+              <Plus className="w-4 h-4 mr-1" />
               Column
             </Button>
           </div>
@@ -207,7 +207,7 @@ const MarkdownTableTool = () => {
                   size="sm"
                   onClick={handleCopyMarkdown}
                 >
-                  <IconCopy className="w-4 h-4 mr-1" />
+                  <Copy className="w-4 h-4 mr-1" />
                   Copy
                 </Button>
               </div>
@@ -220,7 +220,7 @@ const MarkdownTableTool = () => {
               
               {!validation.isValid && (
                 <Alert variant="destructive">
-                  <IconAlertTriangle className="w-4 h-4" />
+                  <TriangleAlert className="w-4 h-4" />
                   <AlertDescription>
                     <div className="font-medium mb-2">Validation Errors:</div>
                     <ul className="list-disc list-inside space-y-1 text-body-sm">
@@ -237,7 +237,7 @@ const MarkdownTableTool = () => {
               
               {(validation.data.warnings.length > 0 || validation.markdown.warnings.length > 0) && (
                 <Alert>
-                  <IconAlertTriangle className="w-4 h-4" />
+                  <TriangleAlert className="w-4 h-4" />
                   <AlertDescription>
                     <div className="font-medium mb-2">Warnings:</div>
                     <ul className="list-disc list-inside space-y-1 text-body-sm">

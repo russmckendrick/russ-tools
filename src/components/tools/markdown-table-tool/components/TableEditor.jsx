@@ -4,15 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { 
-  IconPlus, 
-  IconMinus, 
-  IconAlignLeft, 
-  IconAlignCenter, 
-  IconAlignRight,
-  IconTrash,
-  IconCopy
-} from '@tabler/icons-react';
+import { AlignCenter, AlignLeft, AlignRight, Copy, Minus, Plus, Trash2 } from 'lucide-react';
 
 const TableEditor = ({
   data,
@@ -102,9 +94,9 @@ const TableEditor = ({
 
   const getAlignmentIcon = (alignment) => {
     switch (alignment) {
-      case 'center': return <IconAlignCenter className="w-4 h-4" />;
-      case 'right': return <IconAlignRight className="w-4 h-4" />;
-      default: return <IconAlignLeft className="w-4 h-4" />;
+      case 'center': return <AlignCenter className="w-4 h-4" />;
+      case 'right': return <AlignRight className="w-4 h-4" />;
+      default: return <AlignLeft className="w-4 h-4" />;
     }
   };
 
@@ -147,15 +139,15 @@ const TableEditor = ({
         
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" onClick={() => onAddRow()}>
-            <IconPlus className="w-4 h-4 mr-1" />
+            <Plus className="w-4 h-4 mr-1" />
             Add Row
           </Button>
           <Button variant="outline" size="sm" onClick={() => onAddColumn()}>
-            <IconPlus className="w-4 h-4 mr-1" />
+            <Plus className="w-4 h-4 mr-1" />
             Add Column
           </Button>
           <Button variant="outline" size="sm" onClick={onClearTable}>
-            <IconTrash className="w-4 h-4 mr-1" />
+            <Trash2 className="w-4 h-4 mr-1" />
             Clear
           </Button>
         </div>
@@ -182,19 +174,19 @@ const TableEditor = ({
               <SelectContent>
                 <SelectItem value="left">
                   <div className="flex items-center space-x-2">
-                    <IconAlignLeft className="w-4 h-4" />
+                    <AlignLeft className="w-4 h-4" />
                     <span>Left</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="center">
                   <div className="flex items-center space-x-2">
-                    <IconAlignCenter className="w-4 h-4" />
+                    <AlignCenter className="w-4 h-4" />
                     <span>Center</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="right">
                   <div className="flex items-center space-x-2">
-                    <IconAlignRight className="w-4 h-4" />
+                    <AlignRight className="w-4 h-4" />
                     <span>Right</span>
                   </div>
                 </SelectItem>
@@ -219,7 +211,7 @@ const TableEditor = ({
                       className="h-6 w-6 p-0"
                       onClick={() => onAddRow(rowIndex)}
                     >
-                      <IconPlus className="w-3 h-3" />
+                      <Plus className="w-3 h-3" />
                     </Button>
                     <span className="text-data-sm font-mono text-muted-foreground">{rowIndex + 1}</span>
                     {data.length > 1 && (
@@ -229,7 +221,7 @@ const TableEditor = ({
                         className="h-6 w-6 p-0 text-danger hover:text-danger"
                         onClick={() => onRemoveRow(rowIndex)}
                       >
-                        <IconMinus className="w-3 h-3" />
+                        <Minus className="w-3 h-3" />
                       </Button>
                     )}
                   </div>
@@ -293,7 +285,7 @@ const TableEditor = ({
                       className="h-6 w-6 p-0"
                       onClick={() => onAddColumn(colIndex)}
                     >
-                      <IconPlus className="w-3 h-3" />
+                      <Plus className="w-3 h-3" />
                     </Button>
                     {data[0]?.length > 1 && (
                       <Button
@@ -302,7 +294,7 @@ const TableEditor = ({
                         className="h-6 w-6 p-0 text-danger hover:text-danger"
                         onClick={() => onRemoveColumn(colIndex)}
                       >
-                        <IconMinus className="w-3 h-3" />
+                        <Minus className="w-3 h-3" />
                       </Button>
                     )}
                   </div>
@@ -326,7 +318,7 @@ const TableEditor = ({
               setContextMenu(null);
             }}
           >
-            <IconPlus className="w-4 h-4" />
+            <Plus className="w-4 h-4" />
             <span>Insert Row Below</span>
           </button>
           
@@ -337,7 +329,7 @@ const TableEditor = ({
               setContextMenu(null);
             }}
           >
-            <IconPlus className="w-4 h-4" />
+            <Plus className="w-4 h-4" />
             <span>Insert Column Right</span>
           </button>
           
@@ -348,7 +340,7 @@ const TableEditor = ({
               setContextMenu(null);
             }}
           >
-            <IconCopy className="w-4 h-4" />
+            <Copy className="w-4 h-4" />
             <span>Duplicate Row</span>
           </button>
           
@@ -359,7 +351,7 @@ const TableEditor = ({
               setContextMenu(null);
             }}
           >
-            <IconCopy className="w-4 h-4" />
+            <Copy className="w-4 h-4" />
             <span>Duplicate Column</span>
           </button>
           
@@ -371,7 +363,7 @@ const TableEditor = ({
                 setContextMenu(null);
               }}
             >
-              <IconMinus className="w-4 h-4" />
+              <Minus className="w-4 h-4" />
               <span>Delete Row</span>
             </button>
           )}
@@ -384,7 +376,7 @@ const TableEditor = ({
                 setContextMenu(null);
               }}
             >
-              <IconMinus className="w-4 h-4" />
+              <Minus className="w-4 h-4" />
               <span>Delete Column</span>
             </button>
           )}
