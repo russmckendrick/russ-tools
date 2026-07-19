@@ -367,7 +367,7 @@ const MicrosoftPortalsShadcn = () => {
 
         {/* Portal Links Section */}
         {portalLinks && (
-          <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60 before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r from-[color-mix(in_oklab,var(--cat)_60%,transparent)] to-[color-mix(in_oklab,var(--cat)_35%,transparent)]">
+          <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>

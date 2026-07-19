@@ -94,7 +94,7 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
   };
 
   return (
-    <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
+    <Card className="relative">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Network className="h-5 w-5 text-info" />
@@ -731,7 +731,7 @@ const NetworkDesignerShadcn = () => {
   // Setup tab content
   const renderSetupTab = () => (
     <div className="space-y-6">
-      <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
+      <Card className="relative">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Network className="h-5 w-5 text-info" />
@@ -789,7 +789,7 @@ const NetworkDesignerShadcn = () => {
 
       {current ? (
         current.parentNetwork && !isReconfiguring ? (
-          <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
+          <Card className="relative">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Info className="h-5 w-5 text-success" />
@@ -834,7 +834,7 @@ const NetworkDesignerShadcn = () => {
           />
         )
       ) : (
-        <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
+        <Card className="relative">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Network className="h-12 w-12 text-muted-foreground mb-4" />
             <CardTitle className="text-center mb-2">No Network Selected</CardTitle>
@@ -855,7 +855,7 @@ const NetworkDesignerShadcn = () => {
   const renderDesignTab = () => {
     if (!current?.parentNetwork) {
       return (
-        <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
+        <Card className="relative">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Layers3 className="h-12 w-12 text-muted-foreground mb-4" />
             <CardTitle className="text-center mb-2">Configure Parent Network First</CardTitle>

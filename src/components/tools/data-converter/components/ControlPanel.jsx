@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
 import ConversionSettings from './ConversionSettings';
 import ConversionHistory from './ConversionHistory';
 import SamplesDialog from './SamplesDialog';
@@ -18,16 +18,15 @@ const ControlPanel = ({
   setIsSamplesOpen,
   onLoadSample
 }) => {
+  // The card used to open with "Data Converter" and "Convert between JSON,
+  // YAML, and TOML formats with validation" — the tool's own name and
+  // description, restated directly beneath the page's h1 and its
+  // shortDescription, in both apps. What is left is what the card is
+  // actually for: the three dialogs.
   return (
-    <Card className="mb-6 relative rounded-xl shadow-sm ring-1 ring-border/60">
+    <Card className="mb-6">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-title-sm">Data Converter</CardTitle>
-            <CardDescription>
-              Convert between JSON, YAML, and TOML formats with validation
-            </CardDescription>
-          </div>
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-2">
             <SamplesDialog
               isOpen={isSamplesOpen}

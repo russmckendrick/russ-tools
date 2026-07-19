@@ -93,7 +93,7 @@ const ConversionForm = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Input Section */}
-      <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
+      <Card className="relative">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
@@ -185,7 +185,7 @@ const ConversionForm = ({
       </Card>
 
       {/* Output Section */}
-      <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
+      <Card className="relative">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>

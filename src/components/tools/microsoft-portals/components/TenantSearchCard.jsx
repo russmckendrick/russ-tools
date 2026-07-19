@@ -37,7 +37,7 @@ const TenantSearchCard = ({
   };
 
   return (
-    <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
+    <Card className="relative">
       <CardHeader className="pb-3">
         <CardTitle className="text-title-sm">Tenant Lookup & Portal Access</CardTitle>
         <CardDescription>
@@ -67,7 +67,7 @@ const TenantSearchCard = ({
 
           {/* Recent Searches */}
           {lookupHistory.length > 0 && (
-            <div className="rounded-lg p-3 ring-1 ring-border/60">
+            <div className="rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-body-sm font-medium">Recent Searches</Label>
                 <Button variant="outline" size="sm" onClick={onClearHistory}>
@@ -116,7 +116,7 @@ const TenantSearchCard = ({
 
           {/* Tenant Info */}
           {tenantInfo && (
-            <Card className="rounded-xl shadow-sm ring-1 ring-border/60">
+            <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-title-sm">Tenant Information</CardTitle>
               </CardHeader>
