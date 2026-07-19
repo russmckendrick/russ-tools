@@ -93,13 +93,13 @@
   --radius-lg: 10px;
   --radius-xl: 12px;
   --radius-full: 9999px;
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 12px;
-  --spacing-lg: 16px;
-  --spacing-xl: 24px;
-  --spacing-2xl: 32px;
-  --spacing-3xl: 48px;
-  --spacing-gutter: 22px;
-  --spacing-max-width: 1120px;
+  --rt-space-xs: 4px;
+  --rt-space-sm: 8px;
+  --rt-space-md: 12px;
+  --rt-space-lg: 16px;
+  --rt-space-xl: 24px;
+  --rt-space-2xl: 32px;
+  --rt-space-3xl: 48px;
+  --rt-space-gutter: 22px;
+  --rt-space-max-width: 1120px;
 }

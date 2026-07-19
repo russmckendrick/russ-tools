@@ -1,15 +1,9 @@
 import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../../../ui/dialog';
+import { HelpDialog } from '../../../ui/help-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../ui/card';
 import { Badge } from '../../../ui/badge';
 import { Button } from '../../../ui/button';
 import { 
-  HelpCircle, 
   Search, 
   Building, 
   Shield, 
@@ -25,16 +19,13 @@ import {
 
 const HelpSystemShadcn = ({ opened, onClose }) => {
   return (
-    <Dialog open={opened} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <HelpCircle className="w-5 h-5" />
-            Microsoft Tenant Lookup Help
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-6">
+    <HelpDialog
+      open={opened}
+      onOpenChange={onClose}
+      title="Microsoft Tenant Lookup Help"
+      description="What this tool asks, and what it can tell you"
+    >
+      <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -277,9 +268,8 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
               </a>
             </Button>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </HelpDialog>
   );
 };
 

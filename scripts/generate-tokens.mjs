@@ -37,5 +37,15 @@ const header = `/* =============================================================
    ========================================================================== */
 `;
 
-writeFileSync(out, `${header}\n${theme}\n`);
+// Rename the spacing scale out of Tailwind's `--spacing-*` namespace.
+//
+// DESIGN.md names its spacing steps xs/sm/md/lg/xl/2xl/3xl, which are exactly
+// the keys Tailwind 4 uses for its *container* scale. Emitted as
+// `--spacing-lg` they shadow it, so `max-w-lg` stops meaning 32rem and starts
+// meaning 16px — which silently collapsed every dialog in every tool to a
+// sliver. The names stay as DESIGN.md writes them; only the CSS custom
+// property prefix changes, to one Tailwind does not treat as a scale.
+const namespaced = theme.replace(/--spacing-/g, '--rt-space-');
+
+writeFileSync(out, `${header}\n${namespaced}\n`);
 console.log(`wrote ${out.replace(fileURLToPath(root), '')} (${theme.split('\n').length} lines)`);

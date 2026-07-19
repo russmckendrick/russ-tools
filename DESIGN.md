@@ -306,6 +306,13 @@ Spacing follows a 4px base scale (`4 / 8 / 12 / 16 / 24 / 32 / 48`). Card
 padding is `16px`, grid gaps are `12px`, and space between category groups is
 `24px`.
 
+> **Implementation note.** These steps reach CSS as `--rt-space-*`, not
+> `--spacing-*`. The names below (`xs`…`3xl`) are exactly Tailwind 4's
+> *container* scale keys, so emitting them in Tailwind's spacing namespace
+> shadows it and `max-w-lg` stops meaning 32rem and starts meaning 16px. That
+> collapsed every dialog in the app to a 48px sliver. `pnpm generate:tokens`
+> does the rename and a test asserts it stays done.
+
 Tool cards sit in a responsive grid: one column below 600px, two to 940px,
 three above. Cards are uniform — no featured or double-width tiles — because
 every tool is equally reachable and hierarchy here would be a lie.
@@ -405,11 +412,17 @@ Borders are always exactly `1px`. There are no thick borders and no double rules
 - **Toast** — the panel again, bottom-right, with the status colour on the
   icon only. Every tool notifies through the same component; a tool never
   configures its own toaster.
-- **Help** — one affordance, everywhere: a secondary icon button carrying the
-  same glyph in the same place, opening a Dialog. A tool supplies the content
-  and nothing else. There were four answers to this question before — two
-  bespoke dialogs, a tooltip, and a `helpButton` prop no tool ever passed —
-  which is how an interface stops reading as one product.
+- **Sheet** — a panel that slides in from the right edge, full height, over
+  the page scrim. For content read *alongside* the tool rather than instead
+  of it. Same primitive as Dialog, so focus trapping and Escape are identical.
+- **Help** — one affordance, everywhere: a secondary button carrying the same
+  glyph in the same place, opening a **right-hand Sheet** rather than a
+  centred modal, so what you were working on stays visible behind it. A tool
+  supplies the content and nothing else — not the width, the heading level or
+  the glyph. Field-level help is the separate, smaller `HelpHint`: the `i`
+  beside one control. There were four answers to this question before — two
+  bespoke dialogs at two different widths, a tooltip, and a `helpButton` prop
+  no tool ever passed — which is how an interface stops reading as one product.
 - **Table row** — monospace, odd rows tinted with `surface-inset`, the type
   column in the category hue. This is how all record-style output is rendered.
 

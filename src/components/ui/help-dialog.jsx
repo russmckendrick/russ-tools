@@ -2,27 +2,34 @@ import * as React from 'react';
 import { CircleQuestionMark } from 'lucide-react';
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 /**
- * The one way a tool offers help.
+ * The one way a tool offers help: a panel that slides in from the right.
  *
- * Before this there were three: tenant-lookup opened a bespoke dialog,
- * azure-kql opened a different bespoke dialog, azure-naming used a tooltip,
- * and `ToolHeader` carried a `helpButton` prop no tool ever passed. Four
- * answers to one question is how an interface stops feeling like one product.
+ * A slide-in rather than a centred modal because help is read *alongside* the
+ * tool — the query you were building stays on screen behind it, which a
+ * centred dialog covers.
  *
- * The trigger is always a secondary icon button in the same place with the
- * same glyph, and the panel is always a Dialog — so a user who has found help
- * in one tool knows where it is in all fifteen. Tools supply only the content.
+ * Before this there were four affordances: tenant-lookup opened a bespoke
+ * dialog at `max-w-4xl`, azure-kql a different one at `max-w-3xl`,
+ * azure-naming used a tooltip, and `ToolHeader` carried a `helpButton` prop
+ * no tool ever passed. Tools now supply content and nothing else — not the
+ * width, the heading level, the glyph, or where the trigger sits.
+ *
+ * Two usages, both supported:
+ *  - **Uncontrolled** — omit `open`, and the standard trigger button renders.
+ *  - **Controlled** — pass `open`/`onOpenChange` and the tool owns the
+ *    trigger, which is what both existing help systems do (they open from a
+ *    `ToolHeader` action).
  *
  * @param {{
  *   title: string,
@@ -43,22 +50,29 @@ export function HelpDialog({
   onOpenChange,
   className,
 }) {
+  const controlled = open !== undefined;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" aria-label={label}>
-          <CircleQuestionMark />
-          {label}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className={cn('max-h-[85vh] max-w-2xl overflow-y-auto', className)}>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
-        </DialogHeader>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      {!controlled && (
+        <SheetTrigger asChild>
+          <Button variant="outline" size="sm" aria-label={label}>
+            <CircleQuestionMark />
+            {label}
+          </Button>
+        </SheetTrigger>
+      )}
+      <SheetContent side="right" className={cn('overflow-y-auto', className)}>
+        <SheetHeader>
+          <SheetTitle>
+            <CircleQuestionMark className="size-5 text-[var(--cat,var(--color-primary))]" />
+            {title}
+          </SheetTitle>
+          {description && <SheetDescription>{description}</SheetDescription>}
+        </SheetHeader>
         <div className="flex flex-col gap-4 text-body-sm text-on-surface-muted">{children}</div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
 

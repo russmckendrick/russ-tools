@@ -217,4 +217,22 @@ describe('token layer integrity', () => {
   it('disables ambient animation under prefers-reduced-motion', () => {
     expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   });
+
+  it('keeps the spacing scale out of Tailwind\'s --spacing-* namespace', () => {
+    // DESIGN.md names its spacing steps xs/sm/md/lg/xl/2xl/3xl, which are
+    // exactly Tailwind 4's *container* scale keys. Emitted as `--spacing-lg`
+    // they shadow it, and `max-w-lg` silently stops meaning 32rem and starts
+    // meaning 16px — which collapsed every dialog in both apps to a sliver
+    // before anyone noticed, because no tool body rendered under the shell
+    // until the bridge landed. The generator renames them to --rt-space-*.
+    const generated = readFileSync(
+      new URL('./tokens.generated.css', import.meta.url),
+      'utf8'
+    );
+    expect(generated).not.toMatch(/--spacing-/);
+    expect(generated).toMatch(/--rt-space-lg:\s*16px/);
+
+    // And nothing may reach for the old names, or it resolves to nothing.
+    expect(css).not.toMatch(/var\(--spacing-/);
+  });
 });

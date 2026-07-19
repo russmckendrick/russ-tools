@@ -1,16 +1,9 @@
 import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '../../../ui/dialog';
+import { HelpDialog } from '../../../ui/help-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../ui/tabs';
 import { Card, CardContent } from '../../../ui/card';
 import { Badge } from '../../../ui/badge';
 import { 
-  HelpCircle, 
   BookOpen, 
   Code2, 
   Zap,
@@ -20,18 +13,13 @@ import {
 
 const HelpSystem = ({ open, onClose, context: _context }) => {
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <HelpCircle className="w-5 h-5" />
-            Azure KQL Query Builder Help
-          </DialogTitle>
-          <DialogDescription>
-            Learn how to use the query builder effectively
-          </DialogDescription>
-        </DialogHeader>
-        
+    <HelpDialog
+      open={open}
+      onOpenChange={onClose}
+      title="Azure KQL Query Builder Help"
+      description="Learn how to use the query builder effectively"
+    >
+      
         <Tabs defaultValue="quickstart" className="mt-4">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="quickstart">Quick Start</TabsTrigger>
@@ -209,9 +197,8 @@ const HelpSystem = ({ open, onClose, context: _context }) => {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
+      </Tabs>
+    </HelpDialog>
   );
 };
 

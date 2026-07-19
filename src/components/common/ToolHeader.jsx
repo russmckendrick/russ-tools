@@ -3,8 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Card, CardHeader } from '../ui/card';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '../ui/tooltip';
-import { Info, HelpCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 import toolsConfig from '@/utils/toolsConfig.json';
 import { useShell } from '@/bridge/ShellContext';
 import Base64Icon from '@/components/tools/base64/Base64Icon';
@@ -65,7 +64,11 @@ const iconByKey = {
  * @param {boolean} props.standalone - If true, renders without Card wrapper (default: false)
  * @param {boolean} props.showTitle - If false, hides the big title (for when top bar shows page name). Default: true
  * @param {string} props.toolId - Optional tool id to resolve icon from toolsConfig
- * @param {Object} props.helpButton - Help button configuration (optional, alternative to actions)
+
+ * Help is NOT here — it is `ui/help-dialog.jsx` (tool-level) and
+ * `ui/help-hint.jsx` (field-level). A `helpButton` prop used to sit on this
+ * component and no tool ever passed it; a second unused help path is how the
+ * interface ended up with four of them.
  */
 const ToolHeader = ({
   icon: Icon,
@@ -75,8 +78,7 @@ const ToolHeader = ({
   alert = null,
   standalone = false,
   showTitle = true,
-  toolId,
-  helpButton = null
+  toolId
 }) => {
   // Resolve icon/color from toolsConfig for consistency
   const location = useLocation();
@@ -134,7 +136,7 @@ const ToolHeader = ({
   }, [detectedTool, location.pathname]);
 
   const ActionButtons = () =>
-    actions.length > 0 || helpButton ? (
+    actions.length > 0 ? (
       <div className="flex flex-wrap gap-2">
         {/* Render action buttons */}
         {actions.map((action, index) => (
@@ -150,25 +152,6 @@ const ToolHeader = ({
           </Button>
         ))}
 
-        {/* Render help button if provided */}
-        {helpButton && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={helpButton.onClick}
-                >
-                  <HelpCircle className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{helpButton.tooltip || "Get help"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
       </div>
     ) : null;
 
@@ -229,7 +212,7 @@ const ToolHeader = ({
   // Under the shell: actions and alert only. Everything else on this page is
   // ToolLayout's, and duplicating it is the artifact this branch removes.
   if (shell) {
-    if (actions.length === 0 && !helpButton && !alert) return null;
+    if (actions.length === 0 && !alert) return null;
     return (
       <div className="rt-tool-actions">
         <ActionButtons />
