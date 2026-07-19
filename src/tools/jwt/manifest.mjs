@@ -1,10 +1,9 @@
 /**
- * JWT Decoder/Validator — bridge manifest.
+ * JWT Decoder/Validator — ported (Phase 3).
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * The island is the tool itself. Decode is jwt-decode, verification is
+ * jose, both entirely in the browser; nothing persists and nothing is
+ * sent anywhere.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /jwt
@@ -59,6 +58,6 @@ export default {
   storageKeys: [],
   legacyKeys: [],
 
-  island: () => import('@/components/tools/jwt/JWTShadcn.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };

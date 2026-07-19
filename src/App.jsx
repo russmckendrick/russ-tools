@@ -91,11 +91,6 @@ const DataConverterTool = lazy(() =>
     default: () => <div>Error loading Data Converter Tool</div>
   }))
 );
-const JWTTool = lazy(() =>
-  import('./components/tools/jwt/JWTShadcn').catch(() => ({
-    default: () => <div>Error loading JWT Tool</div>
-  }))
-);
 const MicrosoftPortalsTool = lazy(() => 
   import('./components/tools/microsoft-portals/MicrosoftPortalsShadcn').catch(() => ({
     default: () => <div>Error loading Microsoft Portals Tool</div>
@@ -227,12 +222,12 @@ export default function App() {
 
               <Route path="jwt" element={
                 <LazyRoute>
-                  <JWTTool />
+                  <SpaToolPage toolId="jwt" />
                 </LazyRoute>
               } />
               <Route path="jwt/:token" element={
                 <LazyRoute>
-                  <JWTTool />
+                  <SpaToolPage toolId="jwt" />
                 </LazyRoute>
               } />
 

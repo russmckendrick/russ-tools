@@ -26,17 +26,13 @@ import {
   Clock,
   User,
   Fingerprint,
-  Info,
-  Key
+  Info
 } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 import { jwtVerify, importJWK, importSPKI } from 'jose';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
+import { copyText, readText } from '@/core';
 
-const JWTShadcn = () => {
+const JWTTool = () => {
   const [jwtToken, setJwtToken] = useState('');
   const [decodedHeader, setDecodedHeader] = useState(null);
   const [decodedPayload, setDecodedPayload] = useState(null);
@@ -47,10 +43,6 @@ const JWTShadcn = () => {
   const [validateSignature, setValidateSignature] = useState(false);
   const [error, setError] = useState(null);
   const [tokenAnalysis, setTokenAnalysis] = useState(null);
-
-  // Get tool configuration for SEO
-  const toolConfig = toolsConfig.find(tool => tool.id === 'jwt');
-  const seoData = generateToolSEO(toolConfig);
 
   // Example JWT tokens for testing
   const exampleTokens = {
@@ -199,21 +191,20 @@ const JWTShadcn = () => {
   };
 
   const copyToClipboard = async (text, label = 'Content') => {
-    try {
-      await navigator.clipboard.writeText(text);
+    if (await copyText(text)) {
       toast.success(`${label} copied to clipboard`);
-    } catch (err) {
+    } else {
       toast.error('Failed to copy to clipboard');
     }
   };
 
   const pasteFromClipboard = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
+    const text = await readText();
+    if (text === null) {
+      toast.error('Failed to paste from clipboard');
+    } else {
       setJwtToken(text);
       toast.success('JWT token pasted from clipboard');
-    } catch (err) {
-      toast.error('Failed to paste from clipboard');
     }
   };
 
@@ -253,17 +244,7 @@ const JWTShadcn = () => {
 
   return (
     <>
-      <SEOHead {...seoData} />
       <div className="space-y-6">
-        <ToolHeader
-          icon={Key}
-          title="JWT Decoder/Validator"
-          description="Decode JWT tokens and validate signatures without sending to external services"
-          iconColor="red"
-          showTitle={false}
-          standalone={true}
-        />
-
         {/* Input Section */}
         <Card className="mb-6">
           <CardHeader>
@@ -683,4 +664,4 @@ const JWTShadcn = () => {
   );
 };
 
-export default JWTShadcn;
+export default JWTTool;
