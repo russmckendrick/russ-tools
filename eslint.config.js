@@ -16,7 +16,9 @@ const RAW_PALETTE_MESSAGE =
 
 export default [
   // dist-astro is the Astro shell's build output, alongside Vite's dist.
-  { ignores: ['dist', 'dist-astro', '.astro', 'coverage'] },
+  // .wrangler holds scratch bundles that `wrangler pages dev` writes while
+  // the _redirects behaviour is being tested.
+  { ignores: ['dist', 'dist-astro', '.astro', '.wrangler', 'coverage'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
