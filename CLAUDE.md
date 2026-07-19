@@ -10,10 +10,26 @@ any redesign work, and keep its **Session Log** updated as you go (it is the liv
 record across sessions).
 
 **Target architecture:** a static **Astro** shell with one **React island** per tool,
-everything derived from per-tool manifests. **Current architecture:** a React 19 +
-Vite SPA (react-router). We are migrating from the latter to the former in phases;
-Phases 0 (stabilise) and 1 (design pass) are **complete**, and **Phase 2** (Astro shell
-+ legacy bridge) is next — the codebase is still the React SPA.
+everything derived from per-tool manifests. Phases 0 (stabilise) and 1 (design pass) are
+**complete**; **Phase 2 is in progress**.
+
+**Both apps exist in the tree right now, side by side.** Nothing has been cut over.
+
+| | Live production app | New shell (not yet live) |
+|---|---|---|
+| Stack | React 19 + Vite SPA, react-router | Astro 7 static, React islands |
+| Commands | `pnpm dev` · `pnpm build` | `pnpm dev:astro` · `pnpm build:astro` |
+| Output | `dist/` | `dist-astro/` |
+| Source | `src/components/`, `src/App.jsx` | `src/pages/`, `src/layouts/`, `src/shell/`, `src/tools/` |
+
+The shell has the registry, `ToolLayout.astro`, prerendered pages, SEO and generated
+`_redirects` — but **the tool bodies are not bridged yet**, so its tool pages show a
+"bridge pending" panel. Don't assume a tool works under Astro; check.
+
+`src/tools/<id>/manifest.mjs` is the contract (15 bridge manifests exist). The registry is
+`src/tools/registry.mjs` (`import.meta.glob`, Vite-only) with a plain-Node twin
+`src/tools/loadManifests.mjs` for build scripts; `registry.test.js` asserts they agree and
+that every route in `App.jsx` is still served.
 
 **The design system is [`DESIGN.md`](DESIGN.md) in the repo root — read it before touching
 any styling.** It follows the [Stitch DESIGN.md spec](https://stitch.withgoogle.com/docs/design-md/specification)
@@ -23,14 +39,16 @@ hues driven by each tool's `category`, Inter for prose and JetBrains Mono for da
 no serif. Use semantic tokens, never raw Tailwind palette classes (`bg-green-50`) — ESLint
 warns on those in tools and errors in `src/components/ui/` and `src/components/layout/`.
 
-> **Known inconsistency (Phase 1 → Phase 2):** `docs/DESIGN_SPEC.md`,
-> `src/styles/globals.css` and `src/styles/tokens.contrast.test.js` still carry the earlier
-> **Solarized** palette, which `DESIGN.md` replaces. `DESIGN_SPEC.md` is marked superseded;
-> the stylesheet and its contrast test are reconciled when the Phase 2 shell is built.
-> `pnpm dlx @google/design.md export DESIGN.md --format css-tailwind` emits the Tailwind 4
-> `@theme` block, so `globals.css` tokens can be generated rather than retyped.
+**The token layer is generated — do not hand-edit hexes.** `src/styles/tokens.generated.css`
+comes from `DESIGN.md` via `pnpm generate:tokens`; `src/styles/globals.css` only switches the
+light peers in and aliases the shadcn names the un-ported components use (by `var()` reference,
+so the light remap carries through). To change a colour: edit `DESIGN.md`, regenerate, run
+`pnpm test`. `tokens.contrast.test.js` fails if the generated file has drifted from `DESIGN.md`,
+or if any pair drops below its WCAG floor — it has caught five real contrast faults so far.
 
-Do not describe or assume the Astro architecture exists yet. It does not.
+> **Remaining stale doc:** `docs/DESIGN_SPEC.md` still carries the abandoned **Solarized**
+> palette and is marked superseded. It is retired in Phase 6. `globals.css` and the contrast
+> test were reconciled in Phase 2 and no longer mention Solarized.
 
 ### Trust caveats (this file used to lie — verify before relying)
 
@@ -56,9 +74,12 @@ A prior version of this file misdescribed the codebase. Corrected facts:
 lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger — ignore it.
 
 - `pnpm install` — install deps (esbuild is the one approved build script, see `pnpm.onlyBuiltDependencies`)
-- `pnpm dev` — Vite dev server
-- `pnpm build` — generate sitemap + Vite production build
-- `pnpm test` — Vitest (127 tests; **keep these green**) · `pnpm test:watch` to iterate
+- `pnpm dev` — Vite dev server (the live SPA)
+- `pnpm build` — generate sitemap + Vite production build → `dist/`
+- `pnpm dev:astro` / `pnpm build:astro` — the new Astro shell → `dist-astro/` (build also
+  regenerates `_redirects` from the manifests)
+- `pnpm generate:tokens` — regenerate the token layer from `DESIGN.md` (needs network once)
+- `pnpm test` — Vitest (209 tests; **keep these green**) · `pnpm test:watch` to iterate
 - `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** ~234 warnings remain, mostly
   the raw-palette ban; each tool clears its own as it is ported. Don't add errors.
 - `pnpm preview` — preview the production build

@@ -239,16 +239,21 @@ Home page (static cards from registry + the password widget as a tiny island), s
 
 ## Start here
 
-**Phases 0 and 1 are done.** The next session starts Phase 2:
+**Phases 0 and 1 are done, and Phase 2's opening move and scaffold have landed.** The token
+layer is generated from `DESIGN.md`, the Astro shell + registry + `ToolLayout.astro` are built,
+and `_redirects` param handling is proven against Cloudflare's runtime. The next session
+continues Phase 2:
 
-1. Read [`DESIGN.md`](../../DESIGN.md) first — it is the design contract, and Phase 2 is the
-   phase that makes it visible.
-2. Regenerate the token layer from it (`pnpm dlx @google/design.md export DESIGN.md --format
-   css-tailwind`) and repoint `tokens.contrast.test.js` at the new names. This clears the one
-   known inconsistency left by Phase 1.
-3. Scaffold Astro alongside the Vite app, then **prove `_redirects` param handling on a real
-   Pages preview before anything depends on it** — the plan's riskiest platform assumption.
-4. Carried over from Phase 0: capture live worker response fixtures (ssl/whois/tenant) → MSW mocks.
+1. Read [`DESIGN.md`](../../DESIGN.md) — it is the design contract, and the shell now renders
+   it. Read the Session 4 log for the shape of what exists.
+2. **The bridge.** Each manifest's `island` lazy-loads its existing React component into
+   `ToolLayout.astro`. Expect three seams: react-router (`useParams` / `Link`),
+   `ThemeProvider`, and `ToolHeader`'s duplicate page furniture. Smoke-test each tool as it
+   bridges; visual diffs are expected, behaviour changes are not.
+3. Build `core/` — storage + migration shim (frozen contract #3), sharelink **verbatim**
+   (frozen contract #2), clipboard, download, cache-with-TTL, api client.
+4. Deploy a real Pages preview, then run the Playwright deep-link matrix against it.
+5. Carried over from Phase 0: capture live worker response fixtures (ssl/whois/tenant) → MSW mocks.
 
 <details>
 <summary>Original Phase 0 starting steps (complete)</summary>
@@ -312,16 +317,37 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] Merge the duplicate `global.css` into `globals.css`
 - [x] Three latent bugs fixed: `useTLDs()` inside `try/catch` (×2), hooks called from a JSX IIFE
 
-**Superseded by the reversal — carried into Phase 2 as its opening move:**
+**Superseded by the reversal — done as Phase 2's opening move (session 4):**
 
-- [~] `src/styles/globals.css` — still Solarized. Regenerate from `DESIGN.md` via the CLI export.
-- [~] `tokens.contrast.test.js` — 63 tests still asserting Solarized values. Keep the structure, repoint the token names.
-- [~] Semantic status tokens — the *names* survive (`success`/`warning`/`error`/`info`); the values are redefined in `DESIGN.md`.
+- [x] `src/styles/globals.css` — regenerated from `DESIGN.md` via the CLI export (`pnpm generate:tokens` → `src/styles/tokens.generated.css`)
+- [x] `tokens.contrast.test.js` — structure kept, repointed and extended; a new test asserts the generated file still matches `DESIGN.md`
+- [x] Semantic status tokens — the names survive; the values are now derived from `DESIGN.md`
 
 **Still deferred, deliberately:**
 
 - [ ] Converting the 505 raw palette occurrences across 31 tool files — each tool converts during its own port, when it can be checked visually
 - [ ] Spacing-density enforcement — `DESIGN.md` sets the 4px scale; snapping every component to it happens per port
+
+---
+
+## Phase 2 task board
+
+- [x] **Opening move — token layer reconciled with `DESIGN.md`**, generated rather than retyped; two more contrast faults found and corrected in `DESIGN.md`
+- [x] Self-host JetBrains Mono (DESIGN.md's data-only mono family)
+- [x] Scaffold Astro 7.1.1 + `@astrojs/react` 6 + `@astrojs/sitemap` + Tailwind 4.3 alongside the Vite SPA, into `dist-astro/`
+- [x] Bespoke icon set — 15 icons, 24px grid, 1.6px stroke, `currentColor` (`src/shell/icons.mjs`)
+- [x] Manifest registry + plain-Node twin + contract test (which caught an invented deep-link route)
+- [x] `ToolLayout.astro`, `BaseLayout.astro`, `[tool].astro`, `index.astro`, `404.astro`
+- [x] Generated `_redirects` from manifest `params`
+- [x] **Prove `_redirects` param handling** — all 8 rewrites correct against Cloudflare's runtime; the `@astrojs/cloudflare` fallback is not needed
+- [ ] The bridge — each manifest's `island` lazy-loads its existing component
+- [ ] `core/` — storage + migration shim, sharelink verbatim, clipboard, download, cache, api client
+- [ ] Theme toggle in the new shell (the pre-paint script exists; the control does not)
+- [ ] `/delete` storage-clear page driven by declared `storageKeys`
+- [ ] Real Pages preview deploy + Playwright deep-link matrix
+- [ ] Rendered-meta diff against production; sitemap URL-set diff
+- [ ] exceljs dynamic-import smoke test under the new toolchain
+- [ ] Decide display titles vs `toolsConfig.json` titles (see session 4's open question)
 
 ---
 
@@ -707,3 +733,119 @@ is safe, a silently-wrong one is not.
 
 **Next session — Phase 2.** See [Start here](#start-here); the token reconciliation is the
 opening move, then the Astro scaffold and the `_redirects` proof on a Pages preview.
+
+### 2026-07-19 — Session 4: Phase 2 opening — tokens, Astro shell, `_redirects` proof
+
+**Model:** Opus 4.8. **Branch:** `redesign/phase-0`. Three commits; tree clean, not pushed.
+
+**1. The token layer is now generated, not retyped.**
+
+`pnpm generate:tokens` runs the official `@google/design.md` exporter over `DESIGN.md` into
+`src/styles/tokens.generated.css`. `globals.css` does only the two jobs the exporter cannot:
+switch the light peers in, and alias the shadcn token names the un-ported components still
+render against.
+
+The alias trick worth remembering: aliases are declared **by reference**
+(`--color-card: var(--color-surface-raised)`), not by value, so the light-mode block remaps
+twenty DESIGN.md tokens and every shadcn alias follows automatically. Verified against the
+compiled output that Tailwind 4 does not tree-shake the `-light` peers, which the whole scheme
+depends on.
+
+**Measuring before writing down caught two more faults** — both `DESIGN.md` failing *its own*
+stated 3:1 / 4.5:1 floor, and both only visible when checked against the **inset** surface
+rather than only against white:
+
+| Token | Was | Failed at | Now |
+|---|---|---|---|
+| `on-surface-faint-light` | `#6b737d` | 4.48:1 on `surface-inset` | `#69717b` (4.61:1) |
+| `outline-strong-light` | `#8b939d` | 2.90:1 on `surface-inset`, 2.98:1 on the page | `#838a94` (3.25 / 3.34:1) |
+
+Corrected in `DESIGN.md` itself, with a note recording why — this is applying the contract's
+own rule, not overriding it. That makes **five** real contrast faults this method has caught
+across two sessions.
+
+The contrast test keeps its structure and gains: resolution of alias indirection, the
+three-step text ramp on all three surfaces, every category hue as text in both themes, control
+boundaries on the inset, and — importantly — a guard that `tokens.generated.css` still matches
+`DESIGN.md`'s front matter, so a forgotten regenerate fails the build rather than drifting.
+
+JetBrains Mono is now self-hosted alongside Inter, per DESIGN.md's data-only mono rule.
+
+**2. Astro scaffolds alongside the SPA; the registry is real.**
+
+Astro 7.1.1 + `@astrojs/react` 6 + `@astrojs/sitemap` + `@tailwindcss/vite` 4.3, into
+`dist-astro/`. Nothing removed — `pnpm dev`/`pnpm build` still serve the live React app,
+`pnpm dev:astro`/`pnpm build:astro` serve the shell.
+
+Fifteen bridge manifests in `src/tools/<id>/manifest.mjs`; `registry.mjs` globs them and drives
+`getStaticPaths`, the index, the category groups and `_redirects`. There is a second, plain-Node
+loader (`loadManifests.mjs`) because build scripts run outside Vite where `import.meta.glob`
+does not resolve; the contract test asserts the two agree, so the duplication cannot drift.
+
+**The contract test earned its place immediately.** It failed on first run because I had given
+`dns-lookup` a `:domain` param. The approved mockup shows a `/dns-lookup/:domain` badge — but
+`App.jsx` has never served that route. The mockup was aspirational, the manifest was wrong, the
+test was right. It reads the router table **out of `App.jsx`** rather than a hand-copied list,
+and asserts the registry serves every route the SPA serves today *and adds none*.
+
+**`ToolLayout.astro` is the visible redesign.** Every tool page is now prerendered HTML with a
+real `h1`, its own description and schema.org markup — against today's empty div with no `h1`.
+Breadcrumb, category icon tile, badges, and the 320px control column beside a fluid result
+column, all from the manifest. The category hue is set once and inherited, so nothing
+downstream knows which of the six it is. The index carries the approved composition: stat strip,
+filter chips, category groups, panelled cards with the hue-tinted hover glow. The bespoke icon
+set (15 icons, 24px grid, 1.6px stroke, `currentColor`) is in `src/shell/icons.mjs`.
+
+The island slot is deliberately empty — the bridge is the next step.
+
+**Trap found:** `react({ include: ['**/tools/**'] })` hands every *stylesheet* under
+`src/components/tools/` to the JSX transform. It only surfaces in `astro dev`; the production
+build is clean, which makes it a nasty one. React is the sole island framework, so the filter
+is unnecessary — drop it.
+
+**3. `_redirects` param handling: proven, and it works.**
+
+Run against Cloudflare's own runtime (`wrangler pages dev dist-astro`), which parsed all 8 rules
+and served them correctly. **All eight param deep links 200-rewrite with the URL intact and no
+redirect**, including the two-segment `/azure-kql/:service/:template`:
+
+```
+/ssl-checker/example.com      200  -  SSL Certificate Checker
+/whois-lookup/example.com     200  -  WHOIS Lookup Tool
+/base64/SGVsbG8gd29ybGQ%3D    200  -  Base64 Encoder/Decoder
+/jwt/<a real HS256 token>     200  -  JWT Decoder/Validator
+/microsoft-portals/contoso…   200  -  Microsoft Portals (GDAP)
+/tenant-lookup/contoso.com    200  -  Microsoft Tenant Lookup
+/azure-kql/azure-firewall     200  -  Azure KQL Query Builder
+/azure-kql/azure-firewall/network-rules  200  -  Azure KQL Query Builder
+```
+
+**The plan's riskiest platform assumption holds.** The `@astrojs/cloudflare` fallback in the
+top-risks table is not needed.
+
+**A real bug the proof exposed:** with no `404.astro`, an unknown path returned **200 and the
+index page** — a soft 404, precisely the shape frozen contract #4 exists to catch. Fixed; now a
+genuine 404 with suggested tools.
+
+*Caveat, honestly stated:* this is Cloudflare's runtime run locally, not a deployed preview.
+`wrangler` is not authenticated on this machine, and deploying is the owner's call. The
+remaining risk is small — `_redirects` parsing and rewrite semantics are the emulated part —
+but a real preview should still be run before production depends on it.
+
+**State at session end**
+- `pnpm test` → **209 passing / 10 files** (was 127) · `pnpm lint` → **0 errors**, 234 warnings
+- `pnpm build` (SPA) green · `pnpm build:astro` green, 17 pages
+- 3 commits on `redesign/phase-0`, working tree clean, not pushed.
+
+**Open question for the owner:** the card titles come from `toolsConfig.json`, so the index
+reads "DNS Lookup Tool", "Azure Resource Naming Tool", "Microsoft Tenant Lookup". The approved
+mockup used shorter display names ("DNS Lookup", "Azure Resource Naming", "Tenant Lookup").
+Display title and SEO title are already separate fields in the manifest, so this is a copy
+decision, not a technical one. Left as-is pending a call.
+
+**Next session — Phase 2 continued**
+1. The bridge: each manifest's `island` lazy-loads its existing component into `ToolLayout`.
+   The seams to expect are react-router (`useParams`/`Link`), `ThemeProvider`, and `ToolHeader`.
+2. `core/`: storage + migration shim, sharelink verbatim, clipboard, download, cache, api client.
+3. A real Pages preview deploy, then the Playwright deep-link matrix against it.
+4. Still carried over from Phase 0: live worker response fixtures → MSW mocks.
