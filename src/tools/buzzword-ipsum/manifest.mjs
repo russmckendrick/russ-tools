@@ -36,7 +36,7 @@ export default {
   params: [],
 
   seo: {
-    title: 'Buzzword Ipsum Generator - Corporate Lorem Ipsum Alternative',
+    title: 'Buzzword Ipsum - Corporate Lorem Ipsum Generator & Alternative',
     keywords: [
       'buzzword ipsum',
       'corporate lorem ipsum',

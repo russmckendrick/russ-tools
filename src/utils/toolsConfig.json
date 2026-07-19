@@ -7,7 +7,7 @@
     "icon": "NetworkDesignerIcon",
     "badges": ["Subnet Planning", "Visual Diagrams", "Terraform Export"],
     "path": "/network-designer",
-    "seoTitle": "Network Subnet Designer - Plan & Visualize IP Networks",
+    "seoTitle": "Network Designer - Subnet Planning & IP Network Visualization",
     "seoKeywords": ["network designer", "subnet planning", "ip calculator", "network visualization", "terraform export", "azure networking", "aws networking", "vmware networking", "cidr calculator", "network architecture"],
     "category": "Network Tools",
     "features": ["Interactive subnet visualization", "CIDR notation support", "Multi-cloud export (Azure, AWS, VMware)", "Drag & drop interface", "Real-time IP calculations", "Terraform configuration export"]
@@ -20,7 +20,7 @@
     "icon": "MicrosoftPortalsIcon",
     "badges": ["Tenant Discovery", "Deep Links", "Multi-Portal"],
     "path": "/microsoft-portals",
-    "seoTitle": "Microsoft Portals Deep Link Generator - GDAP Tenant Access",
+    "seoTitle": "Microsoft Portals (GDAP) - Deep Link Generator & Tenant Access",
     "seoKeywords": ["microsoft portals", "gdap", "tenant links", "azure portal", "microsoft 365", "power platform", "deep links", "tenant discovery", "microsoft admin", "partner access"],
     "category": "Microsoft Tools",
     "features": ["Multi-portal deep linking", "Tenant information discovery", "GDAP partner support", "Azure portal access", "Microsoft 365 admin links", "Power Platform navigation"]
@@ -137,7 +137,7 @@
     "icon": "Base64Icon",
     "badges": ["Multiple Variants", "File Support", "Batch Processing"],
     "path": "/base64",
-    "seoTitle": "Base64 Encoder Decoder - Free Online Base64 Tool",
+    "seoTitle": "Base64 Encoder/Decoder - Free Online Base64 Tool",
     "seoKeywords": ["base64 encoder", "base64 decoder", "base64 converter", "encode base64", "decode base64", "base64 tool", "base64 online", "text encoder", "file encoder", "base64 utility"],
     "category": "Developer Tools",
     "features": ["Text and file encoding", "Multiple Base64 variants", "Batch processing", "Auto-detection", "Security-focused design", "Download encoded files"]
@@ -150,7 +150,7 @@
     "icon": "JWTIcon",
     "badges": ["100% Client-Side", "Privacy First", "Security Analysis"],
     "path": "/jwt",
-    "seoTitle": "JWT Token Decoder - Secure Client-Side JWT Analysis",
+    "seoTitle": "JWT Decoder/Validator - Secure Client-Side JWT Token Analysis",
     "seoKeywords": ["jwt decoder", "jwt validator", "json web token", "jwt debugger", "token decoder", "jwt parser", "auth debugging", "jwt security", "client side jwt", "token validation"],
     "category": "Security Tools",
     "features": ["100% client-side processing", "No data sent to servers", "JWT signature validation", "Claims analysis", "Expiration checking", "Token security analysis"]
@@ -176,7 +176,7 @@
     "icon": "BuzzwordIpsumIcon",
     "badges": ["Lorem Ipsum Alternative", "Corporate Speak", "Business Jargon"],
     "path": "/buzzword-ipsum",
-    "seoTitle": "Buzzword Ipsum Generator - Corporate Lorem Ipsum Alternative",
+    "seoTitle": "Buzzword Ipsum - Corporate Lorem Ipsum Generator & Alternative",
     "seoKeywords": ["buzzword ipsum", "corporate lorem ipsum", "business jargon generator", "buzzword generator", "corporate placeholder", "business ipsum", "mockup content", "corporate speak", "professional text", "lorem ipsum alternative"],
     "category": "Content Tools",
     "features": ["Corporate buzzword generation", "Multiple output formats", "Customizable length options", "Professional placeholder text", "Perfect for mockups", "Client-side generation"]
@@ -190,8 +190,15 @@
     "iconColor": "text-blue-600",
     "badges": ["Editor", "Formatter", "Validator"],
     "path": "/markdown-table-tool",
-    "seoTitle": "Markdown Table Creator & Formatter - Professional Table Generator",
-    "seoKeywords": "markdown table, table creator, table formatter, markdown editor, table generator, csv to markdown",
+    "seoTitle": "Markdown Table Tool - Table Creator, Formatter & Generator",
+    "seoKeywords": [
+      "markdown table",
+      "table creator",
+      "table formatter",
+      "markdown editor",
+      "table generator",
+      "csv to markdown"
+    ],
     "category": "Developer Tools",
     "features": [
       "Visual table editor with drag-and-drop",

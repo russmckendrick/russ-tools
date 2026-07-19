@@ -36,7 +36,7 @@ export default {
   params: [],
 
   seo: {
-    title: 'Network Subnet Designer - Plan & Visualize IP Networks',
+    title: 'Network Designer - Subnet Planning & IP Network Visualization',
     keywords: [
       'network designer',
       'subnet planning',

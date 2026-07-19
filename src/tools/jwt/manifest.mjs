@@ -39,7 +39,7 @@ export default {
   ],
 
   seo: {
-    title: 'JWT Token Decoder - Secure Client-Side JWT Analysis',
+    title: 'JWT Decoder/Validator - Secure Client-Side JWT Token Analysis',
     keywords: [
       'jwt decoder',
       'jwt validator',

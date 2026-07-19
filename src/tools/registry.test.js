@@ -99,6 +99,49 @@ describe('frozen contract #1 — deep links', () => {
   });
 });
 
+describe('titles', () => {
+  /**
+   * The display title and the SEO title are separate fields with separate
+   * jobs — one is what a person reads on the card, the other is what Google
+   * shows in a result — but they must name the same thing. Five of them had
+   * drifted into naming it differently ("Network Designer" on the card,
+   * "Network Subnet Designer" in the SERP), which reads as two products.
+   *
+   * The rule: the SEO title leads with the display title, then earns its
+   * keywords in the tail.
+   */
+  it.each(TOOLS.map((t) => [t.id, t]))('%s: the SEO title leads with the display title', (id, tool) => {
+    expect(
+      tool.seo.title === tool.title || tool.seo.title.startsWith(`${tool.title} - `),
+      `"${tool.seo.title}" should be "${tool.title}" or start with "${tool.title} - "`
+    ).toBe(true);
+  });
+
+  it.each(TOOLS.map((t) => [t.id, t]))('%s: the SEO title fits a search result', (id, tool) => {
+    // Google truncates around 60 characters; past that the tail is wasted.
+    expect(tool.seo.title.length, `"${tool.seo.title}"`).toBeLessThanOrEqual(65);
+  });
+});
+
+describe('the manifests mirror toolsConfig.json', () => {
+  /**
+   * Both registries are live during the bridge: the SPA reads
+   * toolsConfig.json, the shell reads manifests. Two sources of truth for
+   * the same strings is exactly how the 13-vs-14-vs-15 tool-count drift
+   * happened, so they are pinned together until toolsConfig.json is
+   * retired in Phase 6.
+   */
+  it.each(TOOLS.map((t) => [t.id, t]))('%s matches its toolsConfig entry', async (id, tool) => {
+    const { default: config } = await import('../utils/toolsConfig.json', { with: { type: 'json' } });
+    const entry = config.find((t) => t.id === id);
+    expect(entry, `no toolsConfig entry for ${id}`).toBeDefined();
+    expect(tool.title).toBe(entry.title);
+    expect(tool.path).toBe(entry.path);
+    expect(tool.seo.title).toBe(entry.seoTitle);
+    expect(tool.seo.keywords).toEqual(entry.seoKeywords);
+  });
+});
+
 describe('the node loader and the glob registry agree', () => {
   it('returns the same tools', async () => {
     const viaNode = await loadManifests();

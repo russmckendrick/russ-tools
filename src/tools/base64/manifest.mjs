@@ -39,7 +39,7 @@ export default {
   ],
 
   seo: {
-    title: 'Base64 Encoder Decoder - Free Online Base64 Tool',
+    title: 'Base64 Encoder/Decoder - Free Online Base64 Tool',
     keywords: [
       'base64 encoder',
       'base64 decoder',

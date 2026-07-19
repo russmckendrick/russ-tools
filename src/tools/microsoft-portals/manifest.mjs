@@ -38,7 +38,7 @@ export default {
   ],
 
   seo: {
-    title: 'Microsoft Portals Deep Link Generator - GDAP Tenant Access',
+    title: 'Microsoft Portals (GDAP) - Deep Link Generator & Tenant Access',
     keywords: [
       'microsoft portals',
       'gdap',

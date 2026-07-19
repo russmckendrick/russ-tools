@@ -35,7 +35,7 @@ export default {
   params: [],
 
   seo: {
-    title: 'Markdown Table Creator & Formatter - Professional Table Generator',
+    title: 'Markdown Table Tool - Table Creator, Formatter & Generator',
     keywords: [
       'markdown table',
       'table creator',
