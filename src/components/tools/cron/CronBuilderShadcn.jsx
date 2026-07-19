@@ -404,11 +404,36 @@ const CronBuilderShadcn = () => {
             {/* CRON Expression Output */}
             <Card>
               <CardContent className="pt-6">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1 space-y-3">
-                    <Label className="text-body-sm text-muted-foreground">Generated Expression:</Label>
-                    <div className="p-3 bg-muted rounded-md font-mono text-data-md text-primary">
-                      {cronString}
+                <div className="space-y-3">
+                    <Label className="text-body-sm text-muted-foreground">Generated Expression</Label>
+                    {/* The button belongs beside the value it copies, not
+                        beside the label three lines above it. */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 rounded-sm border border-outline bg-surface-inset px-3 py-2 font-mono text-data-lg text-on-surface">
+                        {cronString}
+                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleCopy}
+                            aria-label={copied ? 'Copied' : 'Copy expression'}
+                            className={`h-auto self-stretch ${
+                              copied ? 'bg-success-subtle border-success/40' : ''
+                            }`}
+                          >
+                            {copied ? (
+                              <Check className="w-4 h-4 text-success" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{copied ? 'Copied' : 'Copy to clipboard'}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     {validation.valid ? (
                       <div className="flex items-start gap-2">
@@ -427,22 +452,6 @@ const CronBuilderShadcn = () => {
                         </div>
                       </div>
                     )}
-                  </div>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleCopy}
-                        className={copied ? "bg-success-subtle border-success/40" : ""}
-                      >
-                        {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{copied ? 'Copied!' : 'Copy to clipboard'}</p>
-                    </TooltipContent>
-                  </Tooltip>
                 </div>
               </CardContent>
             </Card>

@@ -98,6 +98,11 @@ typography:
     fontWeight: 500
     lineHeight: 1
     letterSpacing: 0.12em
+  data-lg:
+    fontFamily: JetBrains Mono
+    fontSize: 20px
+    fontWeight: 500
+    lineHeight: 1.35
   data-md:
     fontFamily: JetBrains Mono
     fontSize: 12.5px
@@ -297,6 +302,14 @@ Two families, with strictly separated jobs.
   tokens, hashes, file paths, counts and uppercase meta labels. If a user might
   compare it character by character, or copy it, it is monospace. Prose is never
   monospace.
+
+`data-lg` (20px) is the exception that proves the rule about density: it is
+for the **one artefact a tool exists to produce** — the cron expression, the
+generated password, the resource name that follows the CAF rules. Those are
+the thing the visitor came for, and rendering them at reading size next to
+their own controls buries the answer in the form. One *kind* of thing per page
+— a list of generated passwords all qualify, a table of values does not —
+and everything else that is data uses `data-md` or `data-sm`.
 
 Headings run tight — display sits at `-0.035em` — which is what gives the
 interface its compact, engineered feel. Body text loosens to near-normal for

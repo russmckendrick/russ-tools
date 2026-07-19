@@ -67,7 +67,7 @@ let namespaced = theme.replace(/--spacing-/g, '--rt-space-');
 const LINE_HEIGHTS = {
   display: '1.06', 'headline-lg': '1.12', 'headline-md': '1.2', 'title-sm': '1.3',
   'body-lg': '1.55', 'body-md': '1.55', 'body-sm': '1.45', 'label-caps': '1',
-  'data-md': '1.5', 'data-sm': '1.4',
+  'data-lg': '1.35', 'data-md': '1.5', 'data-sm': '1.4',
 };
 
 const weights = new Map();

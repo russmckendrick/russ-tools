@@ -657,12 +657,12 @@ Visit: https://russ.tools
                     {passwords.map((password, index) => (
                       <Card key={password.id}>
                         <CardContent className="pt-4">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex justify-between items-center gap-2">
+                            <div className="flex-1 min-w-0 space-y-1">
                               <p className="text-body-sm text-muted-foreground">
                                 Password {index + 1} • Generated at {password.timestamp}
                               </p>
-                              <p className="font-mono text-data-md break-all select-all">
+                              <p className="font-mono text-data-lg break-all select-all">
                                 {password.value}
                               </p>
                             </div>

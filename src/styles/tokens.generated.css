@@ -82,6 +82,9 @@
   --text-label-caps--font-weight: 500;
   --text-label-caps--line-height: 1;
   --text-label-caps--letter-spacing: 0.12em;
+  --text-data-lg: 20px;
+  --text-data-lg--font-weight: 500;
+  --text-data-lg--line-height: 1.35;
   --text-data-md: 12.5px;
   --text-data-md--font-weight: 400;
   --text-data-md--line-height: 1.5;
@@ -102,6 +105,7 @@
   --font-weight-body-md: 400;
   --font-weight-body-sm: 400;
   --font-weight-label-caps: 500;
+  --font-weight-data-lg: 500;
   --font-weight-data-md: 400;
   --font-weight-data-sm: 400;
   --radius-sm: 6px;
