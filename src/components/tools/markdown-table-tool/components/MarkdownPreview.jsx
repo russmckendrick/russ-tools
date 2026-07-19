@@ -3,13 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-  IconCheck, 
-  IconAlertTriangle, 
-  IconInfoCircle,
-  IconTable,
-  IconFileText,
-  IconHash
-} from '@tabler/icons-react';
+  Check, 
+  TriangleAlert, 
+  Info,
+  Table,
+  FileText,
+  Hash
+} from 'lucide-react';
 
 const MarkdownPreview = ({ markdown, validation, stats }) => {
   const renderMarkdownTable = (markdownText) => {
@@ -111,10 +111,10 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
 
   const getValidationIcon = (type) => {
     switch (type) {
-      case 'error': return <IconAlertTriangle className="w-4 h-4 text-red-500" />;
-      case 'warning': return <IconAlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'success': return <IconCheck className="w-4 h-4 text-green-500" />;
-      default: return <IconInfoCircle className="w-4 h-4 text-blue-500" />;
+      case 'error': return <TriangleAlert className="w-4 h-4 text-danger" />;
+      case 'warning': return <TriangleAlert className="w-4 h-4 text-warning" />;
+      case 'success': return <Check className="w-4 h-4 text-success" />;
+      default: return <Info className="w-4 h-4 text-info" />;
     }
   };
 
@@ -133,7 +133,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <IconTable className="w-5 h-5 text-blue-500" />
+              <Table className="w-5 h-5 text-[var(--cat,var(--color-primary))]" />
               <div>
                 <p className="text-sm font-medium">Dimensions</p>
                 <p className="text-lg font-bold">{stats.rows} × {stats.columns}</p>
@@ -145,7 +145,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <IconHash className="w-5 h-5 text-green-500" />
+              <Hash className="w-5 h-5 text-[var(--cat,var(--color-primary))]" />
               <div>
                 <p className="text-sm font-medium">Total Cells</p>
                 <p className="text-lg font-bold">{stats.cells}</p>
@@ -157,7 +157,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <IconFileText className="w-5 h-5 text-purple-500" />
+              <FileText className="w-5 h-5 text-[var(--cat,var(--color-primary))]" />
               <div>
                 <p className="text-sm font-medium">Characters</p>
                 <p className="text-lg font-bold">{stats.totalCharacters}</p>
@@ -170,7 +170,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
               <div className={`w-5 h-5 rounded-full ${
-                validation.isValid ? 'bg-green-500' : 'bg-red-500'
+                validation.isValid ? 'bg-success' : 'bg-danger'
               }`} />
               <div>
                 <p className="text-sm font-medium">Status</p>
@@ -254,7 +254,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
               {/* Mobile Preview Note */}
               <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
                 <div className="flex items-start space-x-2">
-                  <IconInfoCircle className="w-4 h-4 mt-0.5" />
+                  <Info className="w-4 h-4 mt-0.5" />
                   <div>
                     <p className="font-medium">Preview Note:</p>
                     <p>This preview shows how your table will render in markdown viewers. On smaller screens, tables may scroll horizontally.</p>
@@ -264,7 +264,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <IconTable className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <Table className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>No table data to preview</p>
               <p className="text-sm">Add some content to your table to see the preview</p>
             </div>
@@ -286,7 +286,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <IconFileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>No markdown generated</p>
             </div>
           )}

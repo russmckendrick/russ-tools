@@ -22,8 +22,8 @@ const APIResultsDisplay = ({ apiResults }) => {
 
   const getApiStatusColor = (hasData) => {
     return hasData 
-      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      ? 'bg-success-subtle text-success'
+      : 'bg-danger-subtle text-danger';
   };
 
   const getApiDescription = (apiName) => {
@@ -84,9 +84,9 @@ const APIResultsDisplay = ({ apiResults }) => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {hasData ? (
-                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <CheckCircle className="h-5 w-5 text-success" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-600" />
+                        <XCircle className="h-5 w-5 text-danger" />
                       )}
                       <div>
                         <h4 className="font-medium">{apiName}</h4>

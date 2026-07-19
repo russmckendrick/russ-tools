@@ -591,17 +591,17 @@ const Base64ToolShadcn = () => {
               className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
                 isDragActive
                   ? isDragAccept
-                    ? 'border-green-500 bg-green-50 dark:bg-green-950'
-                    : 'border-red-500 bg-red-50 dark:bg-red-950'
+                    ? 'border-success bg-success-subtle'
+                    : 'border-danger bg-danger-subtle'
                   : 'border-muted-foreground/25 hover:border-muted-foreground/50'
               }`}
             >
               <input {...getInputProps()} />
               {isDragActive ? (
                 isDragAccept ? (
-                  <Upload className="mx-auto h-12 w-12 text-green-500 mb-4" />
+                  <Upload className="mx-auto h-12 w-12 text-success mb-4" />
                 ) : (
-                  <X className="mx-auto h-12 w-12 text-red-500 mb-4" />
+                  <X className="mx-auto h-12 w-12 text-danger mb-4" />
                 )
               ) : (
                 <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />

@@ -7,15 +7,15 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-  IconDownload, 
-  IconCopy, 
-  IconFileText, 
-  IconCheck,
-  IconX,
-  IconTable,
-  IconCode,
-  IconBraces
-} from '@tabler/icons-react';
+  Download, 
+  Copy, 
+  FileText, 
+  Check,
+  X,
+  Table,
+  Code,
+  Braces
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { convertToCSV, convertToTSV, convertToJSON } from '../utils/csvParser';
 
@@ -247,10 +247,10 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
 
   const getFormatIcon = (format) => {
     switch (format) {
-      case 'html': return <IconCode className="w-4 h-4" />;
-      case 'json': return <IconBraces className="w-4 h-4" />;
-      case 'latex': return <IconFileText className="w-4 h-4" />;
-      default: return <IconTable className="w-4 h-4" />;
+      case 'html': return <Code className="w-4 h-4" />;
+      case 'json': return <Braces className="w-4 h-4" />;
+      case 'latex': return <FileText className="w-4 h-4" />;
+      default: return <Table className="w-4 h-4" />;
     }
   };
 
@@ -273,7 +273,7 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
-            <IconDownload className="w-5 h-5" />
+            <Download className="w-5 h-5" />
             <span>Export Table</span>
           </DialogTitle>
         </DialogHeader>
@@ -294,37 +294,37 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
               <SelectContent>
                 <SelectItem value="markdown">
                   <div className="flex items-center space-x-2">
-                    <IconTable className="w-4 h-4" />
+                    <Table className="w-4 h-4" />
                     <span>Markdown</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="csv">
                   <div className="flex items-center space-x-2">
-                    <IconTable className="w-4 h-4" />
+                    <Table className="w-4 h-4" />
                     <span>CSV</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="tsv">
                   <div className="flex items-center space-x-2">
-                    <IconTable className="w-4 h-4" />
+                    <Table className="w-4 h-4" />
                     <span>TSV</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="json">
                   <div className="flex items-center space-x-2">
-                    <IconBraces className="w-4 h-4" />
+                    <Braces className="w-4 h-4" />
                     <span>JSON</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="html">
                   <div className="flex items-center space-x-2">
-                    <IconCode className="w-4 h-4" />
+                    <Code className="w-4 h-4" />
                     <span>HTML</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="latex">
                   <div className="flex items-center space-x-2">
-                    <IconFileText className="w-4 h-4" />
+                    <FileText className="w-4 h-4" />
                     <span>LaTeX</span>
                   </div>
                 </SelectItem>
@@ -391,7 +391,7 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
 
           {/* File Info */}
           <Alert>
-            <IconCheck className="w-4 h-4" />
+            <Check className="w-4 h-4" />
             <AlertDescription>
               Ready to export {tableData?.length || 0} rows × {tableData?.[0]?.length || 0} columns 
               as {exportFormat.toUpperCase()} ({(new Blob([exportData.content]).size / 1024).toFixed(1)} KB)
@@ -401,26 +401,26 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
           {/* Actions */}
           <div className="flex items-center justify-end space-x-3 pt-4 border-t">
             <Button variant="outline" onClick={handleClose}>
-              <IconX className="w-4 h-4 mr-2" />
+              <X className="w-4 h-4 mr-2" />
               Cancel
             </Button>
             
             <Button variant="outline" onClick={handleCopy}>
               {copied ? (
                 <>
-                  <IconCheck className="w-4 h-4 mr-2" />
+                  <Check className="w-4 h-4 mr-2" />
                   Copied!
                 </>
               ) : (
                 <>
-                  <IconCopy className="w-4 h-4 mr-2" />
+                  <Copy className="w-4 h-4 mr-2" />
                   Copy
                 </>
               )}
             </Button>
             
             <Button onClick={handleDownload}>
-              <IconDownload className="w-4 h-4 mr-2" />
+              <Download className="w-4 h-4 mr-2" />
               Download
             </Button>
           </div>

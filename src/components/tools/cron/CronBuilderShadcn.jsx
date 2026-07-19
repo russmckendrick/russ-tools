@@ -412,17 +412,17 @@ const CronBuilderShadcn = () => {
                     </div>
                     {validation.valid ? (
                       <div className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-600 mt-0.5" />
+                        <Check className="w-4 h-4 text-success mt-0.5" />
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-green-600">Valid Expression</p>
+                          <p className="text-sm font-medium text-success">Valid Expression</p>
                           <p className="text-sm text-muted-foreground">{translation}</p>
                         </div>
                       </div>
                     ) : (
                       <div className="flex items-start gap-2">
-                        <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
+                        <AlertCircle className="w-4 h-4 text-danger mt-0.5" />
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-red-600">Invalid Expression</p>
+                          <p className="text-sm font-medium text-danger">Invalid Expression</p>
                           <p className="text-sm text-muted-foreground">{validation.error}</p>
                         </div>
                       </div>
@@ -434,9 +434,9 @@ const CronBuilderShadcn = () => {
                         variant="outline"
                         size="icon"
                         onClick={handleCopy}
-                        className={copied ? "bg-green-50 border-green-200" : ""}
+                        className={copied ? "bg-success-subtle border-success/40" : ""}
                       >
-                        {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                        {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -451,7 +451,7 @@ const CronBuilderShadcn = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-blue-600">
+                  <Badge variant="outline" className="text-[var(--cat)]">
                     <Timer className="w-3 h-3 mr-1" />
                     Time
                   </Badge>
@@ -473,7 +473,7 @@ const CronBuilderShadcn = () => {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-green-600">
+                  <Badge variant="outline" className="text-[var(--cat)]">
                     <Calendar className="w-3 h-3 mr-1" />
                     Date
                   </Badge>
@@ -527,19 +527,19 @@ const CronBuilderShadcn = () => {
                 </div>
                 
                 {validation.valid ? (
-                  <div className="flex items-start gap-2 p-3 bg-green-50 rounded-md">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5" />
+                  <div className="flex items-start gap-2 p-3 bg-success-subtle rounded-md">
+                    <Check className="w-4 h-4 text-success mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-green-600">Valid Expression</p>
-                      <p className="text-sm text-green-700">{translation}</p>
+                      <p className="text-sm font-medium text-success">Valid Expression</p>
+                      <p className="text-sm text-success">{translation}</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-start gap-2 p-3 bg-red-50 rounded-md">
-                    <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
+                  <div className="flex items-start gap-2 p-3 bg-danger-subtle rounded-md">
+                    <AlertCircle className="w-4 h-4 text-danger mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-red-600">Invalid Expression</p>
-                      <p className="text-sm text-red-700">{validation.error}</p>
+                      <p className="text-sm font-medium text-danger">Invalid Expression</p>
+                      <p className="text-sm text-danger">{validation.error}</p>
                     </div>
                   </div>
                 )}

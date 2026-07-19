@@ -589,7 +589,7 @@ Visit: https://russ.tools
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Entropy</p>
                     <div className="flex items-center gap-2">
-                      <Lock className="h-4 w-4 text-green-600" />
+                      <Lock className="h-4 w-4 text-[var(--cat)]" />
                       <span className="text-sm font-medium">{strength.entropy} bits</span>
                     </div>
                   </div>
@@ -604,7 +604,7 @@ Visit: https://russ.tools
                   <div className="col-span-2 space-y-1">
                     <p className="text-xs text-muted-foreground">Average Time to Crack</p>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-green-600" />
+                      <Clock className="h-4 w-4 text-[var(--cat)]" />
                       <Badge variant={strength.timeColor} className="text-sm">
                         {strength.timeToCrack}
                       </Badge>
@@ -625,16 +625,16 @@ Visit: https://russ.tools
                         {strength.feedback.map((item, index) => (
                           <div key={index} className="flex items-start gap-2">
                             {item.type === 'error' ? (
-                              <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                              <AlertTriangle className="h-4 w-4 text-danger mt-0.5 flex-shrink-0" />
                             ) : item.type === 'warning' ? (
-                              <Info className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                              <Info className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
                             ) : (
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <Check className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                             )}
                             <span className={`text-xs ${
-                              item.type === 'error' ? 'text-red-600' : 
-                              item.type === 'warning' ? 'text-orange-600' : 
-                              'text-green-600'
+                              item.type === 'error' ? 'text-danger' : 
+                              item.type === 'warning' ? 'text-warning' : 
+                              'text-success'
                             }`}>
                               {item.message}
                             </span>

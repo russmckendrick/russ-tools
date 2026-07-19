@@ -10,6 +10,6 @@ import { iconSvg } from './icons.mjs';
 const { icon, size = 17, class: className } = Astro.props;
 ---
 
-<span class:list={['ico', className]}>
+<span class:list={['rt-ico', className]}>
   <Fragment set:html={iconSvg(icon, size)} />
 </span>

@@ -299,11 +299,11 @@ const JWTShadcn = () => {
               />
 
               {isValidFormat !== null && (
-                <Alert className={isValidFormat ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'}>
+                <Alert className={isValidFormat ? 'border-success/40 bg-success-subtle' : 'border-danger/40 bg-danger-subtle'}>
                   {isValidFormat ? (
-                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <CheckCircle className="h-4 w-4 text-success" />
                   ) : (
-                    <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    <X className="h-4 w-4 text-danger" />
                   )}
                   <AlertDescription>
                     {isValidFormat ? 'Valid JWT format detected' : 'Invalid JWT format'}
@@ -390,11 +390,11 @@ const JWTShadcn = () => {
               </div>
 
               {validationResult && (
-                <Alert className={validationResult.valid ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'}>
+                <Alert className={validationResult.valid ? 'border-success/40 bg-success-subtle' : 'border-danger/40 bg-danger-subtle'}>
                   {validationResult.valid ? (
-                    <Shield className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <Shield className="h-4 w-4 text-success" />
                   ) : (
-                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    <AlertTriangle className="h-4 w-4 text-danger" />
                   )}
                   <AlertDescription>
                     {validationResult.message || validationResult.error}
@@ -503,9 +503,9 @@ const JWTShadcn = () => {
                         const expStatus = getExpirationStatus();
                         return expStatus && (
                           <Alert className={
-                            expStatus.color === 'destructive' ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' :
-                            expStatus.color === 'warning' ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20' :
-                            'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+                            expStatus.color === 'destructive' ? 'border-danger/40 bg-danger-subtle' :
+                            expStatus.color === 'warning' ? 'border-warning/40 bg-warning-subtle' :
+                            'border-success/40 bg-success-subtle'
                           }>
                             <Clock className="h-4 w-4" />
                             <AlertDescription>
@@ -578,22 +578,22 @@ const JWTShadcn = () => {
 
                       {/* Status Indicators */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Alert className={tokenAnalysis.isExpired ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' : 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'}>
+                        <Alert className={tokenAnalysis.isExpired ? 'border-danger/40 bg-danger-subtle' : 'border-success/40 bg-success-subtle'}>
                           {tokenAnalysis.isExpired ? (
-                            <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            <X className="h-4 w-4 text-danger" />
                           ) : (
-                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <CheckCircle className="h-4 w-4 text-success" />
                           )}
                           <AlertDescription>
                             {tokenAnalysis.isExpired ? 'Token Expired' : 'Token Not Expired'}
                           </AlertDescription>
                         </Alert>
 
-                        <Alert className={tokenAnalysis.isNotYetValid ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20' : 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'}>
+                        <Alert className={tokenAnalysis.isNotYetValid ? 'border-warning/40 bg-warning-subtle' : 'border-success/40 bg-success-subtle'}>
                           {tokenAnalysis.isNotYetValid ? (
-                            <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                            <AlertTriangle className="h-4 w-4 text-warning" />
                           ) : (
-                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <CheckCircle className="h-4 w-4 text-success" />
                           )}
                           <AlertDescription>
                             {tokenAnalysis.isNotYetValid ? 'Not Yet Valid' : 'Currently Valid'}

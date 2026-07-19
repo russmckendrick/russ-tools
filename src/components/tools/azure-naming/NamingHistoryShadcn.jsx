@@ -54,7 +54,7 @@ const NamingHistoryShadcn = () => {
             className="flex items-center justify-between p-4 border rounded-lg bg-card"
           >
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-blue-600 truncate">
+              <h4 className="text-sm font-medium text-info truncate">
                 {item.configuration?.workload || 'Unnamed Workload'}
               </h4>
               <p className="text-xs text-muted-foreground mt-1">

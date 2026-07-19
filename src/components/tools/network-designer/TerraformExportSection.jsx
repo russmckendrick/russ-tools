@@ -8,7 +8,8 @@ import { loadPrismLanguages, highlightCode } from '../../../utils/prismLoader';
 import '../../../styles/prism-theme.css';
 import { cn } from '@/lib/utils';
 
-import { IconCopy, IconBrandTerraform } from '@tabler/icons-react';
+import { IconBrandTerraform } from '@tabler/icons-react';
+import { Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/network/terraformExport';
 import { loadAzureRegions } from '../../../utils/regions/AzureRegions';
@@ -170,7 +171,7 @@ export function TerraformExportSection({ network, subnets }) {
           Terraform Export
         </CardTitle>
         <Button size="sm" onClick={handleCopy}>
-          <IconCopy size={16} className="mr-2" />
+          <Copy size={16} className="mr-2" />
           {copied ? 'Copied!' : 'Copy Code'}
         </Button>
       </CardHeader>

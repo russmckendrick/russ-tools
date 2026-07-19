@@ -405,6 +405,11 @@ Borders are always exactly `1px`. There are no thick borders and no double rules
 - **Toast** — the panel again, bottom-right, with the status colour on the
   icon only. Every tool notifies through the same component; a tool never
   configures its own toaster.
+- **Help** — one affordance, everywhere: a secondary icon button carrying the
+  same glyph in the same place, opening a Dialog. A tool supplies the content
+  and nothing else. There were four answers to this question before — two
+  bespoke dialogs, a tooltip, and a `helpButton` prop no tool ever passed —
+  which is how an interface stops reading as one product.
 - **Table row** — monospace, odd rows tinted with `surface-inset`, the type
   column in the category hue. This is how all record-style output is rendered.
 
@@ -457,8 +462,15 @@ rectangles for subnet allocation, a three-segment bar for a JWT's header /
 payload / signature, a wrapped globe for DNS. Two tools should never share an
 icon.
 
-The set is drawn for this project rather than taken from a library. Where a
-generic UI icon is needed (chevron, close, copy, external link), use
+The set is drawn for this project rather than taken from a library, and it is
+drawn **once**: `src/shell/icons.mjs` holds the paths, the Astro `ToolIcon`
+renders them into prerendered HTML and the React `ToolIcon`
+(`src/components/ui/tool-icon.jsx`) renders the same strings inside an island.
+Before this, each tool wrapped a third-party glyph, so the icon in the page
+header and the icon inside the tool were two different pictures of the same
+thing.
+
+Where a generic UI icon is needed (chevron, close, copy, external link), use
 **lucide-react**, which is the project's only icon dependency. `@tabler/icons-react`
 is being removed and must not be used.
 

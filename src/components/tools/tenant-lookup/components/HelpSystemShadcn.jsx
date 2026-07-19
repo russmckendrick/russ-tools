@@ -77,7 +77,7 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
             <CardContent>
               <div className="grid gap-3">
                 <div className="flex items-start gap-3">
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  <Badge variant="secondary" className="bg-info-subtle text-info">
                     <Building className="w-3 h-3 mr-1" />
                     Organization
                   </Badge>
@@ -87,7 +87,7 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                  <Badge variant="secondary" className="bg-success-subtle text-success">
                     <Shield className="w-3 h-3 mr-1" />
                     Authentication
                   </Badge>
@@ -97,7 +97,7 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                  <Badge variant="secondary" className="bg-[color-mix(in_oklab,var(--cat)_13%,transparent)] text-[var(--cat)]">
                     <Globe className="w-3 h-3 mr-1" />
                     DNS Analysis
                   </Badge>
@@ -120,19 +120,19 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
             <CardContent>
               <div className="grid gap-2">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">AAD</Badge>
+                  <Badge className="bg-info-subtle text-info">AAD</Badge>
                   <span className="text-sm text-muted-foreground">Azure Active Directory - Enterprise tenants</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">B2C</Badge>
+                  <Badge className="bg-success-subtle text-success">B2C</Badge>
                   <span className="text-sm text-muted-foreground">Azure AD B2C - Consumer identity management</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">Hybrid</Badge>
+                  <Badge className="bg-warning-subtle text-warning">Hybrid</Badge>
                   <span className="text-sm text-muted-foreground">Hybrid deployment with on-premises federation</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">Cloud-Only</Badge>
+                  <Badge className="bg-surface-inset text-on-surface">Cloud-Only</Badge>
                   <span className="text-sm text-muted-foreground">Pure cloud tenant without on-premises</span>
                 </div>
               </div>
@@ -178,19 +178,19 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
             <CardContent className="space-y-3">
               <div className="grid gap-3">
                 <div>
-                  <p className="text-sm font-medium text-blue-800 dark:text-blue-200">🏢 IT Administration</p>
+                  <p className="text-sm font-medium text-info">🏢 IT Administration</p>
                   <p className="text-xs text-muted-foreground">Validate customer tenants, analyze organizational structure, audit Microsoft services</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-green-800 dark:text-green-200">🤝 CSP Partners</p>
+                  <p className="text-sm font-medium text-success">🤝 CSP Partners</p>
                   <p className="text-xs text-muted-foreground">Customer onboarding, tenant identification, service validation for partner workflows</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-purple-800 dark:text-purple-200">🔒 Security Research</p>
+                  <p className="text-sm font-medium text-[var(--cat)]">🔒 Security Research</p>
                   <p className="text-xs text-muted-foreground">Threat intelligence, domain-to-tenant mapping, federation analysis</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-orange-800 dark:text-orange-200">📋 Compliance</p>
+                  <p className="text-sm font-medium text-warning">📋 Compliance</p>
                   <p className="text-xs text-muted-foreground">Organizational data gathering, audit trails, service discovery</p>
                 </div>
               </div>
@@ -207,19 +207,19 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
             <CardContent className="space-y-3">
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-success mt-0.5" />
                   <span className="text-sm">Uses only publicly available Microsoft metadata endpoints</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-success mt-0.5" />
                   <span className="text-sm">No personal data collection or persistent storage</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-success mt-0.5" />
                   <span className="text-sm">All communications secured with HTTPS and proper authentication</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-warning mt-0.5" />
                   <span className="text-sm">Results depend on Microsoft API availability and tenant configuration</span>
                 </div>
               </div>
@@ -239,15 +239,15 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
                   <p className="text-sm font-medium">Common Issues & Solutions</p>
                   <div className="mt-2 space-y-2">
                     <div className="text-xs">
-                      <p className="font-medium text-red-800 dark:text-red-200">Tenant Not Found</p>
+                      <p className="font-medium text-danger">Tenant Not Found</p>
                       <p className="text-muted-foreground">Domain may not have Microsoft services. Verify spelling and try alternative formats.</p>
                     </div>
                     <div className="text-xs">
-                      <p className="font-medium text-orange-800 dark:text-orange-200">API Timeout</p>
+                      <p className="font-medium text-warning">API Timeout</p>
                       <p className="text-muted-foreground">Microsoft APIs experiencing high load. Check connectivity and retry after a few minutes.</p>
                     </div>
                     <div className="text-xs">
-                      <p className="font-medium text-blue-800 dark:text-blue-200">Network Errors</p>
+                      <p className="font-medium text-info">Network Errors</p>
                       <p className="text-muted-foreground">Browser blocking requests or network restrictions. Check browser console for details.</p>
                     </div>
                   </div>

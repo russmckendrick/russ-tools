@@ -57,7 +57,7 @@ function SortableSubnet({ subnet, index, onRemoveSubnet }) {
       <Card 
         className={`transition-all duration-200 ${
           isDragging 
-            ? 'shadow-lg scale-[1.02] ring-2 ring-blue-200' 
+            ? 'shadow-lg scale-[1.02] ring-2 ring-[var(--cat)]/40'
             : 'shadow-sm hover:shadow-md'
         }`}
         style={{
@@ -88,7 +88,7 @@ function SortableSubnet({ subnet, index, onRemoveSubnet }) {
               <Button 
                 variant="ghost" 
                 size="icon"
-                 className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                 className="h-6 w-6 text-danger hover:text-danger hover:bg-danger-subtle"
                 onClick={() => onRemoveSubnet(index)}
               >
                 <Trash2 className="h-3 w-3" />

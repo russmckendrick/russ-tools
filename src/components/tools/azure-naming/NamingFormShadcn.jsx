@@ -283,7 +283,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
                     </div>
                   </div>
                   {(formState.randomLength || 0) > 0 && (
-                    <p className="text-xs text-blue-600 font-medium">
+                    <p className="text-xs text-info font-medium">
                       Will append {formState.randomLength} random character{formState.randomLength > 1 ? 's' : ''} (e.g., "abc123xy")
                     </p>
                   )}

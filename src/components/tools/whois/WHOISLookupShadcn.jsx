@@ -270,13 +270,13 @@ const WHOISLookupShadcn = () => {
 
   const getTypeBadge = (type) => {
     const colors = {
-      domain: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      ip: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      network: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+      domain: 'bg-info-subtle text-info',
+      ip: 'bg-success-subtle text-success',
+      network: 'bg-[color-mix(in_oklab,var(--cat)_13%,transparent)] text-[var(--cat)]'
     };
-    
+
     return (
-      <Badge className={colors[type?.toLowerCase()] || 'bg-gray-100 text-gray-800'}>
+      <Badge className={colors[type?.toLowerCase()] || 'bg-surface-inset text-on-surface'}>
         {type || 'Unknown'}
       </Badge>
     );

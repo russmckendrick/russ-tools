@@ -31,19 +31,19 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
   const getProviderColor = (provider) => {
     switch (provider) {
       case 'Microsoft 365':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        return 'bg-info-subtle text-info';
       case 'Google Workspace':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-success-subtle text-success';
       case 'Mimecast':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+        return 'bg-warning-subtle text-warning';
       case 'Proofpoint':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+        return 'bg-[color-mix(in_oklab,var(--cat)_13%,transparent)] text-[var(--cat)]';
       case 'Barracuda':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-danger-subtle text-danger';
       case 'Cloudflare':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-warning-subtle text-warning';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-surface-inset text-on-surface';
     }
   };
 

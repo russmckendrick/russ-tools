@@ -82,7 +82,7 @@ const QueryPreview = ({ query, service: _service, template }) => {
       </CardHeader>
       <CardContent>
         <div className="relative">
-          <pre className="language-kql bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+          <pre className="language-kql bg-surface-inset text-on-surface p-4 rounded-lg overflow-x-auto">
             <code 
               className="language-kql"
               dangerouslySetInnerHTML={{ __html: highlighted }}

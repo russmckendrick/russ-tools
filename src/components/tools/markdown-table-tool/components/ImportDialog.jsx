@@ -8,13 +8,13 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  IconUpload, 
-  IconFileText, 
-  IconTable, 
-  IconAlertTriangle,
-  IconCheck,
-  IconX
-} from '@tabler/icons-react';
+  Upload, 
+  FileText, 
+  Table, 
+  TriangleAlert,
+  Check,
+  X
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   parseCSV, 
@@ -237,7 +237,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
-            <IconUpload className="w-5 h-5" />
+            <Upload className="w-5 h-5" />
             <span>Import Table Data</span>
           </DialogTitle>
         </DialogHeader>
@@ -246,11 +246,11 @@ const ImportDialog = ({ open, onClose, onImport }) => {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="text" className="flex items-center space-x-2">
-                <IconFileText className="w-4 h-4" />
+                <FileText className="w-4 h-4" />
                 <span>Paste Text</span>
               </TabsTrigger>
               <TabsTrigger value="file" className="flex items-center space-x-2">
-                <IconUpload className="w-4 h-4" />
+                <Upload className="w-4 h-4" />
                 <span>Upload File</span>
               </TabsTrigger>
             </TabsList>
@@ -277,7 +277,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
                 <Label htmlFor="file-input">Upload a file</Label>
                 <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
                   <div className="text-center">
-                    <IconUpload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                     <input
                       id="file-input"
                       type="file"
@@ -331,7 +331,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
           {/* Error Display */}
           {error && (
             <Alert variant="destructive">
-              <IconAlertTriangle className="w-4 h-4" />
+              <TriangleAlert className="w-4 h-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -340,7 +340,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
           {preview && (
             <div className="space-y-3">
               <Alert>
-                <IconCheck className="w-4 h-4" />
+                <Check className="w-4 h-4" />
                 <AlertDescription>
                   Found {preview.totalRows} rows with {preview.data[0]?.length || 0} columns
                 </AlertDescription>
@@ -352,14 +352,14 @@ const ImportDialog = ({ open, onClose, onImport }) => {
           {/* Actions */}
           <div className="flex items-center justify-end space-x-3 pt-4 border-t">
             <Button variant="outline" onClick={handleClose}>
-              <IconX className="w-4 h-4 mr-2" />
+              <X className="w-4 h-4 mr-2" />
               Cancel
             </Button>
             <Button 
               onClick={handleImport}
               disabled={!preview || isLoading}
             >
-              <IconTable className="w-4 h-4 mr-2" />
+              <Table className="w-4 h-4 mr-2" />
               {isLoading ? 'Importing...' : 'Import Table'}
             </Button>
           </div>

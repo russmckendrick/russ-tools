@@ -38,7 +38,7 @@ const SSLResultsDisplay = ({ data }) => {
         <TooltipTrigger asChild>
           <Badge 
             variant="outline" 
-            className={`${gradeInfo.color} text-white border-0 text-lg px-3 py-1 font-bold`}
+            className={`${gradeInfo.color} border-0 text-lg px-3 py-1 font-bold`}
           >
             <Award className="w-4 h-4 mr-1" />
             {grade}
@@ -78,15 +78,15 @@ const SSLResultsDisplay = ({ data }) => {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Ready</p>
-                  <p className="font-medium text-green-600">{data.assessmentProgress.readyEndpoints}</p>
+                  <p className="font-medium text-success">{data.assessmentProgress.readyEndpoints}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">In Progress</p>
-                  <p className="font-medium text-yellow-600">{data.assessmentProgress.inProgressEndpoints}</p>
+                  <p className="font-medium text-warning">{data.assessmentProgress.inProgressEndpoints}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Pending</p>
-                  <p className="font-medium text-gray-500">{data.assessmentProgress.pendingEndpoints}</p>
+                  <p className="font-medium text-on-surface-muted">{data.assessmentProgress.pendingEndpoints}</p>
                 </div>
               </div>
               {data.assessmentProgress.estimatedTimeRemaining > 0 && (
@@ -190,7 +190,7 @@ const SSLResultsDisplay = ({ data }) => {
                         <div className="flex items-center gap-3">
                           {endpoint.grade && endpoint.grade !== '-' && getGradeBadge(endpoint.grade)}
                           {endpoint.isComplete ? (
-                            <Badge variant="default" className="bg-green-500 text-white">Complete</Badge>
+                            <Badge variant="default" className="border-success/40 bg-success-subtle text-success">Complete</Badge>
                           ) : (
                             <Badge variant="secondary">
                               {endpoint.progress}% ({endpoint.eta}s)

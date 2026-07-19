@@ -43,7 +43,7 @@ const PortalTable = ({ portals, onToggleFavorite }) => {
                 onClick={() => onToggleFavorite(portal.key, portal.name)}
               >
                 {portal.isFavorite ? (
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="h-4 w-4 fill-warning text-warning" />
                 ) : (
                   <Star className="h-4 w-4" />
                 )}

@@ -29,11 +29,11 @@ const CompatibilityTab = ({ data }) => {
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-green-600">{successful.length}</p>
+              <p className="text-2xl font-bold text-success">{successful.length}</p>
               <p className="text-sm text-muted-foreground">Compatible</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-red-600">{failed.length}</p>
+              <p className="text-2xl font-bold text-danger">{failed.length}</p>
               <p className="text-sm text-muted-foreground">Incompatible</p>
             </div>
             <div>

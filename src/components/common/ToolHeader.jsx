@@ -7,7 +7,6 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '../ui/
 import { Info, HelpCircle } from 'lucide-react';
 import toolsConfig from '@/utils/toolsConfig.json';
 import { useShell } from '@/bridge/ShellContext';
-import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub } from '@tabler/icons-react';
 import Base64Icon from '@/components/tools/base64/Base64Icon';
 import JSONIcon from '@/components/tools/data-converter/JSONIcon';
 import DNSIcon from '@/components/tools/dns-lookup/DNSIcon';
@@ -22,7 +21,28 @@ import SSLCheckerIcon from '@/components/tools/ssl-checker/SSLCheckerIcon';
 import CronIcon from '@/components/tools/cron/CronIcon';
 import NetworkDesignerIcon from '@/components/tools/network-designer/NetworkDesignerIcon';
 import MarkdownTableIcon from '@/components/tools/markdown-table-tool/MarkdownTableIcon';
+import AzureNamingIcon from '@/components/tools/azure-naming/AzureNamingIcon';
 
+  // Every entry is now the tool's own bespoke icon from src/shell/icons.mjs,
+// so the glyph here and the one the shell prerenders are the same drawing.
+// The seven generic @tabler icons this map used to carry are gone.
+const iconByKey = {
+  DNSIcon: DNSIcon,
+  WHOISIcon: WHOISIcon,
+  Base64Icon: Base64Icon,
+  JSONIcon: JSONIcon,
+  JWTIcon: JWTIcon,
+  PasswordIcon: PasswordIcon,
+  MicrosoftPortalsIcon: MicrosoftPortalsIcon,
+  TenantLookupIcon: TenantLookupIcon,
+  AzureKQLIcon: AzureKQLIcon,
+  AzureNamingIcon: AzureNamingIcon,
+  BuzzwordIpsumIcon: BuzzwordIpsumIcon,
+  SSLCheckerIcon: SSLCheckerIcon,
+  CronIcon: CronIcon,
+  NetworkDesignerIcon: NetworkDesignerIcon,
+  MarkdownTableIcon: MarkdownTableIcon,
+};
 /**
  * Unified Tool Header Component
  * Provides consistent styling and layout across all tools
@@ -61,29 +81,8 @@ const ToolHeader = ({
   // Resolve icon/color from toolsConfig for consistency
   const location = useLocation();
   const shell = useShell();
-  const iconByKey = {
-    IconNetwork: IconNetwork,
-    IconBrandAzure: IconBrandAzure,
-    IconChartDots3: IconChartDots3,
-    IconClock: IconClock,
-    IconShield: IconShield,
-    IconMessageCircle: IconMessageCircle,
-    IconBrandGithub: IconBrandGithub,
-    DNSIcon: DNSIcon,
-    WHOISIcon: WHOISIcon,
-    Base64Icon: Base64Icon,
-    JSONIcon: JSONIcon,
-    JWTIcon: JWTIcon,
-    PasswordIcon: PasswordIcon,
-    MicrosoftPortalsIcon: MicrosoftPortalsIcon,
-    TenantLookupIcon: TenantLookupIcon,
-    AzureKQLIcon: AzureKQLIcon,
-    BuzzwordIpsumIcon: BuzzwordIpsumIcon,
-    SSLCheckerIcon: SSLCheckerIcon,
-    CronIcon: CronIcon,
-    NetworkDesignerIcon: NetworkDesignerIcon,
-    MarkdownTableIcon: MarkdownTableIcon,
-  };
+
+
 
   const detectedTool = React.useMemo(() => {
     if (toolId) return toolsConfig.find(t => t.id === toolId);

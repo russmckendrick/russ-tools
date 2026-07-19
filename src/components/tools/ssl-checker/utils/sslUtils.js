@@ -13,19 +13,19 @@ export const formatDate = (timestamp) => {
 // Get SSL grade information
 export const getGradeInfo = (grade) => {
   const grades = {
-    'A+': { color: 'bg-green-500', description: 'Exceptional - Best possible SSL configuration' },
-    'A': { color: 'bg-green-500', description: 'Excellent - Strong SSL configuration' },
-    'A-': { color: 'bg-green-400', description: 'Very Good - Minor issues present' },
-    'B': { color: 'bg-blue-500', description: 'Good - Some weaknesses present' },
-    'C': { color: 'bg-yellow-500', description: 'Fair - Significant weaknesses' },
-    'D': { color: 'bg-orange-500', description: 'Poor - Serious security issues' },
-    'E': { color: 'bg-red-500', description: 'Failed - Critical security failures' },
-    'F': { color: 'bg-red-600', description: 'Failed - Severe security vulnerabilities' },
-    'T': { color: 'bg-gray-500', description: 'Certificate not trusted' },
-    'M': { color: 'bg-purple-500', description: 'Certificate name mismatch' }
+    'A+': { color: 'bg-success-subtle text-success', description: 'Exceptional - Best possible SSL configuration' },
+    'A': { color: 'bg-success-subtle text-success', description: 'Excellent - Strong SSL configuration' },
+    'A-': { color: 'bg-success-subtle text-success', description: 'Very Good - Minor issues present' },
+    'B': { color: 'bg-info-subtle text-info', description: 'Good - Some weaknesses present' },
+    'C': { color: 'bg-warning-subtle text-warning', description: 'Fair - Significant weaknesses' },
+    'D': { color: 'bg-warning-subtle text-warning', description: 'Poor - Serious security issues' },
+    'E': { color: 'bg-danger-subtle text-danger', description: 'Failed - Critical security failures' },
+    'F': { color: 'bg-danger-subtle text-danger', description: 'Failed - Severe security vulnerabilities' },
+    'T': { color: 'bg-danger-subtle text-danger', description: 'Certificate not trusted' },
+    'M': { color: 'bg-danger-subtle text-danger', description: 'Certificate name mismatch' }
   };
-  
-  return grades[grade] || { color: 'bg-gray-400', description: 'Unknown grade' };
+
+  return grades[grade] || { color: 'bg-surface-inset text-on-surface-muted', description: 'Unknown grade' };
 };
 
 // Domain validation

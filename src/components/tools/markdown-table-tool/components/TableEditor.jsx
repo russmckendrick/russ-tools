@@ -226,7 +226,7 @@ const TableEditor = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        className="h-6 w-6 p-0 text-danger hover:text-danger"
                         onClick={() => onRemoveRow(rowIndex)}
                       >
                         <IconMinus className="w-3 h-3" />
@@ -241,7 +241,7 @@ const TableEditor = ({
                     key={colIndex}
                     className={`border p-1 min-w-[120px] h-12 cursor-pointer hover:bg-muted/30 ${
                       editingCell?.row === rowIndex && editingCell?.col === colIndex
-                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700'
+                        ? 'bg-info-subtle border-info/40'
                         : ''
                     } ${
                       selectedCell?.row === rowIndex && selectedCell?.col === colIndex
@@ -299,7 +299,7 @@ const TableEditor = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        className="h-6 w-6 p-0 text-danger hover:text-danger"
                         onClick={() => onRemoveColumn(colIndex)}
                       >
                         <IconMinus className="w-3 h-3" />
@@ -365,7 +365,7 @@ const TableEditor = ({
           
           {data.length > 1 && (
             <button
-              className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-red-600"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-surface-inset flex items-center space-x-2 text-danger"
               onClick={() => {
                 onRemoveRow(contextMenu.row);
                 setContextMenu(null);
@@ -378,7 +378,7 @@ const TableEditor = ({
           
           {data[0]?.length > 1 && (
             <button
-              className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-red-600"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-surface-inset flex items-center space-x-2 text-danger"
               onClick={() => {
                 onRemoveColumn(contextMenu.col);
                 setContextMenu(null);

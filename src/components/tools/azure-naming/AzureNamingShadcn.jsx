@@ -121,7 +121,7 @@ const AzureNamingShadcn = () => {
                 <CardContent className="pt-6">
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      <Badge variant="outline" className="bg-info-subtle text-info border-info/40">
                         Resource Types
                       </Badge>
                       <span className="text-xs text-muted-foreground">
@@ -142,7 +142,7 @@ const AzureNamingShadcn = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    <Badge variant="outline" className="bg-success-subtle text-success border-success/40">
                       Required
                     </Badge>
                     <span className="text-xs text-muted-foreground">
@@ -160,7 +160,7 @@ const AzureNamingShadcn = () => {
 
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                    <Badge variant="outline" className="bg-warning-subtle text-warning border-warning/40">
                       Optional
                     </Badge>
                     <span className="text-xs text-muted-foreground">
@@ -213,7 +213,7 @@ const AzureNamingShadcn = () => {
             </TabsContent>
 
             <TabsContent value="history" className="space-y-6">
-              <Alert className="bg-green-50 border-green-200 text-green-800">
+              <Alert className="bg-success-subtle border-success/40 text-success">
                 <Info className="h-4 w-4" />
                 <AlertDescription>
                   Access your previously generated and saved resource names

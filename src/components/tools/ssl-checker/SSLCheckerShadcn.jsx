@@ -97,7 +97,7 @@ const SSLCheckerShadcn = () => {
     return (
       <Badge 
         variant="outline" 
-        className={`${gradeInfo.color} text-white border-0 text-sm px-2 py-1 font-bold`}
+        className={`${gradeInfo.color} border-0 text-sm px-2 py-1 font-bold`}
       >
         <Award className="w-3 h-3 mr-1" />
         {grade}
@@ -112,8 +112,8 @@ const SSLCheckerShadcn = () => {
         {/* Header */}
         {!shell && (
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
-              <SSLCheckerIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <div className="p-3 bg-[color-mix(in_oklab,var(--cat,var(--color-primary))_13%,transparent)] rounded-xl">
+              <SSLCheckerIcon className="w-8 h-8 text-[var(--cat,var(--color-primary))]" />
             </div>
             <div>
               <h1 className="text-2xl font-bold">SSL Certificate Checker</h1>

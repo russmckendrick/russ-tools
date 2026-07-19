@@ -56,7 +56,7 @@
     "title": "Azure Resource Naming Tool",
     "description": "Generate consistent Azure resource names following Cloud Adoption Framework best practices and your organizational conventions.",
     "shortDescription": "Generate and validate Azure resource names",
-    "icon": "IconBrandAzure",
+    "icon": "AzureNamingIcon",
     "badges": ["CAF Compliant", "Best Practices", "Bulk Export"],
     "path": "/azure-naming",
     "seoTitle": "Azure Resource Naming Tool - CAF Compliant Name Generator",

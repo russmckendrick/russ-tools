@@ -9,16 +9,16 @@ const ValidationDisplay = ({ validationResult, detectedFormat }) => {
 
   const getValidationIcon = () => {
     if (validationResult.success) {
-      return <CheckCircle className="h-5 w-5 text-green-600" />;
+      return <CheckCircle className="h-5 w-5 text-success" />;
     } else {
-      return <AlertCircle className="h-5 w-5 text-red-600" />;
+      return <AlertCircle className="h-5 w-5 text-danger" />;
     }
   };
 
   const getValidationColor = () => {
     return validationResult.success 
-      ? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800' 
-      : 'bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800';
+      ? 'bg-success-subtle border-success/40'
+      : 'bg-danger-subtle border-danger/40';
   };
 
   const formatErrorMessage = (error) => {
@@ -42,7 +42,7 @@ const ValidationDisplay = ({ validationResult, detectedFormat }) => {
           </div>
           {detectedFormat && (
             <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-blue-600" />
+              <Zap className="h-4 w-4 text-info" />
               <Badge variant="secondary">
                 Detected: {detectedFormat.toUpperCase()}
               </Badge>

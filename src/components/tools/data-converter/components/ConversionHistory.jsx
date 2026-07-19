@@ -19,11 +19,11 @@ const ConversionHistory = ({
 
   const getFormatColor = (format) => {
     const colors = {
-      json: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      yaml: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      toml: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+      json: 'bg-info-subtle text-info',
+      yaml: 'bg-success-subtle text-success',
+      toml: 'bg-warning-subtle text-warning'
     };
-    return colors[format] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    return colors[format] || 'bg-surface-inset text-on-surface-muted';
   };
 
   const truncateData = (data, maxLength = 100) => {

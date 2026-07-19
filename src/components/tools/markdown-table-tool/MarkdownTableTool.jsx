@@ -75,8 +75,8 @@ const MarkdownTableTool = () => {
 
   const getValidationColor = () => {
     if (!validation.isValid) return 'text-destructive';
-    if (validation.data.warnings.length > 0 || validation.markdown.warnings.length > 0) return 'text-orange-600';
-    return 'text-green-600';
+    if (validation.data.warnings.length > 0 || validation.markdown.warnings.length > 0) return 'text-warning';
+    return 'text-success';
   };
 
   const getValidationIcon = () => {

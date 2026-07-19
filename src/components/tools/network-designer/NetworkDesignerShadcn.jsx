@@ -97,12 +97,12 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
     <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Network className="h-5 w-5 text-blue-600" />
+          <Network className="h-5 w-5 text-info" />
           <CardTitle className="text-lg">
             {existingNetwork ? 'Reconfigure Parent Network' : 'Configure Parent Network'}
           </CardTitle>
           {existingNetwork && (
-            <Badge variant="outline" className="border-orange-500 text-orange-600">
+            <Badge variant="outline" className="border-warning/40 text-warning">
               Editing
             </Badge>
           )}
@@ -110,7 +110,7 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
       </CardHeader>
       <CardContent className="space-y-4">
         {existingNetwork && (
-          <div className="p-3 bg-orange-50 border border-orange-200 rounded-md text-sm text-orange-800">
+          <div className="p-3 bg-warning-subtle border border-warning/40 rounded-md text-sm text-warning">
             <div className="flex items-center gap-2">
               <Info className="h-4 w-4" />
               <strong>Warning:</strong> Changing the parent network will remove all existing subnets. You'll need to recreate them after saving.
@@ -121,14 +121,14 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="parent-ip">
-              Parent Network IP <span className="text-red-500">*</span>
+              Parent Network IP <span className="text-danger">*</span>
             </Label>
             <Input
               id="parent-ip"
               placeholder="e.g., 10.0.0.0"
               value={ip}
               onChange={(e) => setIp(e.target.value)}
-              className={error && error.includes('IP') ? 'border-red-500' : ''}
+              className={error && error.includes('IP') ? 'border-danger' : ''}
             />
             <p className="text-xs text-muted-foreground">
               Enter the base IP address for your network
@@ -137,10 +137,10 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
           
           <div className="space-y-2">
             <Label htmlFor="cidr-size">
-              CIDR Size <span className="text-red-500">*</span>
+              CIDR Size <span className="text-danger">*</span>
             </Label>
             <Select value={cidr} onValueChange={setCidr}>
-              <SelectTrigger id="cidr-size" className={error && error.includes('CIDR') ? 'border-red-500' : ''}>
+              <SelectTrigger id="cidr-size" className={error && error.includes('CIDR') ? 'border-danger' : ''}>
                 <SelectValue placeholder="Select size" />
               </SelectTrigger>
               <SelectContent>
@@ -171,7 +171,7 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
         </div>
 
         {error && (
-          <div className="text-sm text-red-600">{error}</div>
+          <div className="text-sm text-danger">{error}</div>
         )}
 
         <div className="flex justify-end gap-2 pt-4">
@@ -322,7 +322,7 @@ function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="space-y-2">
           <Label htmlFor="subnet-name">
-            Subnet Name <span className="text-red-500">*</span>
+            Subnet Name <span className="text-danger">*</span>
           </Label>
           <Input
             id="subnet-name"
@@ -334,7 +334,7 @@ function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) {
         
         <div className="space-y-2">
           <Label htmlFor="subnet-cidr">
-            CIDR Size <span className="text-red-500">*</span>
+            CIDR Size <span className="text-danger">*</span>
           </Label>
           <Select value={cidr} onValueChange={(value) => {
             setCidr(value);
@@ -363,8 +363,8 @@ function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) {
                 key={`${color.name}-${color.index}`}
                 className={`w-6 h-6 rounded-full border-2 ${
                   selectedColor?.value === color.value 
-                    ? 'border-gray-900 scale-110' 
-                    : 'border-gray-300'
+                    ? 'border-on-surface scale-110' 
+                    : 'border-outline'
                 } transition-all`}
                 style={{ backgroundColor: color.value }}
                 onClick={() => setSelectedColor(color)}
@@ -387,10 +387,10 @@ function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) {
       </div>
       
       {error && (
-        <div className="text-sm text-red-600">{error}</div>
+        <div className="text-sm text-danger">{error}</div>
       )}
       {cidrOptions.length === 0 && parentNetwork && (
-        <div className="text-sm text-orange-600">
+        <div className="text-sm text-warning">
           No space available for additional subnets in this network
         </div>
       )}
@@ -734,7 +734,7 @@ const NetworkDesignerShadcn = () => {
       <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Network className="h-5 w-5 text-blue-600" />
+            <Network className="h-5 w-5 text-info" />
             <CardTitle>Network Management</CardTitle>
           </div>
         </CardHeader>
@@ -769,7 +769,7 @@ const NetworkDesignerShadcn = () => {
                     variant="outline"
                     size="icon"
                     onClick={() => setDeleteModalOpen(true)}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-danger hover:text-danger"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -792,9 +792,9 @@ const NetworkDesignerShadcn = () => {
           <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-green-600" />
+                <Info className="h-5 w-5 text-success" />
                 <CardTitle>Parent Network Details</CardTitle>
-                <Badge variant="outline" className="border-green-500 text-green-600">
+                <Badge variant="outline" className="border-success/40 text-success">
                   Configured
                 </Badge>
               </div>
@@ -875,7 +875,7 @@ const NetworkDesignerShadcn = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Layers3 className="h-5 w-5 text-blue-600" />
+              <Layers3 className="h-5 w-5 text-[var(--cat)]" />
               <CardTitle>Add Subnet</CardTitle>
             </div>
           </CardHeader>
@@ -893,9 +893,9 @@ const NetworkDesignerShadcn = () => {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Layers3 className="h-5 w-5 text-orange-600" />
+                <Layers3 className="h-5 w-5 text-[var(--cat)]" />
                 <CardTitle>Manage Subnets</CardTitle>
-                <Badge variant="outline" className="border-blue-500 text-blue-600">
+                <Badge variant="outline">
                   {current.subnets.length} subnet{current.subnets.length !== 1 ? 's' : ''}
                 </Badge>
               </div>
@@ -966,7 +966,7 @@ const NetworkDesignerShadcn = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-blue-600" />
+              <BarChart3 className="h-5 w-5 text-info" />
               <CardTitle>Export Diagrams</CardTitle>
             </div>
           </CardHeader>

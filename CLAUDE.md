@@ -22,9 +22,13 @@ everything derived from per-tool manifests. Phases 0 (stabilise) and 1 (design p
 | Output | `dist/` | `dist-astro/` |
 | Source | `src/components/`, `src/App.jsx` | `src/pages/`, `src/layouts/`, `src/shell/`, `src/tools/` |
 
-The shell has the registry, `ToolLayout.astro`, prerendered pages, SEO and generated
-`_redirects` — but **the tool bodies are not bridged yet**, so its tool pages show a
-"bridge pending" panel. Don't assume a tool works under Astro; check.
+**The bridge is live.** Every tool page mounts its existing React component through
+`src/bridge/ToolIsland.jsx`, which supplies the three things Astro does not have: a
+`BrowserRouter` whose routes are generated from the manifest's `params` (so `useParams`
+works unchanged in the nine tools that call it), the shared `<Toaster/>`, and a
+`ShellContext` marker. Shared chrome that would duplicate the shell's page furniture —
+`SEOHead`, `ToolHeader`'s icon/h1/description — stands down when that context is present.
+`src/bridge/` is Phase 2 scaffolding and is deleted at cutover.
 
 `src/tools/<id>/manifest.mjs` is the contract (15 bridge manifests exist). The registry is
 `src/tools/registry.mjs` (`import.meta.glob`, Vite-only) with a plain-Node twin
@@ -38,6 +42,21 @@ type, layout, shape and components. Short version: **dark-first**, panelled, six
 hues driven by each tool's `category`, Inter for prose and JetBrains Mono for data only,
 no serif. Use semantic tokens, never raw Tailwind palette classes (`bg-green-50`) — ESLint
 warns on those in tools and errors in `src/components/ui/` and `src/components/layout/`.
+
+**`src/components/ui/` is the design surface — change the component, not the call site.**
+Every tool renders through it (48 files use the card, 47 the button), so it is the one
+place a change reaches all fifteen tools at once, and it is now written against DESIGN.md
+rather than shadcn's stock values. Notably: the primary button, focus ring, active tab and
+default badge all take `var(--cat)`, which `ToolLayout` sets once per page from the
+manifest's `category` — a tool never names a colour. There is one `<Toaster/>`
+(`ui/toaster.jsx`, mounted by both apps), one help affordance (`ui/help-dialog.jsx`), and
+one source for the bespoke tool icons (`src/shell/icons.mjs`, rendered by the Astro
+`ToolIcon` and the React `ui/tool-icon.jsx`).
+
+**Shell CSS classes are `rt-`-prefixed** (`src/styles/shell.css`). They were bare before,
+and `.grid` collided with Tailwind's `grid` utility — the shell's rule won, so every
+`grid grid-cols-*` inside every tool silently became a 3-column grid. Don't add an
+unprefixed class to that file.
 
 **The token layer is generated — do not hand-edit hexes.** `src/styles/tokens.generated.css`
 comes from `DESIGN.md` via `pnpm generate:tokens`; `src/styles/globals.css` only switches the
