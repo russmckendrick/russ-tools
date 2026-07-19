@@ -1,31 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { loadPrismLanguages } from '@/utils/prismLoader';
 import yaml from 'js-yaml';
 import * as TOML from '@ltd/j-toml';
+import { createToolStorage } from '@/core';
 
 // Import validation utilities
-import { 
-  validateJSON, 
-  validateYAML, 
-  validateTOML, 
+import {
+  validateJSON,
+  validateYAML,
+  validateTOML,
   validateWithDetection,
   validateWithSchema,
   commonSchemas
-} from './validation';
-
-// Import sample data
-
-
+} from './lib/validation';
 
 // Import components
-import ToolHeader from '../../common/ToolHeader';
-import JSONIcon from './JSONIcon';
 import ControlPanel from './components/ControlPanel';
 import ConversionForm from './components/ConversionForm';
 import ValidationDisplay from './components/ValidationDisplay';
 
-const DataConverterShadcn = () => {
+const DEFAULT_SETTINGS = {
+  enableValidation: true,
+  enableSchemaValidation: false,
+  selectedSchema: 'user',
+  autoDetectFormat: true,
+  prettifyOutput: true,
+  enableHistory: true,
+  maxHistoryItems: 50
+};
+
+/** Typing pauses this long before the input is re-parsed. */
+const VALIDATE_DEBOUNCE_MS = 300;
+
+const DataConverterTool = () => {
+  const storage = useMemo(() => createToolStorage('data-converter'), []);
+
   // Core state
   const [inputData, setInputData] = useState('');
   const [outputData, setOutputData] = useState('');
@@ -34,62 +44,45 @@ const DataConverterShadcn = () => {
   const [validationResult, setValidationResult] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
   const [detectedFormat, setDetectedFormat] = useState(null);
-  
+
   // Settings
-  const [settings, setSettings] = useState({
-    enableValidation: true,
-    enableSchemaValidation: false,
-    selectedSchema: 'user',
-    autoDetectFormat: true,
-    prettifyOutput: true,
-    enableHistory: true,
-    maxHistoryItems: 50
-  });
-  
+  const [settings, setSettings] = useState(() => ({
+    ...DEFAULT_SETTINGS,
+    ...(storage.get('settings', { fallback: {}, legacy: 'dataConverter_settings' }) || {}),
+  }));
+
   // UI state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSamplesOpen, setIsSamplesOpen] = useState(false);
-  
+
   // History
-  const [conversionHistory, setConversionHistory] = useState([]);
-  
-  // Load settings and history from localStorage
+  const [conversionHistory, setConversionHistory] = useState(() => {
+    const saved = storage.get('history', { fallback: [], legacy: 'dataConverter_history' });
+    return Array.isArray(saved) ? saved : [];
+  });
+
+  // Preload PrismJS languages for better performance
   useEffect(() => {
-    const savedSettings = localStorage.getItem('dataConverter_settings');
-    if (savedSettings) {
-      setSettings(prev => ({ ...prev, ...JSON.parse(savedSettings) }));
-    }
-    
-    const savedHistory = localStorage.getItem('dataConverter_history');
-    if (savedHistory) {
-      try {
-        const parsedHistory = JSON.parse(savedHistory);
-        setConversionHistory(Array.isArray(parsedHistory) ? parsedHistory : []);
-      } catch (error) {
-        console.error('Error parsing conversion history:', error);
-        setConversionHistory([]);
-        localStorage.removeItem('dataConverter_history');
-      }
-    }
-    
-    // Preload PrismJS languages for better performance
     loadPrismLanguages(['json', 'yaml', 'toml']);
   }, []);
-  
+
   // Save settings to localStorage
   useEffect(() => {
-    localStorage.setItem('dataConverter_settings', JSON.stringify(settings));
-  }, [settings]);
-  
+    storage.set('settings', settings);
+  }, [storage, settings]);
+
   // Save history to localStorage
   useEffect(() => {
     if (settings.enableHistory) {
-      localStorage.setItem('dataConverter_history', JSON.stringify(conversionHistory));
+      storage.set('history', conversionHistory);
     }
-  }, [conversionHistory, settings.enableHistory]);
-  
-  // Format detection and validation
+  }, [storage, conversionHistory, settings.enableHistory]);
+
+  // Format detection and validation — debounced, so typing re-parses the
+  // input once per pause instead of on every keystroke, and the auto-convert
+  // path records no history (only the Convert button does — the old
+  // behaviour wrote the full history array to localStorage per keystroke).
   useEffect(() => {
     if (!inputData.trim()) {
       setValidationResult(null);
@@ -97,33 +90,36 @@ const DataConverterShadcn = () => {
       setOutputData('');
       return;
     }
-    
-    if (settings.enableValidation) {
+
+    if (!settings.enableValidation) return;
+
+    const timer = setTimeout(() => {
       const result = validateWithDetection(inputData);
       setValidationResult(result);
       setDetectedFormat(result.detectedFormat || null);
-      
-      // Auto-convert when format is detected and validation passes
+
       if (result.success && result.detectedFormat && settings.autoDetectFormat) {
-        convertData(result.data, result.detectedFormat, outputFormat);
+        convertData(result.data, result.detectedFormat, outputFormat, { recordHistory: false });
       }
-    }
-  }, [inputData, settings.enableValidation, settings.autoDetectFormat, outputFormat]);
-  
+    }, VALIDATE_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [inputData, settings.enableValidation, settings.autoDetectFormat, outputFormat]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Convert data function
-  const convertData = (data, fromFormat, toFormat) => {
+  const convertData = (data, fromFormat, toFormat, { recordHistory = true } = {}) => {
     if (!data) return;
-    
+
     try {
       let converted = '';
-      
+
       switch (toFormat) {
         case 'json':
-          converted = settings.prettifyOutput 
+          converted = settings.prettifyOutput
             ? JSON.stringify(data, null, 2)
             : JSON.stringify(data);
           break;
-            
+
         case 'yaml':
           converted = yaml.dump(data, {
             indent: settings.prettifyOutput ? 2 : 0,
@@ -132,22 +128,21 @@ const DataConverterShadcn = () => {
             sortKeys: false
           });
           break;
-          
+
         case 'toml':
           converted = TOML.stringify(data, {
             indent: settings.prettifyOutput ? 2 : 0,
             newline: '\n'
           });
           break;
-          
+
         default:
           throw new Error(`Unsupported output format: ${toFormat}`);
       }
-      
+
       setOutputData(converted);
-      
-      // Add to history
-      if (settings.enableHistory) {
+
+      if (recordHistory && settings.enableHistory) {
         addToHistory({
           inputData: inputData,
           outputData: converted,
@@ -157,12 +152,12 @@ const DataConverterShadcn = () => {
           success: true
         });
       }
-      
+
     } catch (error) {
       toast.error(`Conversion failed: ${error.message}`);
       setOutputData('');
-      
-      if (settings.enableHistory) {
+
+      if (recordHistory && settings.enableHistory) {
         addToHistory({
           inputData: inputData,
           error: error.message,
@@ -174,20 +169,20 @@ const DataConverterShadcn = () => {
       }
     }
   };
-  
+
   // Manual conversion trigger
   const handleConvert = () => {
     if (!inputData.trim()) {
       toast.error('Please enter some data to convert');
       return;
     }
-    
+
     setIsConverting(true);
-    
+
     try {
       let parseResult;
       const actualInputFormat = inputFormat === 'auto' ? detectedFormat : inputFormat;
-      
+
       // Parse input based on format
       switch (actualInputFormat) {
         case 'json':
@@ -202,11 +197,11 @@ const DataConverterShadcn = () => {
         default:
           parseResult = validateWithDetection(inputData);
       }
-      
+
       if (!parseResult.success) {
         throw new Error(parseResult.errors[0]?.message || 'Failed to parse input data');
       }
-      
+
       // Schema validation if enabled
       if (settings.enableSchemaValidation && settings.selectedSchema) {
         const schema = commonSchemas[settings.selectedSchema];
@@ -217,17 +212,17 @@ const DataConverterShadcn = () => {
           }
         }
       }
-      
+
       convertData(parseResult.data, actualInputFormat, outputFormat);
       toast.success(`Successfully converted ${actualInputFormat || 'detected format'} to ${outputFormat.toUpperCase()}`);
-      
+
     } catch (error) {
       toast.error(`Conversion failed: ${error.message}`);
     } finally {
       setIsConverting(false);
     }
   };
-  
+
   // History management
   const addToHistory = (entry) => {
     setConversionHistory(prev => {
@@ -235,13 +230,13 @@ const DataConverterShadcn = () => {
       return newHistory;
     });
   };
-  
+
   const clearHistory = () => {
     setConversionHistory([]);
-    localStorage.removeItem('dataConverter_history');
+    storage.set('history', []);
     toast.success('History cleared');
   };
-  
+
   const loadFromHistory = (entry) => {
     if (entry.success) {
       setInputData(entry.inputData);
@@ -251,14 +246,14 @@ const DataConverterShadcn = () => {
       toast.success('Loaded from history');
     }
   };
-  
+
   // Sample data loading
   const loadSample = (data, format) => {
     setInputData(data);
     setInputFormat(format);
     toast.success(`Loaded sample data`);
   };
-  
+
   // File upload handler
   const handleFileUpload = (file) => {
     // Auto-detect format from file extension
@@ -269,12 +264,12 @@ const DataConverterShadcn = () => {
       'yml': 'yaml',
       'toml': 'toml'
     };
-    
+
     if (formatMap[extension]) {
       setInputFormat(formatMap[extension]);
     }
   };
-  
+
   // Clear input data
   const handleClear = () => {
     setInputData('');
@@ -286,15 +281,6 @@ const DataConverterShadcn = () => {
 
   return (
     <div className="space-y-6">
-      <ToolHeader
-        icon={JSONIcon}
-        title="Data Format Converter"
-        description="Convert between JSON, YAML, and TOML formats with validation and error checking"
-        iconColor="yellow"
-        showTitle={false}
-        standalone={true}
-      />
-
       <ControlPanel
         settings={settings}
         onSettingsChange={setSettings}
@@ -336,4 +322,4 @@ const DataConverterShadcn = () => {
   );
 };
 
-export default DataConverterShadcn;
+export default DataConverterTool;

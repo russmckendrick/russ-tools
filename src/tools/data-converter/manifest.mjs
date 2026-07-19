@@ -1,10 +1,10 @@
 /**
- * Data Converter — bridge manifest.
+ * Data Converter — ported.
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * Ported (Phase 5). Validation is debounced, history is written by the
+ * Convert button rather than every keystroke, and the suggestion tables
+ * live in lib/errorSuggestions.js. Settings and history persist under
+ * rt:data-converter:* with the pre-port keys read forward.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /data-converter
@@ -62,6 +62,6 @@ export default {
     'dataConverter_settings',
   ],
 
-  island: () => import('@/components/tools/data-converter/DataConverterShadcn.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };

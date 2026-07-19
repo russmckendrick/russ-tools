@@ -192,7 +192,7 @@ export function NewHomeView() {
                   try { return JSON.parse(localStorage.getItem('azure-naming-history') || '[]') } catch { return [] }
                 })()
                 const dataConv = (() => {
-                  try { return JSON.parse(localStorage.getItem('dataConverter_history') || '[]') } catch { return [] }
+                  try { return JSON.parse(localStorage.getItem('rt:data-converter:history') || localStorage.getItem('dataConverter_history') || '[]') } catch { return [] }
                 })()
                 return (
                   (() => {

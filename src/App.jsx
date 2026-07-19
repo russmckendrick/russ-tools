@@ -71,11 +71,6 @@ const AzureNamingTool = lazy(() =>
     default: () => <div>Error loading Azure Naming Tool</div>
   }))
 );
-const DataConverterTool = lazy(() => 
-  import('./components/tools/data-converter/DataConverterShadcn').catch(() => ({
-    default: () => <div>Error loading Data Converter Tool</div>
-  }))
-);
 const AzureKQLTool = lazy(() => 
   import('./components/tools/azure-kql/AzureKQLTool').catch(() => ({
     default: () => <div>Error loading Azure KQL Tool</div>
@@ -170,7 +165,7 @@ export default function App() {
 
               <Route path="data-converter" element={
                 <LazyRoute>
-                  <DataConverterTool />
+                  <SpaToolPage toolId="data-converter" />
                 </LazyRoute>
               } />
 
