@@ -15,11 +15,20 @@ Vite SPA (react-router). We are migrating from the latter to the former in phase
 Phases 0 (stabilise) and 1 (design pass) are **complete**, and **Phase 2** (Astro shell
 + legacy bridge) is next — the codebase is still the React SPA.
 
-**Colour, typography and motion are settled — see [`docs/DESIGN_SPEC.md`](docs/DESIGN_SPEC.md)
-before touching any styling.** Short version: Solarized in both light and dark; use the
-semantic tokens (`bg-success-subtle`, `text-danger`, `border-info`, …), never raw Tailwind
-palette classes (`bg-green-50`). ESLint warns on the latter in tools and errors in
-`src/components/ui/` and `src/components/layout/`.
+**The design system is [`DESIGN.md`](DESIGN.md) in the repo root — read it before touching
+any styling.** It follows the [Stitch DESIGN.md spec](https://stitch.withgoogle.com/docs/design-md/specification)
+(YAML token front matter + prose rationale) and is the single source of truth for colour,
+type, layout, shape and components. Short version: **dark-first**, panelled, six category
+hues driven by each tool's `category`, Inter for prose and JetBrains Mono for data only,
+no serif. Use semantic tokens, never raw Tailwind palette classes (`bg-green-50`) — ESLint
+warns on those in tools and errors in `src/components/ui/` and `src/components/layout/`.
+
+> **Known inconsistency (Phase 1 → Phase 2):** `docs/DESIGN_SPEC.md`,
+> `src/styles/globals.css` and `src/styles/tokens.contrast.test.js` still carry the earlier
+> **Solarized** palette, which `DESIGN.md` replaces. `DESIGN_SPEC.md` is marked superseded;
+> the stylesheet and its contrast test are reconciled when the Phase 2 shell is built.
+> `pnpm dlx @google/design.md export DESIGN.md --format css-tailwind` emits the Tailwind 4
+> `@theme` block, so `globals.css` tokens can be generated rather than retyped.
 
 Do not describe or assume the Astro architecture exists yet. It does not.
 

@@ -1,6 +1,20 @@
 # russ.tools design spec
 
-**Status:** authoritative for the redesign · Phase 1 output, 2026-07-19
+> ## ⚠️ SUPERSEDED — do not build from this file
+>
+> The Solarized decision recorded below was **reversed** after review: the result
+> looked, in the owner's words, "off and disconnected". The authoritative design
+> system is now [`DESIGN.md`](../DESIGN.md) in the repo root — a dark-first,
+> panelled system with six category hues, following the
+> [Stitch DESIGN.md spec](https://stitch.withgoogle.com/docs/design-md/specification).
+>
+> This file is kept only for the **method**, which survived the palette change:
+> deriving accessible accents rather than using raw palette values, and enforcing
+> the contrast floor with an automated test. `src/styles/globals.css` and
+> `src/styles/tokens.contrast.test.js` still carry Solarized values and are
+> pending reconciliation with `DESIGN.md`.
+
+**Status:** superseded by `DESIGN.md` · originally Phase 1 output, 2026-07-19
 **Implements:** [`src/styles/globals.css`](../src/styles/globals.css)
 **Enforced by:** [`src/styles/tokens.contrast.test.js`](../src/styles/tokens.contrast.test.js) and the raw-palette lint rule in [`eslint.config.js`](../eslint.config.js)
 
