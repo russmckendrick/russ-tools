@@ -1,9 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createToolStorage } from '@/core';
 import { formatMarkdownTable, parseMarkdownTable, validateMarkdownTable } from '../utils/tableFormatter';
 import { validateTableData, sanitizeTableData, normalizeTableData, getTableStats } from '../utils/tableValidator';
 
-const STORAGE_KEY = 'markdown-table-tool-state';
-const HISTORY_KEY = 'markdown-table-tool-history';
+// rt:markdown-table-tool:<slot>, with the pre-port names as read-only legacy
+// fallbacks (frozen contract #3 — read old, write new, never delete).
+const storage = createToolStorage('markdown-table-tool');
+const LEGACY_STATE_KEY = 'markdown-table-tool-state';
+const LEGACY_HISTORY_KEY = 'markdown-table-tool-history';
 const MAX_HISTORY = 50;
 
 const INITIAL_TABLE_DATA = [['Header 1', 'Header 2'], ['Cell 1', 'Cell 2']];
@@ -33,22 +37,17 @@ export const useTableEditor = () => {
       hasHeader: header,
       timestamp: Date.now()
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    storage.set('state', state);
     setLastSaved(Date.now());
   }, []);
 
   const loadState = useCallback(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const state = JSON.parse(saved);
-        setTableData(state.tableData || [['Header 1', 'Header 2'], ['Cell 1', 'Cell 2']]);
-        setAlignments(state.alignments || ['left', 'left']);
-        setHasHeader(state.hasHeader !== undefined ? state.hasHeader : true);
-        setLastSaved(state.timestamp);
-      }
-    } catch (error) {
-      console.warn('Failed to load saved state:', error);
+    const state = storage.get('state', { legacy: LEGACY_STATE_KEY });
+    if (state) {
+      setTableData(state.tableData || [['Header 1', 'Header 2'], ['Cell 1', 'Cell 2']]);
+      setAlignments(state.alignments || ['left', 'left']);
+      setHasHeader(state.hasHeader !== undefined ? state.hasHeader : true);
+      setLastSaved(state.timestamp);
     }
   }, []);
 
@@ -65,11 +64,7 @@ export const useTableEditor = () => {
         newHistory.shift();
       }
 
-      try {
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory.slice(-20)));
-      } catch (error) {
-        console.warn('Failed to save history:', error);
-      }
+      storage.set('history', newHistory.slice(-20));
 
       return newHistory;
     });
@@ -273,15 +268,10 @@ export const useTableEditor = () => {
   useEffect(() => {
     loadState();
     
-    try {
-      const savedHistory = localStorage.getItem(HISTORY_KEY);
-      if (savedHistory) {
-        const historyData = JSON.parse(savedHistory);
-        setHistory(historyData);
-        setHistoryIndex(historyData.length - 1);
-      }
-    } catch (error) {
-      console.warn('Failed to load history:', error);
+    const historyData = storage.get('history', { legacy: LEGACY_HISTORY_KEY });
+    if (Array.isArray(historyData) && historyData.length > 0) {
+      setHistory(historyData);
+      setHistoryIndex(historyData.length - 1);
     }
   }, [loadState]);
 

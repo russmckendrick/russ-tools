@@ -5,11 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, ArrowRight, Check, Copy, Download, Plus, TriangleAlert, Upload } from 'lucide-react';
 import { toast } from 'sonner';
-import SEOHead from '@/components/common/SEOHead';
-import ToolHeader from '@/components/common/ToolHeader';
-import MarkdownTableIcon from './MarkdownTableIcon';
-import { generateToolSEO } from '@/utils/seoUtils';
-import toolsConfig from '@/utils/toolsConfig.json';
+import { copyText } from '@/core';
 import { useTableEditor } from './hooks/useTableEditor';
 import TableEditor from './components/TableEditor';
 import MarkdownPreview from './components/MarkdownPreview';
@@ -44,21 +40,15 @@ const MarkdownTableTool = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
 
-  // Generate SEO data
-  const tool = toolsConfig.find(t => t.id === 'markdown-table-tool');
-  const seoData = generateToolSEO(tool);
-
   const handleCopyMarkdown = async () => {
-    try {
-      const markdown = exportToMarkdown();
-      if (!markdown.trim()) {
-        toast.error('No content to copy');
-        return;
-      }
-      await navigator.clipboard.writeText(markdown);
+    const markdown = exportToMarkdown();
+    if (!markdown.trim()) {
+      toast.error('No content to copy');
+      return;
+    }
+    if (await copyText(markdown)) {
       toast.success('Markdown copied to clipboard');
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+    } else {
       toast.error('Failed to copy to clipboard');
     }
   };
@@ -86,31 +76,7 @@ const MarkdownTableTool = () => {
 
   return (
     <>
-      <SEOHead {...seoData} />
       <div className="space-y-6">
-        <ToolHeader
-          icon={MarkdownTableIcon}
-          title="Markdown Table Tool"
-          description="Create, format, and validate markdown tables with real-time preview and advanced editing features"
-          iconColor="blue"
-          showTitle={false}
-          actions={[
-            {
-              text: "Import",
-              icon: Upload,
-              onClick: () => setShowImportDialog(true),
-              variant: "outline"
-            },
-            {
-              text: "Export",
-              icon: Download,
-              onClick: () => setShowExportDialog(true),
-              variant: "outline"
-            }
-          ]}
-          standalone={true}
-        />
-
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Badge variant="outline" className={getValidationColor()}>
@@ -127,9 +93,30 @@ const MarkdownTableTool = () => {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setShowImportDialog(true)}
+            >
+              <Upload className="w-4 h-4 mr-1" />
+              Import
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowExportDialog(true)}
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Export
+            </Button>
+
+            <div className="h-6 w-px bg-border" />
+
+            <Button
+              variant="outline"
+              size="sm"
               onClick={undo}
               disabled={!canUndo}
               title="Undo last action"
+              aria-label="Undo last action"
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
@@ -140,6 +127,7 @@ const MarkdownTableTool = () => {
               onClick={redo}
               disabled={!canRedo}
               title="Redo last action"
+              aria-label="Redo last action"
             >
               <ArrowRight className="w-4 h-4" />
             </Button>

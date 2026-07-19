@@ -65,11 +65,11 @@ describe('convertToCSV', () => {
     expect(convertToCSV(null)).toBe('');
   });
 
-  // KNOWN-BUG (captured, not fixed here): `String(field || '')` coerces falsy values,
-  // so a numeric 0 or false is silently lost. Fix during the Phase 3 port and update
-  // this fixture in the same PR with a BEHAVIOR_CHANGES.md entry.
-  it('KNOWN-BUG: drops falsy non-empty values such as 0 and false', () => {
-    expect(convertToCSV([[0, false, 'x']])).toBe(',,x');
+  // FIXED in the Phase 3 port (see BEHAVIOR_CHANGES.md): only null and
+  // undefined become empty cells. A numeric 0 and a boolean false are data.
+  it('keeps falsy non-empty values such as 0 and false', () => {
+    expect(convertToCSV([[0, false, 'x']])).toBe('0,false,x');
+    expect(convertToCSV([[null, undefined, '']])).toBe(',,');
   });
 });
 

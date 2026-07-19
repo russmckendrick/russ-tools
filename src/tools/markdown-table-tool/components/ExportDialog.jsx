@@ -17,6 +17,7 @@ import {
   Braces
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { copyText, downloadFile } from '@/core';
 import { convertToCSV, convertToTSV, convertToJSON } from '../utils/csvParser';
 
 const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdown }) => {
@@ -203,18 +204,16 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
   };
 
   const handleCopy = useCallback(async () => {
-    try {
-      const { content } = generateExportData();
-      if (!content.trim()) {
-        toast.error('No content to copy');
-        return;
-      }
-      await navigator.clipboard.writeText(content);
+    const { content } = generateExportData();
+    if (!content.trim()) {
+      toast.error('No content to copy');
+      return;
+    }
+    if (await copyText(content)) {
       toast.success(`${exportFormat.toUpperCase()} content copied to clipboard`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+    } else {
       toast.error('Failed to copy to clipboard');
     }
   }, [generateExportData, exportFormat]);
@@ -227,17 +226,8 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
         return;
       }
       
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${filename}.${extension}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
+      downloadFile(content, `${filename}.${extension}`, mimeType);
+
       toast.success(`File downloaded: ${filename}.${extension}`);
     } catch (error) {
       console.error('Failed to download file:', error);

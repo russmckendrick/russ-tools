@@ -76,7 +76,7 @@ export const convertToCSV = (data, delimiter = ',') => {
   }
   
   const escapeField = (field) => {
-    const str = String(field || '');
+    const str = field == null ? '' : String(field);
     if (str.includes(delimiter) || str.includes('"') || str.includes('\n') || str.includes('\r')) {
       return `"${str.replace(/"/g, '""')}"`;
     }

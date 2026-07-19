@@ -18,22 +18,6 @@ Two rules:
 
 ## Open — captured as KNOWN-BUG, not yet fixed
 
-### `convertToCSV` drops falsy cells
-
-| | |
-|---|---|
-| **Where** | `src/components/tools/markdown-table-tool/utils/csvParser.js` |
-| **Pinned by** | `csvParser.test.js` |
-| **Fix due** | Phase 3, during the markdown-table port |
-
-Cells are coerced with `String(field \|\| '')`, so a numeric `0` and a boolean
-`false` both export as an empty cell. Any table with a genuine zero in it
-exports wrong, silently.
-
-The fixture currently asserts the wrong output. Fix the coercion (test for
-`null`/`undefined` rather than falsiness), update the fixture, and move this
-entry to *Landed* in the same PR.
-
 ### `cidrOptions` ignores gap alignment
 
 | | |
@@ -65,6 +49,24 @@ Middle gaps use `next.start - prev.end - 1`; the trailing gap uses
 ---
 
 ## Landed
+
+### `convertToCSV` keeps falsy cells
+
+| | |
+|---|---|
+| **Where** | `src/tools/markdown-table-tool/utils/csvParser.js` |
+| **Pinned by** | `csvParser.test.js` (fixture updated in the same PR) |
+| **Landed** | Phase 3, markdown-table port |
+
+Cells were coerced with `String(field \|\| '')`, so a numeric `0` and a
+boolean `false` exported as empty cells — any table with a genuine zero in it
+exported wrong, silently. The coercion now tests for `null`/`undefined` only:
+`0` exports as `0`, `false` as `false`, and empty stays empty. CSV, TSV and
+the tab-delimiter path all inherit the fix through the shared `escapeField`.
+
+In the same port, `MarkdownPreview` warnings now render with the `warning`
+alert variant — they rendered as info, so a warning was indistinguishable
+from a note.
 
 ### `/base64/:input` now decodes a base64 payload on mount
 

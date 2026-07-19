@@ -1,10 +1,9 @@
 /**
- * Markdown Table Tool — bridge manifest.
+ * Markdown Table Tool — ported.
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * Ported (Phase 3). The island is the tool itself; table state and the
+ * undo history persist under rt:markdown-table-tool:* with the pre-port
+ * names as never-deleted legacy fallbacks.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /markdown-table-tool
@@ -48,9 +47,15 @@ export default {
 
   // Namespaced as rt:<id>:<slot>. legacyKeys are what the migration shim
   // reads from; it never deletes them (frozen contract #3).
-  storageKeys: [],
-  legacyKeys: [],
+  storageKeys: [
+    'state',
+    'history',
+  ],
+  legacyKeys: [
+    'markdown-table-tool-state',
+    'markdown-table-tool-history',
+  ],
 
-  island: () => import('@/components/tools/markdown-table-tool/MarkdownTableTool.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };

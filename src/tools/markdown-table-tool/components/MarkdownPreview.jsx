@@ -121,7 +121,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
   const getValidationVariant = (type) => {
     switch (type) {
       case 'error': return 'destructive';
-      case 'warning': return 'default';
+      case 'warning': return 'warning';
       default: return 'default';
     }
   };

@@ -106,11 +106,6 @@ const AzureKQLTool = lazy(() =>
     default: () => <div>Error loading Azure KQL Tool</div>
   }))
 );
-const MarkdownTableTool = lazy(() => 
-  import('./components/tools/markdown-table-tool/MarkdownTableTool').catch(() => ({
-    default: () => <div>Error loading Markdown Table Tool</div>
-  }))
-);
 
 // Loading component for lazy-loaded routes
 const LoadingFallback = () => (
@@ -278,7 +273,7 @@ export default function App() {
 
               <Route path="markdown-table-tool" element={
                 <LazyRoute>
-                  <MarkdownTableTool />
+                  <SpaToolPage toolId="markdown-table-tool" />
                 </LazyRoute>
               } />
 
