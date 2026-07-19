@@ -8,6 +8,7 @@ import {
 } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
+import { ToolSplit, ToolSplitEmpty } from '@/components/ui/tool-split';
 import { 
   Share, 
   Star,
@@ -278,15 +279,17 @@ const AzureKQLTool = () => {
           </TabsList>
 
           <TabsContent value="builder">
-            <div className="space-y-6">
-              <ServiceSelector 
-                value={selectedService}
-                onChange={setSelectedService}
-              />
-              
-              {selectedService && (
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <div className="space-y-4">
+            {/* Controls left, output right — DESIGN.md's Layout rule. Was a
+                hand-rolled 50/50 grid. */}
+            <ToolSplit
+              controls={
+                <>
+                  <ServiceSelector
+                    value={selectedService}
+                    onChange={setSelectedService}
+                  />
+
+                  {selectedService && (
                     <ParameterForm
                       service={selectedService}
                       template={selectedTemplate}
@@ -297,9 +300,17 @@ const AzureKQLTool = () => {
                       onGenerate={handleGenerateQuery}
                       isGenerating={isGenerating}
                     />
-                  </div>
-                  
-                  <div className="space-y-4">
+                  )}
+                </>
+              }
+            >
+              {!selectedService ? (
+                <ToolSplitEmpty
+                  title="No service selected"
+                  hint="Pick an Azure service — the generated KQL query appears here."
+                />
+              ) : (
+                <>
                     <QueryPreview 
                       query={generatedQuery}
                       service={selectedService}
@@ -333,10 +344,9 @@ const AzureKQLTool = () => {
                         </CardContent>
                       </Card>
                     )}
-                  </div>
-                </div>
+                </>
               )}
-            </div>
+            </ToolSplit>
           </TabsContent>
 
           <TabsContent value="favorites">
