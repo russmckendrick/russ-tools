@@ -1,0 +1,1 @@
+{"host":"nonexistent-domain-fixture.invalid","status":"READY","endpoints":[{"statusMessage":"SSL connection successful (basic check)","grade":"T","hasWarnings":false,"isExceptional":false,"progress":100,"eta":0,"delegation":1,"details":{"cert":null}}],"apiCheck":true,"apiSource":"Cloudflare Worker Basic Check","timestamp":1784476595642}

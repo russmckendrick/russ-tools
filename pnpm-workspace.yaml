@@ -1,6 +1,11 @@
 allowBuilds:
   esbuild: true
+  # msw's postinstall only prepares the browser service-worker artifact; we
+  # use msw/node in tests, which needs no build step.
+  msw: false
 # pnpm 11+ reads project settings from here (not the "pnpm" field in package.json).
 # esbuild needs its install script to run so Vite's native binary is available.
 onlyBuiltDependencies:
   - esbuild
+ignoredBuiltDependencies:
+  - msw
