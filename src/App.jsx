@@ -101,11 +101,6 @@ const JWTTool = lazy(() =>
     default: () => <div>Error loading JWT Tool</div>
   }))
 );
-const PasswordGeneratorTool = lazy(() => 
-  import('./components/tools/password-generator/PasswordGeneratorShadcn').catch(() => ({
-    default: () => <div>Error loading Password Generator Tool</div>
-  }))
-);
 const MicrosoftPortalsTool = lazy(() => 
   import('./components/tools/microsoft-portals/MicrosoftPortalsShadcn').catch(() => ({
     default: () => <div>Error loading Microsoft Portals Tool</div>
@@ -248,7 +243,7 @@ export default function App() {
 
               <Route path="password-generator" element={
                 <LazyRoute>
-                  <PasswordGeneratorTool />
+                  <SpaToolPage toolId="password-generator" />
                 </LazyRoute>
               } />
 

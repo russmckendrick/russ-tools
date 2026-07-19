@@ -20,11 +20,10 @@ import {
   Lock
 } from 'lucide-react';
 import { toast } from 'sonner';
-import PasswordIcon from './PasswordIcon';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
+import { copyText, downloadFile } from '@/core';
+import { createToolIcon } from '@/components/ui/tool-icon';
+
+const PasswordIcon = createToolIcon('key');
 
 const secureRandomInt = (max) => {
   const range = 0x100000000; // 2^32
@@ -46,11 +45,7 @@ const secureShuffle = (chars) => {
   return chars;
 };
 
-const PasswordGeneratorShadcn = () => {
-  // Get tool configuration for SEO
-  const toolConfig = toolsConfig.find(tool => tool.id === 'password-generator');
-  const seoData = generateToolSEO(toolConfig);
-  
+const PasswordGeneratorTool = () => {
   // Password generation settings
   const [length, setLength] = useState([24]);
   const [count, setCount] = useState(1);
@@ -297,10 +292,9 @@ const PasswordGeneratorShadcn = () => {
 
   // Copy password to clipboard
   const copyToClipboard = async (password) => {
-    try {
-      await navigator.clipboard.writeText(password);
+    if (await copyText(password)) {
       toast.success('Password copied to clipboard');
-    } catch (error) {
+    } else {
       toast.error('Failed to copy password to clipboard');
     }
   };
@@ -340,16 +334,8 @@ Visit: https://russ.tools
 `;
 
     const content = header + passwordList + footer;
-    
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `passwords_${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+
+    downloadFile(content, `passwords_${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
 
     toast.success('Passwords saved to file!');
   };
@@ -364,18 +350,7 @@ Visit: https://russ.tools
 
   return (
     <TooltipProvider>
-      <SEOHead {...seoData} />
       <div className="space-y-6">
-        {/* Header */}
-        <ToolHeader
-          icon={PasswordIcon}
-          title="Password Generator"
-          description="Generate secure, random passwords with customizable options"
-          iconColor="violet"
-          showTitle={false}
-          standalone={true}
-        />
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Configuration Panel */}
           <Card>
@@ -630,6 +605,7 @@ Visit: https://russ.tools
                         variant="outline"
                         size="sm"
                         onClick={downloadPasswords}
+                        aria-label="Download passwords"
                       >
                         <Download className="h-4 w-4" />
                       </Button>
@@ -637,6 +613,7 @@ Visit: https://russ.tools
                         variant="outline"
                         size="sm"
                         onClick={clearPasswords}
+                        aria-label="Clear passwords"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -671,6 +648,7 @@ Visit: https://russ.tools
                               size="sm"
                               onClick={() => copyToClipboard(password.value)}
                               className="ml-2 flex-shrink-0"
+                              aria-label="Copy password"
                             >
                               <Copy className="h-4 w-4" />
                             </Button>
@@ -689,4 +667,4 @@ Visit: https://russ.tools
   );
 };
 
-export default PasswordGeneratorShadcn;
+export default PasswordGeneratorTool;

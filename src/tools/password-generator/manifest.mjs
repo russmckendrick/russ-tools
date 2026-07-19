@@ -1,10 +1,9 @@
 /**
- * Password Generator — bridge manifest.
+ * Password Generator — ported (Phase 3).
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * The island is the tool itself. Generation stays on crypto.getRandomValues
+ * with rejection sampling and Fisher–Yates (the Phase 0 fix). No storage:
+ * passwords are never persisted, which is the point of the tool.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /password-generator
@@ -54,6 +53,6 @@ export default {
   storageKeys: [],
   legacyKeys: [],
 
-  island: () => import('@/components/tools/password-generator/PasswordGeneratorShadcn.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };
