@@ -11,7 +11,7 @@
     "dev": "vite",
     "build": "pnpm generate:sitemap && vite build",
     "dev:astro": "astro dev",
-    "build:astro": "astro build && pnpm generate:redirects",
+    "build:astro": "pnpm generate:sitemap && astro build && pnpm generate:redirects",
     "preview:astro": "astro preview",
     "generate:sitemap": "node scripts/generate-sitemap.js",
     "generate:redirects": "node scripts/generate-redirects.mjs",

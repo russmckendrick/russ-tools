@@ -12,9 +12,12 @@ import { TOOLS } from './registry.mjs';
  * failure is silent: a URL quietly leaves the sitemap and nobody notices
  * until traffic to it does.
  *
- * This asserts the shell's registry covers exactly the SPA's committed
- * sitemap. A URL-set diff was the gate the plan asked for before cutover;
- * pinning it as a test means it stays true rather than being checked once.
+ * This asserts the shell's registry covers exactly the generated
+ * `public/sitemap.xml` — the file `robots.txt` points at. It is gitignored,
+ * not committed: both `pnpm build` and `pnpm build:astro` regenerate it, and
+ * CI builds the shell before testing, so the file always exists here. The
+ * canonical sitemap URL stays `/sitemap.xml` through cutover; the
+ * `@astrojs/sitemap` duplicate (`sitemap-index.xml`) retires in Phase 6.
  */
 
 const SITE = 'https://russ.tools';
