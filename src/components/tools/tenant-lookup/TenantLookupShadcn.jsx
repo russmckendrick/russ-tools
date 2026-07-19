@@ -205,14 +205,15 @@ const TenantLookupShadcn = () => {
   };
 
   const getTenantTypeColor = (tenantType) => {
+    // A tenant kind, not a verdict on it — the category hue for the known
+    // kinds, neutral for anything unrecognised.
     switch (tenantType) {
-      case 'AAD': 
-        return 'bg-info-subtle text-info';
-      case 'B2C': 
-      case 'AADB2C': 
-        return 'bg-success-subtle text-success';
-      default: 
-        return 'bg-surface-inset text-on-surface';
+      case 'AAD':
+      case 'B2C':
+      case 'AADB2C':
+        return 'bg-[color-mix(in_oklab,var(--cat)_13%,transparent)] text-[var(--cat)]';
+      default:
+        return 'bg-surface-inset text-on-surface-muted';
     }
   };
 

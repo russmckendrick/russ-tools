@@ -33,7 +33,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           token: token,
           record: cleanRecord,
           icon: '🔍',
-          color: 'bg-success-subtle text-success'
+          color: 'bg-surface-inset text-on-surface-muted'
         });
       }
       
@@ -47,7 +47,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           token: token,
           record: cleanRecord,
           icon: '🏢',
-          color: 'bg-info-subtle text-info'
+          color: 'bg-surface-inset text-on-surface-muted'
         });
       }
       
@@ -75,7 +75,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           token: token,
           record: cleanRecord,
           icon: '📘',
-          color: 'bg-info-subtle text-info'
+          color: 'bg-surface-inset text-on-surface-muted'
         });
       }
       
@@ -89,7 +89,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           token: token,
           record: cleanRecord,
           icon: '🔷',
-          color: 'bg-info-subtle text-info'
+          color: 'bg-surface-inset text-on-surface-muted'
         });
       }
       
@@ -103,7 +103,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           token: token,
           record: cleanRecord,
           icon: '📝',
-          color: 'bg-warning-subtle text-warning'
+          color: 'bg-surface-inset text-on-surface-muted'
         });
       }
       
@@ -117,7 +117,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           token: token,
           record: cleanRecord,
           icon: '🔐',
-          color: 'bg-info-subtle text-info'
+          color: 'bg-surface-inset text-on-surface-muted'
         });
       }
       
@@ -131,7 +131,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           token: token,
           record: cleanRecord,
           icon: '📝',
-          color: 'bg-[color-mix(in_oklab,var(--cat)_13%,transparent)] text-[var(--cat)]'
+          color: 'bg-surface-inset text-on-surface-muted'
         });
       }
       
@@ -144,7 +144,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           token: cleanRecord,
           record: cleanRecord,
           icon: '📧',
-          color: 'bg-warning-subtle text-warning'
+          color: 'bg-surface-inset text-on-surface-muted'
         });
       }
       
@@ -158,7 +158,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           token: token,
           record: cleanRecord,
           icon: '🛡️',
-          color: 'bg-warning-subtle text-warning'
+          color: 'bg-surface-inset text-on-surface-muted'
         });
       }
       

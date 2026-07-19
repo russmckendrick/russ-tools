@@ -28,24 +28,12 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
     return 'Custom';
   };
 
-  const getProviderColor = (provider) => {
-    switch (provider) {
-      case 'Microsoft 365':
-        return 'bg-info-subtle text-info';
-      case 'Google Workspace':
-        return 'bg-success-subtle text-success';
-      case 'Mimecast':
-        return 'bg-warning-subtle text-warning';
-      case 'Proofpoint':
-        return 'bg-[color-mix(in_oklab,var(--cat)_13%,transparent)] text-[var(--cat)]';
-      case 'Barracuda':
-        return 'bg-danger-subtle text-danger';
-      case 'Cloudflare':
-        return 'bg-warning-subtle text-warning';
-      default:
-        return 'bg-surface-inset text-on-surface';
-    }
-  };
+  // Which mail provider a domain uses is identity, not health. These were
+  // status colours, so "Barracuda" rendered as an error and "Mimecast" as a
+  // warning — DESIGN.md: status colours express state and nothing else. The
+  // provider name carries the distinction, as it always did.
+  const getProviderColor = () => 'bg-surface-inset text-on-surface-muted';
+
 
   return (
     <div className="space-y-6">

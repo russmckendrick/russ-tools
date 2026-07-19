@@ -77,7 +77,7 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
             <CardContent>
               <div className="grid gap-3">
                 <div className="flex items-start gap-3">
-                  <Badge variant="secondary" className="bg-info-subtle text-info">
+                  <Badge variant="secondary">
                     <Building className="w-3 h-3 mr-1" />
                     Organization
                   </Badge>
@@ -120,7 +120,7 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
             <CardContent>
               <div className="grid gap-2">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-info-subtle text-info">AAD</Badge>
+                  <Badge variant="secondary">AAD</Badge>
                   <span className="text-sm text-muted-foreground">Azure Active Directory - Enterprise tenants</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -128,7 +128,7 @@ const HelpSystemShadcn = ({ opened, onClose }) => {
                   <span className="text-sm text-muted-foreground">Azure AD B2C - Consumer identity management</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-warning-subtle text-warning">Hybrid</Badge>
+                  <Badge variant="secondary">Hybrid</Badge>
                   <span className="text-sm text-muted-foreground">Hybrid deployment with on-premises federation</span>
                 </div>
                 <div className="flex items-center gap-2">

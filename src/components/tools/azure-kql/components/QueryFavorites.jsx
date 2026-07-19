@@ -124,7 +124,7 @@ const QueryFavorites = ({ favorites, onLoad, onDelete }) => {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-warning fill-warning" />
+                      <Star className="w-4 h-4 text-[var(--cat)] fill-[var(--cat)]" />
                       <span className="font-medium">{favorite.name}</span>
                     </div>
                     {favorite.description && (

@@ -439,7 +439,12 @@ by exactly one tool.
 - **Do** keep the hover glow as the only ornament. **Don't** add gradients,
   ambient animation, floating elements or drifting icons.
 - **Do** use status colours only for state. **Don't** use them for emphasis or
-  variety.
+  variety — and in particular, **don't** colour *identity* with them. Which
+  mail provider a domain uses, which format a conversion produced, whether a
+  tenant is hybrid, whether an item is favourited: none of these are health.
+  Colouring them status-green and status-amber made "Barracuda" render as an
+  error and "TOML" as a warning. Identity is either the tool's own `--cat` or
+  neutral, and the label carries the distinction.
 - **Do** use semantic tokens in markup. **Don't** use raw Tailwind palette
   classes such as `bg-green-500` — ESLint blocks these.
 - **Do** design light mode with its own values. **Don't** derive it by

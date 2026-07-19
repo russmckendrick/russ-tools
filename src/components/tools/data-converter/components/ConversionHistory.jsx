@@ -17,13 +17,11 @@ const ConversionHistory = ({
     return new Date(timestamp).toLocaleString();
   };
 
-  const getFormatColor = (format) => {
-    const colors = {
-      json: 'bg-info-subtle text-info',
-      yaml: 'bg-success-subtle text-success',
-      toml: 'bg-warning-subtle text-warning'
-    };
-    return colors[format] || 'bg-surface-inset text-on-surface-muted';
+  const getFormatColor = () => {
+    // Format is identity, not state — the label already says which one it
+    // is, so colour here would only be decoration, and a warning-coloured
+    // "TOML" reads as a problem that does not exist.
+    return 'bg-surface-inset text-on-surface-muted';
   };
 
   const truncateData = (data, maxLength = 100) => {
