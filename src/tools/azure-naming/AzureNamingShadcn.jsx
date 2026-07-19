@@ -2,11 +2,11 @@ import React from 'react';
 import { 
   Card, 
   CardContent 
-} from '../../ui/card';
-import { Button } from '../../ui/button';
-import { Badge } from '../../ui/badge';
-import { Alert, AlertDescription } from '../../ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Cloud, 
   Edit, 
@@ -14,15 +14,10 @@ import {
   Info, 
   Share
 } from 'lucide-react';
-import AzureNamingIcon from './AzureNamingIcon';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
 import { useAzureNamingShadcn } from './hooks/useAzureNamingShadcn';
 import { useAzureNamingContextShadcn } from './context/AzureNamingContextShadcn';
 import { useSearchParams } from 'react-router-dom';
-import { copyShareableURL, parseConfigFromURL } from '../../../utils/sharelink';
+import { generateShareableURL, parseConfigFromURL, copyText } from '@/core';
 import ResourceTypeSelectorShadcn from './ResourceTypeSelectorShadcn';
 import ValidationIndicatorShadcn from './ValidationIndicatorShadcn';
 import ResultsDisplayShadcn from './ResultsDisplayShadcn';
@@ -40,10 +35,6 @@ const AzureNamingShadcn = () => {
   } = useAzureNamingShadcn();
   const { isLoading } = useAzureNamingContextShadcn();
   const [searchParams] = useSearchParams();
-
-  // Get tool configuration for SEO
-  const toolConfig = toolsConfig.find(tool => tool.id === 'azure-naming');
-  const seoData = generateToolSEO(toolConfig);
 
   // Load configuration from URL on mount
   React.useEffect(() => {
@@ -69,7 +60,8 @@ const AzureNamingShadcn = () => {
       formState: formState
     };
 
-    const success = await copyShareableURL(config);
+    const shareableUrl = generateShareableURL(config);
+    const success = shareableUrl ? await copyText(shareableUrl) : false;
     if (success) {
       toast.success('Configuration Shared', {
         description: 'Shareable link has been copied to your clipboard',
@@ -80,25 +72,18 @@ const AzureNamingShadcn = () => {
 
   return (
     <>
-      <SEOHead {...seoData} />
-      <ToolHeader
-        icon={AzureNamingIcon}
-        title="Azure Resource Naming Tool"
-        description="Generate consistent, compliant Azure resource names following best practices"
-        iconColor="cyan"
-        showTitle={false}
-        actions={[
-          {
-            text: "Copy Configuration Share URL",
-            icon: Share,
-            onClick: handleShareConfiguration,
-            disabled: !formState.resourceType.length || !formState.workload,
-            variant: "outline"
-          }
-        ]}
-        standalone={true}
-      />
-      
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleShareConfiguration}
+          disabled={!formState.resourceType.length || !formState.workload}
+        >
+          <Share size={16} className="mr-2" />
+          Copy Configuration Share URL
+        </Button>
+      </div>
+
       <Tabs defaultValue="builder" className="space-y-6">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="builder" className="gap-2">

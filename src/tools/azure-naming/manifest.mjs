@@ -1,10 +1,9 @@
 /**
- * Azure Resource Naming Tool — bridge manifest.
+ * Azure Resource Naming Tool — ported.
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * Ported (Phase 5). The context provider mounts inside the island, so
+ * the CAF region data is fetched only on this page. Rules engine and
+ * CAF data stay in src/utils/azure and src/data under Phase 0 tests.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /azure-naming
@@ -58,6 +57,6 @@ export default {
     'azure-naming-history',
   ],
 
-  island: () => import('@/components/tools/azure-naming/AzureNamingShadcn.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };

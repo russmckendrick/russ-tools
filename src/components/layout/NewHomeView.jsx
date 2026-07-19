@@ -189,7 +189,7 @@ export function NewHomeView() {
                 const selectedId = JSON.parse(localStorage.getItem('selectedNetworkId') || 'null')
                 if (!Array.isArray(networks) || networks.length === 0) return <div className="px-3 py-3 text-sm text-muted-foreground">No saved networks</div>
                 const azureNaming = (() => {
-                  try { return JSON.parse(localStorage.getItem('azure-naming-history') || '[]') } catch { return [] }
+                  try { return JSON.parse(localStorage.getItem('rt:azure-naming:history') || localStorage.getItem('azure-naming-history') || '[]') } catch { return [] }
                 })()
                 const dataConv = (() => {
                   try { return JSON.parse(localStorage.getItem('rt:data-converter:history') || localStorage.getItem('dataConverter_history') || '[]') } catch { return [] }

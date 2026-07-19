@@ -1,6 +1,6 @@
 import React from 'react';
-import { Alert, AlertTitle, AlertDescription } from '../../ui/alert';
-import { Badge } from '../../ui/badge';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Check, AlertTriangle, X } from 'lucide-react';
 
 const ValidationIndicatorShadcn = ({ formState, validationState }) => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button } from '../../ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Trash2, History } from 'lucide-react';
 import { useAzureNamingContextShadcn } from './context/AzureNamingContextShadcn';
 import { toast } from 'sonner';

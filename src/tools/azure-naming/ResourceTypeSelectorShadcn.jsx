@@ -1,7 +1,7 @@
 import React from 'react';
-import { Label } from '../../ui/label';
-import { Button } from '../../ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '../../ui/tooltip';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { 
   Server, 
   Database, 
@@ -19,7 +19,7 @@ import {
 import { useAzureNamingContextShadcn } from './context/AzureNamingContextShadcn';
 import HelpTooltipShadcn from './HelpTooltipShadcn';
 import MultiSelect from './MultiSelect';
-import workloadGroupsData from '../../../data/azure/azure-workload-groups.json';
+import workloadGroupsData from '@/data/azure/azure-workload-groups.json';
 import { toast } from 'sonner';
 
 const ResourceTypeSelectorShadcn = ({ formState, updateFormState, validationState, showAsterisk }) => {

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Card, CardContent } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../ui/table';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Copy, Check, Download, Save } from 'lucide-react';
 import { useAzureNamingContextShadcn } from './context/AzureNamingContextShadcn';
-import { devError } from '../../../utils/devLog';
+import { devError } from '@/utils/devLog';
 import { toast } from 'sonner';
 
 const ResultsDisplayShadcn = ({ formState, validationState }) => {

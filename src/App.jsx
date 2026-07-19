@@ -2,7 +2,6 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { NewLayout } from './components/layout/NewLayout';
 import { ThemeProvider } from './components/theme-provider';
-import { AzureNamingProviderShadcn } from './components/tools/azure-naming/context/AzureNamingContextShadcn';
 import { NewHomeView } from './components/layout/NewHomeView';
 import StorageManager from './components/common/StorageManager';
 // Ported tools render through SpaToolPage, which supplies the SEO head and
@@ -66,11 +65,6 @@ const NetworkDesignerTool = lazy(() =>
     default: () => <div>Error loading Network Designer Tool</div>
   }))
 );
-const AzureNamingTool = lazy(() => 
-  import('./components/tools/azure-naming/AzureNamingShadcn').catch(() => ({
-    default: () => <div>Error loading Azure Naming Tool</div>
-  }))
-);
 const AzureKQLTool = lazy(() => 
   import('./components/tools/azure-kql/AzureKQLTool').catch(() => ({
     default: () => <div>Error loading Azure KQL Tool</div>
@@ -109,8 +103,7 @@ const LazyRoute = ({ children }) => (
 export default function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <AzureNamingProviderShadcn>
-        <BrowserRouter>
+      <BrowserRouter>
           <Routes>
             <Route path="/" element={<NewLayout />}>
               <Route index element={<NewHomeView />} />
@@ -123,7 +116,7 @@ export default function App() {
 
               <Route path="azure-naming" element={
                 <LazyRoute>
-                  <AzureNamingTool />
+                  <SpaToolPage toolId="azure-naming" />
                 </LazyRoute>
               } />
 
@@ -249,8 +242,7 @@ export default function App() {
 
             </Route>
           </Routes>
-        </BrowserRouter>
-      </AzureNamingProviderShadcn>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }

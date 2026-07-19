@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
-import { useLocalStorage } from '../../../../lib/utils';
+import { createToolStorage } from '@/core';
 import { Cloud, X } from 'lucide-react';
-import { devLog, devWarn, devError } from '../../../../utils/devLog';
-import { RESOURCE_TYPES, generateResourceName } from '../../../../utils/azure/rules';
-import environments from '../../../../data/environments.json';
-import { loadAzureRegionData } from '../../../../utils/azure/region-parser';
+import { devLog, devWarn, devError } from '@/utils/devLog';
+import { RESOURCE_TYPES, generateResourceName } from '@/utils/azure/rules';
+import environments from '@/data/environments.json';
+import { loadAzureRegionData } from '@/utils/azure/region-parser';
 import { toast } from 'sonner';
 
 // Log raw RESOURCE_TYPES values for debugging
@@ -118,10 +118,21 @@ const AzureNamingContextShadcn = createContext();
 export const AzureNamingProviderShadcn = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
-  const [namingHistory, setNamingHistory] = useLocalStorage({
-    key: 'azure-naming-history',
-    defaultValue: []
-  });
+  // rt:azure-naming:history, reading the pre-port key forward (contract #3).
+  const storage = React.useMemo(() => createToolStorage('azure-naming'), []);
+  const [namingHistory, setNamingHistoryState] = useState(() =>
+    storage.get('history', { fallback: [], legacy: 'azure-naming-history' })
+  );
+  const setNamingHistory = React.useCallback(
+    (value) => {
+      setNamingHistoryState((prev) => {
+        const next = typeof value === 'function' ? value(prev) : value;
+        storage.set('history', next);
+        return next;
+      });
+    },
+    [storage]
+  );
 
   // --- BEGIN: Move form state and logic here ---
   const [formState, setFormState] = useState({
