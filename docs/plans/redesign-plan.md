@@ -1,13 +1,17 @@
 # russ-tools Redesign — Plan of Attack
 
 **Date:** 2026-07-19
-**Status:** Phase 0 substantially complete · branch `redesign/phase-0` (pushed, no PR)
-· next decision point: start Phase 1 (toolchain + design pass)
+**Status:** Phase 0 complete · **Phase 1 complete** · branch `redesign/phase-0` (no PR)
+· next decision point: start Phase 2 (Astro shell + legacy bridge)
 **Owner directive:** start-from-scratch redesign, keep all functionality; nothing off limits framework-wise or CSS-wise; modern and useful.
 
-> **This is a living document.** Update the [Session Log](#session-log) and the
-> [Phase 0 task board](#phase-0-task-board) at the end of each working session. The
-> plan body above the log is the stable reference; the log is the running record.
+> **This is a living document.** Update the [Session Log](#session-log) and the current
+> phase's task board at the end of each working session. The plan body above the log is
+> the stable reference; the log is the running record.
+>
+> Companion documents produced by the phases: [`docs/DESIGN_SPEC.md`](../DESIGN_SPEC.md)
+> (Phase 1, authoritative for colour/type/motion) and
+> [`docs/BEHAVIOR_CHANGES.md`](../BEHAVIOR_CHANGES.md) (frozen contract #6's ledger).
 
 ---
 
@@ -118,9 +122,14 @@ Rules that hold throughout: main is always deployable; after Phase 2 starts, onl
 
 *Abandonment check: stopping here still leaves the repo strictly better — tested, CI'd, five bugs fixed, 3,500 lines lighter.*
 
-### Phase 1 — Design the redesign (1 weekend)
+### Phase 1 — Design the redesign (1 weekend) — **DONE**
 
 The gap every judge flagged: no proposal actually *designs* the new look — all deliver "fresh" as a side effect of regenerating shadcn. Before any porting: pick one dark palette (today Blueprint-light vs Solarized-dark are two different design languages — decide, once); define semantic status tokens (`--color-success/-warning/-info` + foregrounds) and ban raw palette classes (`bg-green-50`) in tools via ESLint; typography scale, spacing density, tool-page rhythm (h1 + description + action slot + card structure), home-page identity; self-hosted Inter (makes the privacy claim true); focus-visible fixed to `var(--color-ring)`; `prefers-reduced-motion` wrapping all ambient animation. Output: a one-page design spec + the actual `globals.css` token layer the shell will use.
+
+**Decision: Solarized in both modes** (owner's call, 2026-07-19). Output shipped as
+[`docs/DESIGN_SPEC.md`](../DESIGN_SPEC.md) + the rebuilt `src/styles/globals.css`. Home-page
+identity and spacing density were deliberately **deferred** — see the spec's §7; both are
+better decided against ported tools than in the abstract, and neither blocks Phase 2.
 
 ### Phase 2 — Astro shell + legacy bridge → production (2–3 weekends)
 
@@ -200,11 +209,29 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 **Carried into Phase 1 (small housekeeping, none blocking):**
 
-- [ ] Capture live worker response fixtures (ssl/whois/tenant) → MSW mocks
-- [ ] Purge certificate-chain-analyzer remnants from `src/utils/api/apiConfig.json` (`certificate`, `hackertarget_ssl`) and the two docs that mention them
-- [ ] Investigate the 1 remaining ESLint parse-error file
-- [ ] Add `BEHAVIOR_CHANGES.md` ledger — first entry pending: `convertToCSV` drops falsy cells (`0`, `false`), captured as a KNOWN-BUG fixture in `csvParser.test.js`, to be fixed during the Phase 3 port
-- [ ] Flip CI lint to blocking once the Phase 1 ESLint overhaul clears the 83 remaining errors
+- [x] Purge certificate-chain-analyzer remnants from `src/utils/api/apiConfig.json` (`certificate`, `hackertarget_ssl`) — neither key was referenced by any code
+- [x] Investigate the 1 remaining ESLint parse-error file — **it was never a parse error**: an unused `eslint-disable` directive in `Base64ToolShadcn.jsx`, misreported because the old config had no `reportUnusedDisableDirectives` setting
+- [x] Add `BEHAVIOR_CHANGES.md` ledger → [`docs/BEHAVIOR_CHANGES.md`](../BEHAVIOR_CHANGES.md)
+- [x] Flip CI lint to blocking once the Phase 1 ESLint overhaul clears the 83 remaining errors
+- [ ] Capture live worker response fixtures (ssl/whois/tenant) → MSW mocks — **still open, carried into Phase 2**; it is a prerequisite for testing the five lookup tools offline, not for the shell itself
+
+---
+
+## Phase 1 task board
+
+- [x] **Palette decision: Solarized, both modes** — resolves the plan's only open design question
+- [x] Rebuild `src/styles/globals.css` as one derived token layer; merge the duplicate `global.css` into it
+- [x] Semantic status tokens (`success`/`warning`/`info`/`danger` × base/`-foreground`/`-subtle`)
+- [x] `tokens.contrast.test.js` — 63 tests parsing the real stylesheet, enforcing the WCAG floor
+- [x] Self-host Inter (`@fontsource-variable/inter`); drop the Google Fonts `@import`
+- [x] Fix `:focus-visible` (pointed at a token that never existed)
+- [x] `prefers-reduced-motion` over all ambient animation
+- [x] ESLint: raw-palette ban (warn in tools, error in `ui/` + `layout/`)
+- [x] ESLint: add `eslint-plugin-react`, drop `varsIgnorePattern`, clear **all** errors (0 remaining)
+- [x] CI lint blocking
+- [x] [`docs/DESIGN_SPEC.md`](../DESIGN_SPEC.md) — the one-page spec
+- [ ] **Deferred by choice:** home-page identity and spacing-density tokens (spec §7) — decided against ported tools in Phases 3–6
+- [ ] **Deferred:** converting the 505 raw palette occurrences across 31 tool files; each tool converts during its own port, when it can be visually checked
 
 ---
 
@@ -423,3 +450,91 @@ caught a stale claim in the plan body: Phase 5 previously said the allocator wou
 **Resolved:** the `git remote` pointed at the old `subnet-fit` URL; Russ has repointed it at
 `git@github.com:russmckendrick/russ-tools.git`. Branch `redesign/phase-0` is pushed. No PR
 opened — deliberate, this stays a branch for now.
+
+### 2026-07-19 — Session 2: Phase 1 (design pass + ESLint to zero)
+
+**Model:** Opus 4.8. **Branch:** `redesign/phase-0`. Phase 1 complete.
+
+**Decision — Solarized in both modes** (owner's call). The alternatives offered were
+Blueprint-both-ways and neutral-slate. This retires the Blueprint light theme; the light
+mode is now Solarized-light (`base2` page, `base3` cards). Ambient home-page motion is
+kept as-is but disabled under `prefers-reduced-motion` (also the owner's call).
+
+**The finding that shaped the token layer.** Raw Solarized accents are **not usable as
+text** on the surfaces this app puts them on — measured on the light card: green 2.97:1,
+cyan 2.93:1, yellow 2.98:1, blue 3.41:1. Dark fails in the mirror image (red, orange,
+violet, magenta all 2.8–3.0:1 on `base02`). So semantic tokens are *derived*: each accent
+is pulled toward `base03` (light) or `base2` (dark) until it clears 4.5:1 on the page, on
+a card, **and on its own subtle tint**. The untouched ramp stays exposed as
+`--color-solar-*` for decoration, where 1.4.11 does not apply.
+
+Consequence worth remembering: **`--color-ring` cannot be one value.** No blue clears 3:1
+against both a light card and a dark card — the darkened one is 2.36:1 on dark cards, the
+lightened one 2.72:1 on light cards. Light and dark ring values are permanently distinct.
+
+**Three latent bugs found and fixed while doing this:**
+
+1. **`:focus-visible` has never worked.** The rule was `outline: 2px solid hsl(var(--primary))`,
+   but this codebase has no `--primary` (tokens are `--color-*`) and its values are hex/oklch,
+   not HSL triplets. The declaration was invalid, so every focus ring fell back to the UA
+   default. Now `var(--color-ring)`.
+2. **`useTLDs()` was called inside a `try/catch`** in both dns-lookup and whois. The hook
+   handles its own load failures and cannot throw synchronously, so the catch could never
+   help — but had it ever fired, it would have changed the hook count between renders and
+   crashed React. Removed.
+3. **NewHomeView called `useRef`/`useState`/`useEffect` from inside an IIFE embedded in JSX.**
+   It worked only because the IIFE happened to run unconditionally on every render. Extracted
+   to a real `ToolIconGrid` component.
+
+**The `varsIgnorePattern` story (the plan had this wrong).** The plan said to drop
+`varsIgnorePattern: '^[A-Z_]'` because it "hides dead imports". It does — but that was not
+why it was there. Without `eslint-plugin-react`'s `jsx-uses-vars`, ESLint cannot tell that
+JSX *uses* an imported component, so every PascalCase import looks unused. Dropping the
+pattern alone produced **1,273** false positives. Adding the plugin first gave the true
+number: **137 errors**, of which ~54 were genuinely dead PascalCase imports the pattern had
+been masking. All 137 are now fixed; `pnpm lint` is at **0 errors** and CI lint is blocking.
+
+Similarly, the "1 remaining ESLint parse-error file" from Session 1 was **not a parse error** —
+it was an unused `eslint-disable` directive in `Base64ToolShadcn.jsx`, misreported because the
+old config never set `reportUnusedDisableDirectives`.
+
+**Also done**
+- Merged `global.css` into `globals.css`. Two near-identically-named stylesheets, one of which
+  silently loaded first, was a standing footgun.
+- Self-hosted Inter via `@fontsource-variable/inter`; dropped the Google Fonts `@import`. The
+  site's "nothing leaves the browser" claim is now true on first paint. Verified: zero
+  `googleapis` references remain in `dist/`.
+- Added a `prefers-color-scheme` fallback on `:root:not(.light)` so first paint matches the OS
+  before the theme provider mounts. `tokens.contrast.test.js` asserts it stays in sync with
+  `.dark` — they are duplicated by necessity (a media query cannot reuse a class block).
+- Raw-palette ESLint ban: **warn** in `src/components/tools/**` (505 occurrences, 31 files),
+  **error** in `src/components/ui/**` and `src/components/layout/**`. Each tool flips to error
+  as it is ported.
+- Purged the certificate-chain-analyzer remnants from `apiConfig.json` (neither `certificate`
+  nor `hackertarget_ssl` was referenced by any code).
+- Added `docs/BEHAVIOR_CHANGES.md` with the `convertToCSV` KNOWN-BUG plus the two allocator
+  bugs owed by Phase 5, and the three deliberate Phase 4/5 changes pre-declared so they are
+  not mistaken for regressions.
+
+**Notes for the ports (found in passing, not fixed)**
+- `ToolHeader` accepts an **`iconColor` prop that 14 tools pass and it never reads**. Drop the
+  prop at each tool's port, not in a drive-by.
+- `dns-lookup` and `whois` compute autocomplete suggestions into state that **nothing renders**
+  (`_autocompleteData`). Either wire up the autocomplete or delete the machinery during the
+  Phase 4 lookup-hook port.
+- `ToolHeader`'s alert slot was the one piece of shared chrome using raw palette classes; it is
+  converted to `bg-info-subtle`/`text-info`/`border-info` as the worked example of the new
+  contract.
+
+**State at session end**
+- `pnpm test` → **127 passing / 9 files** (64 characterization + 63 token-contrast).
+- `pnpm build` → green (~4.6s). `pnpm lint` → **0 errors**, 234 warnings (205 raw-palette,
+  15 react-refresh, 14 exhaustive-deps).
+- Commits on `redesign/phase-0`; not pushed.
+
+**Next session — Phase 2 (Astro shell + legacy bridge)**
+1. Scaffold Astro 7 + `@astrojs/react` + Tailwind 4.3 alongside the existing Vite app.
+2. Build the manifest registry, `ToolLayout.astro`, `[...tool].astro`, generated `_redirects`.
+3. **Prove `_redirects` param handling on a real Pages preview early** — it is the plan's
+   riskiest platform assumption (top-risks table).
+4. Carry over: capture live worker response fixtures → MSW mocks.

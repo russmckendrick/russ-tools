@@ -12,8 +12,14 @@ record across sessions).
 **Target architecture:** a static **Astro** shell with one **React island** per tool,
 everything derived from per-tool manifests. **Current architecture:** a React 19 +
 Vite SPA (react-router). We are migrating from the latter to the former in phases;
-right now we are in **Phase 0** (stabilise the live site: CI, tests, bug fixes,
-dead-code purge) — the codebase is still the React SPA.
+Phases 0 (stabilise) and 1 (design pass) are **complete**, and **Phase 2** (Astro shell
++ legacy bridge) is next — the codebase is still the React SPA.
+
+**Colour, typography and motion are settled — see [`docs/DESIGN_SPEC.md`](docs/DESIGN_SPEC.md)
+before touching any styling.** Short version: Solarized in both light and dark; use the
+semantic tokens (`bg-success-subtle`, `text-danger`, `border-info`, …), never raw Tailwind
+palette classes (`bg-green-50`). ESLint warns on the latter in tools and errors in
+`src/components/ui/` and `src/components/layout/`.
 
 Do not describe or assume the Astro architecture exists yet. It does not.
 
@@ -43,8 +49,9 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
 - `pnpm install` — install deps (esbuild is the one approved build script, see `pnpm.onlyBuiltDependencies`)
 - `pnpm dev` — Vite dev server
 - `pnpm build` — generate sitemap + Vite production build
-- `pnpm test` — Vitest (64 tests; **keep these green**) · `pnpm test:watch` to iterate
-- `pnpm lint` — ESLint (83 pre-existing errors; cleaned in Phase 1 — see plan)
+- `pnpm test` — Vitest (127 tests; **keep these green**) · `pnpm test:watch` to iterate
+- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** ~234 warnings remain, mostly
+  the raw-palette ban; each tool clears its own as it is ported. Don't add errors.
 - `pnpm preview` — preview the production build
 - `pnpm generate:sitemap` — regenerate `public/sitemap.xml`
 
@@ -126,6 +133,16 @@ do not add new `@tabler` usage.
   during the markdown-table port and update the fixture in the same PR.
 - Subnet-allocator and base64 logic are still inline in their components, so neither has
   characterization tests yet. Extract them first when porting those tools.
+- **Gotcha:** raw Solarized accents are **not** usable as text — green is 2.97:1 on the light
+  card. The semantic tokens are derived, accessible variants; `--color-solar-*` is the raw
+  ramp and is for decoration only. `src/styles/tokens.contrast.test.js` enforces this, so a
+  hand-tuned hex in `globals.css` will fail `pnpm test`.
+- **Gotcha:** `--color-ring` is legitimately different in light and dark. No single blue
+  clears 3:1 against both a light and a dark card. Don't "simplify" it to one value.
+- `ToolHeader` accepts an **`iconColor` prop that 14 tools pass and it never reads** — drop it
+  per-tool during that tool's port, not in a drive-by.
+- `dns-lookup` and `whois` compute autocomplete suggestions into state that nothing renders
+  (`_autocompleteData`). Resolve during the Phase 4 lookup-hook port.
 
 All six bugs found in the Phase 0 audit are **fixed** (Microsoft Portals `undefined/…` URLs,
 azure-kql missing `persist`, markdown-table undo/redo + tab delimiter, sharelink
@@ -135,9 +152,12 @@ Session Log for details.
 ## Documentation map
 
 - Redesign: `docs/plans/redesign-plan.md` (**authoritative, living**)
+- Design: `docs/DESIGN_SPEC.md` (**authoritative** for colour, type, motion, a11y floor)
+- Behaviour ledger: `docs/BEHAVIOR_CHANGES.md` (every deliberate divergence from a
+  characterization fixture is logged here, in the PR that makes it)
 - Audit inputs / knowledge graph: `graphify-out/` (gitignored)
-- Design system: `docs/DESIGN_SYSTEM.md`, `docs/STYLE_GUIDE.md` (aspirational — much is
-  not yet implemented; being reconciled in Phase 1)
+- Design system: `docs/DESIGN_SYSTEM.md`, `docs/STYLE_GUIDE.md` — **superseded on colour
+  and typography by `DESIGN_SPEC.md`**; the rest is Mantine-era and still untrustworthy
 - Per-tool docs: `docs/tools/<tool-name>/` (some reference deleted pre-migration files)
 - Workers/API: `docs/cloudflare-workers/README.md`, `docs/api/API_CONFIG.md` (document
   infrastructure that partly does not exist — verify against code)

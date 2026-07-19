@@ -196,12 +196,12 @@ const ToolHeader = ({
 
       {/* Alert section (if provided) */}
       {alert && (
-        <Alert 
+        <Alert
           variant={alert.variant || 'default'}
-          className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/50"
+          className="border-info bg-info-subtle"
         >
-          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <AlertDescription className="text-blue-900 dark:text-blue-100">
+          <Info className="h-4 w-4 text-info" />
+          <AlertDescription className="text-info">
             {alert.title && <span className="font-semibold">{alert.title}: </span>}
             {alert.description}
           </AlertDescription>

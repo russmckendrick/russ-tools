@@ -18,12 +18,6 @@
       "timeout": 10000,
       "retries": 2
     },
-    "certificate": {
-      "url": "https://certificate.russ.tools/",
-      "description": "Certificate Chain Analysis API",
-      "timeout": 30000,
-      "retries": 2
-    },
     "dns": {
       "google": "https://dns.google/resolve",
       "cloudflare": "https://1.1.1.1/dns-query",
@@ -34,7 +28,6 @@
       "retries": 1
     },
     "external": {
-      "hackertarget_ssl": "https://api.hackertarget.com/sslcheck/",
       "azure_portal": "https://portal.azure.com",
       "description": "External third-party APIs",
       "timeout": 10000,
