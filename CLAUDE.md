@@ -11,7 +11,8 @@ record across sessions).
 
 **Target architecture:** a static **Astro** shell with one **React island** per tool,
 everything derived from per-tool manifests. Phases 0 (stabilise) and 1 (design pass) are
-**complete**; **Phase 2 is in progress**.
+**complete**; **Phase 2 is in progress** — its shell, bridge and design-system work are
+done, and `core/`, the two-column split and the deploy gates remain.
 
 **Both apps exist in the tree right now, side by side.** Nothing has been cut over.
 
@@ -58,6 +59,35 @@ and `.grid` collided with Tailwind's `grid` utility — the shell's rule won, so
 `grid grid-cols-*` inside every tool silently became a 3-column grid. Don't add an
 unprefixed class to that file.
 
+### ⚠️ Token names collide with Tailwind's scales — three bugs, one cause
+
+`DESIGN.md` names its steps `xs`…`3xl` and `title-sm`/`body-sm`/`data-md`, which are
+**exactly** Tailwind's own container, size and colour scale keys. Tailwind resolves the
+collision silently, in Tailwind's favour. All three known cases are fixed and pinned by
+tests; the pattern is the thing to remember:
+
+| Collision | Symptom | Fixed in |
+|---|---|---|
+| `--spacing-lg` vs the *container* scale | `max-w-lg` = 16px, `max-w-3xl` = 48px — every dialog a sliver | `scripts/generate-tokens.mjs` (emits `--rt-space-*`) |
+| `--font-title-sm` vs the font **family** namespace | `font-title-sm` set `font-family: "Inter"` (not the self-hosted `"Inter Variable"`) → headings fell back to **serif** | same script strips per-step family tokens; each step folds into one `--text-*` carrying weight/line-height/tracking |
+| `text-body-sm` looks like a colour to tailwind-merge | `cn()` **deleted** the size class; the scale was in the source, absent from the DOM | `src/lib/utils.js` (`extendTailwindMerge`), pinned by `src/lib/utils.test.js` |
+
+**Fix collisions in the generator or in `cn()`, never by renaming things in `DESIGN.md`.**
+And note every one of these failed silently: `pnpm lint` was clean and the classes were in
+the files. **Lint proves a class was written; only the rendered DOM proves it was applied** —
+check computed styles in a browser.
+
+**One class applies one type step.** `text-title-sm` carries its own weight, line-height and
+letter-spacing — never put a `font-*`, `leading-*` or `tracking-*` beside it. Tailwind's
+stock sizes (`text-sm`, `text-lg`) are off-scale and ESLint blocks them: **error** in
+`src/components/ui/`, **warning** in tools.
+
+**The accent acts; the category labels.** Buttons, toggles, sliders and focus rings are
+`primary` in both themes. `--cat` (set once per page by `ToolLayout` from the manifest's
+`category`) is for the icon tile, badges, borders, small type and the hover glow — never a
+large fill. A category hue must clear 4.5:1 as text, and the amber security hue at 4.5:1 is
+brown, so filling a button with it produced a brown slab on every security tool.
+
 **The token layer is generated — do not hand-edit hexes.** `src/styles/tokens.generated.css`
 comes from `DESIGN.md` via `pnpm generate:tokens`; `src/styles/globals.css` only switches the
 light peers in and aliases the shadcn names the un-ported components use (by `var()` reference,
@@ -98,9 +128,10 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
 - `pnpm dev:astro` / `pnpm build:astro` — the new Astro shell → `dist-astro/` (build also
   regenerates `_redirects` from the manifests)
 - `pnpm generate:tokens` — regenerate the token layer from `DESIGN.md` (needs network once)
-- `pnpm test` — Vitest (209 tests; **keep these green**) · `pnpm test:watch` to iterate
-- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** ~234 warnings remain, mostly
-  the raw-palette ban; each tool clears its own as it is ported. Don't add errors.
+- `pnpm test` — Vitest (271 tests; **keep these green**) · `pnpm test:watch` to iterate
+- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 29 warnings remain (13
+  exhaustive-deps, 16 react-refresh) — the raw-palette and off-scale-type warnings are all
+  cleared. Don't add errors, and don't let the warning count climb.
 - `pnpm preview` — preview the production build
 - `pnpm generate:sitemap` — regenerate `public/sitemap.xml`
 
@@ -162,9 +193,11 @@ Data Converter (JSON/YAML/TOML), CRON Builder, Markdown Table · Utility: Buzzwo
 
 `dayjs`, `framer-motion`, `d3-force`, `@svgdotjs/svg.js`, `next-themes`,
 `tailwindcss-animate`, `uuid` (use `crypto.randomUUID()`), `autoprefixer`,
-`@radix-ui/react-scroll-area`. Icons: the project still has **two** icon libraries
-(`@tabler/icons-react` + `lucide-react`); the redesign standardises on **lucide only** —
-do not add new `@tabler` usage.
+`@radix-ui/react-scroll-area`. Icons: **lucide-react is the only icon library for generic
+UI glyphs**, and per-tool icons come from the shared bespoke set in `src/shell/icons.mjs`
+(Astro `ToolIcon`, React `ui/tool-icon.jsx`) — one drawing used by both apps. `@tabler` is
+down to two SPA-only layout files plus `IconBrandTerraform`, which has no lucide
+equivalent; do not add new `@tabler` usage.
 
 > Removing a package can break `vite.config.js` `manualChunks`, which lists vendor entries
 > by name — a stale entry becomes a hard "Could not resolve entry module" build failure.
@@ -192,6 +225,12 @@ do not add new `@tabler` usage.
   per-tool during that tool's port, not in a drive-by.
 - `dns-lookup` and `whois` compute autocomplete suggestions into state that nothing renders
   (`_autocompleteData`). Resolve during the Phase 4 lookup-hook port.
+- **Known bugs surfaced by the Phase 2 sweep, deliberately left for their tools' ports:**
+  `MarkdownPreview.getValidationVariant` returns `'default'` for warnings, so a warning
+  renders as info; `DNSAnalysisDisplay.getProviderColor` takes an argument it ignores;
+  `TenantLookupShadcn` and `TenantInfoDisplay` hold byte-identical copies of
+  `getTenantTypeColor`; `BuzzwordIpsum` sets an inline `style={{fontSize}}` that ESLint
+  cannot see.
 
 All six bugs found in the Phase 0 audit are **fixed** (Microsoft Portals `undefined/…` URLs,
 azure-kql missing `persist`, markdown-table undo/redo + tab delimiter, sharelink
@@ -201,12 +240,14 @@ Session Log for details.
 ## Documentation map
 
 - Redesign: `docs/plans/redesign-plan.md` (**authoritative, living**)
-- Design: `docs/DESIGN_SPEC.md` (**authoritative** for colour, type, motion, a11y floor)
+- Design: **[`DESIGN.md`](DESIGN.md) in the repo root is the authority** for colour, type,
+  layout, shape and components. `docs/DESIGN_SPEC.md` is the **superseded** Phase 1
+  Solarized spec — do not follow it; it is retired in Phase 6.
 - Behaviour ledger: `docs/BEHAVIOR_CHANGES.md` (every deliberate divergence from a
   characterization fixture is logged here, in the PR that makes it)
 - Audit inputs / knowledge graph: `graphify-out/` (gitignored)
-- Design system: `docs/DESIGN_SYSTEM.md`, `docs/STYLE_GUIDE.md` — **superseded on colour
-  and typography by `DESIGN_SPEC.md`**; the rest is Mantine-era and still untrustworthy
+- Design system: `docs/DESIGN_SYSTEM.md`, `docs/STYLE_GUIDE.md` — **superseded by
+  `DESIGN.md`**; the rest is Mantine-era and still untrustworthy
 - Per-tool docs: `docs/tools/<tool-name>/` (some reference deleted pre-migration files)
 - Workers/API: `docs/cloudflare-workers/README.md`, `docs/api/API_CONFIG.md` (document
   infrastructure that partly does not exist — verify against code)

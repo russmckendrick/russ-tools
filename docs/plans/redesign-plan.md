@@ -239,21 +239,37 @@ Home page (static cards from registry + the password widget as a tiny island), s
 
 ## Start here
 
-**Phases 0 and 1 are done, and Phase 2's opening move and scaffold have landed.** The token
-layer is generated from `DESIGN.md`, the Astro shell + registry + `ToolLayout.astro` are built,
-and `_redirects` param handling is proven against Cloudflare's runtime. The next session
-continues Phase 2:
+**Phases 0 and 1 are done. Phase 2's shell, bridge and design-system work are done** —
+every tool page mounts its real React component through `src/bridge/ToolIsland.jsx`, and
+`src/components/ui/` is now one implementation of each component written against
+`DESIGN.md`, so all fifteen tools share their card, button, input, select, tabs, dialog,
+sheet, toaster, help affordance and icon set. Raw palette classes and off-scale typography
+in tools are both at zero, enforced by ESLint.
 
-1. Read [`DESIGN.md`](../../DESIGN.md) — it is the design contract, and the shell now renders
-   it. Read the Session 4 log for the shape of what exists.
-2. **The bridge.** Each manifest's `island` lazy-loads its existing React component into
-   `ToolLayout.astro`. Expect three seams: react-router (`useParams` / `Link`),
-   `ThemeProvider`, and `ToolHeader`'s duplicate page furniture. Smoke-test each tool as it
-   bridges; visual diffs are expected, behaviour changes are not.
-3. Build `core/` — storage + migration shim (frozen contract #3), sharelink **verbatim**
+**Read [Session 5](#2026-07-19--session-5-the-bridge-and-the-consistency-sweep) before
+touching styling.** It records six faults, five of which were silent — three of them the
+same underlying cause: DESIGN.md's token names collide with Tailwind's own scales, and
+Tailwind resolves that quietly in its own favour. All three are fixed in
+`scripts/generate-tokens.mjs` / `src/lib/utils.js` and pinned by tests. The rule that came
+out of it: **`pnpm lint` proves a class was written; only the rendered DOM proves it was
+applied.** Verify computed styles in a browser, not the source.
+
+What remains in Phase 2:
+
+1. **`core/`** — storage + the non-destructive migration shim (`rt:<id>:<slot>`,
+   read-old/write-new, never delete — frozen contract #3), sharelink ported **verbatim**
    (frozen contract #2), clipboard, download, cache-with-TTL, api client.
-4. Deploy a real Pages preview, then run the Playwright deep-link matrix against it.
-5. Carried over from Phase 0: capture live worker response fixtures (ssl/whois/tenant) → MSW mocks.
+2. **The two-column split.** `DESIGN.md`'s Layout section specifies a 320px control column
+   beside a fluid result column, and `ToolLayout` already provides the `controls` slot —
+   but bridged tools render everything into the default slot, so only password-generator
+   has the shape, and it built its own grid. This is the largest remaining source of
+   "this page looks different from that one".
+3. **Theme toggle** in the shell (the pre-paint script exists; there is no control).
+4. **`/delete`** storage-clear page, driven by declared `storageKeys`.
+5. **The gates:** a real Pages preview deploy, the Playwright deep-link matrix against it,
+   a rendered-meta diff against production, a sitemap URL-set diff, and the exceljs
+   dynamic-import smoke test.
+6. Carried from Phase 0: capture live worker response fixtures (ssl/whois/tenant) → MSW mocks.
 
 <details>
 <summary>Original Phase 0 starting steps (complete)</summary>
@@ -348,9 +364,21 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       hero, stat strip and footer pitch removed
 - [x] Raw Tailwind palette classes in tools: 205 → 0
 - [x] Off-scale typography in tools → the `DESIGN.md` ten-step scale: 497 → 0, ESLint rule added
+- [x] Shared `--cat` rule settled: **the accent acts, the category labels** — buttons,
+      toggles, sliders and focus rings are `primary`; `--cat` keeps the icon tile, badges,
+      borders, small type and the hover glow
+- [x] `data-lg` type step added for the one artefact a tool exists to produce
+- [x] Three silent token/merge collisions fixed and pinned by tests (`--spacing-*` vs
+      Tailwind's container scale, `font-<scale>` vs the family namespace, `cn()` filing
+      type steps as colours)
 - [ ] `core/` — storage + migration shim, sharelink verbatim, clipboard, download, cache, api client
 - [ ] Theme toggle in the new shell (the pre-paint script exists; the control does not)
+- [ ] Two-column control/result split per tool — tools render into `ToolLayout`'s
+      `controls` slot rather than one full-width column. **The largest remaining source of
+      "this page looks different from that one";** only password-generator has it today,
+      and it built its own grid rather than using the slot
 - [ ] Remaining bespoke per-tool chrome (e.g. data-converter's `ControlPanel` header card)
+- [ ] Last `@tabler` import in a tool file (`IconBrandTerraform`, no lucide equivalent)
 - [ ] `/delete` storage-clear page driven by declared `storageKeys`
 - [ ] Real Pages preview deploy + Playwright deep-link matrix
 - [ ] Rendered-meta diff against production; sitemap URL-set diff
@@ -929,10 +957,72 @@ rendered as an error, "SPF record" and "TOML" and "Hybrid" as warnings, a
 favourited star as a warning. Identity is `--cat` or neutral; DESIGN.md now says
 so with the examples, because the mapping table alone would reproduce it.
 
+**5. Six faults, five of them silent, and the pattern connecting them.**
+
+| Fault | Effect | Caught by |
+|---|---|---|
+| `.grid` collided with Tailwind's `grid` utility | every `grid grid-cols-*` **inside every tool** became a 3-column grid | owner spotted the wrapped tab bar |
+| `.shell` auto-margin in a column flex `body` | `main` shrink-to-fit — page rendered at 508px in a 1120px container | measuring geometry, not the screenshot |
+| `--spacing-lg` shadowed Tailwind's *container* scale | `max-w-lg` = 16px, `max-w-3xl` = 48px — **every dialog in both apps a sliver** | testing the help panel |
+| `font-title-sm` set `font-family: "Inter"` (not `"Inter Variable"`) | every heading fell back to the browser default **serif** | owner: "header fonts are horrible" |
+| **`cn()` classified every type step as a colour** | tailwind-merge **deleted the size class**; the whole type scale was in the source and absent from the DOM | owner selected a Label and its class list was short |
+| Select copied the Input contract verbatim | `h-9` clipped two-line options, `font-mono` set prose in mono | owner: "this looks terrible" |
+
+**The connecting pattern, worth carrying into every later phase:** DESIGN.md's
+token *names* (`lg`, `2xl`, `title-sm`, `body-sm`) collide with Tailwind's own
+scales, and Tailwind resolves the collision silently and in Tailwind's favour.
+Three separate bugs, one cause. The fixes belong in
+`scripts/generate-tokens.mjs` and `src/lib/utils.js`, never in DESIGN.md — and
+each is now pinned by a test, because **every one of these failed silently**:
+lint was clean, the classes were in the files, the builds were green.
+
+Corollary: `pnpm lint` proves a class was *written*. Only the rendered DOM
+proves it was *applied*. Check computed styles in the browser, not the source.
+
+**6. Lesson repeated from Phase 1, in a new costume.** The palette sweep mapped
+raw classes to semantic tokens mechanically, which faithfully preserved a fault
+it also made obvious: status colours were carrying *identity*. "Barracuda"
+rendered as an error, "SPF record" and "TOML" and "Hybrid" as warnings, a
+favourited star as a warning. Identity is `--cat` or neutral. Same shape as the
+Phase 1 lesson: the mapping was applied correctly and was still wrong, because
+the thing being mapped was wrong to begin with.
+
+**7. The category hue stopped being a fill — the owner's call, and it was right.**
+Driving the primary button from `--cat` made every security tool's main action
+`#b45309`, which is what amber becomes once it clears 4.5:1. The constraint that
+makes a category hue *legible* is the same one that makes it unpleasant as a
+large fill. The rule is now: **the accent acts, the category labels.** Buttons,
+toggles, sliders and focus rings are `primary`; `--cat` keeps the icon tile,
+badges, borders, small type and the hover glow.
+
+**Sweep totals**
+
+| | session start | session end |
+|---|---|---|
+| Lint errors | 0 | 0 |
+| Lint warnings | 234 | **29** (13 exhaustive-deps, 16 react-refresh) |
+| Raw palette classes | 205 | **0** |
+| Off-scale typography | 497 | **0** |
+| Tests | 254 | **271** |
+| Toasters / help affordances / icon sources | many | **1 / 1 / 1** |
+
 **Also found, not fixed (logged for the ports):** ssl-checker's grade badges
 shipped white-on-accent labels (~2:1) — fixed in passing since it was a
 DESIGN.md violation; `MarkdownPreview.getValidationVariant` returns `'default'`
-for warnings so a warning renders as info; PasswordGenerator passes a Mantine-era
-colour name as a Badge `variant`.
+for warnings so a warning renders as info; `DNSAnalysisDisplay.getProviderColor`
+takes a dead argument; `TenantLookupShadcn` and `TenantInfoDisplay` hold
+byte-identical copies of `getTenantTypeColor`; `BuzzwordIpsum` has an inline
+`style={{fontSize}}` ESLint cannot see; `IconBrandTerraform` is the last @tabler
+import in a tool file (no lucide equivalent).
+
+**State at session end:** 11 commits on `redesign/phase-0`, working tree clean,
+not pushed. `pnpm test` 271 / 10 files · `pnpm lint` 0 errors, 29 warnings ·
+`pnpm build` and `pnpm build:astro` green · `@google/design.md lint DESIGN.md`
+0 errors.
+
+**Next session — see the [Phase 2 task board](#phase-2-task-board).** The
+shared layer and the sweep are done; what remains is `core/`, the theme toggle,
+the `/delete` page, the two-column control/result split per tool, and the
+deploy-and-verify gates.
 
 
