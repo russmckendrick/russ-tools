@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../ui/card';
-import { Button } from '../../../ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Database, Server, Globe, Shield } from 'lucide-react';
 import { getServiceList } from '../utils/templateLoader';
 

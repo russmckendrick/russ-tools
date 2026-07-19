@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../ui/card';
-import { Button } from '../../../ui/button';
-import { Input } from '../../../ui/input';
-import { Label } from '../../../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select';
-import { Alert, AlertDescription } from '../../../ui/alert';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../ui/collapsible';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, AlertCircle, Sparkles } from 'lucide-react';
 import { getTemplateList, loadTemplate } from '../utils/templateLoader';
 import { cn } from '@/lib/utils';

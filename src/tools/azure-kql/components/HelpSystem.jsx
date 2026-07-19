@@ -1,8 +1,8 @@
 import React from 'react';
-import { HelpDialog } from '../../../ui/help-dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../ui/tabs';
-import { Card, CardContent } from '../../../ui/card';
-import { Badge } from '../../../ui/badge';
+import { HelpDialog } from '@/components/ui/help-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   BookOpen, 
   Code2, 

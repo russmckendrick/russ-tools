@@ -1,10 +1,9 @@
 /**
- * Azure KQL Query Builder — bridge manifest.
+ * Azure KQL Query Builder — ported.
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * Ported (Phase 5). The live zustand store was already keyed
+ * rt:azure-kql:store; custom templates move to rt:azure-kql:custom-templates
+ * (legacy key read forward) and now round-trip into the builder.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /azure-kql
@@ -65,6 +64,6 @@ export default {
     'azure-kql-custom-templates',
   ],
 
-  island: () => import('@/components/tools/azure-kql/AzureKQLTool.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };

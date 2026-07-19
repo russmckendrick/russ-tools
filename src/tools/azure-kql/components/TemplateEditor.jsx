@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../../ui/card';
-import { Button } from '../../../ui/button';
-import { Input } from '../../../ui/input';
-import { Label } from '../../../ui/label';
-import { Textarea } from '../../../ui/textarea';
-import { Alert, AlertDescription } from '../../../ui/alert';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Plus, 
   Save, 
@@ -12,7 +12,7 @@ import {
   FileCode,
   Info
 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getCustomTemplates, saveCustomTemplate, deleteCustomTemplate } from '../utils/templateLoader';
 import { toast } from 'sonner';
 

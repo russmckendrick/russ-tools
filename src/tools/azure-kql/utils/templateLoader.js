@@ -1,8 +1,13 @@
+import { createToolStorage } from '@/core';
 import azureFirewall from '../templates/azure-firewall.json';
 import azureVirtualDesktop from '../templates/azure-virtual-desktop.json';
 import azureApplicationGateway from '../templates/azure-application-gateway.json';
 
 const TEMPLATE_CACHE = new Map();
+
+// rt:azure-kql:custom-templates, reading the pre-port key forward.
+const storage = createToolStorage('azure-kql');
+const LEGACY_CUSTOM_KEY = 'azure-kql-custom-templates';
 
 const TEMPLATES = {
   'azure-firewall': azureFirewall,
@@ -25,6 +30,20 @@ export function loadTemplate(service, templateName) {
   
   const template = serviceTemplates.templates?.[templateName];
   if (!template) {
+    // Custom templates round-trip: the Templates tab used to be write-only —
+    // saved templates never appeared anywhere a query could be built from.
+    const custom = getCustomTemplates().find(
+      (t) => t.id === templateName && t.service === service
+    );
+    if (custom) {
+      const mergedCustom = {
+        ...serviceTemplates.service,
+        ...custom,
+        fields: mergeFields(serviceTemplates.schema?.fields || {}, custom.fields)
+      };
+      TEMPLATE_CACHE.set(cacheKey, mergedCustom);
+      return mergedCustom;
+    }
     console.warn(`Template not found: ${templateName} in service: ${service}`);
     return null;
   }
@@ -154,23 +173,28 @@ export function getTemplateList(service) {
     return [];
   }
   
-  return Object.entries(serviceTemplates.templates).map(([key, template]) => ({
+  const builtIn = Object.entries(serviceTemplates.templates).map(([key, template]) => ({
     id: key,
     name: template.name || key,
     description: template.description || '',
     category: template.category || 'General'
   }));
+
+  const custom = getCustomTemplates()
+    .filter((t) => t.service === service)
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description || '',
+      category: 'Custom'
+    }));
+
+  return [...builtIn, ...custom];
 }
 
 export function getCustomTemplates() {
-  const stored = localStorage.getItem('azure-kql-custom-templates');
-  if (!stored) return [];
-  
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return [];
-  }
+  const stored = storage.get('custom-templates', { fallback: [], legacy: LEGACY_CUSTOM_KEY });
+  return Array.isArray(stored) ? stored : [];
 }
 
 export function saveCustomTemplate(template) {
@@ -183,12 +207,14 @@ export function saveCustomTemplate(template) {
     templates.push(template);
   }
   
-  localStorage.setItem('azure-kql-custom-templates', JSON.stringify(templates));
+  storage.set('custom-templates', templates);
+  TEMPLATE_CACHE.delete(`${template.service}:${template.id}`);
   return template;
 }
 
 export function deleteCustomTemplate(id) {
   const templates = getCustomTemplates();
-  const filtered = templates.filter(t => t.id !== id);
-  localStorage.setItem('azure-kql-custom-templates', JSON.stringify(filtered));
+  const removed = templates.find(t => t.id === id);
+  storage.set('custom-templates', templates.filter(t => t.id !== id));
+  if (removed) TEMPLATE_CACHE.delete(`${removed.service}:${id}`);
 }

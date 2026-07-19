@@ -65,11 +65,6 @@ const NetworkDesignerTool = lazy(() =>
     default: () => <div>Error loading Network Designer Tool</div>
   }))
 );
-const AzureKQLTool = lazy(() => 
-  import('./components/tools/azure-kql/AzureKQLTool').catch(() => ({
-    default: () => <div>Error loading Azure KQL Tool</div>
-  }))
-);
 
 // Loading component for lazy-loaded routes
 const LoadingFallback = () => (
@@ -214,17 +209,17 @@ export default function App() {
 
               <Route path="azure-kql" element={
                 <LazyRoute>
-                  <AzureKQLTool />
+                  <SpaToolPage toolId="azure-kql" />
                 </LazyRoute>
               } />
               <Route path="azure-kql/:service" element={
                 <LazyRoute>
-                  <AzureKQLTool />
+                  <SpaToolPage toolId="azure-kql" />
                 </LazyRoute>
               } />
               <Route path="azure-kql/:service/:template" element={
                 <LazyRoute>
-                  <AzureKQLTool />
+                  <SpaToolPage toolId="azure-kql" />
                 </LazyRoute>
               } />
 

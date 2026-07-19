@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../ui/card';
-import { Badge } from '../../../ui/badge';
-import { Alert, AlertDescription } from '../../../ui/alert';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info, Code2, FileText } from 'lucide-react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';

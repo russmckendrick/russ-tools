@@ -5,9 +5,9 @@ import {
   CardHeader, 
   CardTitle, 
   CardContent 
-} from '../../ui/card';
-import { Button } from '../../ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Share, 
   Star,
@@ -17,11 +17,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
-import AzureKQLIcon from './AzureKQLIcon';
+import { copyText, downloadFile } from '@/core';
 import ServiceSelector from './components/ServiceSelector';
 import ParameterForm from './components/ParameterForm';
 import QueryPreview from './components/QueryPreview';
@@ -34,7 +30,7 @@ import { generateKQLQuery } from './utils/queryGenerator';
 import { validateParameters } from './utils/validators';
 import { loadTemplate } from './utils/templateLoader';
 
-const AzureKQLTool = () => {
+const AzureKqlTool = () => {
   const { service: urlService, template: urlTemplate } = useParams();
   const [searchParams] = useSearchParams();
   
@@ -147,14 +143,17 @@ const AzureKQLTool = () => {
     }
   }, [currentTemplate, parameters, selectedService, selectedTemplate]);
 
-  const handleCopyQuery = useCallback(() => {
+  const handleCopyQuery = useCallback(async () => {
     if (!generatedQuery) {
       toast.error('No query to copy');
       return;
     }
-    
-    navigator.clipboard.writeText(generatedQuery);
-    toast.success('Query copied to clipboard');
+
+    if (await copyText(generatedQuery)) {
+      toast.success('Query copied to clipboard');
+    } else {
+      toast.error('Failed to copy to clipboard');
+    }
   }, [generatedQuery]);
 
   const handleDownloadQuery = useCallback(() => {
@@ -163,13 +162,7 @@ const AzureKQLTool = () => {
       return;
     }
     
-    const blob = new Blob([generatedQuery], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${selectedService}-${selectedTemplate}-${Date.now()}.kql`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadFile(generatedQuery, `${selectedService}-${selectedTemplate}-${Date.now()}.kql`, 'text/plain');
     toast.success('Query downloaded');
   }, [generatedQuery, selectedService, selectedTemplate]);
 
@@ -184,18 +177,23 @@ const AzureKQLTool = () => {
     window.open(portalUrl, '_blank');
   }, [generatedQuery]);
 
-  const handleShareConfiguration = useCallback(() => {
+  const handleShareConfiguration = useCallback(async () => {
     const config = {
       service: selectedService,
       template: selectedTemplate,
       parameters
     };
-    
+
+    // The ?config wire format stays uncompressed btoa: this tool's existing
+    // share links use it, and its own URL effect parses exactly this.
     const encoded = btoa(JSON.stringify(config));
     const url = `${window.location.origin}/azure-kql?config=${encoded}`;
-    
-    navigator.clipboard.writeText(url);
-    toast.success('Share URL copied to clipboard');
+
+    if (await copyText(url)) {
+      toast.success('Share URL copied to clipboard');
+    } else {
+      toast.error('Failed to copy to clipboard');
+    }
   }, [selectedService, selectedTemplate, parameters]);
 
   const handleAddToFavorites = useCallback(() => {
@@ -236,39 +234,25 @@ const AzureKQLTool = () => {
     toast.success('Favorite loaded');
   }, []);
 
-  const toolConfig = toolsConfig.find(tool => tool.id === 'azure-kql');
-  const seoData = generateToolSEO(toolConfig);
-
   return (
     <>
-      <SEOHead {...seoData} />
-      <ToolHeader
-        icon={AzureKQLIcon}
-        title="Azure KQL Query Builder"
-        description="Build optimized KQL queries for Azure services with guided forms"
-        iconColor="cyan"
-        showTitle={false}
-        actions={[
-          {
-            text: "Share Configuration",
-            icon: Share,
-            onClick: handleShareConfiguration,
-            disabled: !selectedService || !selectedTemplate,
-            variant: "outline",
-            size: "sm"
-          },
-          {
-            text: "Help",
-            icon: HelpCircle,
-            onClick: () => setHelpOpen(true),
-            variant: "outline",
-            size: "sm"
-          }
-        ]}
-        standalone={true}
-      />
-      
       <div className="space-y-6">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShareConfiguration}
+            disabled={!selectedService || !selectedTemplate}
+          >
+            <Share className="w-4 h-4 mr-2" />
+            Share Configuration
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setHelpOpen(true)}>
+            <HelpCircle className="w-4 h-4 mr-2" />
+            Help
+          </Button>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="builder">Query Builder</TabsTrigger>
@@ -377,4 +361,4 @@ const AzureKQLTool = () => {
   );
 };
 
-export default AzureKQLTool;
+export default AzureKqlTool;

@@ -50,6 +50,26 @@ Middle gaps use `next.start - prev.end - 1`; the trailing gap uses
 
 ## Landed
 
+### azure-kql filter ordering works, and custom templates round-trip
+
+| | |
+|---|---|
+| **Where** | `src/tools/azure-kql/utils/queryGenerator.js`, `templateLoader.js` |
+| **Pinned by** | `src/tools/azure-kql/utils/queryGenerator.test.js` |
+| **Landed** | Phase 5, azure-kql port |
+
+`FILTER_PRIORITY`'s keys are camelCase (`sourceIp`) while template fields are
+PascalCase (`SourceIp`), so the priority lookup never hit: every filter got
+default priority 99 and `| where` clauses came out in whatever order the
+parameters happened to be typed. The lookup now normalises the first letter,
+so generated queries order their filters as the priority table always
+intended — a visible change to query text for multi-filter queries.
+
+The Templates tab also stops being write-only: a saved custom template now
+appears in its service's template list (category "Custom") and loads into
+the builder. Custom templates persist as `rt:azure-kql:custom-templates`,
+reading the pre-port `azure-kql-custom-templates` key forward.
+
 ### ssl-checker stops fabricating certificates when analysis is unavailable
 
 | | |

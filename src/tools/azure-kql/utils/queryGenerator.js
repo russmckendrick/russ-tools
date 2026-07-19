@@ -18,6 +18,17 @@ const FILTER_PRIORITY = {
   default: 99
 };
 
+// Template fields are PascalCase (SourceIp) while the priority table is
+// camelCase (sourceIp), so the direct lookup never hit and every filter got
+// priority 99 — ordering was inert. Normalise the first letter.
+function priorityFor(key) {
+  return (
+    FILTER_PRIORITY[key] ??
+    FILTER_PRIORITY[key.charAt(0).toLowerCase() + key.slice(1)] ??
+    FILTER_PRIORITY.default
+  );
+}
+
 export async function generateKQLQuery(template, parameters) {
   if (!template) {
     throw new Error('Template is required');
@@ -46,7 +57,7 @@ function buildFilters(template, parameters) {
     const filter = generateFilter(field, value);
     if (filter) {
       filters.push({
-        priority: FILTER_PRIORITY[key] || FILTER_PRIORITY.default,
+        priority: priorityFor(key),
         filter
       });
     }
