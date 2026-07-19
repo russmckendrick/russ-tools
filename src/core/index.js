@@ -11,7 +11,7 @@
  */
 export { storageKey, createToolStorage, toolStorageKeys, clearTool } from './storage.js';
 export { createCache } from './cache.js';
-export { copyText } from './clipboard.js';
+export { copyText, readText } from './clipboard.js';
 export { downloadFile, downloadJSON, safeFilename } from './download.js';
 export { ApiError, apiFetch, apiJson, buildUrl } from './api.js';
 export {

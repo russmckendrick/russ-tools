@@ -122,6 +122,35 @@ export default [
     },
   },
 
+  /* Ported tools (src/tools/<id>/). A port converts a tool fully to semantic
+     colour and the DESIGN.md scale, so the whole tree holds the ui/ bar from
+     day one — this is the "flip to error for that folder" step of the
+     per-tool checklist, done once for the destination instead of per tool. */
+  {
+    files: ['src/tools/**/*.{js,jsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: `Literal[value=/${RAW_PALETTE_CLASS}/]`,
+          message: RAW_PALETTE_MESSAGE,
+        },
+        {
+          selector: `TemplateElement[value.raw=/${RAW_PALETTE_CLASS}/]`,
+          message: RAW_PALETTE_MESSAGE,
+        },
+        {
+          selector: `Literal[value=/${OFF_SCALE_TYPE}/]`,
+          message: OFF_SCALE_TYPE_MESSAGE,
+        },
+        {
+          selector: `TemplateElement[value.raw=/${OFF_SCALE_TYPE}/]`,
+          message: OFF_SCALE_TYPE_MESSAGE,
+        },
+      ],
+    },
+  },
+
   /* The old SPA's chrome. The Astro shell replaces it and Phase 6 deletes it,
      so it keeps the colour bar it already passes but is not worth restyling
      for type. Narrowed from the block above rather than exempted silently. */

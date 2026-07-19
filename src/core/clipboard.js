@@ -31,6 +31,26 @@ export async function copyText(text) {
 }
 
 /**
+ * Read text from the clipboard, or null when the platform refuses.
+ *
+ * There is no synchronous fallback here — `execCommand('paste')` has been
+ * dead for years — so off HTTPS, or when the user denies the permission
+ * prompt, this returns null and the caller shows its "paste failed" toast.
+ *
+ * @returns {Promise<string|null>}
+ */
+export async function readText() {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.readText) {
+      return await navigator.clipboard.readText();
+    }
+  } catch {
+    // Permission denied or unfocused document; nothing else to try.
+  }
+  return null;
+}
+
+/**
  * The pre-async-clipboard mechanism: a hidden textarea and `execCommand`.
  * Deprecated, universally implemented, and the only thing that works on
  * `http://192.168.x.x`.

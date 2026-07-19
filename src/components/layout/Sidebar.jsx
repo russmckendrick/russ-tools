@@ -4,46 +4,16 @@ import { Button } from "@/components/ui/button"
 // theme toggle not needed in sidebar; kept in header
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import toolsConfig from "@/utils/toolsConfig.json"
-import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub } from "@tabler/icons-react"
-import Base64Icon from "@/components/tools/base64/Base64Icon"
-import JSONIcon from "@/components/tools/data-converter/JSONIcon"
-import DNSIcon from "@/components/tools/dns-lookup/DNSIcon"
-import WHOISIcon from "@/components/tools/whois/WHOISIcon"
-import PasswordIcon from "@/components/tools/password-generator/PasswordIcon"
-import JWTIcon from "@/components/tools/jwt/JWTIcon"
-import MicrosoftPortalsIcon from "@/components/tools/microsoft-portals/MicrosoftPortalsIcon"
-import TenantLookupIcon from "@/components/tools/tenant-lookup/TenantLookupIcon"
-import AzureKQLIcon from "@/components/tools/azure-kql/AzureKQLIcon"
-import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon"
-import SSLCheckerIcon from "@/components/tools/ssl-checker/SSLCheckerIcon"
-import CronIcon from "@/components/tools/cron/CronIcon"
-import NetworkDesignerIcon from "@/components/tools/network-designer/NetworkDesignerIcon"
-import MarkdownTableIcon from "@/components/tools/markdown-table-tool/MarkdownTableIcon"
+import { IconBrandGithub } from "@tabler/icons-react"
+import { toolIconByKey } from "@/components/common/toolIconMap"
 import { FileText, Home, Trash2 } from "lucide-react"
 
-// Map string names in toolsConfig to actual components
+// Map string names in toolsConfig to actual components. Tool icons come from
+// the shared bespoke set via the registry; IconBrandGithub is the external
+// github-source link, which is not a tool and has no manifest.
 const iconByKey = {
-  IconNetwork: IconNetwork,
-  IconBrandAzure: IconBrandAzure,
-  IconChartDots3: IconChartDots3,
-  IconClock: IconClock,
-  IconShield: IconShield,
-  IconMessageCircle: IconMessageCircle,
   IconBrandGithub: IconBrandGithub,
-  DNSIcon: DNSIcon,
-  WHOISIcon: WHOISIcon,
-  Base64Icon: Base64Icon,
-  JSONIcon: JSONIcon,
-  JWTIcon: JWTIcon,
-  PasswordIcon: PasswordIcon,
-  MicrosoftPortalsIcon: MicrosoftPortalsIcon,
-  TenantLookupIcon: TenantLookupIcon,
-  AzureKQLIcon: AzureKQLIcon,
-  BuzzwordIpsumIcon: BuzzwordIpsumIcon,
-  SSLCheckerIcon: SSLCheckerIcon,
-  CronIcon: CronIcon,
-  NetworkDesignerIcon: NetworkDesignerIcon,
-  MarkdownTableIcon: MarkdownTableIcon,
+  ...toolIconByKey,
 }
 
 // Flat list of tools from config

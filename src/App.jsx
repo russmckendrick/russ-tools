@@ -5,6 +5,9 @@ import { ThemeProvider } from './components/theme-provider';
 import { AzureNamingProviderShadcn } from './components/tools/azure-naming/context/AzureNamingContextShadcn';
 import { NewHomeView } from './components/layout/NewHomeView';
 import StorageManager from './components/common/StorageManager';
+// Ported tools render through SpaToolPage, which supplies the SEO head and
+// header from the manifest — the per-tool ritual is gone from the tools.
+import SpaToolPage from './components/common/SpaToolPage';
 
 // Error Boundary for lazy loading
 class LazyLoadErrorBoundary extends React.Component {
@@ -93,12 +96,7 @@ const DataConverterTool = lazy(() =>
     default: () => <div>Error loading Data Converter Tool</div>
   }))
 );
-const Base64Tool = lazy(() => 
-  import('./components/tools/base64/Base64ToolShadcn').catch(() => ({
-    default: () => <div>Error loading Base64 Tool</div>
-  }))
-);
-const JWTTool = lazy(() => 
+const JWTTool = lazy(() =>
   import('./components/tools/jwt/JWTShadcn').catch(() => ({
     default: () => <div>Error loading JWT Tool</div>
   }))
@@ -228,12 +226,12 @@ export default function App() {
 
               <Route path="base64" element={
                 <LazyRoute>
-                  <Base64Tool />
+                  <SpaToolPage toolId="base64" />
                 </LazyRoute>
               } />
               <Route path="base64/:input" element={
                 <LazyRoute>
-                  <Base64Tool />
+                  <SpaToolPage toolId="base64" />
                 </LazyRoute>
               } />
 

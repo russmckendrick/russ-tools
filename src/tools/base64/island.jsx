@@ -1,33 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
 import {
   Upload,
   Download,
   Copy,
   ClipboardPaste,
   Trash2,
-  FileText,
-  Image as ImageIcon,
-  File,
   X,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import Base64Icon from './Base64Icon';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
+import { copyText, readText, downloadFile } from '@/core';
+import {
+  detectBase64,
+  getFileType,
+  isBase64Image,
+  createImagePreviewUrl,
+  encodeBase64,
+  decodeBase64,
+} from './lib/base64.js';
 
 const ENCODING_MODES = [
   { value: 'standard', label: 'Standard Base64', description: 'RFC 4648 standard encoding' },
@@ -35,14 +36,7 @@ const ENCODING_MODES = [
   { value: 'mime', label: 'MIME Base64', description: 'MIME encoding with line breaks' }
 ];
 
-const FILE_TYPES = {
-  text: { icon: FileText, color: 'blue', extensions: ['.txt', '.json', '.xml', '.csv', '.log'] },
-  image: { icon: ImageIcon, color: 'green', extensions: ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg'] },
-  document: { icon: File, color: 'orange', extensions: ['.pdf', '.doc', '.docx', '.xls', '.xlsx'] },
-  other: { icon: File, color: 'gray', extensions: [] }
-};
-
-const Base64ToolShadcn = () => {
+const Base64Tool = () => {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [mode, setMode] = useState('encode');
@@ -53,19 +47,21 @@ const Base64ToolShadcn = () => {
   const [isValidBase64, setIsValidBase64] = useState(null);
   const [inputImagePreview, setInputImagePreview] = useState(null);
   const [outputImagePreview, setOutputImagePreview] = useState(null);
-  // Get tool configuration for SEO
-  const toolConfig = toolsConfig.find(tool => tool.id === 'base64');
-  const seoData = generateToolSEO(toolConfig);
 
-  // Get input from URL parameters
   const { input: urlInput } = useParams();
 
-  // Effect to handle URL input parameter
+  // Deep link: /base64/:input processes on mount with the mode the content
+  // implies — base64 decodes, anything else encodes. It used to process with
+  // the *initial* mode while auto-detect flipped the switch afterwards, so a
+  // shared base64 link showed its payload re-encoded under a toggle saying
+  // "Decode" (logged in BEHAVIOR_CHANGES.md).
   useEffect(() => {
     if (urlInput && urlInput.trim()) {
       const decodedInput = decodeURIComponent(urlInput);
+      const operation = detectBase64(decodedInput.trim()) ? 'decode' : 'encode';
       setInputText(decodedInput);
-      processBase64Operation(decodedInput, mode, encodingType);
+      setMode(operation);
+      processBase64Operation(decodedInput, operation, encodingType);
     }
   }, [urlInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -77,7 +73,7 @@ const Base64ToolShadcn = () => {
       if (detected && mode === 'encode') {
         setMode('decode');
       }
-      
+
       if (detected && isBase64Image(inputText.trim())) {
         const imageUrl = createImagePreviewUrl(inputText.trim());
         if (imageUrl) {
@@ -94,183 +90,6 @@ const Base64ToolShadcn = () => {
       setInputImagePreview(null);
     }
   }, [inputText, selectedFile, mode]);
-
-  // Helper function to detect if text is Base64
-  const detectBase64 = (text) => {
-    if (!text || text.length < 4) return false;
-    
-    const cleanText = text.replace(/\s/g, '');
-    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-    const urlSafeBase64Regex = /^[A-Za-z0-9_-]*={0,2}$/;
-    const hasValidLength = cleanText.length % 4 === 0;
-    
-    return hasValidLength && (base64Regex.test(cleanText) || urlSafeBase64Regex.test(cleanText));
-  };
-
-  // Helper function to get file type
-  const getFileType = (filename) => {
-    if (!filename) return 'other';
-    const ext = '.' + filename.split('.').pop().toLowerCase();
-    
-    for (const [type, config] of Object.entries(FILE_TYPES)) {
-      if (config.extensions.includes(ext)) {
-        return type;
-      }
-    }
-    return 'other';
-  };
-
-  // Helper function to check if a string is a valid Base64 image
-  const isBase64Image = (base64String) => {
-    if (!base64String) return false;
-    
-    if (base64String.startsWith('data:image/')) {
-      return true;
-    }
-    
-    try {
-      const cleanBase64 = base64String.replace(/\s/g, '');
-      
-      if (cleanBase64.length > 100 && /^[A-Za-z0-9+/]*={0,2}$/.test(cleanBase64)) {
-        const imageSignatures = [
-          '/9j/', '/9k/', '/+0/',     // JPEG
-          'iVBORw0KGgo',             // PNG
-          'R0lGODlh', 'R0lGODdh',    // GIF
-          'UklGR',                    // WebP
-          'PHN2Zw', 'PD94bWw',       // SVG
-          'Qk0',                      // BMP
-          'SUkq', 'TU0A'             // TIFF
-        ];
-        
-        const isImageSignature = imageSignatures.some(sig => cleanBase64.startsWith(sig));
-        
-        let isSvgContent = false;
-        try {
-          const decoded = atob(cleanBase64);
-          isSvgContent = decoded.includes('<svg') || decoded.includes('xmlns="http://www.w3.org/2000/svg"');
-        } catch (e) {
-          // Ignore decode errors
-        }
-        
-        const isLikelyImage = cleanBase64.length > 1000 && cleanBase64.length % 4 === 0;
-        
-        return isImageSignature || isSvgContent || isLikelyImage;
-      }
-    } catch (error) {
-      console.log('Base64 image detection error:', error);
-      return false;
-    }
-    
-    return false;
-  };
-
-  // Helper function to create image preview URL
-  const createImagePreviewUrl = (base64String, mimeType = null) => {
-    try {
-      if (base64String.startsWith('data:')) {
-        return base64String;
-      }
-      
-      const cleanBase64 = base64String.replace(/\s/g, '');
-      
-      if (!/^[A-Za-z0-9+/]*={0,2}$/.test(cleanBase64)) {
-        return null;
-      }
-      
-      try {
-        atob(cleanBase64);
-      } catch (e) {
-        return null;
-      }
-      
-      let detectedMimeType = mimeType;
-      if (!detectedMimeType) {
-        if (cleanBase64.startsWith('/9j/') || cleanBase64.startsWith('/9k/') || cleanBase64.startsWith('/+0/')) detectedMimeType = 'image/jpeg';
-        else if (cleanBase64.startsWith('iVBORw0KGgo')) detectedMimeType = 'image/png';
-        else if (cleanBase64.startsWith('R0lGODlh') || cleanBase64.startsWith('R0lGODdh')) detectedMimeType = 'image/gif';
-        else if (cleanBase64.startsWith('UklGR')) detectedMimeType = 'image/webp';
-        else if (cleanBase64.startsWith('PHN2Zw') || cleanBase64.startsWith('PD94bWw')) detectedMimeType = 'image/svg+xml';
-        else if (cleanBase64.startsWith('Qk0')) detectedMimeType = 'image/bmp';
-        else {
-          try {
-            const decoded = atob(cleanBase64);
-            if (decoded.includes('<svg') || decoded.includes('xmlns="http://www.w3.org/2000/svg"')) {
-              detectedMimeType = 'image/svg+xml';
-            } else {
-              return null;
-            }
-          } catch (e) {
-            return null;
-          }
-        }
-      }
-      
-      return `data:${detectedMimeType};base64,${cleanBase64}`;
-      
-    } catch (error) {
-      console.log('Error creating image preview URL:', error);
-      return null;
-    }
-  };
-
-  // Base64 encoding functions
-  const encodeBase64 = (text, type) => {
-    try {
-      let encoded;
-      
-      switch (type) {
-        case 'standard':
-          encoded = btoa(unescape(encodeURIComponent(text)));
-          break;
-        case 'urlsafe':
-          encoded = btoa(unescape(encodeURIComponent(text)))
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=/g, '');
-          break;
-        case 'mime':
-          encoded = btoa(unescape(encodeURIComponent(text)));
-          encoded = encoded.match(/.{1,76}/g)?.join('\n') || encoded;
-          break;
-        default:
-          encoded = btoa(unescape(encodeURIComponent(text)));
-      }
-      
-      return encoded;
-    } catch (error) {
-      throw new Error(`Encoding failed: ${error.message}`);
-    }
-  };
-
-  // Base64 decoding functions
-  const decodeBase64 = (text, type) => {
-    try {
-      let cleanText = text.replace(/\s/g, '');
-      
-      switch (type) {
-        case 'urlsafe':
-          cleanText = cleanText
-            .replace(/-/g, '+')
-            .replace(/_/g, '/');
-          while (cleanText.length % 4) {
-            cleanText += '=';
-          }
-          break;
-        case 'mime':
-          break;
-      }
-      
-      const decoded = atob(cleanText);
-      
-      if (isBase64Image(decoded)) {
-        return decodeURIComponent(escape(atob(decoded)));
-      }
-      
-      return decodeURIComponent(escape(decoded));
-    } catch (error) {
-      throw new Error(`Decoding failed: ${error.message}`);
-    }
-  };
 
   // Configure react-dropzone
   const {
@@ -304,22 +123,22 @@ const Base64ToolShadcn = () => {
       setInputImagePreview(null);
       return;
     }
-    
+
     setSelectedFile(file);
     setLoading(true);
     setError(null);
     setInputImagePreview(null);
     setOutputText('');
     setOutputImagePreview(null);
-    
+
     try {
       const fileType = getFileType(file.name);
-      
+
       if (fileType === 'image') {
         const imageUrl = URL.createObjectURL(file);
         setInputImagePreview(imageUrl);
         setMode('encode');
-        
+
         const reader = new FileReader();
         reader.onload = (e) => {
           const base64 = e.target.result.split(',')[1];
@@ -329,13 +148,13 @@ const Base64ToolShadcn = () => {
       } else if (fileType === 'text' || file.size < 1024 * 1024) {
         const text = await file.text();
         setInputText(text);
-        
+
         const trimmedText = text.trim();
         const isBase64Content = detectBase64(trimmedText);
-        
+
         if (isBase64Content) {
           setMode('decode');
-          
+
           if (isBase64Image(trimmedText)) {
             const imageUrl = createImagePreviewUrl(trimmedText);
             if (imageUrl) {
@@ -347,7 +166,7 @@ const Base64ToolShadcn = () => {
         }
       } else {
         setMode('encode');
-        
+
         const reader = new FileReader();
         reader.onload = (e) => {
           const base64 = e.target.result.split(',')[1];
@@ -393,7 +212,7 @@ const Base64ToolShadcn = () => {
 
     try {
       let result;
-      
+
       if (operation === 'encode') {
         if (selectedFile && getFileType(selectedFile.name) === 'image') {
           result = input;
@@ -405,21 +224,21 @@ const Base64ToolShadcn = () => {
         }
       } else {
         const isImage = isBase64Image(input);
-        
+
         if (isImage) {
           let finalBase64 = input;
-          
+
           try {
             const firstDecode = atob(input.replace(/\s/g, ''));
             if (isBase64Image(firstDecode)) {
               finalBase64 = firstDecode;
             }
-          } catch (e) {
+          } catch {
             // Use original
           }
-          
+
           const imageUrl = createImagePreviewUrl(finalBase64);
-          
+
           if (imageUrl) {
             result = "Image decoded successfully. See preview below.";
             setOutputImagePreview(imageUrl);
@@ -437,16 +256,16 @@ const Base64ToolShadcn = () => {
             } else {
               result = decoded;
             }
-          } catch (e) {
+          } catch {
             result = decodeBase64(input, type);
           }
         }
       }
-      
+
       setOutputText(result);
-      
+
       toast.success(`${operation === 'encode' ? 'Encoded' : 'Decoded'} successfully`);
-      
+
     } catch (error) {
       setError(error.message);
       toast.error(error.message);
@@ -461,54 +280,39 @@ const Base64ToolShadcn = () => {
   };
 
   const copyToClipboard = async (text) => {
-    try {
-      let textToCopy = text;
-      if (outputImagePreview && mode === 'decode') {
-        textToCopy = inputText;
-      }
-      
-      await navigator.clipboard.writeText(textToCopy);
+    let textToCopy = text;
+    if (outputImagePreview && mode === 'decode') {
+      textToCopy = inputText;
+    }
+
+    if (await copyText(textToCopy)) {
       toast.success('Base64 data copied to clipboard');
-    } catch (error) {
+    } else {
       toast.error('Failed to copy to clipboard');
     }
   };
 
   const pasteFromClipboard = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      setInputText(text);
-    } catch (error) {
+    const text = await readText();
+    if (text === null) {
       toast.error('Failed to paste from clipboard');
+    } else {
+      setInputText(text);
     }
   };
 
   const downloadResult = () => {
     if (outputImagePreview && mode === 'decode') {
-      const a = document.createElement('a');
-      a.href = outputImagePreview;
-      
       let extension = 'jpg';
       if (outputImagePreview.includes('image/png')) extension = 'png';
       else if (outputImagePreview.includes('image/gif')) extension = 'gif';
       else if (outputImagePreview.includes('image/webp')) extension = 'webp';
       else if (outputImagePreview.includes('image/bmp')) extension = 'bmp';
       else if (outputImagePreview.includes('image/svg+xml')) extension = 'svg';
-      
-      a.download = `decoded-image.${extension}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+
+      downloadFile(dataUrlToBlob(outputImagePreview), `decoded-image.${extension}`);
     } else {
-      const blob = new Blob([outputText], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `base64-${mode}-result.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      downloadFile(outputText, `base64-${mode}-result.txt`, 'text/plain');
     }
   };
 
@@ -522,19 +326,7 @@ const Base64ToolShadcn = () => {
   };
 
   return (
-    <>
-      <SEOHead {...seoData} />
-      <div className="space-y-6">
-        {/* Header */}
-        <ToolHeader
-          icon={Base64Icon}
-          title="Base64 Encoder/Decoder"
-          description="Encode and decode text and files using Base64 encoding with multiple variants"
-          iconColor="teal"
-          showTitle={false}
-          standalone={true}
-        />
-
+    <div className="space-y-6">
         {/* Controls */}
         <Card>
           <CardContent className="pt-6">
@@ -640,10 +432,10 @@ const Base64ToolShadcn = () => {
                       {isValidBase64 ? 'Valid Base64' : 'Not Base64'}
                     </Badge>
                   ) : null}
-                  <Button size="sm" variant="outline" onClick={pasteFromClipboard}>
+                  <Button size="sm" variant="outline" onClick={pasteFromClipboard} aria-label="Paste from clipboard">
                     <ClipboardPaste className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" variant="outline" onClick={clearAll}>
+                  <Button size="sm" variant="outline" onClick={clearAll} aria-label="Clear input and output">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -669,8 +461,8 @@ const Base64ToolShadcn = () => {
               ) : (
                 <div className="space-y-2">
                   <Textarea
-                    placeholder={mode === 'encode' ? 
-                      "Enter text to encode..." : 
+                    placeholder={mode === 'encode' ?
+                      "Enter text to encode..." :
                       "Enter Base64 text to decode..."
                     }
                     value={inputText}
@@ -697,11 +489,11 @@ const Base64ToolShadcn = () => {
                   {outputText && (
                     <>
                       {!(outputImagePreview && mode === 'decode') && (
-                        <Button size="sm" variant="outline" onClick={() => copyToClipboard(outputText)}>
+                        <Button size="sm" variant="outline" onClick={() => copyToClipboard(outputText)} aria-label="Copy output">
                           <Copy className="h-4 w-4" />
                         </Button>
                       )}
-                      <Button size="sm" variant="outline" onClick={downloadResult}>
+                      <Button size="sm" variant="outline" onClick={downloadResult} aria-label="Download result">
                         <Download className="h-4 w-4" />
                       </Button>
                     </>
@@ -724,7 +516,7 @@ const Base64ToolShadcn = () => {
                     <p className="text-body-sm text-muted-foreground mt-2">
                       {mode === 'encode' ? 'Image encoded to Base64' : 'Image decoded successfully'} • {outputText.length} characters
                     </p>
-                    
+
                     {mode === 'encode' && (
                       <div className="mt-4">
                         <h4 className="text-body-sm font-medium mb-2">Base64 Output:</h4>
@@ -785,9 +577,22 @@ const Base64ToolShadcn = () => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-      </div>
-    </>
+    </div>
   );
 };
 
-export default Base64ToolShadcn;
+/**
+ * A decoded image lives in state as a data: URL; turn it back into bytes so
+ * core/'s downloadFile handles the anchor dance (and the object-URL revoke)
+ * in one place.
+ */
+function dataUrlToBlob(dataUrl) {
+  const [head, payload] = dataUrl.split(',');
+  const mime = head.slice(head.indexOf(':') + 1, head.indexOf(';'));
+  const bytes = atob(payload);
+  const buffer = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) buffer[i] = bytes.charCodeAt(i);
+  return new Blob([buffer], { type: mime });
+}
+
+export default Base64Tool;

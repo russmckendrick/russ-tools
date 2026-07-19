@@ -66,10 +66,25 @@ Middle gaps use `next.start - prev.end - 1`; the trailing gap uses
 
 ## Landed
 
-*Nothing yet. Phase 0 and Phase 1 fixed six live bugs, but every one of them
-restored intended behaviour rather than changing it — see the plan's Session
-Log. This section is for changes a user could notice and legitimately be
-surprised by.*
+### `/base64/:input` now decodes a base64 payload on mount
+
+| | |
+|---|---|
+| **Where** | `src/tools/base64/island.jsx` (the Phase 3 port) |
+| **Pinned by** | `src/tools/base64/__tests__/island.test.jsx` |
+| **Landed** | Phase 3, base64 port |
+
+A deep link whose param was valid base64 used to be processed with the
+component's *initial* mode (`encode`) while a separate auto-detect effect
+flipped the visible switch to Decode — so the page showed a Decode toggle
+above the payload **re-encoded**. Verified against the live component before
+the port (input `SGVsbG8gd29ybGQ=` produced output
+`U0dWc2JHOGdkMjl5YkdRPQ==`, switch on Decode).
+
+Now the mount effect makes the same decision the auto-detect makes — base64
+decodes, anything else encodes — and processes with it, which is what the
+plan's frozen-contract note always said this route was for. A plain-text
+param behaves exactly as before.
 
 ---
 

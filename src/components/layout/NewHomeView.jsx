@@ -15,44 +15,12 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import toolsConfig from "@/utils/toolsConfig.json"
-import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub, IconTools } from "@tabler/icons-react"
-import Base64Icon from "@/components/tools/base64/Base64Icon"
-import JSONIcon from "@/components/tools/data-converter/JSONIcon"
-import DNSIcon from "@/components/tools/dns-lookup/DNSIcon"
-import WHOISIcon from "@/components/tools/whois/WHOISIcon"
-import PasswordIcon from "@/components/tools/password-generator/PasswordIcon"
-import JWTIcon from "@/components/tools/jwt/JWTIcon"
-import MicrosoftPortalsIcon from "@/components/tools/microsoft-portals/MicrosoftPortalsIcon"
-import TenantLookupIcon from "@/components/tools/tenant-lookup/TenantLookupIcon"
-import AzureKQLIcon from "@/components/tools/azure-kql/AzureKQLIcon"
-import BuzzwordIpsumIcon from "@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon"
-import SSLCheckerIcon from "@/components/tools/ssl-checker/SSLCheckerIcon"
-import CronIcon from "@/components/tools/cron/CronIcon"
-import NetworkDesignerIcon from "@/components/tools/network-designer/NetworkDesignerIcon"
-import MarkdownTableIcon from "@/components/tools/markdown-table-tool/MarkdownTableIcon"
+import { IconBrandAzure, IconBrandGithub, IconTools } from "@tabler/icons-react"
+import { toolIconByKey } from "@/components/common/toolIconMap"
 
 const iconByKey = {
-  IconNetwork: IconNetwork,
-  IconBrandAzure: IconBrandAzure,
-  IconChartDots3: IconChartDots3,
-  IconClock: IconClock,
-  IconShield: IconShield,
-  IconMessageCircle: IconMessageCircle,
   IconBrandGithub: IconBrandGithub,
-  DNSIcon: DNSIcon,
-  WHOISIcon: WHOISIcon,
-  Base64Icon: Base64Icon,
-  JSONIcon: JSONIcon,
-  JWTIcon: JWTIcon,
-  PasswordIcon: PasswordIcon,
-  MicrosoftPortalsIcon: MicrosoftPortalsIcon,
-  TenantLookupIcon: TenantLookupIcon,
-  AzureKQLIcon: AzureKQLIcon,
-  BuzzwordIpsumIcon: BuzzwordIpsumIcon,
-  SSLCheckerIcon: SSLCheckerIcon,
-  CronIcon: CronIcon,
-  NetworkDesignerIcon: NetworkDesignerIcon,
-  MarkdownTableIcon: MarkdownTableIcon,
+  ...toolIconByKey,
 }
 
 const seededRandom = (seed) => {
@@ -231,7 +199,7 @@ export function NewHomeView() {
                     const merged = []
                     const IconND = getToolIconForPath('/network-designer') || Network
                     const IconAN = getToolIconForPath('/azure-naming') || IconBrandAzure
-                    const IconDC = getToolIconForPath('/data-converter') || JSONIcon
+                    const IconDC = getToolIconForPath('/data-converter') || toolIconByKey.JSONIcon
                     networks.forEach((n) => {
                       merged.push({
                         key: n.id,
@@ -342,7 +310,7 @@ export function NewHomeView() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <PasswordIcon className="h-6 w-6 md:h-7 md:w-7 text-primary" />
+                <toolIconByKey.PasswordIcon className="h-6 w-6 md:h-7 md:w-7 text-primary" />
                 <div>
                   <CardTitle className="text-base">Random passwords</CardTitle>
                   <CardDescription>Quick copy, or open generator</CardDescription>
@@ -399,7 +367,7 @@ export function NewHomeView() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BuzzwordIpsumIcon size={28} className="text-primary" />
+                <toolIconByKey.BuzzwordIpsumIcon size={28} className="text-primary" />
                 <div>
                   <CardTitle className="text-base">Buzzword ipsum</CardTitle>
                   <CardDescription>One paragraph, quick copy</CardDescription>

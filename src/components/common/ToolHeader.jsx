@@ -6,42 +6,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { Info } from 'lucide-react';
 import toolsConfig from '@/utils/toolsConfig.json';
 import { useShell } from '@/bridge/ShellContext';
-import Base64Icon from '@/components/tools/base64/Base64Icon';
-import JSONIcon from '@/components/tools/data-converter/JSONIcon';
-import DNSIcon from '@/components/tools/dns-lookup/DNSIcon';
-import WHOISIcon from '@/components/tools/whois/WHOISIcon';
-import PasswordIcon from '@/components/tools/password-generator/PasswordIcon';
-import JWTIcon from '@/components/tools/jwt/JWTIcon';
-import MicrosoftPortalsIcon from '@/components/tools/microsoft-portals/MicrosoftPortalsIcon';
-import TenantLookupIcon from '@/components/tools/tenant-lookup/TenantLookupIcon';
-import AzureKQLIcon from '@/components/tools/azure-kql/AzureKQLIcon';
-import BuzzwordIpsumIcon from '@/components/tools/buzzword-ipsum/BuzzwordIpsumIcon';
-import SSLCheckerIcon from '@/components/tools/ssl-checker/SSLCheckerIcon';
-import CronIcon from '@/components/tools/cron/CronIcon';
-import NetworkDesignerIcon from '@/components/tools/network-designer/NetworkDesignerIcon';
-import MarkdownTableIcon from '@/components/tools/markdown-table-tool/MarkdownTableIcon';
-import AzureNamingIcon from '@/components/tools/azure-naming/AzureNamingIcon';
-
-  // Every entry is now the tool's own bespoke icon from src/shell/icons.mjs,
-// so the glyph here and the one the shell prerenders are the same drawing.
-// The seven generic @tabler icons this map used to carry are gone.
-const iconByKey = {
-  DNSIcon: DNSIcon,
-  WHOISIcon: WHOISIcon,
-  Base64Icon: Base64Icon,
-  JSONIcon: JSONIcon,
-  JWTIcon: JWTIcon,
-  PasswordIcon: PasswordIcon,
-  MicrosoftPortalsIcon: MicrosoftPortalsIcon,
-  TenantLookupIcon: TenantLookupIcon,
-  AzureKQLIcon: AzureKQLIcon,
-  AzureNamingIcon: AzureNamingIcon,
-  BuzzwordIpsumIcon: BuzzwordIpsumIcon,
-  SSLCheckerIcon: SSLCheckerIcon,
-  CronIcon: CronIcon,
-  NetworkDesignerIcon: NetworkDesignerIcon,
-  MarkdownTableIcon: MarkdownTableIcon,
-};
+import { toolIconByKey as iconByKey } from './toolIconMap';
 /**
  * Unified Tool Header Component
  * Provides consistent styling and layout across all tools
