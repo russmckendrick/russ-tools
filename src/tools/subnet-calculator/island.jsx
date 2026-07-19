@@ -218,6 +218,12 @@ const SubnetCalculatorTool = () => {
               <Select
                 value={prefixChoice}
                 onValueChange={(value) => {
+                  // Radix echoes an empty value through its hidden native
+                  // select when the controlled value is set programmatically
+                  // (share links, deep links). Only a real choice recalculates
+                  // — without this, opening a share URL errored on
+                  // "10.0.0.0/" and blanked the prefix.
+                  if (value === '') return;
                   setPrefixChoice(value);
                   const p = parseInput(input);
                   if (p) calculate(`${p.address}/${value}`, Number(value));
