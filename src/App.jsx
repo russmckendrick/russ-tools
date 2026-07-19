@@ -86,11 +86,6 @@ const MicrosoftPortalsTool = lazy(() =>
     default: () => <div>Error loading Microsoft Portals Tool</div>
   }))
 );
-const TenantLookupTool = lazy(() => 
-  import('./components/tools/tenant-lookup/TenantLookupShadcn').catch(() => ({
-    default: () => <div>Error loading Tenant Lookup Tool</div>
-  }))
-);
 const AzureKQLTool = lazy(() => 
   import('./components/tools/azure-kql/AzureKQLTool').catch(() => ({
     default: () => <div>Error loading Azure KQL Tool</div>
@@ -230,12 +225,12 @@ export default function App() {
 
               <Route path="tenant-lookup" element={
                 <LazyRoute>
-                  <TenantLookupTool />
+                  <SpaToolPage toolId="tenant-lookup" />
                 </LazyRoute>
               } />
               <Route path="tenant-lookup/:domain" element={
                 <LazyRoute>
-                  <TenantLookupTool />
+                  <SpaToolPage toolId="tenant-lookup" />
                 </LazyRoute>
               } />
 

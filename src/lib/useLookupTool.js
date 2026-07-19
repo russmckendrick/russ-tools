@@ -27,7 +27,8 @@ import { createCache, createToolStorage } from '@/core';
  * @param {string} config.toolId manifest id — namespaces the storage slots
  * @param {(query: string, extras: { signal: AbortSignal, context: object }) => Promise<T>} config.fetcher
  * @param {number} [config.cacheTTL] ms an entry stays fresh (default 30 min)
- * @param {number} [config.maxHistory] history cap (default 50)
+ * @param {number} [config.maxHistory] history cap (default 50); 0 disables
+ *   recording entirely, for tools whose list is explicit user saves instead
  * @param {string} [config.urlParam] useParams key that triggers a lookup on mount
  * @param {(raw: string) => string} [config.normalize] query cleaner (default trim+lowercase)
  * @param {(query: string, context: object) => string} [config.cacheKey] compound cache key (dns needs provider+type)
@@ -114,7 +115,7 @@ export function useLookupTool({
 
         setResult(data);
         setFromCache(hit !== null);
-        recordHistory(cleanQuery, data, context);
+        if (maxHistory > 0) recordHistory(cleanQuery, data, context);
 
         if (onSuccess) onSuccess(cleanQuery, data, hit !== null);
         else toast.success(`Lookup complete${hit !== null ? ' (cached)' : ''}`, { description: cleanQuery });
@@ -134,7 +135,7 @@ export function useLookupTool({
         if (abortRef.current === controller) setLoading(false);
       }
     },
-    [cache, cacheKey, fetcher, normalize, onError, onSuccess, recordHistory]
+    [cache, cacheKey, fetcher, maxHistory, normalize, onError, onSuccess, recordHistory]
   );
 
   // Deep link: /tool/:param runs the lookup on mount with the param applied,

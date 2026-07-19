@@ -81,7 +81,7 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="outline">Priority: {mx.priority}</Badge>
-                        <Badge className={getProviderColor(provider)}>
+                        <Badge className={getProviderColor()}>
                           {provider}
                         </Badge>
                       </div>

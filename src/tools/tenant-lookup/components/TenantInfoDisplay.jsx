@@ -4,22 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Building, Save, Copy, ExternalLink, Shield, Globe, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { getTenantTypeColor } from '../lib/tenantType';
 
 const TenantInfoDisplay = ({ data, onSave }) => {
   if (!data) return null;
-
-  const getTenantTypeColor = (tenantType) => {
-    // A tenant kind, not a verdict on it — the category hue for the known
-    // kinds, neutral for anything unrecognised.
-    switch (tenantType) {
-      case 'AAD':
-      case 'B2C':
-      case 'AADB2C':
-        return 'bg-[color-mix(in_oklab,var(--cat)_13%,transparent)] text-[var(--cat)]';
-      default:
-        return 'bg-surface-inset text-on-surface-muted';
-    }
-  };
 
   const getCloudStatusColor = (isCloudOnly) => {
     // Cloud-only vs hybrid is a factual distinction, not a health signal —

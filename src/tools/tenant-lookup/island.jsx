@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,131 +18,99 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useParams } from 'react-router-dom';
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
-import TenantLookupIcon from './TenantLookupIcon';
+import { ApiError, apiFetch, buildUrl, createToolStorage } from '@/core';
+import { useLookupTool } from '@/lib/useLookupTool';
+import apiConfig from '@/utils/api/apiConfig.json';
 import HelpSystemShadcn from './components/HelpSystemShadcn';
 import TenantInfoDisplay from './components/TenantInfoDisplay';
 import DNSAnalysisDisplay from './components/DNSAnalysisDisplay';
 import ServiceVerificationDisplay from './components/ServiceVerificationDisplay';
 import APIResultsDisplay from './components/APIResultsDisplay';
 import RawDataDisplay from './components/RawDataDisplay';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
+import { getTenantTypeColor } from './lib/tenantType';
 
-const TenantLookupShadcn = () => {
-  // Get tool configuration for SEO
-  const toolConfig = toolsConfig.find(tool => tool.id === 'tenant-lookup');
-  const seoData = generateToolSEO(toolConfig);
+const TENANT = apiConfig.endpoints.tenant;
 
-  const { domain: urlDomain } = useParams();
-  const [domain, setDomain] = useState(urlDomain || '');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [showHelp, setShowHelp] = useState(false);
-  
-  // Saved lookups storage
-  const [savedLookups, setSavedLookups] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('tenant-lookup-saved')) || [];
-    } catch {
-      return [];
-    }
+/** An email address means its domain; anything else is already a domain. */
+function extractDomain(input) {
+  if (!input || typeof input !== 'string') return '';
+  const trimmed = input.trim();
+  if (trimmed.includes('@')) {
+    const parts = trimmed.split('@');
+    return parts[parts.length - 1].toLowerCase();
+  }
+  return trimmed.toLowerCase();
+}
+
+async function fetchTenant(domain, { signal }) {
+  const response = await apiFetch(buildUrl(TENANT.url, { domain }), {
+    headers: { Accept: 'application/json' },
+    timeout: TENANT.timeout,
+    retries: TENANT.retries,
+    signal,
   });
 
-  // Save to localStorage whenever savedLookups changes
-  useEffect(() => {
-    localStorage.setItem('tenant-lookup-saved', JSON.stringify(savedLookups));
-  }, [savedLookups]);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
 
-  // Auto-lookup if domain is provided in URL
-  useEffect(() => {
-    if (urlDomain && urlDomain.trim()) {
-      setDomain(urlDomain);
-      handleLookup(urlDomain);
-    }
-  }, [urlDomain]);
+  const data = await response.json();
+  if (!data.success) {
+    throw new Error(data.error || 'Tenant lookup failed');
+  }
+  return data;
+}
 
-  const extractDomain = (input) => {
-    if (!input || typeof input !== 'string') return '';
-    
-    const trimmed = input.trim();
-    
-    // If it contains @, treat as email and extract domain
-    if (trimmed.includes('@')) {
-      const parts = trimmed.split('@');
-      return parts[parts.length - 1].toLowerCase();
-    }
-    
-    // Otherwise return as-is (assuming it's already a domain)
-    return trimmed.toLowerCase();
+const TenantLookupTool = () => {
+  const [showHelp, setShowHelp] = useState(false);
+
+  const {
+    query: domain,
+    setQuery: setDomain,
+    result,
+    setResult,
+    loading,
+    error,
+    lookup,
+  } = useLookupTool({
+    toolId: 'tenant-lookup',
+    fetcher: fetchTenant,
+    maxHistory: 0, // the list below is explicit user saves, not a history
+    urlParam: 'domain',
+    normalize: extractDomain,
+    onSuccess: (q) =>
+      toast.success('Tenant Lookup Complete', {
+        description: `Found tenant information for ${q}`,
+      }),
+    onError: (q, err) => {
+      const transport = err instanceof ApiError && err.isTransport;
+      toast.error(transport ? 'Network Error' : 'Tenant Lookup Failed', {
+        description: transport
+          ? 'Unable to connect to tenant lookup service'
+          : err.message || 'Unable to find tenant information',
+      });
+    },
+  });
+
+  // Explicit saves, in their own slot — reads the pre-port key forward.
+  const storage = useMemo(() => createToolStorage('tenant-lookup'), []);
+  const [savedLookups, setSavedLookups] = useState(() =>
+    storage.get('saved', { fallback: [], legacy: 'tenant-lookup-saved' })
+  );
+
+  const persistSaved = (next) => {
+    setSavedLookups(next);
+    storage.set('saved', next);
   };
 
-  const handleLookup = async (inputDomain = domain) => {
-    const cleanDomain = extractDomain(inputDomain);
-    
-    if (!cleanDomain.trim()) {
-      setError('Please enter a domain name or email address');
+  const handleLookup = (inputDomain = domain) => {
+    if (!extractDomain(inputDomain)) {
+      toast.error('Invalid Input', {
+        description: 'Please enter a domain name or email address',
+      });
       return;
     }
-
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      const tenantConfig = getApiEndpoint('tenant');
-      const apiUrl = buildApiUrl(tenantConfig.url, { domain: cleanDomain });
-      
-      const response = await apiFetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          ...tenantConfig.headers,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (data.success) {
-          setResult(data);
-          toast.success('Tenant Lookup Complete', {
-            description: `Found tenant information for ${cleanDomain}`,
-          });
-        } else {
-          setError(data.error || 'Tenant lookup failed');
-          toast.error('Tenant Lookup Failed', {
-            description: data.error || 'Unable to find tenant information',
-          });
-        }
-      } else {
-        setError(`Request failed with status ${response.status}`);
-        toast.error('Lookup Request Failed', {
-          description: `Server returned status ${response.status}`,
-        });
-      }
-    } catch (err) {
-      console.error('Tenant lookup error:', err);
-      
-      // Provide more helpful error messages for common issues
-      if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
-        setError('Unable to connect to the tenant lookup service. This may be due to CORS restrictions or network connectivity issues.');
-      } else if (err.message.includes('CORS')) {
-        setError('Cross-origin request blocked. The tenant lookup service may need to be configured to allow requests from this domain.');
-      } else {
-        setError(`Network error: ${err.message}`);
-      }
-      
-      toast.error('Network Error', {
-        description: 'Unable to connect to tenant lookup service',
-      });
-    } finally {
-      setLoading(false);
-    }
+    lookup(inputDomain);
   };
 
   const handleKeyPress = (event) => {
@@ -151,10 +119,9 @@ const TenantLookupShadcn = () => {
     }
   };
 
-  // Save current lookup result
   const handleSaveLookup = () => {
     if (!result) return;
-    
+
     const savedLookup = {
       id: Date.now().toString(),
       domain: result.domain,
@@ -163,38 +130,34 @@ const TenantLookupShadcn = () => {
       savedAt: Date.now(),
       fullResult: result
     };
-    
-    setSavedLookups(prev => [savedLookup, ...prev]);
-    
+
+    persistSaved([savedLookup, ...savedLookups]);
+
     toast.success('Lookup Saved', {
       description: `Tenant information for ${result.domain} has been saved`,
     });
   };
 
-  // Load saved lookup
   const handleLoadLookup = (savedLookup) => {
     setResult(savedLookup.fullResult);
     setDomain(savedLookup.domain);
-    setError(null);
-    
+
     toast.success('Lookup Loaded', {
       description: `Loaded saved tenant information for ${savedLookup.domain}`,
     });
   };
 
-  // Delete saved lookup
   const handleDeleteLookup = (id) => {
-    setSavedLookups(prev => prev.filter(lookup => lookup.id !== id));
-    
+    persistSaved(savedLookups.filter(lookup => lookup.id !== id));
+
     toast.success('Lookup Deleted', {
       description: 'Saved tenant lookup has been removed',
     });
   };
 
-  // Clear all saved lookups
   const handleClearAllSaved = () => {
-    setSavedLookups([]);
-    
+    persistSaved([]);
+
     toast.success('All Lookups Cleared', {
       description: 'All saved tenant lookups have been removed',
     });
@@ -204,49 +167,25 @@ const TenantLookupShadcn = () => {
     return new Date(timestamp).toLocaleString();
   };
 
-  const getTenantTypeColor = (tenantType) => {
-    // A tenant kind, not a verdict on it — the category hue for the known
-    // kinds, neutral for anything unrecognised.
-    switch (tenantType) {
-      case 'AAD':
-      case 'B2C':
-      case 'AADB2C':
-        return 'bg-[color-mix(in_oklab,var(--cat)_13%,transparent)] text-[var(--cat)]';
-      default:
-        return 'bg-surface-inset text-on-surface-muted';
-    }
-  };
-
-
   return (
     <TooltipProvider>
-      <SEOHead {...seoData} />
       <div className="space-y-6">
-        {/* Header */}
-        <ToolHeader
-          icon={TenantLookupIcon}
-          title="Microsoft Tenant Lookup"
-          description="Discover Microsoft 365 and Azure AD tenant information from domain names or email addresses"
-          iconColor="blue"
-          showTitle={false}
-          standalone={true}
-          actions={[
-            {
-              text: "Help",
-              icon: HelpCircle,
-              onClick: () => setShowHelp(true),
-              variant: "outline",
-              size: "sm"
-            }
-          ]}
-        />
-
         {/* Lookup Form */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="domain">Domain or Email Address</Label>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="domain">Domain or Email Address</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowHelp(true)}
+                  >
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    Help
+                  </Button>
+                </div>
                 <div className="flex gap-2 mt-1">
                   <div className="relative flex-1">
                     <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -259,7 +198,7 @@ const TenantLookupShadcn = () => {
                       className="pl-9"
                     />
                   </div>
-                  <Button 
+                  <Button
                     onClick={() => handleLookup()}
                     disabled={loading}
                   >
@@ -398,6 +337,7 @@ const TenantLookupShadcn = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => handleDeleteLookup(savedLookup.id)}
+                        aria-label={`Delete saved lookup for ${savedLookup.domain}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -410,13 +350,13 @@ const TenantLookupShadcn = () => {
         )}
 
         {/* Help System */}
-        <HelpSystemShadcn 
-          opened={showHelp} 
-          onClose={() => setShowHelp(false)} 
+        <HelpSystemShadcn
+          opened={showHelp}
+          onClose={() => setShowHelp(false)}
         />
       </div>
     </TooltipProvider>
   );
 };
 
-export default TenantLookupShadcn;
+export default TenantLookupTool;
