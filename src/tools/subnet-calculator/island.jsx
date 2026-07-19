@@ -194,7 +194,7 @@ const SubnetCalculatorTool = () => {
               calculate(input);
             }}
           >
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 flex flex-col gap-2">
               <Label htmlFor="cidr-input">IPv4 or IPv6 address</Label>
               <Input
                 id="cidr-input"
@@ -205,7 +205,7 @@ const SubnetCalculatorTool = () => {
                 spellCheck={false}
               />
             </div>
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="prefix-select">Prefix</Label>
               <Select
                 value={prefixChoice}
