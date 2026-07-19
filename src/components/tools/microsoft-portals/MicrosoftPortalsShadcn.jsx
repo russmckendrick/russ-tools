@@ -23,7 +23,6 @@ import PortalCard from './components/PortalCard';
 import PortalTable from './components/PortalTable';
 import EmptyState from './components/EmptyState';
 import SEOHead from '../../common/SEOHead';
-import { ToolSplit, ToolSplitEmpty } from "@/components/ui/tool-split";
 import ToolHeader from '../../common/ToolHeader';
 import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
 import { generateToolSEO } from '../../../utils/seoUtils';
@@ -343,112 +342,86 @@ const MicrosoftPortalsShadcn = () => {
   return (
     <>
       <SEOHead {...seoData} />
-      <div className="grid gap-4">
-        {/* Page furniture, so it sits above the split, not in the control column. */}
+      <div className="space-y-6">
         <ToolHeader
           icon={MicrosoftPortalsIcon}
           title="Microsoft Portals (GDAP)"
           description="Quick access to Microsoft admin portals with GDAP tenant switching"
+          iconColor="indigo"
           showTitle={false}
           standalone={true}
         />
 
-        {/*
-          Controls left, output right — DESIGN.md's Layout rule. The tenant
-          search and the filters are both inputs to the same list, so they
-          belong in one column together; previously the filters sat inside
-          the results card, which put a control on the output side.
-        */}
-        <ToolSplit
-          controls={
-            <>
-              <TenantSearchCard
-                searchInput={searchInput}
-                setSearchInput={setSearchInput}
-                loading={loading}
-                error={error}
-                tenantInfo={tenantInfo}
-                lookupHistory={lookupHistory}
-                onSearch={handleSearchClick}
-                onClearHistory={clearHistory}
-                onRemoveDomain={handleRemoveDomain}
+        {/* Search Section */}
+        <TenantSearchCard 
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          loading={loading}
+          error={error}
+          tenantInfo={tenantInfo}
+          lookupHistory={lookupHistory}
+          onSearch={handleSearchClick}
+          onClearHistory={clearHistory}
+          onRemoveDomain={handleRemoveDomain}
+        />
+
+        {/* Portal Links Section */}
+        {portalLinks && (
+          <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60 before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r from-[color-mix(in_oklab,var(--cat)_60%,transparent)] to-[color-mix(in_oklab,var(--cat)_35%,transparent)]">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-title-sm">Microsoft Portals</CardTitle>
+                  <CardDescription className="mt-1">
+                    {filteredPortals.length} portals available
+                    {tenantInfo && ` for ${tenantInfo.displayName || tenantInfo.domain}`}
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button className="interactive" variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
+                    <Grid3X3 className="h-4 w-4" />
+                  </Button>
+                  <Button className="interactive" variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Filters */}
+              <PortalFilters 
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                selectedTag={selectedTag}
+                setSelectedTag={setSelectedTag}
+                categoryCounts={categoryCounts}
+                allTags={allTags}
+                allPortals={allPortals}
+                favorites={favorites}
               />
 
-              {portalLinks && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-title-sm">Filter</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <PortalFilters
-                      selectedCategory={selectedCategory}
-                      setSelectedCategory={setSelectedCategory}
-                      selectedTag={selectedTag}
-                      setSelectedTag={setSelectedTag}
-                      categoryCounts={categoryCounts}
-                      allTags={allTags}
-                      allPortals={allPortals}
-                      favorites={favorites}
+              {/* Portal Grid/List */}
+              {filteredPortals.length === 0 ? (
+                <EmptyState allPortals={allPortals} />
+              ) : viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredPortals.map((portal) => (
+                    <PortalCard 
+                      key={portal.key}
+                      portal={portal}
+                      onToggleFavorite={toggleFavorite}
                     />
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          }
-        >
-          {portalLinks ? (
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <CardTitle className="text-title-sm">Microsoft Portals</CardTitle>
-                    <CardDescription className="mt-1">
-                      {filteredPortals.length} portals available
-                      {tenantInfo && ` for ${tenantInfo.displayName || tenantInfo.domain}`}
-                    </CardDescription>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Button className="interactive" variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
-                      <Grid3X3 className="h-4 w-4" />
-                    </Button>
-                    <Button className="interactive" variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  ))}
                 </div>
-              </CardHeader>
-              <CardContent>
-                {filteredPortals.length === 0 ? (
-                  <EmptyState allPortals={allPortals} />
-                ) : viewMode === 'grid' ? (
-                  /* Two across, not three: the result column is 744px at the
-                     shell's max width, and three tracks there gives a 230px
-                     card that clips every portal name. */
-                  <div className="grid grid-cols-1 gap-4 min-[1100px]:grid-cols-2">
-                    {filteredPortals.map((portal) => (
-                      <PortalCard
-                        key={portal.key}
-                        portal={portal}
-                        onToggleFavorite={toggleFavorite}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <PortalTable
-                    portals={filteredPortals}
-                    onToggleFavorite={toggleFavorite}
-                  />
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <ToolSplitEmpty
-              icon={<MicrosoftPortalsIcon size={28} />}
-              title="No tenant selected"
-              hint="Search for a domain — every portal link is then scoped to that tenant."
-            />
-          )}
-        </ToolSplit>
+              ) : (
+                <PortalTable 
+                  portals={filteredPortals}
+                  onToggleFavorite={toggleFavorite}
+                />
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Remove Domain Confirmation Dialog */}
         <Dialog open={removeModalOpen} onOpenChange={setRemoveModalOpen}>
