@@ -1,221 +1,127 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code (claude.ai/code) when working in this repository.
 
-## Current Status (2025-08-13)
+## ⚠️ Read this first
 
-**🎉 MIGRATION COMPLETE:** Successfully migrated from Mantine to shadcn/ui
-- ✅ Modern sidebar navigation with full-height design
-- ✅ Complete dark/light theme implementation
-- ✅ Tailwind CSS v4 with shadcn/ui components
-- ✅ All tools migrated to shadcn/ui components
-- ✅ Professional dashboard-style home page
+This project is undergoing a **ground-up redesign**. The authoritative plan is
+[`docs/plans/redesign-plan.md`](docs/plans/redesign-plan.md) — read it before doing
+any redesign work, and keep its **Session Log** updated as you go (it is the living
+record across sessions).
 
-## Development Commands
+**Target architecture:** a static **Astro** shell with one **React island** per tool,
+everything derived from per-tool manifests. **Current architecture:** a React 19 +
+Vite SPA (react-router). We are migrating from the latter to the former in phases;
+right now we are in **Phase 0** (stabilise the live site: CI, tests, bug fixes,
+dead-code purge) — the codebase is still the React SPA.
 
-- `npm run dev` - Start development server with Vite
-- `npm run build` - Build for production (includes automatic sitemap generation via scripts/generate-sitemap.js)
-- `npm run lint` - Run ESLint code linting  
-- `npm run preview` - Preview production build locally
-- `npm run generate:sitemap` - Manually generate sitemap.xml file
+Do not describe or assume the Astro architecture exists yet. It does not.
 
-## Architecture Overview
+### Trust caveats (this file used to lie — verify before relying)
 
-This is a React 19 single-page application (SPA) built with Vite that provides a suite of network and cloud professional tools. The application has completed infrastructure migration to shadcn/ui and is now ready for individual tool migrations.
+A prior version of this file misdescribed the codebase. Corrected facts:
 
-### Key Technologies
-- **React 19** - Modern React with native metadata support (functional components with hooks only)
-- **Vite 6.3.1** - Build tool with optimized chunking strategy and ES modules
-- **shadcn/ui + Radix UI** - Accessible component library with Tailwind styling
-- **Tailwind CSS v4** - CSS-first configuration with PostCSS
-- **React Router DOM v7** - Client-side routing with parameterized URLs
-- **JavaScript/JSX** - No TypeScript, strict functional component patterns
+- There are **15 tools**, not 14 (the 16th `toolsConfig.json` entry, `github-source`,
+  is an external link, not a tool).
+- The theme system is a **custom provider** (`src/components/theme-provider.jsx`),
+  **not** `next-themes`.
+- Routes are **hand-maintained** in `src/App.jsx` (~26 `<Route>` entries incl. param
+  routes). There is **no** automatic route generation today.
+- `src/utils/_iconImports.js`, `src/utils/toolsUtils.js`, `src/utils/cron.js` and
+  `src/utils/generateSitemap.js` are **dead code** slated for deletion — do not build on them.
+- Several dependencies are installed but **never imported** (see "Do not re-adopt" below).
+- `docs/ARCHITECTURE.md` and `docs/DEVELOPMENT.md` are **half-migrated / partly Mantine-era**
+  and untrustworthy; they will be regenerated in a later phase. Prefer the redesign plan.
 
-### Tool Architecture Pattern
+## Package manager & commands
 
-Each tool in `src/components/tools/[tool-name]/` follows this structure:
-- **[ToolName]Tool.jsx** - Main component entry point
-- **components/** - Sub-components for complex tools
-- **hooks/useToolName.js** - Custom React hooks for state management
-- **utils/** - Tool-specific utility functions
-- **context/** - React context for complex state sharing (when needed)
+**This project uses `pnpm`** (this machine blocks `npm`; `pnpm@11` + Node ≥20). The
+lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger — ignore it.
 
-### State Management
-- **localStorage** - Persistent storage for user preferences and tool state
-- **React Context** - Complex state sharing within tools
-- **Custom Hooks** - Encapsulated tool-specific state logic
+- `pnpm install` — install deps (esbuild is the one approved build script, see `pnpm.onlyBuiltDependencies`)
+- `pnpm dev` — Vite dev server
+- `pnpm build` — generate sitemap + Vite production build
+- `pnpm lint` — ESLint (currently ~98 pre-existing errors; being cleaned in Phase 1 — see plan)
+- `pnpm preview` — preview the production build
+- `pnpm generate:sitemap` — regenerate `public/sitemap.xml`
 
-### Build Configuration & Performance
-The Vite configuration (vite.config.js) includes:
-- **Manual Chunking Strategy** - Vendor chunks split by category:
-  - `vendor-react`: React ecosystem (react, react-dom, react-router-dom)
-  - `vendor-icons`: Icon libraries (@tabler/icons-react, lucide-react)
-  - `vendor-data`: Data processing (js-yaml, ajv, pako, uuid)
-  - `vendor-ui`: UI utilities (@dnd-kit, @svgdotjs/svg.js, html2canvas)
-  - `vendor-syntax`: Syntax highlighting (prismjs)
-- **ExcelJS** - Excluded from optimization, dynamically imported for performance
-- **Asset Organization** - Images in `img/`, CSS in `css/`, JS in `js/` folders
-- **React Deduplication** - Ensures single React instance across all chunks
-- **Path Alias** - `@` alias for `src/` directory imports
-- **Source Maps** - Enabled for production debugging
-- **Lazy Loading** - All tools use React.lazy() with error boundaries
+> If a bare `pnpm <script>` fails with a `runDepsStatusCheck` / ignored-builds error,
+> run the tool binary directly (`./node_modules/.bin/eslint .`) or `pnpm approve-builds`.
 
-### Backend Services
-External services are accessed through Cloudflare Workers (configured in src/utils/api/apiConfig.json):
-- SSL certificate analysis (SSL Labs API)
-- DNS lookups (multiple providers)
-- WHOIS/tenant information (RDAP protocol)
-- Microsoft API integrations
+## Current architecture (the React SPA as it exists today)
 
-## Development Guidelines
+React 19 SPA built with Vite. All processing is **client-side / privacy-first** — no
+data leaves the browser except explicit external lookups, which are proxied through
+**Cloudflare Workers** (`workers/` or `cloudflare-worker/`; client config in
+`src/utils/api/apiConfig.json`, accessed via `src/utils/api/apiUtils.js`).
 
-### Adding New Tools
-1. Create tool directory in `src/components/tools/[tool-name]/`
-2. Add tool configuration to `src/utils/toolsConfig.json` with required fields:
-   - id, title, description, shortDescription, icon, iconColor
-   - badges, path, seoTitle, seoKeywords, category, features
-3. Implement main component following existing patterns
-4. Add routing in App.jsx
-5. Icons are imported centrally in `src/utils/_iconImports.js`
+### Tool structure
 
-### Critical Code Conventions
-- **NEVER create files unless absolutely necessary** - Always edit existing file, unless the file is more than 200 lines of code then add your additions as a compoent
-- **Functional components with hooks only** - No class components
-- **Component files**: `.jsx` extension, **Utility files**: `.js` extension  
-- **PascalCase** for components, **camelCase** for utilities
-- **NO COMMENTS** unless explicitly requested by the user
-- **JavaScript/JSX only** - This is NOT a TypeScript project
-- **Always create documentation files** Place all documention in the docs folder, see `docs/README.md` for an overview of documentation structure
-- **Follow existing patterns exactly** - Study neighboring files and `docs` for conventions
+Each tool lives in `src/components/tools/<tool-name>/`:
+- `<ToolName>*.jsx` — entry component (many still carry a `Shadcn` suffix, which is
+  **migration residue** to be dropped, not a convention to copy)
+- `components/` — sub-components
+- `hooks/`, `utils/`, `context/`, `store/` — vary per tool (state is currently
+  inconsistent: zustand in one tool, Context+reducer in another, ad-hoc hooks elsewhere;
+  the redesign standardises on one zustand-per-tool recipe)
 
-### External Dependencies
-**Check existing usage before adding new dependencies:**
-- **Core UI**: @radix-ui/* (primitives), tailwind-merge, class-variance-authority
-- **Icons**: @tabler/icons-react, lucide-react
-- **Data Processing**: js-yaml, @ltd/j-toml, ajv/ajv-formats, better-ajv-errors, pako
-- **Network/Security**: netmask, jose, jwt-decode
-- **Visualization**: @svgdotjs/svg.js, html2canvas, d3-force
-- **Interaction**: @dnd-kit/*, react-dropzone, framer-motion
-- **State**: zustand (lightweight store), next-themes (theme management)
-- **Utilities**: uuid, date-fns, dayjs, exceljs (dynamic import)
-- **Build**: prismjs (syntax highlighting with custom KQL), sonner (toasts)
+Tool metadata (title, description, icon, SEO, category, routes) is centrally defined in
+`src/utils/toolsConfig.json` — this registry is genuinely good and is being kept.
 
-### SEO System
-- **Dynamic Meta Tags** - Tool-specific SEO metadata via `toolsConfig.json`
-- **SEOHead Component** - Manages meta tags, Open Graph, and Schema.org data
-- **React 19 Compatible** - Future-ready metadata approach using native support
-- **Sitemap Generation** - Automatic sitemap.xml generation during build
+### The 15 tools
 
-## Current Layout System (NEW)
+Network: Network Designer & Subnet Calculator, DNS Lookup, WHOIS Lookup, SSL Checker ·
+Azure: Resource Naming (CAF), KQL Query Builder · Microsoft: Portals (GDAP), Tenant
+Lookup · Security: JWT Decoder/Validator, Password Generator · Developer: Base64,
+Data Converter (JSON/YAML/TOML), CRON Builder, Markdown Table · Utility: Buzzword Ipsum.
 
-### Sidebar Navigation (`src/components/layout/NewLayout.jsx`)
-- **Full-height sidebar** with collapsible tool categories
-- **Clean, header-free design** maximizing content space
-- **Professional appearance** matching modern applications (VS Code, GitHub)
+## Frozen contracts (never break these — "keep the functionality" means these)
 
-### Theme System (`src/components/theme-provider.jsx`)
-- **Custom theme provider** with localStorage persistence
-- **System preference detection** with manual override
-- **Smooth transitions** between light/dark themes
-- **Complete CSS variable cascading** for all components
+1. **Deep-link routes** — every path in `src/App.jsx` is a compatibility contract
+   (e.g. `/ssl-checker/:domain`, `/jwt/:token`, `/base64/:input`). Do not rename or drop.
+2. **Share-URL codec** (`src/utils/sharelink.js`) — the wire format is
+   `safeStringify → pako.deflate` (**raw zlib, NOT gzip**) `→ URL-safe base64`, plus a
+   legacy uncompressed-`btoa` fallback. Changing it silently breaks every shared link.
+   Preserve it byte-for-byte; test round-trips against captured fixtures.
+3. **localStorage** — real user data (saved networks, histories). Migrations must be
+   non-destructive (read-old/write-new/keep-old ≥12 months).
+4. **SEO** — per-tool meta/OG/Schema via `toolsConfig.json` + sitemap generation.
+5. **Cloudflare Workers** — request/response schemas are a stable contract; leave them
+   until the dedicated phase.
 
-### Available shadcn/ui Components (`src/components/ui/`)
-- **Button, Card, Input, Textarea, Select** - Form and interaction components
-- **Alert, Badge** - Feedback and status components
-- **Theme Toggle** - Dark/light mode switcher
-- **Ready for tool migration** - All base components implemented
+## Conventions
 
-## Performance & Security Considerations
+- **JavaScript / JSX only** — this is deliberately **not** a TypeScript project. (The
+  redesign adds JSDoc + `checkJs` on the framework/manifest layer only, never full TS.)
+- Functional components with hooks only; no class components.
+- `.jsx` for components, `.js` for utilities; PascalCase components, camelCase utilities.
+- No code comments unless asked.
+- Prefer editing existing files; if a file exceeds ~200 lines, factor additions into a component.
+- Documentation lives in `docs/` (see `docs/README.md`). Redesign notes go in the plan's Session Log.
 
-### Client-Side Architecture
-- **Privacy-focused**: All data processing happens client-side, never leaves the browser
-- **No registration required**: Tools work instantly without accounts or tracking
-- **localStorage persistence**: Tool state and preferences saved locally for better UX
+## Do not re-adopt (installed but dead — being removed in Phase 0)
 
-### Performance Optimizations
-- **Lazy loading**: All tools use React.lazy() with error boundaries and fallback components
-- **Dynamic imports**: Large dependencies (ExcelJS) loaded only when needed
-- **Manual chunking**: Vendor dependencies split by category for optimal loading
-- **Source maps**: Enabled for production debugging and error tracking
-- **Tailwind CSS v4**: Optimized CSS generation and smaller bundle sizes
+`dayjs`, `framer-motion`, `d3-force`, `@svgdotjs/svg.js`, `next-themes`,
+`tailwindcss-animate`, `uuid` (use `crypto.randomUUID()`), `autoprefixer`. Icons: the
+project has **two** icon libraries (`@tabler/icons-react` + `lucide-react`); the redesign
+standardises on **lucide only** — do not add new `@tabler` usage.
 
-## Important Notes for Development
+## Known live bugs (fixed early in Phase 0 — check the plan/Session Log for status)
 
-### Available Tools (All Migrated to shadcn/ui)
-The application contains 14 professional tools, all using shadcn/ui components:
-- **Network Tools**: Network Designer & Subnet Calculator, DNS Lookup, WHOIS Lookup, SSL Checker
-- **Azure Tools**: Resource Naming Tool (CAF compliant), KQL Query Builder
-- **Microsoft Tools**: Portals (GDAP), Tenant Lookup
-- **Security Tools**: JWT Decoder/Validator, Password Generator
-- **Developer Tools**: Base64 Encoder/Decoder, Data Converter (JSON/YAML/TOML), CRON Builder
-- **Utility Tools**: Buzzword Ipsum Generator
+- Microsoft Portals: `undefined/…` URLs for 24 of 31 Azure links (`baseUrl` resolution bug).
+- azure-kql: zustand `persist` imported but never applied → history/favourites lost on refresh.
+- markdown-table: undo/redo off-by-one; literal `'\t'` CSV delimiter.
+- sharelink: calls to an un-imported `notifications` throw `ReferenceError` on error paths.
+- Password Generator: uses `Math.random()` instead of `crypto.getRandomValues`.
+- **Naming trap:** for azure-kql the live entry is `AzureKQLTool.jsx`; the
+  `AzureKQLShadcn.jsx` stack is **dead** and being deleted. Do not pattern-match on the suffix.
 
-### Key Architecture Patterns
-1. **Tool Configuration System**: All tools centrally defined in `src/utils/toolsConfig.json`
-   - Complete metadata: SEO, routing, features, categories, icons
-   - Automatic route generation and navigation menu population
-2. **Lazy Loading with Error Boundaries**: All tools use React.lazy() with custom fallback components
-3. **Parameterized URLs**: Deep linking support (e.g., `/ssl-checker/:domain`, `/jwt/:token`)
-4. **External API Integration**: Cloudflare Workers proxy configured in `src/utils/api/apiConfig.json`
-5. **State Management**: localStorage persistence + React Context + custom hooks pattern
-6. **Icon Management**: Centralized imports via `src/utils/_iconImports.js`
-7. **SEO Optimization**: Dynamic meta tags, Open Graph, Schema.org markup per tool
+## Documentation map
 
-### React Development Patterns
-Follow these specific patterns from the codebase:
-
-```jsx
-// Custom hook pattern for tool state management
-const useToolName = () => {
-  const [state, setState] = useState(() => {
-    const saved = localStorage.getItem('toolName-state');
-    return saved ? JSON.parse(saved) : defaultState;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('toolName-state', JSON.stringify(state));
-  }, [state]);
-
-  return { state, setState };
-};
-```
-
-**Error Handling & Security Requirements:**
-- Always implement loading and error states for async operations
-- Use try-catch blocks with meaningful user error messages
-- All sensitive processing happens client-side only
-- Never send tokens/credentials to external services
-- Use secure random generation where appropriate
-
-## Documentation References
-
-The `docs/` directory contains comprehensive documentation for different aspects of the project:
-
-### Core Documentation
-- **`docs/ARCHITECTURE.md`** - Complete architectural overview including component patterns, state management strategies, API integration, and tool-specific implementations
-- **`docs/DEVELOPMENT.md`** - Detailed development guide with setup instructions, tool creation workflow, testing guidelines, and troubleshooting
-- **`docs/DESIGN_SYSTEM.md`** - Design system specification including typography, color tokens, spacing, animation patterns, and component designs
-- **`docs/STYLE_GUIDE.md`** - Implementation guide for UI components and styling patterns
-- **`docs/DEPLOYMENT.md`** - Deployment and build configuration details
-- **`docs/README.md`** - Overview of documentation structure
-
-### API Documentation
-- **`docs/api/API_CONFIG.md`** - API configuration and external service integration details
-- **`docs/cloudflare-workers/README.md`** - Cloudflare Workers implementation for backend services
-
-### Tool-Specific Documentation
-Each tool has dedicated documentation in `docs/tools/[tool-name]/`:
-- **Azure KQL**: `docs/tools/azure-kql/` - Architecture, template development, query patterns, and user guide
-- **Azure Naming**: `docs/tools/azure-naming/` - CAF compliance and naming conventions
-- **Network Designer**: `docs/tools/network-designer/` - Network visualization and Terraform export
-- **Security Tools**: SSL Checker, JWT, Password Generator documentation
-- **Data Tools**: Base64, Data Converter, and processing utilities
-- **Microsoft Tools**: Portals and tenant lookup integration
-
-### Utility Documentation
-- **`docs/utils/sharelink.md`** - URL sharing and deep linking utilities
-- **`docs/utils/tld-utilities.md`** - Top-level domain processing utilities
-
-### Implementation Plans
-- **`docs/plans/azure-kql-tool-implementation-plan.md`** - Detailed implementation roadmap for Azure KQL tool
-- **`docs/research/azure-kql-tool.md`** - Research and requirements analysis
+- Redesign: `docs/plans/redesign-plan.md` (**authoritative, living**)
+- Audit inputs / knowledge graph: `graphify-out/` (gitignored)
+- Design system: `docs/DESIGN_SYSTEM.md`, `docs/STYLE_GUIDE.md` (aspirational — much is
+  not yet implemented; being reconciled in Phase 1)
+- Per-tool docs: `docs/tools/<tool-name>/` (some reference deleted pre-migration files)
+- Workers/API: `docs/cloudflare-workers/README.md`, `docs/api/API_CONFIG.md` (document
+  infrastructure that partly does not exist — verify against code)
