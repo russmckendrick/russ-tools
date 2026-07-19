@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Sidebar } from "./Sidebar"
-import { Toaster } from "sonner"
+import { Toaster } from "@/components/ui/toaster"
 import toolsConfig from "@/utils/toolsConfig.json"
 
 export function NewLayout() {

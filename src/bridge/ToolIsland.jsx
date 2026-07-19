@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/toaster';
 import { TOOLS_BY_ID } from '../tools/registry.mjs';
 import { ShellContext } from './ShellContext.jsx';
 
@@ -18,8 +18,9 @@ import { ShellContext } from './ShellContext.jsx';
  *     the manifest's `params` — the same source the `_redirects` rewrites
  *     come from, so a deep link cannot match in one place and miss in the
  *     other. `useParams` then returns exactly what it returns today.
- *  2. **Toasts.** `NewLayout` mounts sonner's `<Toaster/>` once for the whole
- *     SPA; here it belongs to the island, since there is one per page.
+ *  2. **Toasts.** The SPA mounts the shared `<Toaster/>` once in `NewLayout`;
+ *     here it belongs to the island, since there is one per page. Same
+ *     component either side, so notifications cannot drift apart.
  *  3. **The shell marker**, so shared chrome can stand down (see
  *     ShellContext).
  *

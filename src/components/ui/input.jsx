@@ -2,12 +2,22 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * DESIGN.md's Input: the page ground rather than the panel ground — inputs
+ * sit *darker* than the panel they are in, not lighter — an `outline-strong`
+ * boundary (the decorative hairline is never a control boundary; it does not
+ * clear 3:1), monospace content because input is data, and a 6px radius.
+ */
 const Input = React.forwardRef(({ className, type, ...props }, ref) => {
   return (
     <input
       type={type}
       className={cn(
-        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-9 w-full rounded-sm border border-outline-strong bg-surface px-[11px] py-2",
+        "font-mono text-data-md text-on-surface placeholder:text-on-surface-faint",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cat,var(--color-primary))] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        "file:border-0 file:bg-transparent file:text-body-sm file:font-medium file:text-on-surface",
         className
       )}
       ref={ref}

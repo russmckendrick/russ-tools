@@ -177,6 +177,20 @@ components:
   chip-active:
     backgroundColor: "{colors.surface-inset}"
     textColor: "{colors.on-surface}"
+  badge:
+    backgroundColor: "{colors.surface-inset}"
+    textColor: "{colors.on-surface-muted}"
+    borderColor: "{colors.outline}"
+    typography: "{typography.data-sm}"
+    rounded: "{rounded.sm}"
+    padding: 2px 8px
+  toast:
+    backgroundColor: "{colors.surface-raised}"
+    borderColor: "{colors.outline}"
+    textColor: "{colors.on-surface}"
+    typography: "{typography.body-sm}"
+    rounded: "{rounded.lg}"
+    padding: "{spacing.lg}"
   table-row:
     typography: "{typography.data-md}"
     padding: 7px 13px
@@ -370,8 +384,36 @@ Borders are always exactly `1px`. There are no thick borders and no double rules
   pills, no route-pattern badge, no blurb. The long `description` in a
   manifest is written for a search snippet and belongs in `<meta>`, not on
   the page; the page renders `shortDescription`.
+- **Badge** — a small monospace marker for a record type, a grade, a count or
+  a state: data *about* the content, rendered as data. Not to be confused
+  with the capability pills that used to sit under a tool title — those
+  restated what the tool plainly was and are gone. A badge always labels
+  something concrete on the page. The default takes the category hue as a
+  13% tint; status variants are the only ones expressing state.
+- **Tabs** — a segmented control on `surface-inset` inside the `outline`
+  hairline; the active segment lifts to `surface-raised` and takes the card's
+  top highlight. Never a full-width row of underlined links.
+- **Select** — the Input contract exactly: same ground, same `outline-strong`
+  boundary, same monospace. A closed select and a text input must be
+  indistinguishable apart from the chevron, because they are the same kind of
+  thing. The menu is a panel; group labels are `label-caps`.
+- **Dialog** — a panel that happens to float: `surface-raised`, `outline`
+  hairline, 10px radius, over a `surface/80` scrim. The only place a cast
+  shadow is allowed other than card hover.
+- **Tooltip** — an inset chip in `surface-inset` with a hairline. Never a
+  filled accent block; an accent fill here reads as a status it does not have.
+- **Toast** — the panel again, bottom-right, with the status colour on the
+  icon only. Every tool notifies through the same component; a tool never
+  configures its own toaster.
 - **Table row** — monospace, odd rows tinted with `surface-inset`, the type
   column in the category hue. This is how all record-style output is rendered.
+
+**These are shared components, and that is the point.** Every tool renders
+through one implementation of each — 48 files use the card, 47 the button —
+so the way to change how the interface looks is to change the component, not
+to restyle it at a call site. A tool that reaches for its own container, its
+own button colour or its own toaster has made the interface less consistent
+by exactly one tool.
 
 ## Do's and Don'ts
 
@@ -397,6 +439,12 @@ Borders are always exactly `1px`. There are no thick borders and no double rules
   classes such as `bg-green-500` — ESLint blocks these.
 - **Do** design light mode with its own values. **Don't** derive it by
   inverting or lightening the dark theme.
+- **Do** change a shared component when the interface should change. **Don't**
+  override it at a call site — a `className` that re-rounds a card or recolours
+  a button is a fifteenth of the design system quietly forking.
+- **Do** let the primary action, focus ring, active tab and default badge pick
+  up `--cat`, which ToolLayout sets once per page from the manifest. **Don't**
+  hardcode a hue in a tool, and don't pass one down as a prop.
 
 ## Iconography
 
