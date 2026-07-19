@@ -13,8 +13,7 @@ import advancedPortalsData from './data/advanced-portals.json';
 
 // Azure Portal Deep Link Generators
 export const generateAzurePortalLinks = (tenantId, domain, options = {}) => {
-  const externalConfig = getApiEndpoint('external');
-  const baseUrl = externalConfig.azure_portal;
+  const baseUrl = getApiEndpoint('external', 'azure_portal').url;
   const tenantParam = tenantId ? `?feature.customportal=false&Microsoft_Azure_Marketplace=true#@${tenantId}` : '';
   
   const links = {};
