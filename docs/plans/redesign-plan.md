@@ -347,7 +347,7 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [ ] Real Pages preview deploy + Playwright deep-link matrix
 - [ ] Rendered-meta diff against production; sitemap URL-set diff
 - [ ] exceljs dynamic-import smoke test under the new toolchain
-- [ ] Decide display titles vs `toolsConfig.json` titles (see session 4's open question)
+- [x] Display vs SEO titles — display titles kept; SEO titles brought into line with them, pinned by tests
 
 ---
 
@@ -833,15 +833,20 @@ remaining risk is small — `_redirects` parsing and rewrite semantics are the e
 but a real preview should still be run before production depends on it.
 
 **State at session end**
-- `pnpm test` → **209 passing / 10 files** (was 127) · `pnpm lint` → **0 errors**, 234 warnings
+- `pnpm test` → **254 passing / 9 files** (was 127) · `pnpm lint` → **0 errors**, 234 warnings
 - `pnpm build` (SPA) green · `pnpm build:astro` green, 17 pages
-- 3 commits on `redesign/phase-0`, working tree clean, not pushed.
+- 6 commits on `redesign/phase-0`, working tree clean, not pushed.
 
-**Open question for the owner:** the card titles come from `toolsConfig.json`, so the index
-reads "DNS Lookup Tool", "Azure Resource Naming Tool", "Microsoft Tenant Lookup". The approved
-mockup used shorter display names ("DNS Lookup", "Azure Resource Naming", "Tenant Lookup").
-Display title and SEO title are already separate fields in the manifest, so this is a copy
-decision, not a technical one. Left as-is pending a call.
+**Title question — resolved.** Raised as an open question (the index reads "DNS Lookup Tool"
+where the mockup used "DNS Lookup"); the owner's call was to leave display titles alone and
+bring the **SEO** titles into line with them. Five diverged — the card said "Network Designer"
+while the SERP said "Network Subnet Designer" — which reads as two products. The rule is now
+*SEO title = display title, optionally + " - " + earned keywords*, with no keyword lost (each
+dropped term folded into the tail or already in `seoKeywords`) and all fifteen inside Google's
+~60-character width. Two tests pin it, including one asserting each manifest mirrors its
+`toolsConfig.json` entry while both registries are live. Also normalised
+markdown-table-tool's `seoKeywords`, which was a comma-separated string where every other entry
+is an array.
 
 **Next session — Phase 2 continued**
 1. The bridge: each manifest's `island` lazy-loads its existing component into `ToolLayout`.
