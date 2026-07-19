@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { ToolSplit, ToolSplitEmpty } from "@/components/ui/tool-split";
 import {
   Copy,
   RefreshCw,
@@ -191,12 +190,13 @@ const BuzzwordIpsumShadcn = () => {
   return (
     <TooltipProvider>
       <SEOHead {...seoData} />
-      <div className="grid gap-4">
+      <div className="space-y-6">
         {/* Header */}
         <ToolHeader
           icon={BuzzwordIpsumIcon}
           title="Buzzword Ipsum"
           description="Generate corporate buzzword-filled placeholder text for mockups and presentations"
+          iconColor="orange"
           showTitle={false}
           actions={[
             {
@@ -296,10 +296,8 @@ const BuzzwordIpsumShadcn = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Controls left, output right — DESIGN.md's Layout rule. Was a
-            hand-rolled 1-of-4 / 3-of-4 grid. */}
-        <ToolSplit
-          controls={
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Options Column */}
           <Card>
             <CardHeader>
               <h3 className="text-title-sm">Options</h3>
@@ -367,8 +365,8 @@ const BuzzwordIpsumShadcn = () => {
             </CardContent>
           </Card>
           
-          }
-        >
+          {/* Output Column */}
+          <div className="lg:col-span-3">
             {generatedText ? (
               <Card>
                 <CardHeader>
@@ -420,13 +418,17 @@ const BuzzwordIpsumShadcn = () => {
                 </CardContent>
               </Card>
             ) : (
-              <ToolSplitEmpty
-                icon={<MessageCircle className="h-7 w-7" />}
-                title="Nothing generated yet"
-                hint="Choose a format and a length, then generate — the copy appears here."
-              />
+              <Card className="h-[400px] flex items-center justify-center">
+                <div className="text-center">
+                  <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    Generate some buzzword-filled content to get started!
+                  </p>
+                </div>
+              </Card>
             )}
-        </ToolSplit>
+          </div>
+        </div>
       </div>
     </TooltipProvider>
   );

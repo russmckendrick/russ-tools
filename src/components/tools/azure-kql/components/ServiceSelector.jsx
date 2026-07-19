@@ -20,9 +20,7 @@ const ServiceSelector = ({ value, onChange }) => {
         <CardTitle>Select Azure Service</CardTitle>
       </CardHeader>
       <CardContent>
-        {/* One per row: this sits in the 320px control column, where two tracks
-            clipped every service name. */}
-        <div className="grid gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {services.map(service => {
             const Icon = SERVICE_ICONS[service.id] || Database;
             const isSelected = value === service.id;

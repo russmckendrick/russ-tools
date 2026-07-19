@@ -8,7 +8,6 @@ import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { ToolSplit } from "@/components/ui/tool-split";
 import {
   Copy,
   Download,
@@ -366,22 +365,19 @@ Visit: https://russ.tools
   return (
     <TooltipProvider>
       <SEOHead {...seoData} />
-      <div className="grid gap-4">
-        {/* Page furniture, so it sits above the split, not in the control column. */}
+      <div className="space-y-6">
+        {/* Header */}
         <ToolHeader
           icon={PasswordIcon}
           title="Password Generator"
           description="Generate secure, random passwords with customizable options"
+          iconColor="violet"
           showTitle={false}
           standalone={true}
         />
 
-        {/*
-          Was a hand-rolled 50/50 grid — the one page that had the split and
-          the one that did not get it from the shared component.
-        */}
-        <ToolSplit
-          controls={
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Configuration Panel */}
           <Card>
             <CardHeader>
               <h3 className="text-headline-md">Password Settings</h3>
@@ -545,8 +541,8 @@ Visit: https://russ.tools
             </CardContent>
           </Card>
 
-          }
-        >
+          {/* Right Side - Two Stacked Sections */}
+          <div className="space-y-6">
             {/* Security Analysis Section */}
             <Card>
               <CardHeader>
@@ -686,7 +682,8 @@ Visit: https://russ.tools
                 )}
               </CardContent>
             </Card>
-        </ToolSplit>
+          </div>
+        </div>
       </div>
     </TooltipProvider>
   );
