@@ -1281,3 +1281,71 @@ worker response fixtures (ssl/whois/tenant) and stand up MSW — then
 `useLookupTool` on top of `core/`'s cache + api client, then the five lookup
 tools. The two pre-declared behaviour changes (ssl-checker's honest fallback,
 dns-lookup's OpenDNS label) land with their ports.
+
+### 2026-07-19 — Session 7 (continued): Phase 4 — the lookup family on one hook
+
+**Model:** Fable 5. **Branch:** `redesign/phase-0`. Six commits.
+
+**The Phase 0 debt is paid first.** Worker response fixtures captured from the
+**live** endpoints (whois domain + IP, tenant managed + unmanaged, ssl READY /
+IN_PROGRESS / error, Google DoH A / MX / NXDOMAIN), committed under
+`src/test/fixtures/workers/` with an MSW harness (`src/test/msw/`) whose own
+suite pulls every fixture through `core/apiFetch` — the frozen-contract #5
+tripwire. Two operational facts learned by doing it: the workers 403 any
+unlisted `Origin` (fixtures were captured as `https://russ.tools`), and the
+ssl worker's SSL Labs assessment takes minutes for a multi-endpoint host, so
+the READY fixture came from a background polling loop.
+
+**`useLookupTool` (`src/lib/`) is the deletion the phase promised.** The five
+hand-rolled loading/cache/history/deep-link/toast subsystems are one hook on
+`core/`'s cache and storage — with the per-tool differences expressed as
+options rather than copies: compound cache/history keys (dns's
+domain+type+provider), `maxHistory: 0` (tenant's list is explicit saves, not
+history), a `cacheable` gate (ssl refuses to cache partial assessments), a
+predicate form of `removeFromHistory` (legacy rows predate the `query`
+field). Caches migrate cold; history reads its legacy key forward and never
+deletes it. Nine hook tests, plus MSW-backed island tests per tool.
+
+**Both pre-declared behaviour changes landed, ledgered:**
+
+- **ssl-checker** no longer fabricates. The browser fallback used to return
+  grade B, a made-up certificate and "Browser Verified Certificate Authority"
+  for a check that never ran; it now returns `connectivityOnly` and the page
+  says *"Analysis unavailable — HTTPS connectivity verified."* The rot went
+  one level deeper than the plan knew: `isSSLDataComplete` counted browser
+  checks "always complete", which is how fabricated data reached the cache
+  and history. An island test kills the worker via MSW and asserts nothing
+  invented renders and nothing is cached.
+- **dns-lookup** drops OpenDNS and "Browser Default" — both silently queried
+  Google (OpenDNS has no public DoH JSON API). `apiConfig.json` loses the
+  aliases; the manifest's shortDescription stopped naming OpenDNS too (caught
+  in the rendered page, not the diff). Old history rows replay via Google.
+
+**The passing-fault list is cleared:** whois and dns `_autocompleteData` (and
+with ssl's dead suggestion effect, the last `useTLDs` consumers in tools),
+tenant-lookup's byte-identical `getTenantTypeColor` copies (now
+`lib/tenantType`), `DNSAnalysisDisplay.getProviderColor`'s dead argument,
+microsoft-portals' no-tenant `portal.azure.com//blade/…` double slash (fixed
+with a regression test), and `iconColor` went with the ToolHeader ritual.
+
+**Two environment traps worth recording:**
+
+- **Node ≥22's experimental `localStorage` global shadows jsdom's** under
+  vitest's jsdom environment and returns `undefined` — every storage-backed
+  component test would have silently no-opped. `src/test/setup.js` repoints
+  the globals at the real jsdom storage (exposed as `globalThis.jsdom`), and
+  jsdom gets an explicit URL because opaque origins carry no storage at all.
+- **The deployed workers' `ALLOWED_ORIGINS` allows `http://localhost:5173`
+  but 403s `http://localhost:4321`** — set before the shell existed. The
+  Astro dev server now runs on **5173** (`.claude/launch.json`), which is
+  what makes live lookups work from the new site in dev. The durable fix is
+  adding 4321 (or settling the dev port) in each worker's secret — owner's
+  call, noted for the workers phase.
+
+**State at session end:** `pnpm test` **401 / 26 files** · `pnpm lint` 0
+errors, **15 warnings** (the floor fell — deleted tools took their
+exhaustive-deps warnings with them) · both builds green · **eleven of fifteen
+tools live in `src/tools/`**. Phase 4 complete.
+
+**Next: Phase 5** — data-converter, azure-naming, azure-kql, then
+network-designer last (allocator extraction + §A suite first).
