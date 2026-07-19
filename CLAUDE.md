@@ -12,7 +12,8 @@ record across sessions).
 **Target architecture:** a static **Astro** shell with one **React island** per tool,
 everything derived from per-tool manifests. Phases 0 (stabilise) and 1 (design pass) are
 **complete**; **Phase 2 is in progress** — its shell, bridge and design-system work are
-done, and `core/` and the theme toggle have landed; the deploy gates remain. The
+done, and `core/`, the theme toggle, `/delete` and every gate that does not need a
+deploy have landed. **Only the Pages preview deploy + Playwright matrix remain.** The
 two-column control/result split was built, applied to ten tools, rejected as unbalanced
 and **fully withdrawn** — see `DESIGN.md`'s Layout section before proposing it again.
 

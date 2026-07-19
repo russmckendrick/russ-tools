@@ -377,12 +377,20 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       ten tools, rejected and fully reverted in Session 6; `DESIGN.md` and `ToolLayout`
       no longer carry the rule or the slot. A tool page is one full-width column and the
       tool composes its own body
-- [ ] Remaining bespoke per-tool chrome (e.g. data-converter's `ControlPanel` header card)
-- [ ] Last `@tabler` import in a tool file (`IconBrandTerraform`, no lucide equivalent)
-- [ ] `/delete` storage-clear page driven by declared `storageKeys`
-- [ ] Real Pages preview deploy + Playwright deep-link matrix
-- [ ] Rendered-meta diff against production; sitemap URL-set diff
-- [ ] exceljs dynamic-import smoke test under the new toolchain
+- [x] Remaining bespoke per-tool chrome — 12 copies of `rounded-xl shadow-sm
+      ring-1 ring-border/60` removed across three tools, portals' second ornament
+      bar removed, data-converter's `ControlPanel` stops restating the page title
+- [x] Last `@tabler` import in a tool file — markdown-table's 13 generic glyphs to
+      lucide, `IconBrandTerraform` drawn locally as `TerraformMark.jsx`. @tabler now
+      survives only in the two SPA-only layout files Phase 6 deletes
+- [x] `/delete` storage-clear page driven by declared `storageKeys`
+- [ ] Real Pages preview deploy + Playwright deep-link matrix — **owner's call,
+      deliberately not done.** `_redirects` is proven against Cloudflare's runtime
+      locally (session 4); a deployed preview is the remaining step
+- [x] Rendered-meta diff against production (**found a real canonical fault**);
+      sitemap URL-set diff, now pinned as `sitemap.test.js`
+- [x] exceljs dynamic-import smoke test under the new toolchain — **found a real
+      bug**: `.xlsx` import threw under the Astro build
 - [x] Display vs SEO titles — display titles kept; SEO titles brought into line with them, pinned by tests
 
 ---
@@ -1115,3 +1123,74 @@ lives inside the island and `ToolLayout` owns everything above it.
 a stale optimised-dep graph, and the symptom is an island reporting "failed to load" with
 a 504 on `/node_modules/.vite/deps/*`. It is not a code fault. `rm -rf node_modules/.vite`
 and restart.
+
+### 2026-07-19 — Session 6 (continued): the gates, minus the deploy
+
+Everything left in Phase 2 that does not require deploying. Two of the three
+gates found real bugs, which is the argument for writing gates rather than
+assuming.
+
+**`/delete` — and it was a broken link.** The shell's nav has linked "Saved
+data" → `/delete` from every page since session 4 and the route did not exist:
+the SPA served it, the shell 404'd. The page it replaces offered one button
+wired to `localStorage.clear()` beside a *hand-written* list of what that would
+destroy — a list that had drifted, next to a button that took the theme
+preference with it and could not clear one tool without clearing all of them.
+Now derived entirely from the manifests: per-tool rows with real sizes, per-tool
+delete via `core/`'s `clearTool`, and anything `localStorage` holds that no
+manifest claims listed under its own heading — which is where an orphaned key
+surfaces after a rename. One implementation for both apps; `ClearAllStorage.jsx`
+is deleted.
+
+**exceljs gate → a real bug.** exceljs ships a UMD bundle, so what
+`await import('exceljs')` yields depends on the bundler. The Vite SPA build
+emits Rollup's `_mergeNamespaces`, which copies the CJS exports onto the
+namespace and makes a bare `ExcelJS.Workbook` work. The Astro build emits
+`export default n()` and nothing else; Node likewise. `csvParser.parseExcelData`
+used the namespace, so **dropping an .xlsx on the Markdown Table import dialog
+threw `Workbook is not a constructor` under the new shell.** The other call site
+already used `.default`, which is correct everywhere — the two had disagreed
+since they were written and the SPA build papered over it. Only visible by
+inspecting both builds' emitted chunks.
+
+**Rendered-meta diff → a second real bug.** `Astro.url.pathname` is the *output
+file* during a static build, so `BaseLayout`'s default canonical resolved to
+`https://russ.tools/index.html` and `/delete.html`. Cloudflare Pages serves the
+extensionless path, so both were self-referencing canonicals aimed at URLs
+nothing links to. Tool pages pass their manifest path explicitly and were never
+affected — which is why reading the layout would not have shown it. The 404 now
+has no canonical at all and is `noindex`.
+
+**And the headline the diff produced.** Production today serves
+*"RussTools - Free Online Developer & DevOps Tools Collection"* as the title of
+**every** URL, with no `h1` and no canonical, because a crawler receives the
+SPA's index shell. The new shell gives each page its own title, description,
+canonical, `h1` and schema.org markup. **Zero hard regressions across all
+sixteen URLs.** This is the SEO case for the whole redesign, measured rather
+than asserted.
+
+**Gates that are now tests rather than one-off checks:** `sitemap.test.js` (the
+registry covers exactly the SPA's committed sitemap, both directions),
+`canonical.test.js` (asserts the *built* HTML, and CI gains a `pnpm build:astro`
+step before `pnpm test` — without it the suite silently skips), and
+`exceljs.smoke.test.js` (the interop shape, a real workbook round-trip through
+the two operations the tools actually perform, and a guard on the call site).
+
+**Also done:** twelve copies of `rounded-xl shadow-sm ring-1 ring-border/60`
+removed — a ring and a resting drop shadow layered over the shared card, which
+DESIGN.md's Elevation section rules out; Microsoft Portals' second, coloured
+ornament bar removed (the lit top edge is described as *the* single ornament,
+"must not be extended"); data-converter's `ControlPanel` no longer restates the
+page's own title and description directly beneath them. @tabler is out of every
+tool file.
+
+**State:** `pnpm test` **340 / 17 files** (was 271 at session start) · `pnpm lint`
+0 errors, 29 warnings · both builds green · `@google/design.md lint DESIGN.md`
+0 errors.
+
+**Left in Phase 2, and only this:** a real Pages preview deploy and the Playwright
+deep-link matrix against it. Deliberately not done — the owner's call. `_redirects`
+is already proven against Cloudflare's own runtime locally (session 4), so the
+residual risk is the deploy itself, not the rewrite semantics. Also still carried
+from Phase 0: live worker response fixtures → MSW mocks, which is a Phase 4
+prerequisite rather than a shipping one.
