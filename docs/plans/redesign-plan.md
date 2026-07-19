@@ -1,17 +1,21 @@
 # russ-tools Redesign — Plan of Attack
 
 **Date:** 2026-07-19
-**Status:** Phase 0 complete · **Phase 1 complete** · branch `redesign/phase-0` (no PR)
-· next decision point: start Phase 2 (Astro shell + legacy bridge)
+**Status:** Phase 0 complete · **Phase 1 complete (design direction reversed once — see below)**
+· branch `redesign/phase-0` (no PR) · next decision point: start Phase 2 (Astro shell + legacy bridge)
 **Owner directive:** start-from-scratch redesign, keep all functionality; nothing off limits framework-wise or CSS-wise; modern and useful.
 
 > **This is a living document.** Update the [Session Log](#session-log) and the current
 > phase's task board at the end of each working session. The plan body above the log is
 > the stable reference; the log is the running record.
 >
-> Companion documents produced by the phases: [`docs/DESIGN_SPEC.md`](../DESIGN_SPEC.md)
-> (Phase 1, authoritative for colour/type/motion) and
-> [`docs/BEHAVIOR_CHANGES.md`](../BEHAVIOR_CHANGES.md) (frozen contract #6's ledger).
+> **Companion documents:**
+> - [`DESIGN.md`](../../DESIGN.md) (repo root) — **the authoritative design system.**
+>   Follows the [Stitch DESIGN.md spec](https://stitch.withgoogle.com/docs/design-md/specification):
+>   YAML design tokens + prose rationale. Read this before any styling work.
+> - [`docs/BEHAVIOR_CHANGES.md`](../BEHAVIOR_CHANGES.md) — frozen contract #6's ledger.
+> - [`docs/DESIGN_SPEC.md`](../DESIGN_SPEC.md) — **superseded.** Phase 1's Solarized
+>   spec, kept for its method (derived accents, enforced contrast floor), not its palette.
 
 ---
 
@@ -43,6 +47,12 @@ A knowledge graph of the full repo (955 nodes, 2,005 edges — `graphify-out/`) 
 ## The decision
 
 **Architecture:** static Astro shell, one React island per tool, everything derived from per-tool manifests.
+
+**Design system:** [`DESIGN.md`](../../DESIGN.md) — dark-first, panelled, six category hues
+driven by each tool's `category`. Inter for prose, JetBrains Mono for data only, no serif.
+Authored to the Stitch DESIGN.md spec, so `pnpm dlx @google/design.md export DESIGN.md
+--format css-tailwind` emits the Tailwind 4 `@theme` block directly — **the token layer is
+generated from it, not retyped.**
 
 **Stack (versions current as of 2026-07):**
 
@@ -95,6 +105,13 @@ export default {
 
 The registry (`import.meta.glob` over manifests) drives `getStaticPaths`, the sidebar, home cards, sitemap, `_redirects`, and the storage-clear UI. A Vitest contract test asserts every manifest's shape, unique ids, unique paths. **Tool #16 = one new folder. Nothing else is touched.**
 
+**`category`, `shortDescription` and `icon` are required, not optional** — `DESIGN.md` makes
+them load-bearing. `category` selects the tool's hue (one of six) everywhere it appears, so a
+tool never picks its own colour; `shortDescription` is rendered on the card, so a tool cannot
+ship as a bare icon and a name; `icon` names one of the bespoke set. The contract test enforces
+all three, and that `category` is one of the six known values. Note `iconColor` is **not** in
+the manifest: it was a dead prop in the old `ToolHeader` and colour now derives from category.
+
 ---
 
 ## The six frozen contracts ("keep the functionality" made precise)
@@ -126,12 +143,51 @@ Rules that hold throughout: main is always deployable; after Phase 2 starts, onl
 
 The gap every judge flagged: no proposal actually *designs* the new look — all deliver "fresh" as a side effect of regenerating shadcn. Before any porting: pick one dark palette (today Blueprint-light vs Solarized-dark are two different design languages — decide, once); define semantic status tokens (`--color-success/-warning/-info` + foregrounds) and ban raw palette classes (`bg-green-50`) in tools via ESLint; typography scale, spacing density, tool-page rhythm (h1 + description + action slot + card structure), home-page identity; self-hosted Inter (makes the privacy claim true); focus-visible fixed to `var(--color-ring)`; `prefers-reduced-motion` wrapping all ambient animation. Output: a one-page design spec + the actual `globals.css` token layer the shell will use.
 
-**Decision: Solarized in both modes** (owner's call, 2026-07-19). Output shipped as
-[`docs/DESIGN_SPEC.md`](../DESIGN_SPEC.md) + the rebuilt `src/styles/globals.css`. Home-page
-identity and spacing density were deliberately **deferred** — see the spec's §7; both are
-better decided against ported tools than in the abstract, and neither blocks Phase 2.
+**Outcome: the first attempt was rejected and redone.** Worth recording in full, because the
+failure was structural rather than a matter of taste.
+
+*Attempt 1 — Solarized, both modes* (owner's call). Delivered `docs/DESIGN_SPEC.md` and a
+rebuilt `globals.css`. Rejected on sight: *"I hate the look and colors — it all feels off and
+disconnected."*
+
+**The diagnosis: Phase 1 as originally written was scoped wrong.** It treated "pick a palette"
+as *the* design decision and explicitly deferred home-page identity to Phase 6. But the site's
+problem was never the palette — it was fifteen tools rendered identically in one hue, on a
+layout with no hierarchy, with `category` and `shortDescription` sitting unused in
+`toolsConfig.json`. Recolouring an undesigned layout yields a recoloured undesigned layout.
+Two aggravating faults: Solarized is a *syntax* palette whose `base2`/`base3` were drawn as
+editor background and go muddy across large UI surfaces; and `ToolHeader` accepts an
+`iconColor` prop that fourteen tools pass and it never reads, so what colour variety existed
+in the data was being thrown away.
+
+*Attempt 2 — three directions pitched against the real 15 tools* (Console / Drafting /
+Catalogue). Catalogue chosen, then **spoiled by rebuilding it rather than extending it** — the
+ask was "add icons", and what came back changed palette, ground and typography too. Corrected
+by keeping Catalogue's substance (six categories, real descriptions, quiet ground) and changing
+only what was actually flagged: serif → sans, index rows → panels, icons integrated into cards.
+
+**Final: [`DESIGN.md`](../../DESIGN.md)** — dark-first, panelled; Linear-grade surface,
+Grafana-grade density. Validated with the official `@google/design.md lint`: **0 errors**.
+
+**Lesson carried into Phase 2: composition is not a colour problem.** Hierarchy, density and
+the category system get decided in the phase that builds `ToolLayout.astro` — not in a token
+pass, and not deferred to the end.
 
 ### Phase 2 — Astro shell + legacy bridge → production (2–3 weekends)
+
+**Opening move — reconcile the token layer with `DESIGN.md`.** Phase 1 left a known
+inconsistency: `src/styles/globals.css` and `src/styles/tokens.contrast.test.js` still carry
+the abandoned Solarized palette, and 63 of the 127 passing tests assert it. Deliberately not
+fixed at the time, because Phase 2 rebuilds the shell anyway and doing it twice is waste.
+Generate the `@theme` block (`pnpm dlx @google/design.md export DESIGN.md --format
+css-tailwind`) rather than retyping it, and repoint the contrast test at the new token names —
+keeping the test's *structure*, which is palette-independent and is what caught three real
+contrast failures in the approved mockup.
+
+**Then the composition work Phase 1 should have carried** (see the Phase 1 note above): the
+tool-card grid, category grouping and filter chips, the stat strip, and the panel system —
+all of it derived from `category` + `shortDescription` in the manifest. This is the phase where
+the redesign becomes visible, so `ToolLayout.astro` is a design deliverable, not just plumbing.
 
 Scaffold Astro 7 (React integration, Tailwind 4.3, regenerated primitives, theme via inline data-attr script — works before hydration, no provider). Build `ToolLayout.astro`, the registry, `[...tool].astro`, generated `_redirects`, `@astrojs/sitemap`, and `core/` (storage + migration shim, clipboard, download, cache, api client, history-with-undo with debounced persistence built in, sharelink verbatim).
 
@@ -143,7 +199,7 @@ Scaffold Astro 7 (React integration, Tailwind 4.3, regenerated primitives, theme
 
 ### Phase 3 — Simple tools (6) (≈3 weekends)
 
-`base64` first as the pilot (deep link + share + clipboard — exercises every seam). **Its first task is extracting `lib/base64.js` and writing its suite — see [Deferred test coverage](#deferred-test-coverage--the-two-missing-suites) §B; the codec has no Phase 0 cover, and the `escape`/`unescape` UTF-8 path must be pinned before it is modernised.** Then password-generator, cron, jwt, buzzword-ipsum, markdown-table (adopts the shared history utility — undo fixed by construction). Per-tool PR checklist: move into `src/tools/<id>/`, real manifest replaces bridge manifest, delete the tool's SEO/header ritual + hand-rolled clipboard/download/storage code *in the same PR*, migrate storage keys, drop the Shadcn suffix, dark/light manual pass, tests green.
+`base64` first as the pilot (deep link + share + clipboard — exercises every seam). **Its first task is extracting `lib/base64.js` and writing its suite — see [Deferred test coverage](#deferred-test-coverage--the-two-missing-suites) §B; the codec has no Phase 0 cover, and the `escape`/`unescape` UTF-8 path must be pinned before it is modernised.** Then password-generator, cron, jwt, buzzword-ipsum, markdown-table (adopts the shared history utility — undo fixed by construction). Per-tool PR checklist: move into `src/tools/<id>/`, real manifest replaces bridge manifest, delete the tool's SEO/header ritual + hand-rolled clipboard/download/storage code *in the same PR*, migrate storage keys, drop the Shadcn suffix, **draw the tool's bespoke icon and convert its raw palette classes to semantic tokens (flip the ESLint rule to `error` for that folder)**, dark/light manual pass, tests green.
 
 ### Phase 4 — The lookup family (5) on one hook (≈3–4 weekends)
 
@@ -158,7 +214,7 @@ Build `useLookupTool({toolId, fetcher, cacheTTL, maxHistory, urlParam})` — loa
 
 ### Phase 6 — Finish (≈2 weekends)
 
-Home page (static cards from registry + the password widget as a tiny island), storage-clear page driven by declared `storageKeys`, delete the old `src/` tree and @tabler, regenerate ARCHITECTURE/DEVELOPMENT/CLAUDE.md from the new code (tool inventories *generated* from the registry — ends the 13-vs-14-vs-15 drift; the current docs are half-Mantine and produce uncompilable code if followed), rewrite the workers README from source (the current one documents KV caching, rate limiting, and API keys that don't exist). Workers hygiene: shared CORS module, stop logging secrets/stack traces, wrangler-action deploy CI (diff live behavior per endpoint first — deployed drift is proven), decommission or re-source `certificate.russ.tools`. Search Console monitoring begins. Optional follow-ups, each its own PR, only if appetite remains: prismjs → shiki (port the custom KQL grammar), html2canvas → html-to-image, worker consolidation into one router, per-primitive Base UI swaps.
+Home page (static cards from registry + the password widget as a tiny island), storage-clear page driven by declared `storageKeys`, delete the old `src/` tree and @tabler (**by this point every tool has a bespoke icon, so @tabler has no remaining callers**), retire `docs/DESIGN_SPEC.md` once nothing references it, regenerate ARCHITECTURE/DEVELOPMENT/CLAUDE.md from the new code (tool inventories *generated* from the registry — ends the 13-vs-14-vs-15 drift; the current docs are half-Mantine and produce uncompilable code if followed), rewrite the workers README from source (the current one documents KV caching, rate limiting, and API keys that don't exist). Workers hygiene: shared CORS module, stop logging secrets/stack traces, wrangler-action deploy CI (diff live behavior per endpoint first — deployed drift is proven), decommission or re-source `certificate.russ.tools`. Search Console monitoring begins. Optional follow-ups, each its own PR, only if appetite remains: prismjs → shiki (port the custom KQL grammar), html2canvas → html-to-image, worker consolidation into one router, per-primitive Base UI swaps.
 
 **Total: ~17–21 weekends, with production improving from weekend one and a visible redesign live from roughly weekend six.**
 
@@ -173,6 +229,8 @@ Home page (static cards from registry + the password widget as a tiny island), s
 | Share-codec drift (the least forgiving contract) | Node-generated golden fixtures from old code, byte-for-byte port, legacy-btoa branch + `safeStringify` quirks pinned as fixtures |
 | localStorage data loss (saved networks) | Never-delete migration, ≥12-month shim, tested on real production export |
 | Old components under new tokens during the bridge | Same shadcn variable names; per-tool smoke + dark/light pass; visual diffs accepted as part of the redesign |
+| **Design churn** — the direction was already rejected once | `DESIGN.md` is now a written, linted contract rather than taste held in someone's head. Anything new gets mocked against the **real 15 tools** and approved *before* it is built. Corollary learned the hard way: when feedback asks for one change, make that change — do not take it as licence to redesign. |
+| **Token layer contradicts `DESIGN.md`** (globals.css + 63 tests still Solarized) | Known and recorded, not hidden — flagged in CLAUDE.md and in `DESIGN_SPEC.md`'s superseded banner. Fixed as Phase 2's opening move, by *generating* the `@theme` block from `DESIGN.md` rather than retyping it. |
 | Solo-maintainer stall | Every phase ends shippable; a stall after Phase 2 still leaves a redesigned, working, live site |
 | MPA remounts (SPA→MPA is observable) | zustand-persist covers cross-page state (matches current localStorage behavior); view-transitions deliberately out of scope |
 | Characterization tests freeze bugs as spec | `KEEP` / `KNOWN-BUG` annotations + `BEHAVIOR_CHANGES.md` |
@@ -181,9 +239,25 @@ Home page (static cards from registry + the password widget as a tiny island), s
 
 ## Start here
 
+**Phases 0 and 1 are done.** The next session starts Phase 2:
+
+1. Read [`DESIGN.md`](../../DESIGN.md) first — it is the design contract, and Phase 2 is the
+   phase that makes it visible.
+2. Regenerate the token layer from it (`pnpm dlx @google/design.md export DESIGN.md --format
+   css-tailwind`) and repoint `tokens.contrast.test.js` at the new names. This clears the one
+   known inconsistency left by Phase 1.
+3. Scaffold Astro alongside the Vite app, then **prove `_redirects` param handling on a real
+   Pages preview before anything depends on it** — the plan's riskiest platform assumption.
+4. Carried over from Phase 0: capture live worker response fixtures (ssl/whois/tenant) → MSW mocks.
+
+<details>
+<summary>Original Phase 0 starting steps (complete)</summary>
+
 1. Phase 0.1: create `.github/workflows/ci.yml` (lint + build).
 2. Phase 0.3 first PR: the microsoft-portals one-line base-URL fix — 24 broken links, live today.
 3. Phase 0.2: Vitest + the sharelink round-trip suite with Node-generated golden fixtures (unblocks everything else).
+
+</details>
 
 ---
 
@@ -219,19 +293,35 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 ## Phase 1 task board
 
-- [x] **Palette decision: Solarized, both modes** — resolves the plan's only open design question
-- [x] Rebuild `src/styles/globals.css` as one derived token layer; merge the duplicate `global.css` into it
-- [x] Semantic status tokens (`success`/`warning`/`info`/`danger` × base/`-foreground`/`-subtle`)
-- [x] `tokens.contrast.test.js` — 63 tests parsing the real stylesheet, enforcing the WCAG floor
-- [x] Self-host Inter (`@fontsource-variable/inter`); drop the Google Fonts `@import`
-- [x] Fix `:focus-visible` (pointed at a token that never existed)
-- [x] `prefers-reduced-motion` over all ambient animation
+**Design system — the durable output:**
+
+- [x] **[`DESIGN.md`](../../DESIGN.md)** authored to the Stitch spec, `@google/design.md lint` clean (0 errors)
+- [x] Direction settled: dark-first, panelled, six category hues, Inter + JetBrains Mono, no serif
+- [x] Bespoke per-tool icon set specified (24px grid, 1.6px stroke, `currentColor`) — replaces the 15 `@tabler` wrappers
+- [x] Every colour pair measured before being written down — **caught three real faults** (white-on-accent buttons at 1.67–2.72:1 in dark; light teal at 3.74:1; input border indistinguishable from a decorative hairline)
+- [x] `docs/DESIGN_SPEC.md` marked **superseded**; CLAUDE.md records the inconsistency rather than hiding it
+
+**Toolchain and a11y — unaffected by the palette reversal:**
+
 - [x] ESLint: raw-palette ban (warn in tools, error in `ui/` + `layout/`)
 - [x] ESLint: add `eslint-plugin-react`, drop `varsIgnorePattern`, clear **all** errors (0 remaining)
 - [x] CI lint blocking
-- [x] [`docs/DESIGN_SPEC.md`](../DESIGN_SPEC.md) — the one-page spec
-- [ ] **Deferred by choice:** home-page identity and spacing-density tokens (spec §7) — decided against ported tools in Phases 3–6
-- [ ] **Deferred:** converting the 505 raw palette occurrences across 31 tool files; each tool converts during its own port, when it can be visually checked
+- [x] Self-host Inter (`@fontsource-variable/inter`); drop the Google Fonts `@import`
+- [x] Fix `:focus-visible` (pointed at `hsl(var(--primary))`, a token that has never existed)
+- [x] `prefers-reduced-motion` over all ambient animation
+- [x] Merge the duplicate `global.css` into `globals.css`
+- [x] Three latent bugs fixed: `useTLDs()` inside `try/catch` (×2), hooks called from a JSX IIFE
+
+**Superseded by the reversal — carried into Phase 2 as its opening move:**
+
+- [~] `src/styles/globals.css` — still Solarized. Regenerate from `DESIGN.md` via the CLI export.
+- [~] `tokens.contrast.test.js` — 63 tests still asserting Solarized values. Keep the structure, repoint the token names.
+- [~] Semantic status tokens — the *names* survive (`success`/`warning`/`error`/`info`); the values are redefined in `DESIGN.md`.
+
+**Still deferred, deliberately:**
+
+- [ ] Converting the 505 raw palette occurrences across 31 tool files — each tool converts during its own port, when it can be checked visually
+- [ ] Spacing-density enforcement — `DESIGN.md` sets the 4px scale; snapping every component to it happens per port
 
 ---
 
@@ -538,3 +628,82 @@ old config never set `reportUnusedDisableDirectives`.
 3. **Prove `_redirects` param handling on a real Pages preview early** — it is the plan's
    riskiest platform assumption (top-risks table).
 4. Carry over: capture live worker response fixtures → MSW mocks.
+
+### 2026-07-19 — Session 3: the design reversal, and DESIGN.md
+
+**Model:** Opus 4.8. **Branch:** `redesign/phase-0`. Phase 1's design output was rejected,
+redone, and has landed as a linted contract. Toolchain work from Session 2 was unaffected.
+
+**What happened, in order**
+
+1. Session 2 shipped Solarized (`DESIGN_SPEC.md` + rebuilt `globals.css`). Owner's verdict on
+   seeing it live: *"I hate the look and colors — it all feels off and disconnected."*
+2. Diagnosis (see the Phase 1 section for the full version): **the palette was never the
+   problem.** Phase 1 rebuilt the token layer and left composition untouched — 15 tools in one
+   hue, no hierarchy, `category` and `shortDescription` unused, an unlabelled icon map, ~700px
+   of dead page. Correct colours on an undesigned layout still look undesigned.
+3. Pitched **three directions** — Console (dark command palette), Drafting (engineering
+   drawing), Catalogue (typographic index) — each rendering the real 15 tools so the comparison
+   was concrete rather than a mood board. Catalogue chosen.
+4. **Then made it worse.** Asked to add icons to Catalogue, I rebuilt it: new ground, new
+   palette, serif display, ruled plates, "specimen" device. Verdict: *"that looks horrible"*.
+   The lesson is exact and worth keeping: *when feedback asks for one change, make that change.*
+   A request for icons is not licence to redesign.
+5. Reset, asked directly what was wrong and for reference points. Answers: **not** the colours
+   and **not** light mode; **yes** the serif typography and the bare index rows. References:
+   **Linear/Raycast** and **Grafana/Datadog**. That resolved cleanly into a brief — keep
+   Catalogue's substance, change only what was flagged, finish it to Linear's standard with
+   Grafana's density. Approved: *"a lot better"*.
+6. Wrote **[`DESIGN.md`](../../DESIGN.md)** to the
+   [Stitch spec](https://stitch.withgoogle.com/docs/design-md/specification).
+
+**On DESIGN.md**
+
+Two layers: YAML design tokens (40 colours, 10 typography scales, 5 radii, 9 spacing tokens,
+12 components) and prose rationale, in the spec's eight canonical sections, with `Iconography`
+and `Accessibility` appended as extension sections.
+
+Validated with the official CLI — `pnpm dlx @google/design.md lint DESIGN.md` → **0 errors**.
+The 35 warnings are two deliberate kinds: 28 tokens not referenced by any component
+(unavoidable for theme variants and six category hues) and 7 uses of `borderColor`, which the
+spec itself documents as accept-with-warning and which a flat border-driven design cannot
+express without.
+
+The CLI also exports Tailwind 4 `@theme` directly, which is the format `globals.css` already
+uses — **so the token layer becomes generated output, not a hand-maintained copy that drifts.**
+
+**Measuring the palette before writing it down caught three real faults in the approved mockup**
+
+- **White labels on filled buttons fail in dark mode** — 1.67–2.72:1 across every accent. The
+  mockup did exactly this. `DESIGN.md` mandates near-black labels on accent fills in dark,
+  white in light.
+- Light-theme teal was **3.74:1** as text; darkened to `#0f766e` (5.47:1).
+- The faint text step failed in both themes, and one border token was doing two incompatible
+  jobs. Split into decorative `outline` and `outline-strong` (≥3:1, for control boundaries).
+
+This is the Phase 1 method surviving the palette change: derive accessible values, measure, and
+enforce with a test. That part was right even though the palette was wrong.
+
+**Recorded rather than hidden**
+
+`globals.css` and `tokens.contrast.test.js` still carry Solarized — 63 of the 127 passing tests
+assert an abandoned palette. Deliberately not fixed now (Phase 2 rebuilds the shell anyway), but
+`DESIGN_SPEC.md` carries a superseded banner and CLAUDE.md states the inconsistency outright.
+This repo has been burned before by docs that lied to agents; a known-stale file with a warning
+is safe, a silently-wrong one is not.
+
+**Notes for the ports**
+- `ToolHeader`'s `iconColor` prop — 14 tools pass it, it is never read. Colour now derives from
+  `category`; drop the prop per tool during its port.
+- The 15 "custom" tool icons are all thin `@tabler` wrappers. `DESIGN.md` specifies a bespoke
+  set (24px grid, 1.6px stroke, `currentColor`); drawing each tool's icon is part of its port.
+
+**State at session end**
+- `pnpm test` → **127 passing / 8 files** · `pnpm lint` → **0 errors**, 234 warnings ·
+  `pnpm build` → green.
+- Commits on `redesign/phase-0`, working tree clean, not pushed.
+- Design mockups live as Claude artifacts (three-direction pitch; approved panelled direction),
+  not in the repo — `DESIGN.md` is the durable artefact.
+
+**Next session — Phase 2.** See [Start here](#start-here); the token reconciliation is the
+opening move, then the Astro scaffold and the `_redirects` proof on a Pages preview.
