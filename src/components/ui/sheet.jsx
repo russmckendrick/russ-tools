@@ -55,7 +55,7 @@ const SheetContent = React.forwardRef(({ side = 'right', className, children, ..
       <SheetPrimitive.Close
         className={cn(
           'absolute right-3 top-3 rounded-sm text-on-surface-faint transition-colors',
-          'hover:text-on-surface focus:outline-none focus:ring-2 focus:ring-[var(--cat,var(--color-primary))]',
+          'hover:text-on-surface focus:outline-none focus:ring-2 focus:ring-primary',
           'focus:ring-offset-2 focus:ring-offset-surface-raised'
         )}
       >

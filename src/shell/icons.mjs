@@ -30,8 +30,13 @@ export const TOOL_ICONS = {
   cert: '<rect x="2.8" y="4.2" width="18.4" height="11.4" rx="1.6"/><path d="M6.4 8.1h11M6.4 11.4h5.6"/><path d="M14.9 17.1v4.3l2.6-1.5 2.6 1.5v-4.3"/>',
   /** Three segments: a JWT's header, payload and signature. */
   jwt: '<rect x="1.8" y="9" width="5.7" height="6" rx="1.2"/><rect x="9.15" y="9" width="5.7" height="6" rx="1.2"/><rect x="16.5" y="9" width="5.7" height="6" rx="1.2"/>',
-  /** A key: a generated secret. */
-  key: '<circle cx="6.9" cy="12" r="3.6"/><path d="M10.5 12h10.6m-3.4 0v3.1m-3.3-3.1v2.4"/>',
+  /**
+   * A masked field: the dots a generated password actually appears as, with
+   * a cursor at the end. DESIGN.md asks an icon to depict what the tool
+   * operates on — this tool produces a string into a password box, and a key
+   * is the generic glyph for "security" rather than for this.
+   */
+  key: '<rect x="2.6" y="6.6" width="18.8" height="10.8" rx="1.8"/><circle cx="7.2" cy="12" r="1.15"/><circle cx="11" cy="12" r="1.15"/><circle cx="14.8" cy="12" r="1.15"/><path d="M18.2 9.7v4.6"/>',
   /** A clock: a schedule expressed in five fields. */
   clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 6.9V12l3.6 2.1"/>',
   /** Two opposed arrows: a format converted and converted back. */

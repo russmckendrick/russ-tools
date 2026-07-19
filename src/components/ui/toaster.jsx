@@ -27,7 +27,7 @@ export function Toaster(props) {
             'rounded-lg border border-outline bg-surface-raised text-on-surface shadow-[0_16px_48px_-24px_rgba(0,0,0,.6)]',
           title: 'text-body-sm font-medium',
           description: 'text-body-sm text-on-surface-muted',
-          actionButton: 'rounded-sm bg-[var(--cat,var(--color-primary))] text-on-primary',
+          actionButton: 'rounded-sm bg-primary text-on-primary',
           cancelButton: 'rounded-sm border border-outline-strong bg-surface-raised text-on-surface',
           closeButton: 'border-outline bg-surface-inset text-on-surface-muted',
           success: '[&_[data-icon]]:text-success',

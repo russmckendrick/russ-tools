@@ -245,9 +245,19 @@ blue, chosen to sit under the accent rather than being a default grey.
 - **On-surface** (`#e7eaee` / muted `#98a1ab` / faint `#7d858f`): a three-step
   text ramp. Faint is the floor and is still legible; it is not a decorative grey.
 
-**Primary** (`#7d94ff`) is the house accent, used for the wordmark, focus rings
-and the ambient wash behind the header. It is deliberately *not* used on tool
-cards, because that job belongs to the category hues.
+**Primary** (`#7d94ff`) is the house accent. It carries every *action* and
+every *control*: primary buttons, focus rings, toggles, sliders, the wordmark
+and the ambient wash. It is deliberately *not* used on tool cards, because
+identifying a tool is the category hues' job.
+
+**The division of labour is the important part.** The accent acts; the
+category hue labels. A category hue never becomes a large filled surface — it
+appears as the icon tile, badges, borders, small type and the hover glow. This
+was learned the hard way: driving the primary button from the category hue
+meant every security tool's main action was `#b45309`, which is what amber
+becomes once it clears 4.5:1 in light mode, and it reads as brown. The
+constraint that makes category hues *legible* is the same one that makes them
+unpleasant as large fills.
 
 **Category hues** are a functional code, assigned once per category and never
 reused for anything else:
@@ -394,11 +404,10 @@ Borders are always exactly `1px`. There are no thick borders and no double rules
 - **Panel** — a bordered container with an optional header bar in
   `surface-inset` carrying a `label-caps` title and an optional right-aligned
   status. Used for both inputs and results on tool pages.
-- **Button, primary** — a solid fill with a subtle top highlight.
-  **In the dark theme the label is near-black** (`on-primary`), not white:
-  white on any of these accents lands near 2:1 and is unreadable. In the light
-  theme the label is white. When a primary button belongs to a tool, it takes
-  that tool's category hue rather than the house accent.
+- **Button, primary** — a solid fill in the **house accent**, with a subtle
+  top highlight. **In the dark theme the label is near-black** (`on-primary`),
+  not white: white on any of these accents lands near 2:1 and is unreadable.
+  In the light theme the label is white.
 - **Button, secondary** — `outline-strong` border on the raised surface.
 - **Input** — `outline-strong` border on the page ground, monospace content,
   `6px` radius. Inputs sit *darker* than their panel, not lighter.
@@ -483,9 +492,12 @@ by exactly one tool.
 - **Do** change a shared component when the interface should change. **Don't**
   override it at a call site — a `className` that re-rounds a card or recolours
   a button is a fifteenth of the design system quietly forking.
-- **Do** let the primary action, focus ring, active tab and default badge pick
-  up `--cat`, which ToolLayout sets once per page from the manifest. **Don't**
-  hardcode a hue in a tool, and don't pass one down as a prop.
+- **Do** let the icon tile, default badge and hover glow pick up `--cat`,
+  which ToolLayout sets once per page from the manifest. **Don't** hardcode a
+  hue in a tool, and don't pass one down as a prop.
+- **Do** keep actions and controls on the house accent — buttons, toggles,
+  sliders, focus rings. **Don't** fill a large surface with a category hue;
+  it is a label, not a livery.
 
 ## Iconography
 

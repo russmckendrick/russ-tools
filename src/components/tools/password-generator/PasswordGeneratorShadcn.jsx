@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -18,8 +17,7 @@ import {
   Check,
   Info,
   Clock,
-  Lock,
-  Key
+  Lock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PasswordIcon from './PasswordIcon';
@@ -117,30 +115,23 @@ const PasswordGeneratorShadcn = () => {
 
     // Convert to human readable time
     let timeString = '';
-    let timeColor = 'destructive';
     
     if (secondsToCrack < 1) {
       timeString = 'Instantly';
-      timeColor = 'destructive';
     } else if (secondsToCrack < 60) {
       timeString = `${Math.round(secondsToCrack)} second${secondsToCrack > 1 ? 's' : ''}`;
-      timeColor = 'destructive';
     } else if (secondsToCrack < 3600) {
       const minutes = Math.round(secondsToCrack / 60);
       timeString = `${minutes} minute${minutes > 1 ? 's' : ''}`;
-      timeColor = 'destructive';
     } else if (secondsToCrack < 86400) {
       const hours = Math.round(secondsToCrack / 3600);
       timeString = `${hours} hour${hours > 1 ? 's' : ''}`;
-      timeColor = 'destructive';
     } else if (secondsToCrack < 2592000) { // 30 days
       const days = Math.round(secondsToCrack / 86400);
       timeString = `${days} day${days > 1 ? 's' : ''}`;
-      timeColor = 'secondary';
     } else if (secondsToCrack < 31536000) { // 1 year
       const months = Math.round(secondsToCrack / 2592000);
       timeString = `${months} month${months > 1 ? 's' : ''}`;
-      timeColor = 'secondary';
     } else if (secondsToCrack < 31536000000) { // 1000 years
       const years = Math.round(secondsToCrack / 31536000);
       if (years < 1000) {
@@ -148,7 +139,6 @@ const PasswordGeneratorShadcn = () => {
       } else {
         timeString = `${(years / 1000).toFixed(1)}K years`;
       }
-      timeColor = 'default';
     } else {
       const bYears = (secondsToCrack / 31536000000000000);
       if (bYears < 1000) {
@@ -156,89 +146,81 @@ const PasswordGeneratorShadcn = () => {
       } else {
         timeString = `${(bYears / 1000).toFixed(1)}T years`;
       }
-      timeColor = 'default';
     }
 
     // Determine overall strength level
-    let level, color, percentage, description;
+    let level, tone, percentage, description;
     
     if (entropy < 25) {
       level = 'Very Weak';
-      color = 'destructive';
+      tone = 'text-danger';
       percentage = 10;
-      description = 'Extremely vulnerable to attacks';
+      description = 'Crackable in seconds';
     } else if (entropy < 35) {
       level = 'Weak';
-      color = 'destructive';
+      tone = 'text-danger';
       percentage = 25;
-      description = 'Easily cracked by modern computers';
+      description = 'Crackable in minutes';
     } else if (entropy < 50) {
       level = 'Fair';
-      color = 'secondary';
+      tone = 'text-warning';
       percentage = 45;
-      description = 'Vulnerable to dedicated attacks';
+      description = 'Crackable by a determined attacker';
     } else if (entropy < 65) {
       level = 'Good';
-      color = 'secondary';
+      tone = 'text-warning';
       percentage = 65;
-      description = 'Reasonably secure for most uses';
+      description = '';
     } else if (entropy < 80) {
       level = 'Strong';
-      color = 'default';
+      tone = 'text-success';
       percentage = 80;
-      description = 'Very secure against most attacks';
+      description = '';
     } else {
       level = 'Excellent';
-      color = 'default';
+      tone = 'text-success';
       percentage = 100;
-      description = 'Extremely secure, enterprise-grade';
+      description = '';
     }
 
     // Generate detailed feedback
     const feedback = [];
     
     if (currentLength < 8) {
-      feedback.push({ type: 'error', message: 'Password is too short (minimum 8 characters recommended)' });
+      feedback.push({ type: 'error', message: 'Under 8 characters' });
     } else if (currentLength < 12) {
-      feedback.push({ type: 'warning', message: 'Consider using 12+ characters for better security' });
-    } else if (currentLength >= 16) {
-      feedback.push({ type: 'success', message: 'Excellent length provides strong security' });
+      feedback.push({ type: 'warning', message: 'Under 12 characters' });
     }
 
     if (!includeUppercase && !includeLowercase) {
-      feedback.push({ type: 'error', message: 'Include letters for better security' });
+      feedback.push({ type: 'error', message: 'No letters included' });
     } else if (!includeUppercase || !includeLowercase) {
-      feedback.push({ type: 'warning', message: 'Mix uppercase and lowercase letters' });
+      feedback.push({ type: 'warning', message: 'Only one letter case' });
     }
 
     if (!includeNumbers) {
-      feedback.push({ type: 'warning', message: 'Include numbers to increase complexity' });
+      feedback.push({ type: 'warning', message: 'Numbers are excluded' });
     }
 
     if (!includeSymbols) {
-      feedback.push({ type: 'warning', message: 'Include symbols for maximum security' });
-    } else {
-      feedback.push({ type: 'success', message: 'Symbols significantly increase security' });
+      feedback.push({ type: 'warning', message: 'Symbols are excluded' });
     }
 
     if (charsetSize < 26) {
       feedback.push({ type: 'error', message: 'Character set is too limited' });
     } else if (charsetSize < 62) {
-      feedback.push({ type: 'warning', message: 'Consider expanding character variety' });
-    } else {
-      feedback.push({ type: 'success', message: 'Excellent character variety' });
+      feedback.push({ type: 'warning', message: 'Narrow character set' });
     }
 
     return {
       level,
-      color,
+      tone,
       percentage,
       description,
       entropy: Math.round(entropy * 10) / 10,
       charsetSize,
       combinations: formatCombinations(possibleCombinations),
       timeToCrack: timeString,
-      timeColor,
       feedback
     };
   }, [currentLength, includeUppercase, includeLowercase, includeNumbers, includeSymbols, excludeSimilar, excludeAmbiguous]);
@@ -402,14 +384,11 @@ Visit: https://russ.tools
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Length Section */}
-              <Card>
-                <CardContent className="pt-6 space-y-4">
+              <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <Label className="text-body-md font-medium">Password Length</Label>
                     <div className="flex items-center gap-2">
-                      <Badge variant={strength.color} className="text-data-md font-mono px-3">
-                        {currentLength}
-                      </Badge>
+                      <span className="text-data-md font-mono text-on-surface">{currentLength}</span>
                       <span className="text-body-sm text-muted-foreground">characters</span>
                     </div>
                   </div>
@@ -451,17 +430,16 @@ Visit: https://russ.tools
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <Badge variant={strength.color} className="text-body-sm">
+                        <span className={`text-body-sm font-medium ${strength.tone}`}>
                           {strength.level}
-                        </Badge>
+                        </span>
                         <span className="text-body-sm text-muted-foreground">
                           {strength.description}
                         </span>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+              </div>
 
               <Separator />
 
@@ -589,7 +567,7 @@ Visit: https://russ.tools
                   <div className="space-y-1">
                     <p className="text-body-sm text-muted-foreground">Entropy</p>
                     <div className="flex items-center gap-2">
-                      <Lock className="h-4 w-4 text-[var(--cat)]" />
+                      <Lock className="h-4 w-4 text-on-surface-faint" />
                       <span className="text-data-md font-mono">{strength.entropy} bits</span>
                     </div>
                   </div>
@@ -604,13 +582,11 @@ Visit: https://russ.tools
                   <div className="col-span-2 space-y-1">
                     <p className="text-body-sm text-muted-foreground">Average Time to Crack</p>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-[var(--cat)]" />
-                      <Badge variant={strength.timeColor} className="text-body-sm">
-                        {strength.timeToCrack}
-                      </Badge>
+                      <Clock className="h-4 w-4 text-on-surface-faint" />
+                      <span className="text-data-md font-mono">{strength.timeToCrack}</span>
                     </div>
                     <p className="text-body-sm text-muted-foreground italic">
-                      Assumes 1 billion guesses per second
+                      At 1 billion guesses per second
                     </p>
                   </div>
                 </div>
@@ -620,7 +596,7 @@ Visit: https://russ.tools
                   <>
                     <Separator />
                     <div className="space-y-3">
-                      <h4 className="text-body-sm font-medium">Security Recommendations</h4>
+                      <h4 className="text-body-sm font-medium">Issues</h4>
                       <div className="space-y-2">
                         {strength.feedback.map((item, index) => (
                           <div key={index} className="flex items-start gap-2">
@@ -675,7 +651,7 @@ Visit: https://russ.tools
               <CardContent>
                 {passwords.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <Key className="h-12 w-12 text-muted-foreground mb-4" />
+                    <PasswordIcon className="size-10 text-on-surface-faint mb-4" />
                     <p className="text-muted-foreground">
                       Configure your settings and click "Generate Passwords" to create secure passwords
                     </p>
