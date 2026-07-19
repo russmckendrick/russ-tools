@@ -1074,10 +1074,16 @@ column of selects next to a 90px card and several hundred pixels of void. cron i
 clearest case: the expression is one line and always will be, and it belonged in the
 full-width banner above the fields where it already was.
 
+Microsoft Portals was the worst of them and is the clearest counter-example: its result
+is 91 uniform cards, a **browse surface** rather than a report, so the split cost it a
+whole column of tiles to give a search box and two selects their own column. A directory
+wants the full width.
+
 So DESIGN.md's *"controls left, output right, always"* describes a proportion, and it was
-read as a structure. There are at least two legitimate compositions in this set —
-**query → report** (the split) and **form → artefact** (banner above, fields below) — and
-forcing one onto the other is what produced the imbalance.
+read as a structure. There are at least three legitimate compositions in this set —
+**query → report** (the split), **form → artefact** (banner above, fields below) and
+**browse → grid** (full width) — and forcing the first onto the others produced the
+imbalance.
 
 **Same shape as the Phase 1 lesson, third costume.** Phase 1: recolouring an undesigned
 layout. Session 5: mapping status colours mechanically onto things carrying identity.
@@ -1094,9 +1100,8 @@ lives inside the island and `ToolLayout` owns everything above it.
 **State at session end**
 - `pnpm test` → **329 passing / 14 files** (was 271) · `pnpm lint` → **0 errors, 29
   warnings** (unchanged floor) · `pnpm build` and `pnpm build:astro` green.
-- Split live on: dns-lookup, whois, ssl-checker, tenant-lookup, microsoft-portals, jwt —
-  **awaiting the owner's verdict on whether these six stay.**
-- Reverted: cron, buzzword-ipsum, password-generator, azure-kql.
+- Split live on **five**: dns-lookup, whois, ssl-checker, tenant-lookup, jwt.
+- Reverted: cron, buzzword-ipsum, password-generator, azure-kql, **microsoft-portals**.
 - Not attempted: base64, data-converter, markdown-table (editors — input and output are
   both large text bodies), azure-naming and network-designer (tab workspaces whose result
   already lives on its own tab; both are Phase 5 anyway).
