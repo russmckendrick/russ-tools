@@ -159,9 +159,17 @@ export function useLookupTool({
   }, [storage]);
 
   const removeFromHistory = useCallback(
-    (queryToRemove) => {
+    /**
+     * Remove entries by query string, or by predicate — the predicate form
+     * exists because migrated legacy entries may predate the `query` field.
+     *
+     * @param {string | ((item: object) => boolean)} target
+     */
+    (target) => {
+      const matches =
+        typeof target === 'function' ? target : (item) => item.query === target;
       setHistory((prev) => {
-        const next = prev.filter((item) => item.query !== queryToRemove);
+        const next = prev.filter((item) => !matches(item));
         storage.set('history', next);
         return next;
       });

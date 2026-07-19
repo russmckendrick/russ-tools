@@ -81,11 +81,6 @@ const DataConverterTool = lazy(() =>
     default: () => <div>Error loading Data Converter Tool</div>
   }))
 );
-const MicrosoftPortalsTool = lazy(() => 
-  import('./components/tools/microsoft-portals/MicrosoftPortalsShadcn').catch(() => ({
-    default: () => <div>Error loading Microsoft Portals Tool</div>
-  }))
-);
 const AzureKQLTool = lazy(() => 
   import('./components/tools/azure-kql/AzureKQLTool').catch(() => ({
     default: () => <div>Error loading Azure KQL Tool</div>
@@ -214,12 +209,12 @@ export default function App() {
 
               <Route path="microsoft-portals" element={
                 <LazyRoute>
-                  <MicrosoftPortalsTool />
+                  <SpaToolPage toolId="microsoft-portals" />
                 </LazyRoute>
               } />
               <Route path="microsoft-portals/:domain" element={
                 <LazyRoute>
-                  <MicrosoftPortalsTool />
+                  <SpaToolPage toolId="microsoft-portals" />
                 </LazyRoute>
               } />
 

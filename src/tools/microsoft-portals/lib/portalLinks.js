@@ -1,10 +1,10 @@
-import { getApiEndpoint } from '../../../utils/api/apiUtils';
+import apiConfig from '@/utils/api/apiConfig.json';
 
 // Import portal data from JSON files
-import azurePortalsData from './data/azure-portals.json';
-import m365PortalsData from './data/m365-portals.json';
-import powerPlatformPortalsData from './data/power-platform-portals.json';
-import advancedPortalsData from './data/advanced-portals.json';
+import azurePortalsData from '../data/azure-portals.json';
+import m365PortalsData from '../data/m365-portals.json';
+import powerPlatformPortalsData from '../data/power-platform-portals.json';
+import advancedPortalsData from '../data/advanced-portals.json';
 
 /**
  * Portal Link Generator - Core URL generation logic for Microsoft portals
@@ -12,7 +12,7 @@ import advancedPortalsData from './data/advanced-portals.json';
 
 // Azure Portal Deep Link Generators
 export const generateAzurePortalLinks = (tenantId, domain, _options = {}) => {
-  const baseUrl = getApiEndpoint('external', 'azure_portal').url;
+  const baseUrl = apiConfig.endpoints.external.azure_portal;
   const tenantParam = tenantId ? `?feature.customportal=false&Microsoft_Azure_Marketplace=true#@${tenantId}` : '';
   
   const links = {};
@@ -32,9 +32,13 @@ export const generateAzurePortalLinks = (tenantId, domain, _options = {}) => {
     } else if (portal.urlWithTenant && tenantId) {
       // Tenant-specific URLs
       url = portal.urlWithTenant.replace('{tenantId}', tenantId);
-    } else {
-      // Standard Azure portal paths
+    } else if (tenantParam) {
+      // Standard Azure portal paths, scoped to the tenant
       url = `${baseUrl}/${tenantParam}${portal.path}`;
+    } else {
+      // No tenant: portal.path already starts with a slash (or is empty),
+      // so gluing another one on produced portal.azure.com//blade/…
+      url = `${baseUrl}${portal.path || '/'}`;
     }
     
     links[key] = {

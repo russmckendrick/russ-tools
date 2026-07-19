@@ -1,10 +1,8 @@
 /**
- * Microsoft Portals (GDAP) — bridge manifest.
+ * Microsoft Portals (GDAP) — ported.
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * Ported (Phase 4) onto useLookupTool. History and favorites live in
+ * rt:microsoft-portals:* slots, read forward from the pre-port keys.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /microsoft-portals
@@ -66,6 +64,6 @@ export default {
     'microsoft-portals-favorites',
   ],
 
-  island: () => import('@/components/tools/microsoft-portals/MicrosoftPortalsShadcn.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };

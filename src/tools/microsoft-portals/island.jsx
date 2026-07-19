@@ -15,29 +15,21 @@ import {
   Grid3X3,
   List
 } from 'lucide-react';
-import { getTenantId, isValidDomain, extractDomain } from './TenantLookup';
-import { generateAllPortalLinks } from './PortalLinkGenerator';
+import { createToolStorage } from '@/core';
+import { useLookupTool } from '@/lib/useLookupTool';
+import { getTenantId, isValidDomain, extractDomain } from './lib/tenantLookup';
+import { generateAllPortalLinks } from './lib/portalLinks';
 import TenantSearchCard from './components/TenantSearchCard';
 import PortalFilters from './components/PortalFilters';
 import PortalCard from './components/PortalCard';
 import PortalTable from './components/PortalTable';
 import EmptyState from './components/EmptyState';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import MicrosoftPortalsIcon from './MicrosoftPortalsIcon';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
 
-const MicrosoftPortalsShadcn = () => {
-  // Get tool configuration for SEO
-  const toolConfig = toolsConfig.find(tool => tool.id === 'microsoft-portals');
-  const seoData = generateToolSEO(toolConfig);
-
+const MicrosoftPortalsTool = () => {
+  // searchInput doubles as the portal *filter* box, so it stays tool state
+  // rather than the hook's query — and the deep link therefore has to fill
+  // both, which is why the param effect lives here instead of in the hook.
   const [searchInput, setSearchInput] = useState('');
-  const [tenantInfo, setTenantInfo] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [portalLinks, setPortalLinks] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTag, setSelectedTag] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
@@ -45,153 +37,68 @@ const MicrosoftPortalsShadcn = () => {
   const [domainToRemove, setDomainToRemove] = useState(null);
   const [manualSearchTriggered, setManualSearchTriggered] = useState(false);
 
-  // Get domain from URL parameters
-  const { domain: urlDomain } = useParams();
-
-  // Local storage for lookup history
-  const [lookupHistory, setLookupHistory] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('microsoft-portals-history') || '[]');
-    } catch {
-      return [];
-    }
+  const {
+    result: tenantInfo,
+    loading,
+    error,
+    lookup,
+    history: lookupHistory,
+    clearHistory: clearStoredHistory,
+    removeFromHistory,
+  } = useLookupTool({
+    toolId: 'microsoft-portals',
+    fetcher: (domain) => getTenantId(domain),
+    cacheTTL: 10 * 60 * 1000,
+    maxHistory: 10,
+    normalize: extractDomain,
+    legacy: { history: 'microsoft-portals-history' },
+    historyEntry: (q, data) => ({ domain: q, tenantId: data.tenantId }),
+    onSuccess: (q, data, fromCache) => {
+      if (!fromCache) toast.success(`Found tenant for ${q}`);
+    },
+    onError: (q) => {
+      // The alert below carries the message; the old tool showed no toast.
+      void q;
+    },
   });
 
-  // Cache for tenant lookups
-  const [tenantCache, setTenantCache] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('microsoft-portals-cache') || '{}');
-    } catch {
-      return {};
-    }
-  });
+  // Favorites, in their own slot — read forward from the pre-port key.
+  const storage = useMemo(() => createToolStorage('microsoft-portals'), []);
+  const [favorites, setFavorites] = useState(() =>
+    storage.get('favorites', { fallback: [], legacy: 'microsoft-portals-favorites' })
+  );
+  useEffect(() => {
+    storage.set('favorites', favorites);
+  }, [storage, favorites]);
 
-  // Favorites storage
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('microsoft-portals-favorites') || '[]');
-    } catch {
-      return [];
-    }
-  });
-
-  // Ref to prevent rapid multiple calls
   const toggleInProgress = useRef(false);
 
-  // Initialize from localStorage after component mounts
-  const [isClient, setIsClient] = useState(false);
-  
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const portalLinks = useMemo(
+    () => (tenantInfo ? generateAllPortalLinks(tenantInfo) : null),
+    [tenantInfo]
+  );
 
-  // Cache duration (10 minutes)
-  const CACHE_DURATION = 10 * 60 * 1000;
+  const displayError = error ? `Could not find tenant for ${extractDomain(searchInput) || 'that domain'}` : null;
 
-  // Save to localStorage when state changes
-  useEffect(() => {
-    localStorage.setItem('microsoft-portals-history', JSON.stringify(lookupHistory));
-  }, [lookupHistory]);
-
-  useEffect(() => {
-    localStorage.setItem('microsoft-portals-cache', JSON.stringify(tenantCache));
-  }, [tenantCache]);
-
-  useEffect(() => {
-    localStorage.setItem('microsoft-portals-favorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  // Helper function to check if cached data is still valid
-  const isCacheValid = (cachedData) => {
-    if (!cachedData || !cachedData.timestamp) return false;
-    return (Date.now() - cachedData.timestamp) < CACHE_DURATION;
+  // Perform tenant lookup (silently ignores not-yet-valid input, since this
+  // also fires from the debounced auto-search below).
+  const handleDomainLookup = (domainToLookup) => {
+    const domain = extractDomain(domainToLookup || searchInput);
+    if (!isValidDomain(domain)) return;
+    lookup(domain);
   };
 
-  // Add lookup to history
-  const addToHistory = (domain, tenantData) => {
-    const historyItem = {
-      domain,
-      tenantId: tenantData.tenantId,
-      timestamp: Date.now()
-    };
-
-    setLookupHistory(prev => {
-      const filtered = prev.filter(item => item.domain !== domain);
-      return [historyItem, ...filtered].slice(0, 10);
-    });
-  };
-
-  // Remove domain from history
-  const removeDomainFromHistory = (domainToRemove) => {
-    setLookupHistory(prev => prev.filter(item => item.domain !== domainToRemove));
-    setRemoveModalOpen(false);
-    setDomainToRemove(null);
-    toast.success(`${domainToRemove} removed from recent domains`);
-  };
-
-  // Cache tenant data
-  const cacheTenantData = (domain, data) => {
-    setTenantCache(prev => ({
-      ...prev,
-      [domain]: {
-        ...data,
-        timestamp: Date.now()
-      }
-    }));
-  };
-
-  // Effect to handle URL domain parameter
+  // Deep link: fill the search box and look the domain up.
+  const { domain: urlDomain } = useParams();
   useEffect(() => {
     if (urlDomain && urlDomain.trim()) {
       const decodedDomain = decodeURIComponent(urlDomain);
       setSearchInput(decodedDomain);
       handleDomainLookup(decodedDomain);
     }
-  }, [urlDomain]);
+  }, [urlDomain]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Perform tenant lookup
-  const handleDomainLookup = async (domainToLookup) => {
-    const domain = extractDomain(domainToLookup || searchInput);
-    
-    if (!isValidDomain(domain)) {
-      return; // Don't show error for invalid domains during search
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Check cache first
-      const cachedData = tenantCache[domain];
-      if (cachedData && isCacheValid(cachedData)) {
-        setTenantInfo(cachedData);
-        addToHistory(domain, cachedData);
-        const links = generateAllPortalLinks(cachedData);
-        setPortalLinks(links);
-        setLoading(false);
-        return;
-      }
-
-      const tenantData = await getTenantId(domain);
-      setTenantInfo(tenantData);
-      addToHistory(domain, tenantData);
-      cacheTenantData(domain, tenantData);
-      
-      const links = generateAllPortalLinks(tenantData);
-      setPortalLinks(links);
-      
-      toast.success(`Found tenant for ${domain}`);
-
-    } catch (err) {
-      setError(`Could not find tenant for ${domain}`);
-      setTenantInfo(null);
-      setPortalLinks(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Effect to handle domain lookup when search input changes (auto-search)
+  // Auto-search while typing something domain-shaped.
   useEffect(() => {
     if (manualSearchTriggered) {
       const resetTimeout = setTimeout(() => {
@@ -199,7 +106,7 @@ const MicrosoftPortalsShadcn = () => {
       }, 2000);
       return () => clearTimeout(resetTimeout);
     }
-    
+
     if (searchInput && (searchInput.includes('.') || searchInput.includes('@')) && !manualSearchTriggered) {
       const domain = extractDomain(searchInput);
       if (isValidDomain(domain)) {
@@ -209,14 +116,14 @@ const MicrosoftPortalsShadcn = () => {
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [searchInput, manualSearchTriggered]);
+  }, [searchInput, manualSearchTriggered]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Flatten portal links for display
   const allPortals = useMemo(() => {
     if (!portalLinks) return [];
-    
+
     const flattened = [];
-    
+
     Object.entries(portalLinks).forEach(([sectionKey, section]) => {
       Object.entries(section).forEach(([portalKey, portal]) => {
         flattened.push({
@@ -227,11 +134,11 @@ const MicrosoftPortalsShadcn = () => {
           tags: portal.tags,
           url: portal.url,
           requiresTenant: portal.requiresTenant || false,
-          isFavorite: isClient && favorites.includes(`${sectionKey}-${portalKey}`)
+          isFavorite: favorites.includes(`${sectionKey}-${portalKey}`)
         });
       });
     });
-    
+
     // Sort by favorites first, then alphabetically
     return flattened.sort((a, b) => {
       if (a.isFavorite && !b.isFavorite) return -1;
@@ -241,7 +148,7 @@ const MicrosoftPortalsShadcn = () => {
       }
       return a.name.localeCompare(b.name);
     });
-  }, [portalLinks, favorites, isClient]);
+  }, [portalLinks, favorites]);
 
   // Filter portals based on search, category, and tags
   const filteredPortals = useMemo(() => {
@@ -250,7 +157,7 @@ const MicrosoftPortalsShadcn = () => {
     // Filter by search term
     if (searchInput && !searchInput.includes('.') && !searchInput.includes('@')) {
       const searchTerm = searchInput.toLowerCase();
-      filtered = filtered.filter(portal => 
+      filtered = filtered.filter(portal =>
         portal.name.toLowerCase().includes(searchTerm) ||
         portal.description.toLowerCase().includes(searchTerm) ||
         portal.category.toLowerCase().includes(searchTerm) ||
@@ -262,14 +169,14 @@ const MicrosoftPortalsShadcn = () => {
     if (selectedCategory === 'favorites') {
       filtered = filtered.filter(portal => portal.isFavorite);
     } else if (selectedCategory !== 'all') {
-      filtered = filtered.filter(portal => 
+      filtered = filtered.filter(portal =>
         portal.category.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
 
     // Filter by selected tag
     if (selectedTag) {
-      filtered = filtered.filter(portal => 
+      filtered = filtered.filter(portal =>
         portal.tags && portal.tags.some(tag => tag.toLowerCase() === selectedTag.toLowerCase())
       );
     }
@@ -300,23 +207,23 @@ const MicrosoftPortalsShadcn = () => {
   // Toggle favorite status
   const toggleFavorite = (portalKey, portalName) => {
     if (toggleInProgress.current) return;
-    
+
     toggleInProgress.current = true;
-    
+
     setFavorites(prev => {
       const isCurrentlyFavorite = prev.includes(portalKey);
-      const newFavorites = isCurrentlyFavorite 
+      const newFavorites = isCurrentlyFavorite
         ? prev.filter(key => key !== portalKey)
         : [...prev, portalKey];
-      
+
       setTimeout(() => {
-        toast.success(isCurrentlyFavorite 
+        toast.success(isCurrentlyFavorite
           ? `${portalName} removed from favorites`
           : `${portalName} added to favorites`
         );
         toggleInProgress.current = false;
       }, 100);
-      
+
       return newFavorites;
     });
   };
@@ -329,7 +236,7 @@ const MicrosoftPortalsShadcn = () => {
 
   // Clear history
   const clearHistory = () => {
-    setLookupHistory([]);
+    clearStoredHistory();
     toast.success('History cleared');
   };
 
@@ -339,25 +246,22 @@ const MicrosoftPortalsShadcn = () => {
     setRemoveModalOpen(true);
   };
 
-  return (
-    <>
-      <SEOHead {...seoData} />
-      <div className="space-y-6">
-        <ToolHeader
-          icon={MicrosoftPortalsIcon}
-          title="Microsoft Portals (GDAP)"
-          description="Quick access to Microsoft admin portals with GDAP tenant switching"
-          iconColor="indigo"
-          showTitle={false}
-          standalone={true}
-        />
+  const removeDomainFromHistory = (domain) => {
+    // Predicate form: legacy entries have `domain` but no `query`.
+    removeFromHistory((item) => (item.query ?? item.domain) === domain);
+    setRemoveModalOpen(false);
+    setDomainToRemove(null);
+    toast.success(`${domain} removed from recent domains`);
+  };
 
+  return (
+    <div className="space-y-6">
         {/* Search Section */}
-        <TenantSearchCard 
+        <TenantSearchCard
           searchInput={searchInput}
           setSearchInput={setSearchInput}
           loading={loading}
-          error={error}
+          error={displayError}
           tenantInfo={tenantInfo}
           lookupHistory={lookupHistory}
           onSearch={handleSearchClick}
@@ -389,7 +293,7 @@ const MicrosoftPortalsShadcn = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Filters */}
-              <PortalFilters 
+              <PortalFilters
                 selectedCategory={selectedCategory}
                 setSelectedCategory={setSelectedCategory}
                 selectedTag={selectedTag}
@@ -406,7 +310,7 @@ const MicrosoftPortalsShadcn = () => {
               ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredPortals.map((portal) => (
-                    <PortalCard 
+                    <PortalCard
                       key={portal.key}
                       portal={portal}
                       onToggleFavorite={toggleFavorite}
@@ -414,7 +318,7 @@ const MicrosoftPortalsShadcn = () => {
                   ))}
                 </div>
               ) : (
-                <PortalTable 
+                <PortalTable
                   portals={filteredPortals}
                   onToggleFavorite={toggleFavorite}
                 />
@@ -436,7 +340,7 @@ const MicrosoftPortalsShadcn = () => {
               <Button variant="outline" onClick={() => setRemoveModalOpen(false)}>
                 Cancel
               </Button>
-              <Button 
+              <Button
                 variant="destructive"
                 onClick={() => removeDomainFromHistory(domainToRemove)}
               >
@@ -445,9 +349,8 @@ const MicrosoftPortalsShadcn = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-    </>
+    </div>
   );
 };
 
-export default MicrosoftPortalsShadcn;
+export default MicrosoftPortalsTool;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateAzurePortalLinks, generateM365AdminLinks } from './PortalLinkGenerator.jsx';
+import { generateAzurePortalLinks, generateM365AdminLinks } from './portalLinks.js';
 
 // Regression guard for the baseUrl bug: getApiEndpoint('external') returns a
 // { url, timeout, retries, headers } wrapper, so reading .azure_portal off it was
@@ -48,5 +48,16 @@ describe('generateM365AdminLinks', () => {
     const urls = Object.values(links).map((l) => l.url);
     expect(urls.every((u) => !String(u).startsWith('undefined'))).toBe(true);
     expect(urls.every((u) => !String(u).includes('{domain}'))).toBe(true);
+  });
+});
+
+describe('no-tenant URLs', () => {
+  // Fixed at the Phase 4 port: the no-tenant branch glued a slash onto
+  // paths that already start with one, yielding portal.azure.com//blade/….
+  it('never contain a double slash after the scheme', () => {
+    const links = generateAzurePortalLinks(null, null);
+    for (const { url } of Object.values(links)) {
+      expect(url.replace(/^https:\/\//, '')).not.toContain('//');
+    }
   });
 });

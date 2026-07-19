@@ -1,4 +1,7 @@
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
+import { apiFetch, buildUrl } from '@/core';
+import apiConfig from '@/utils/api/apiConfig.json';
+
+const TENANT = apiConfig.endpoints.tenant;
 
 /**
  * Utility functions for Microsoft tenant lookup
@@ -26,15 +29,13 @@ export const getTenantId = async (domain) => {
 
   // Use configured tenant API for lookup (bypasses CORS issues)
   try {
-    const tenantConfig = getApiEndpoint('tenant');
-    const apiUrl = buildApiUrl(tenantConfig.url, { domain: cleanDomain });
-    
+    const apiUrl = buildUrl(TENANT.url, { domain: cleanDomain });
+
     const response = await apiFetch(apiUrl, {
       method: 'GET',
-      headers: {
-        ...tenantConfig.headers,
-        'Accept': 'application/json',
-      }
+      headers: { Accept: 'application/json' },
+      timeout: TENANT.timeout,
+      retries: TENANT.retries,
     });
 
     if (response.ok) {
