@@ -15,18 +15,10 @@ import {
   Code
 } from 'lucide-react';
 import { toast } from 'sonner';
-import BuzzwordIpsumIcon from './BuzzwordIpsumIcon';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
+import { copyText, downloadFile } from '@/core';
 import buzzwordData from './data/buzzwords.json';
 
-const BuzzwordIpsumShadcn = () => {
-  
-  const toolConfig = toolsConfig.find(tool => tool.id === 'buzzword-ipsum');
-  const seoData = generateToolSEO(toolConfig);
-  
+const BuzzwordIpsumTool = () => {
   const [generatedText, setGeneratedText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [outputFormat, setOutputFormat] = useState('paragraphs');
@@ -133,9 +125,7 @@ const BuzzwordIpsumShadcn = () => {
   }, [outputFormat, quantity, generateBuzzwordPhrase, generateBuzzwordSentence, generateBuzzwordParagraph]);
 
   const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(generatedText);
-      
+    if (await copyText(generatedText)) {
       // Show witty copy notification
       const copyNotifications = [
         'Successfully leveraged clipboard synergies!',
@@ -151,22 +141,14 @@ const BuzzwordIpsumShadcn = () => {
       toast.success('Content Copied!', {
         description: randomCopyNotification,
       });
-    } catch (error) {
+    } else {
       toast.error('Failed to copy to clipboard');
     }
   };
 
   const downloadText = () => {
-    const blob = new Blob([generatedText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `buzzword-ipsum-${Date.now()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
+    downloadFile(generatedText, `buzzword-ipsum-${Date.now()}.txt`, 'text/plain');
+
     // Show witty download notification
     const downloadNotifications = [
       'Successfully deployed file distribution strategies!',
@@ -189,26 +171,7 @@ const BuzzwordIpsumShadcn = () => {
 
   return (
     <TooltipProvider>
-      <SEOHead {...seoData} />
       <div className="space-y-6">
-        {/* Header */}
-        <ToolHeader
-          icon={BuzzwordIpsumIcon}
-          title="Buzzword Ipsum"
-          description="Generate corporate buzzword-filled placeholder text for mockups and presentations"
-          iconColor="orange"
-          showTitle={false}
-          actions={[
-            {
-              text: "API Usage",
-              icon: Code,
-              onClick: () => setApiModalOpen(true),
-              variant: "outline"
-            }
-          ]}
-          standalone={true}
-        />
-        
         <Dialog open={apiModalOpen} onOpenChange={setApiModalOpen}>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -300,7 +263,13 @@ const BuzzwordIpsumShadcn = () => {
           {/* Options Column */}
           <Card>
             <CardHeader>
-              <h3 className="text-title-sm">Options</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-title-sm">Options</h3>
+                <Button variant="outline" size="sm" onClick={() => setApiModalOpen(true)}>
+                  <Code className="w-4 h-4 mr-2" />
+                  API Usage
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -405,8 +374,7 @@ const BuzzwordIpsumShadcn = () => {
                         value={generatedText}
                         onChange={(e) => setGeneratedText(e.target.value)}
                         rows={12}
-                        className="min-h-[300px] resize-none border-0 focus-visible:ring-0 bg-transparent"
-                        style={{ fontSize: '14px', lineHeight: '1.6' }}
+                        className="min-h-[300px] resize-none border-0 focus-visible:ring-0 bg-transparent font-sans text-body-md"
                       />
                     </CardContent>
                   </Card>
@@ -434,4 +402,4 @@ const BuzzwordIpsumShadcn = () => {
   );
 };
 
-export default BuzzwordIpsumShadcn;
+export default BuzzwordIpsumTool;

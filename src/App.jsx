@@ -106,11 +106,6 @@ const AzureKQLTool = lazy(() =>
     default: () => <div>Error loading Azure KQL Tool</div>
   }))
 );
-const BuzzwordIpsumTool = lazy(() => 
-  import('./components/tools/buzzword-ipsum/BuzzwordIpsumShadcn').catch(() => ({
-    default: () => <div>Error loading Buzzword Ipsum Tool</div>
-  }))
-);
 const MarkdownTableTool = lazy(() => 
   import('./components/tools/markdown-table-tool/MarkdownTableTool').catch(() => ({
     default: () => <div>Error loading Markdown Table Tool</div>
@@ -277,7 +272,7 @@ export default function App() {
 
               <Route path="buzzword-ipsum" element={
                 <LazyRoute>
-                  <BuzzwordIpsumTool />
+                  <SpaToolPage toolId="buzzword-ipsum" />
                 </LazyRoute>
               } />
 
