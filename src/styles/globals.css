@@ -1,175 +1,150 @@
 @import "tailwindcss";
+@import "./tokens.generated.css";
 
 /* =============================================================================
-   russ.tools design tokens — Solarized, both modes
-   Spec + measured contrast ratios: docs/DESIGN_SPEC.md
-   Guarded by: src/styles/tokens.contrast.test.js (do not hand-edit hexes
-   without re-running `pnpm test`).
+   russ.tools token layer
+
+   The palette lives in DESIGN.md and reaches CSS through
+   tokens.generated.css (`pnpm generate:tokens`). Nothing below re-states a
+   colour from DESIGN.md; this file only does the two jobs the exporter
+   cannot: switch the light peers in, and alias the shadcn token names that
+   the un-ported components still render against.
+
+   Guarded by src/styles/tokens.contrast.test.js, which resolves these
+   aliases and measures every pair. Do not hand-tune a hex here — change
+   DESIGN.md and regenerate.
    ========================================================================== */
 
 @theme {
-  /* --- Solarized ramp: the single source of truth ------------------------
-     Ethan Schoonover's palette, verbatim. Everything below is derived from
-     these sixteen values. Use the semantic tokens in components, not these —
-     raw accents fail WCAG AA as text on every surface (green 2.97:1,
-     cyan 2.93:1). These exist for decorative/brand use only. */
-  --color-solar-base03: #002b36;
-  --color-solar-base02: #073642;
-  --color-solar-base01: #586e75;
-  --color-solar-base00: #657b83;
-  --color-solar-base0: #839496;
-  --color-solar-base1: #93a1a1;
-  --color-solar-base2: #eee8d5;
-  --color-solar-base3: #fdf6e3;
-  --color-solar-yellow: #b58900;
-  --color-solar-orange: #cb4b16;
-  --color-solar-red: #dc322f;
-  --color-solar-magenta: #d33682;
-  --color-solar-violet: #6c71c4;
-  --color-solar-blue: #268bd2;
-  --color-solar-cyan: #2aa198;
-  --color-solar-green: #859900;
+  /* --- shadcn compatibility aliases ---------------------------------------
+     The bridge renders un-ported components under the new theme, and they
+     are all classed against shadcn's names. Each alias points at a DESIGN.md
+     token by reference, not by value, so the light-mode remap below carries
+     through without being restated. */
+  --color-background: var(--color-surface);
+  --color-foreground: var(--color-on-surface);
+  --color-card: var(--color-surface-raised);
+  --color-card-foreground: var(--color-on-surface);
+  --color-popover: var(--color-surface-raised);
+  --color-popover-foreground: var(--color-on-surface);
+  --color-primary-foreground: var(--color-on-primary);
+  --color-secondary: var(--color-surface-inset);
+  --color-secondary-foreground: var(--color-on-surface);
+  --color-muted: var(--color-surface-inset);
+  --color-muted-foreground: var(--color-on-surface-muted);
+  --color-accent: var(--color-surface-inset);
+  --color-accent-foreground: var(--color-on-surface);
+  --color-destructive: var(--color-error);
+  --color-destructive-foreground: var(--color-on-primary);
+  --color-border: var(--color-outline);
+  --color-ring: var(--color-primary);
 
-  /* --- Light mode (default) --------------------------------------------
-     Page sits on base2, cards lift to base3. Text is base01/base00 pulled
-     toward base03 until it clears 4.5:1 on *both* surfaces. */
-  --color-background: #eee8d5;
-  --color-foreground: #4d656d;
-  --color-card: #fdf6e3;
-  --color-card-foreground: #4d656d;
-  --color-popover: #fdf6e3;
-  --color-popover-foreground: #4d656d;
-  --color-primary: #1a6da2;
-  --color-primary-foreground: #fdf6e3;
-  --color-secondary: #e4dcc4;
-  --color-secondary-foreground: #4d656d;
-  --color-muted: #e4dcc4;
-  --color-muted-foreground: #526c74;
-  --color-accent: #e4ecda;
-  --color-accent-foreground: #1a7473;
-  --color-destructive: #bb3130;
-  --color-destructive-foreground: #fdf6e3;
-  --color-border: #d9d2bd;
-  --color-input: #657b83;
-  --color-ring: #217fbf;
+  /* `input` is a control boundary, so it takes outline-strong (>= 3:1) and
+     never the decorative outline hairline. */
+  --color-input: var(--color-outline-strong);
 
-  /* Semantic status. `-subtle` is a tinted surface; the base token is
-     readable as text on the page, on cards, and on its own subtle tint. */
-  --color-success: #557113;
-  --color-success-foreground: #fdf6e3;
-  --color-success-subtle: #efebc8;
-  --color-warning: #766813;
-  --color-warning-foreground: #fdf6e3;
-  --color-warning-subtle: #f4e9c8;
-  --color-info: #1a6da2;
-  --color-info-foreground: #fdf6e3;
-  --color-info-subtle: #e3e9e1;
-  --color-danger: #bb3130;
-  --color-danger-foreground: #fdf6e3;
-  --color-danger-subtle: #f9decd;
+  /* --- semantic status ----------------------------------------------------
+     `danger` is DESIGN.md's `error` under the name the components use. */
+  --color-danger: var(--color-error);
+  --color-success-foreground: var(--color-on-primary);
+  --color-warning-foreground: var(--color-on-primary);
+  --color-info-foreground: var(--color-on-primary);
+  --color-danger-foreground: var(--color-on-primary);
 
-  /* --- Typography ------------------------------------------------------- */
+  /* `-subtle` is the status hue laid over the panel at DESIGN.md's 13% tint
+     — stepped down in light mode, where 13% is already dark enough to drop
+     the hue below 4.5:1 on its own tint. Concrete values, because a tint is
+     a mix of two tokens and cannot be an alias. */
+  --color-success-subtle: #1b3129;
+  --color-warning-subtle: #322d1d;
+  --color-info-subtle: #1e2939;
+  --color-danger-subtle: #322327;
+
+  /* --- typography ---------------------------------------------------------
+     Two families, strictly separated jobs: Inter for prose and UI, JetBrains
+     Mono for data only. Both self-hosted — a font-CDN request on first paint
+     would contradict the site's privacy claim. */
   --font-sans: "Inter Variable", Inter, system-ui, -apple-system, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco,
-    "Cascadia Code", Consolas, "Liberation Mono", monospace;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", SFMono-Regular,
+    Menlo, Consolas, monospace;
 
-  /* Type scale — 1.200 minor third off a 16px base. */
-  --text-2xs: 0.694rem;
-  --text-xs: 0.833rem;
-  --text-sm: 0.9rem;
-  --text-base: 1rem;
-  --text-lg: 1.2rem;
-  --text-xl: 1.44rem;
-  --text-2xl: 1.728rem;
-  --text-3xl: 2.074rem;
-  --text-4xl: 2.488rem;
-
-  /* --- Radius ----------------------------------------------------------- */
-  --radius: 0.5rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  /* --- radius -------------------------------------------------------------
+     DESIGN.md's scale arrives generated as --radius-sm..xl; this is the
+     unsuffixed default shadcn components reach for. */
+  --radius: var(--radius-lg);
 }
 
-/* --- Dark mode ----------------------------------------------------------
-   Page on base03, cards lift to base02. Accents are pulled toward base2
-   until they clear 4.5:1; raw Solarized red/orange/violet/magenta sit at
-   2.8–3.0:1 on base02 and are not usable as text. */
+/* --- Light theme ----------------------------------------------------------
+   Dark is the default, so light is the override. Every DESIGN.md token is
+   repointed at its `-light` peer; the aliases above follow automatically
+   because they reference rather than copy. */
 @layer theme {
-  .dark {
-    --color-background: #002b36;
-    --color-foreground: #97a4a3;
-    --color-card: #073642;
-    --color-card-foreground: #97a4a3;
-    --color-popover: #073642;
-    --color-popover-foreground: #97a4a3;
-    --color-primary: #76b0d3;
-    --color-primary-foreground: #002b36;
-    --color-secondary: #0b3e4b;
-    --color-secondary-foreground: #97a4a3;
-    --color-muted: #0b3e4b;
-    --color-muted-foreground: #8c9b9b;
-    --color-accent: #0c464f;
-    --color-accent-foreground: #69b8ac;
-    --color-destructive: #e47e75;
-    --color-destructive-foreground: #002b36;
-    --color-border: #586e75;
-    --color-input: #697d82;
-    --color-ring: #268bd2;
+  .light {
+    --color-surface: var(--color-surface-light);
+    --color-surface-raised: var(--color-surface-raised-light);
+    --color-surface-inset: var(--color-surface-inset-light);
+    --color-outline: var(--color-outline-light);
+    --color-outline-strong: var(--color-outline-strong-light);
+    --color-on-surface: var(--color-on-surface-light);
+    --color-on-surface-muted: var(--color-on-surface-muted-light);
+    --color-on-surface-faint: var(--color-on-surface-faint-light);
+    --color-primary: var(--color-primary-light);
+    --color-on-primary: var(--color-on-primary-light);
+    --color-success: var(--color-success-light);
+    --color-warning: var(--color-warning-light);
+    --color-error: var(--color-error-light);
+    --color-info: var(--color-info-light);
+    --color-category-network: var(--color-category-network-light);
+    --color-category-azure: var(--color-category-azure-light);
+    --color-category-microsoft: var(--color-category-microsoft-light);
+    --color-category-security: var(--color-category-security-light);
+    --color-category-developer: var(--color-category-developer-light);
+    --color-category-content: var(--color-category-content-light);
 
-    --color-success: #a3b03e;
-    --color-success-foreground: #002b36;
-    --color-success-subtle: #1a4538;
-    --color-warning: #c4a237;
-    --color-warning-foreground: #002b36;
-    --color-warning-subtle: #214238;
-    --color-info: #76b0d3;
-    --color-info-foreground: #002b36;
-    --color-info-subtle: #0c4358;
-    --color-danger: #e47e75;
-    --color-danger-foreground: #002b36;
-    --color-danger-subtle: #27353f;
+    --color-success-subtle: #ecf5ef;
+    --color-warning-subtle: #faf3ee;
+    --color-info-subtle: #ebf1fd;
+    --color-danger-subtle: #fef6f6;
+
+    color-scheme: light;
   }
 
-  /* Match the OS before the theme provider has run, so first paint is not
-     a light flash. The provider adds .light/.dark to <html> on mount and
-     that class always wins over this. */
-  @media (prefers-color-scheme: dark) {
-    :root:not(.light) {
-      --color-background: #002b36;
-      --color-foreground: #97a4a3;
-      --color-card: #073642;
-      --color-card-foreground: #97a4a3;
-      --color-popover: #073642;
-      --color-popover-foreground: #97a4a3;
-      --color-primary: #76b0d3;
-      --color-primary-foreground: #002b36;
-      --color-secondary: #0b3e4b;
-      --color-secondary-foreground: #97a4a3;
-      --color-muted: #0b3e4b;
-      --color-muted-foreground: #8c9b9b;
-      --color-accent: #0c464f;
-      --color-accent-foreground: #69b8ac;
-      --color-destructive: #e47e75;
-      --color-destructive-foreground: #002b36;
-      --color-border: #586e75;
-      --color-input: #697d82;
-      --color-ring: #268bd2;
+  /* Match the OS before the theme script has run, so first paint is not the
+     wrong theme. An explicit .light/.dark class always wins over this. */
+  @media (prefers-color-scheme: light) {
+    :root:not(.dark) {
+      --color-surface: var(--color-surface-light);
+      --color-surface-raised: var(--color-surface-raised-light);
+      --color-surface-inset: var(--color-surface-inset-light);
+      --color-outline: var(--color-outline-light);
+      --color-outline-strong: var(--color-outline-strong-light);
+      --color-on-surface: var(--color-on-surface-light);
+      --color-on-surface-muted: var(--color-on-surface-muted-light);
+      --color-on-surface-faint: var(--color-on-surface-faint-light);
+      --color-primary: var(--color-primary-light);
+      --color-on-primary: var(--color-on-primary-light);
+      --color-success: var(--color-success-light);
+      --color-warning: var(--color-warning-light);
+      --color-error: var(--color-error-light);
+      --color-info: var(--color-info-light);
+      --color-category-network: var(--color-category-network-light);
+      --color-category-azure: var(--color-category-azure-light);
+      --color-category-microsoft: var(--color-category-microsoft-light);
+      --color-category-security: var(--color-category-security-light);
+      --color-category-developer: var(--color-category-developer-light);
+      --color-category-content: var(--color-category-content-light);
 
-      --color-success: #a3b03e;
-      --color-success-foreground: #002b36;
-      --color-success-subtle: #1a4538;
-      --color-warning: #c4a237;
-      --color-warning-foreground: #002b36;
-      --color-warning-subtle: #214238;
-      --color-info: #76b0d3;
-      --color-info-foreground: #002b36;
-      --color-info-subtle: #0c4358;
-      --color-danger: #e47e75;
-      --color-danger-foreground: #002b36;
-      --color-danger-subtle: #27353f;
+      --color-success-subtle: #ecf5ef;
+      --color-warning-subtle: #faf3ee;
+      --color-info-subtle: #ebf1fd;
+      --color-danger-subtle: #fef6f6;
+
+      color-scheme: light;
     }
+  }
+
+  :root {
+    color-scheme: dark;
   }
 }
 
@@ -197,25 +172,28 @@
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.006em;
   }
 
-  /* Tool-page rhythm: one h1 per page, description directly beneath it. */
+  /* Headings run tight — this is what gives the interface its engineered
+     feel. Sizes follow DESIGN.md's named scale. */
   h1 {
-    font-size: var(--text-2xl);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
+    font-size: var(--text-headline-lg);
+    font-weight: var(--font-weight-headline-lg);
+    letter-spacing: var(--tracking-headline-lg);
+    line-height: 1.12;
   }
   h2 {
-    font-size: var(--text-xl);
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    line-height: 1.3;
+    font-size: var(--text-headline-md);
+    font-weight: var(--font-weight-headline-md);
+    letter-spacing: var(--tracking-headline-md);
+    line-height: 1.2;
   }
   h3 {
-    font-size: var(--text-lg);
-    font-weight: 600;
-    line-height: 1.4;
+    font-size: var(--text-title-sm);
+    font-weight: var(--font-weight-title-sm);
+    letter-spacing: var(--tracking-title-sm);
+    line-height: 1.3;
   }
 
   code,
@@ -226,10 +204,12 @@
     font-size: 0.9em;
   }
 
-  /* One focus treatment, everywhere. The old rule pointed at
-     hsl(var(--primary)) — a token that has never existed in this codebase
-     (ours are --color-*, and hex/oklch not HSL triplets), so focus rings
-     resolved to `invalid` and fell back to the UA default. */
+  /* Digits align in every column, table and statistic. */
+  table,
+  [data-tabular] {
+    font-variant-numeric: tabular-nums;
+  }
+
   :focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
@@ -251,7 +231,7 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-border);
+    background: var(--color-outline-strong);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
@@ -261,10 +241,16 @@
     background-clip: content-box;
   }
   * {
-    scrollbar-color: var(--color-border) transparent;
+    scrollbar-color: var(--color-outline-strong) transparent;
   }
 }
 
+/* =============================================================================
+   Legacy utilities — the un-ported React tree still renders against these.
+   DESIGN.md bans ambient motion and decorative gradients, so none of this
+   survives into the new shell; it is kept only so the bridge does not
+   regress un-ported pages, and dies with the old tree in Phase 6.
+   ========================================================================== */
 @layer utilities {
   .surface-bg {
     position: relative;
@@ -277,6 +263,9 @@
     background:
       radial-gradient(600px 300px at 10% -10%, color-mix(in oklch, var(--color-primary) 12%, transparent), transparent 60%),
       radial-gradient(600px 300px at 110% 110%, color-mix(in oklch, var(--color-accent) 12%, transparent), transparent 60%);
+    opacity: 0.28;
+  }
+  .light .surface-bg::before {
     opacity: 0.6;
   }
   .grid-overlay {
@@ -292,6 +281,9 @@
       linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
     background-size: 28px 28px, 28px 28px;
     mask: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+    opacity: 0.1;
+  }
+  .light .grid-overlay::after {
     opacity: 0.25;
   }
 
@@ -305,27 +297,17 @@
     transform: scale(0.98);
   }
 
-  .dark .surface-bg::before {
-    opacity: 0.28;
-  }
-  .dark .grid-overlay::after {
-    opacity: 0.1;
-  }
-
   .tool-card {
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .tool-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px color-mix(in oklch, var(--color-solar-base03) 12%, transparent);
+    box-shadow: 0 10px 25px color-mix(in oklch, #000 45%, transparent);
   }
-  .dark .tool-card:hover {
-    box-shadow: 0 10px 25px color-mix(in oklch, var(--color-solar-base03) 45%, transparent);
+  .light .tool-card:hover {
+    box-shadow: 0 10px 25px color-mix(in oklch, #000 12%, transparent);
   }
-}
 
-@layer utilities {
-  /* Rails canvas: fixed row heights and horizontal blueprint rails */
   .tools-canvas {
     min-height: 28rem;
   }
@@ -377,7 +359,6 @@
     background-color: color-mix(in oklch, var(--color-secondary) 40%, transparent);
   }
 
-  /* Rail connectors for each card */
   .rail-port {
     position: absolute;
     left: -8px;
@@ -403,7 +384,6 @@
     width: 20px;
   }
 
-  /* Node map layer */
   .icon-grid {
     padding: 8px 8px 0;
   }
@@ -426,9 +406,6 @@
     transform: translateY(-3px) scale(1.05);
     background: color-mix(in oklch, var(--color-secondary) 20%, transparent);
   }
-  .icon-token:hover .icon-el {
-    filter: none;
-  }
 
   @keyframes floaty {
     0% { transform: translateY(0); }
@@ -437,6 +414,7 @@
   }
   .icon-token:hover .icon-el {
     animation: floaty 1.8s ease-in-out infinite;
+    filter: none;
   }
 
   @keyframes idleDrift {
@@ -449,7 +427,6 @@
     will-change: transform;
   }
 
-  /* Blueprint widget styling */
   .keycap {
     font-family: var(--font-mono);
     font-size: 0.8rem;
@@ -469,7 +446,6 @@
     background: color-mix(in oklch, var(--color-primary) 16%, transparent);
   }
 
-  /* Saved data timeline style */
   .timeline {
     position: relative;
   }
@@ -496,7 +472,6 @@
     background: var(--color-primary);
   }
 
-  /* Idle drift animation */
   @keyframes drift {
     0% { transform: translate(0, 0) rotate(0); }
     50% { transform: translate(var(--dx), var(--dy)) rotate(var(--drot)); }
@@ -507,7 +482,6 @@
     will-change: transform;
   }
 
-  /* Correct counter-clockwise spin animation */
   @keyframes spin-ccw {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(-360deg); }
@@ -546,7 +520,8 @@
 
   .interactive:hover,
   .tool-card:hover,
-  .icon-token:hover {
+  .icon-token:hover,
+  .card:hover {
     transform: none !important;
   }
 

@@ -34,10 +34,10 @@ colors:
   surface-raised-light: "#ffffff"
   surface-inset-light: "#f6f7f9"
   outline-light: "#e5e8ec"
-  outline-strong-light: "#8b939d"
+  outline-strong-light: "#838a94"
   on-surface-light: "#14171a"
   on-surface-muted-light: "#5a636d"
-  on-surface-faint-light: "#6b737d"
+  on-surface-faint-light: "#69717b"
   primary-light: "#3b5bdb"
   on-primary-light: "#ffffff"
   success-light: "#15803d"
@@ -421,6 +421,12 @@ automated contrast test that parses the real stylesheet on every `pnpm test`.
   Measured: `on-surface` 15.90:1 and `on-surface-muted` 7.33:1 on the dark
   ground; 17.25:1 and 5.85:1 on the light ground. Even `on-surface-faint`
   clears 4.5:1, because it is used for small uppercase labels.
+- "Every surface" means all three — page, panel **and inset**. Two light values
+  were corrected in Phase 2 when they were measured against the inset rather
+  than only against white: `on-surface-faint-light` `#6b737d` → `#69717b`
+  (4.48:1 on `surface-inset`, now 4.61:1) and `outline-strong-light` `#8b939d`
+  → `#838a94` (2.90:1 on `surface-inset` and 2.98:1 on the page, now 3.25:1
+  and 3.34:1). The dark values were already clear.
 - Every category hue clears **4.5:1 as text** on both the page and a panel, in
   both themes. This is why the light category values are so much darker than
   the dark ones.
