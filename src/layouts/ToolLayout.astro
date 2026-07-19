@@ -1,0 +1,90 @@
+---
+/**
+ * ToolLayout — every tool page, derived entirely from its manifest.
+ *
+ * This is what the redesign buys, and the reason Phase 2 exists. Today each
+ * tool hand-rolls its own header, its own SEO ritual and its own idea of
+ * hierarchy, and the crawler receives an empty div with no h1. Here the tool
+ * supplies a manifest and gets: a real prerendered h1, its description,
+ * schema.org markup, its category hue carried through the breadcrumb, the
+ * icon tile, the badges and the primary action, and the two-column control /
+ * result rhythm DESIGN.md specifies.
+ *
+ * A tool renders into the `controls` and default slots. It cannot reach the
+ * head, cannot set its own colour, and cannot invent its own page furniture.
+ */
+import BaseLayout from './BaseLayout.astro';
+import ToolIcon from '../shell/ToolIcon.astro';
+import { categoryLabel } from '../shell/categories.mjs';
+
+const { tool } = Astro.props;
+
+const seoTitle = tool.seo?.title ?? `${tool.title} — russ.tools`;
+
+// The description a crawler sees is the tool's real one-sentence summary,
+// not a site-wide boilerplate.
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: tool.title,
+  description: tool.description,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Any',
+  url: new URL(tool.path, Astro.site).href,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+
+const hasControls = Astro.slots.has('controls');
+---
+
+<BaseLayout
+  title={seoTitle}
+  description={tool.description}
+  keywords={tool.seo?.keywords ?? []}
+  canonical={new URL(tool.path, Astro.site).href}
+  schema={schema}
+>
+  <!-- The hue is set once, here. Everything below inherits it. -->
+  <div style={`--cat: var(--color-category-${tool.category})`}>
+    <div class="tool-head">
+      <nav class="crumb" aria-label="Breadcrumb">
+        <a href="/">Tools</a> / <b>{categoryLabel(tool.category)}</b>
+      </nav>
+
+      <div class="tool-id">
+        <ToolIcon icon={tool.icon} size={22} />
+        <h1>{tool.title}</h1>
+      </div>
+
+      <p>{tool.description}</p>
+
+      <div class="badges">
+        <span class="badge" data-lead>Client-side</span>
+        {tool.badges.map((badge) => <span class="badge">{badge}</span>)}
+        {
+          tool.params.length > 0 && (
+            <span class="badge">
+              {tool.path}/{tool.params.map((p) => `:${p}`).join('/')}
+            </span>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="tool-body" data-single={hasControls ? undefined : true}>
+      {
+        hasControls && (
+          <section class="panel">
+            <div class="panel-head">
+              <span>{Astro.props.controlsTitle ?? 'Input'}</span>
+            </div>
+            <div class="panel-body">
+              <slot name="controls" />
+            </div>
+          </section>
+        )
+      }
+      <slot />
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,15 @@
+---
+/**
+ * A tool's bespoke icon in its category-tinted tile.
+ *
+ * The hue is not passed in — it is inherited from `--cat` on an ancestor, so
+ * this component never knows which of the six categories it is rendering.
+ */
+import { iconSvg } from './icons.mjs';
+
+const { icon, size = 17, class: className } = Astro.props;
+---
+
+<span class:list={['ico', className]}>
+  <Fragment set:html={iconSvg(icon, size)} />
+</span>

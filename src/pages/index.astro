@@ -1,0 +1,92 @@
+---
+/**
+ * The tool index. Entirely derived from the registry — adding tool #16
+ * changes nothing in this file.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolCard from '../shell/ToolCard.astro';
+import { TOOLS, groupedByCategory } from '../tools/registry.mjs';
+
+const groups = groupedByCategory();
+const pad = (n) => String(n).padStart(2, '0');
+---
+
+<BaseLayout
+  title="russ.tools — client-side network, cloud and developer utilities"
+  description="Fifteen small utilities for people who work with networks, cloud platforms and certificates. Subnet planning, DNS and WHOIS lookups, Azure naming, JWTs, encoders and converters — all running entirely in your browser."
+  keywords={['network tools', 'subnet calculator', 'dns lookup', 'whois', 'azure naming', 'jwt decoder', 'base64', 'developer tools']}
+>
+  <section class="hero">
+    <h1>Fifteen tools. Nothing leaves the browser.</h1>
+    <p>
+      Network planning, Azure and Microsoft lookups, certificates, tokens and converters — all
+      running locally, all deep-linkable.
+    </p>
+
+    <div class="stats">
+      <div class="stat"><b>{TOOLS.length}</b><span>Tools</span></div>
+      <div class="stat"><b>{groups.length}</b><span>Categories</span></div>
+      <div class="stat" data-tone="ok"><b>100%</b><span>Client-side</span></div>
+      <div class="stat"><b>0</b><span>Trackers</span></div>
+    </div>
+  </section>
+
+  <div class="filters" id="filters" role="group" aria-label="Filter tools by category">
+    <button class="chip" type="button" data-filter="all" aria-pressed="true">
+      All <em>{TOOLS.length}</em>
+    </button>
+    {
+      groups.map((g) => (
+        <button
+          class="chip"
+          type="button"
+          data-filter={g.id}
+          aria-pressed="false"
+          style={`--cat: var(--color-category-${g.id})`}
+        >
+          <i aria-hidden="true" />
+          {g.label} <em>{g.tools.length}</em>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="board" id="board">
+    {
+      groups.map((g) => (
+        <section class="group" data-category={g.id} style={`--cat: var(--color-category-${g.id})`}>
+          <div class="group-head">
+            <b>{g.label}</b>
+            <hr />
+            <em>{pad(g.tools.length)}</em>
+          </div>
+          <div class="grid">
+            {g.tools.map((tool) => (
+              <ToolCard tool={tool} />
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<script>
+  // Filtering is a show/hide over prerendered groups — no framework, and it
+  // degrades to "all tools visible" if the script never runs.
+  const filters = document.getElementById('filters');
+  const groups = [...document.querySelectorAll('#board .group')];
+
+  filters?.addEventListener('click', (event) => {
+    const chip = event.target instanceof Element ? event.target.closest('.chip') : null;
+    if (!chip) return;
+
+    const active = chip.dataset.filter;
+    for (const c of filters.querySelectorAll('.chip')) {
+      c.setAttribute('aria-pressed', String(c.dataset.filter === active));
+    }
+    for (const group of groups) {
+      group.hidden = active !== 'all' && group.dataset.category !== active;
+    }
+  });
+</script>

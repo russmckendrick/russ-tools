@@ -1,0 +1,61 @@
+/**
+ * Buzzword Ipsum — bridge manifest.
+ *
+ * Phase 2 manifests are thin: the island lazy-loads the existing component
+ * nearly unchanged, so the new shell reaches production with every tool
+ * still working. This tool gets its real manifest, its own store and its
+ * extracted pure core when it ports.
+ *
+ * Routes this manifest owns (frozen contract #1 — do not rename or drop):
+ *   /buzzword-ipsum
+ */
+export default {
+  id: 'buzzword-ipsum',
+  path: '/buzzword-ipsum',
+  title: 'Buzzword Ipsum',
+
+  // Rendered on the card, so a tool can never ship as a bare icon and a name.
+  shortDescription:
+    'Corporate filler text, for when real words will not do.',
+  description:
+    'Generate corporate buzzword-filled ipsum text for mockups and ' +
+    'presentations. Create professional-sounding but meaningless ' +
+    'content perfect for design templates and business materials.',
+
+  // Selects the tool's hue everywhere it appears. A tool never picks a colour.
+  category: 'content',
+  icon: 'bubble',
+  badges: [
+    'Strategy',
+    'Agile',
+    'AI',
+  ],
+
+  // Deep-link segments. The generated _redirects turns each into a 200
+  // rewrite onto the prerendered page, which then reads the param.
+  params: [],
+
+  seo: {
+    title: 'Buzzword Ipsum Generator - Corporate Lorem Ipsum Alternative',
+    keywords: [
+      'buzzword ipsum',
+      'corporate lorem ipsum',
+      'business jargon generator',
+      'buzzword generator',
+      'corporate placeholder',
+      'business ipsum',
+      'mockup content',
+      'corporate speak',
+      'professional text',
+      'lorem ipsum alternative',
+    ],
+  },
+
+  // Namespaced as rt:<id>:<slot>. legacyKeys are what the migration shim
+  // reads from; it never deletes them (frozen contract #3).
+  storageKeys: [],
+  legacyKeys: [],
+
+  island: () => import('@/components/tools/buzzword-ipsum/BuzzwordIpsumShadcn.jsx'),
+  hydrate: 'load',
+};

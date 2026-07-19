@@ -10,7 +10,12 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm generate:sitemap && vite build",
+    "dev:astro": "astro dev",
+    "build:astro": "astro build && pnpm generate:redirects",
+    "preview:astro": "astro preview",
     "generate:sitemap": "node scripts/generate-sitemap.js",
+    "generate:redirects": "node scripts/generate-redirects.mjs",
+    "generate:tokens": "node scripts/generate-tokens.mjs",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -67,11 +72,15 @@
     "zustand": "^5.0.7"
   },
   "devDependencies": {
+    "@astrojs/react": "6.0.1",
+    "@astrojs/sitemap": "3.7.3",
     "@eslint/js": "^9.22.0",
     "@tailwindcss/postcss": "^4.1.11",
+    "@tailwindcss/vite": "4.3.3",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "astro": "7.1.1",
     "eslint": "^9.22.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",

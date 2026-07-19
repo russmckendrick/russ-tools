@@ -15,7 +15,8 @@ const RAW_PALETTE_MESSAGE =
   'Raw Tailwind palette class. Use a semantic token instead — bg-success-subtle / text-danger / border-info / text-muted-foreground. See docs/DESIGN_SPEC.md.'
 
 export default [
-  { ignores: ['dist', 'coverage'] },
+  // dist-astro is the Astro shell's build output, alongside Vite's dist.
+  { ignores: ['dist', 'dist-astro', '.astro', 'coverage'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

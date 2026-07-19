@@ -1,0 +1,22 @@
+---
+/**
+ * The tool tile. Icon, name, a two-line clamped description, then a
+ * hairline-separated footer of monospace metadata with the route path
+ * fading in on hover. Everything comes from the manifest.
+ */
+import ToolIcon from './ToolIcon.astro';
+
+const { tool } = Astro.props;
+---
+
+<a class="card" href={tool.path} style={`--cat: var(--color-category-${tool.category})`}>
+  <span class="card-top">
+    <ToolIcon icon={tool.icon} />
+    <span class="card-name">{tool.title}</span>
+  </span>
+  <p>{tool.shortDescription}</p>
+  <span class="card-foot">
+    <span>{tool.badges.join(' · ')}</span>
+    <span class="go" aria-hidden="true">{tool.path} &rarr;</span>
+  </span>
+</a>

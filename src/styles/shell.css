@@ -1,0 +1,518 @@
+/* =============================================================================
+   The shell — index and tool-page composition.
+
+   This is DESIGN.md's "Layout", "Elevation & Depth", "Shapes" and
+   "Components" sections written down. Every colour is a token; there is not
+   a raw hex in this file. The category hue arrives as `--cat`, set once on a
+   container, so nothing here knows which of the six it is.
+
+   Plain CSS rather than utility classes because these are compositional
+   rules with pseudo-elements, container queries and hue arithmetic — the
+   things utilities express worst.
+   ========================================================================== */
+
+.shell {
+  max-width: var(--spacing-max-width);
+  margin: 0 auto;
+  padding-inline: var(--spacing-gutter);
+}
+
+/* "Empty vertical space below the content is a bug." Short pages push the
+   footer to the bottom of the viewport rather than leaving it stranded
+   halfway down with dead ground beneath it. */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+body > main {
+  flex: 1;
+}
+
+/* --- Topbar --------------------------------------------------------------- */
+
+.topbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  padding-block: 14px;
+  border-bottom: 1px solid var(--color-outline);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  color: var(--color-on-surface);
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(
+    140deg,
+    var(--color-primary),
+    color-mix(in oklab, var(--color-category-network) 70%, var(--color-primary))
+  );
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28);
+}
+
+.topnav {
+  display: flex;
+  gap: 18px;
+  font-size: var(--text-body-sm);
+}
+.topnav a {
+  color: var(--color-on-surface-muted);
+  text-decoration: none;
+}
+.topnav a:hover,
+.topnav a[aria-current="page"] {
+  color: var(--color-on-surface);
+}
+
+/* --- The one ambient element ---------------------------------------------
+   A broad wash of the house accent behind the top of the page, low enough
+   that it never competes with content. DESIGN.md permits exactly this one. */
+
+.ambient {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 320px;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    120% 100% at 50% 0%,
+    color-mix(in oklab, var(--color-primary) 13%, transparent),
+    transparent 62%
+  );
+}
+.light .ambient {
+  opacity: 0.5;
+}
+
+/* --- Hero ----------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  z-index: 1;
+  padding-block: 40px var(--spacing-xl);
+  display: grid;
+  gap: var(--spacing-lg);
+}
+.hero h1 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, var(--text-display));
+  font-weight: var(--font-weight-display);
+  letter-spacing: var(--tracking-display);
+  line-height: 1.06;
+  max-width: 19ch;
+  text-wrap: balance;
+}
+.hero p {
+  margin: 0;
+  max-width: 58ch;
+  font-size: var(--text-body-lg);
+  color: var(--color-on-surface-muted);
+}
+
+/* --- Stat strip ----------------------------------------------------------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin-top: 6px;
+  background: var(--color-outline);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+@media (min-width: 640px) {
+  .stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.stat {
+  background: var(--color-surface-raised);
+  padding: 11px 14px;
+  display: grid;
+  gap: 2px;
+}
+.stat b {
+  font-size: 19px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stat span {
+  font-family: var(--font-mono);
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  letter-spacing: var(--tracking-label-caps);
+  text-transform: uppercase;
+  color: var(--color-on-surface-faint);
+}
+.stat[data-tone="ok"] b {
+  color: var(--color-success);
+}
+
+/* --- Category filter chips ------------------------------------------------ */
+
+.filters {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding-block: var(--spacing-xs) var(--spacing-xl);
+}
+.chip {
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-on-surface-muted);
+  border: 1px solid var(--color-outline);
+  cursor: pointer;
+  transition: color 0.13s ease, border-color 0.13s ease, background 0.13s ease;
+}
+.chip i {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--cat, var(--color-on-surface-faint));
+}
+.chip em {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  color: var(--color-on-surface-faint);
+  font-variant-numeric: tabular-nums;
+}
+.chip:hover {
+  color: var(--color-on-surface);
+  border-color: var(--color-outline-strong);
+}
+.chip[aria-pressed="true"] {
+  color: var(--color-on-surface);
+  background: var(--color-surface-inset);
+  border-color: color-mix(in oklab, var(--cat, var(--color-primary)) 55%, var(--color-outline));
+}
+
+/* --- Category groups + the tool grid -------------------------------------- */
+
+.board {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: var(--spacing-xl);
+  padding-bottom: 30px;
+}
+.group {
+  display: grid;
+  gap: 11px;
+}
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.group-head b {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--cat);
+}
+.group-head hr {
+  flex: 1;
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--color-outline);
+}
+.group-head em {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: var(--text-label-caps);
+  color: var(--color-on-surface-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.grid {
+  display: grid;
+  gap: 11px;
+}
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 940px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* --- Card: the tool tile, and the workhorse ------------------------------- */
+
+.card {
+  position: relative;
+  display: grid;
+  gap: 9px;
+  align-content: start;
+  padding: 15px var(--spacing-lg) 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-outline);
+  /* Depth is tonal, not cast: a flat panel with a lit top edge. */
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-surface-inset) 70%, var(--color-surface-raised)),
+    var(--color-surface-raised)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in oklab, #fff 5%, transparent);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.14s ease, transform 0.14s ease, box-shadow 0.14s ease;
+}
+.card:hover {
+  border-color: color-mix(in oklab, var(--cat) 45%, var(--color-outline));
+  transform: translateY(-1px);
+  /* The single piece of ornament in the system: a category-tinted glow. */
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, #fff 7%, transparent),
+    0 6px 22px -12px color-mix(in oklab, var(--cat) 60%, transparent);
+}
+.card:focus-visible {
+  outline: 2px solid var(--cat);
+  outline-offset: 2px;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-name {
+  font-size: var(--text-title-sm);
+  font-weight: var(--font-weight-title-sm);
+  letter-spacing: var(--tracking-title-sm);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card p {
+  margin: 0;
+  font-size: var(--text-body-sm);
+  line-height: 1.45;
+  color: var(--color-on-surface-muted);
+  /* Clamp rather than reflow, so the grid stays even. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-top: 9px;
+  border-top: 1px solid var(--color-outline);
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  color: var(--color-on-surface-faint);
+  min-width: 0;
+}
+.card-foot span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-foot .go {
+  margin-left: auto;
+  flex: none;
+  color: var(--cat);
+  opacity: 0;
+  transition: opacity 0.14s ease;
+}
+.card:hover .go,
+.card:focus-visible .go {
+  opacity: 1;
+}
+
+/* --- Icon tile ------------------------------------------------------------
+   The only place a category hue is used as a fill. */
+
+.ico {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  color: var(--cat);
+  background: color-mix(in oklab, var(--cat) 13%, transparent);
+  border: 1px solid color-mix(in oklab, var(--cat) 26%, transparent);
+}
+.ico svg {
+  display: block;
+}
+
+/* --- Tool page ------------------------------------------------------------ */
+
+.tool-head {
+  position: relative;
+  z-index: 1;
+  padding-block: var(--spacing-xl) 18px;
+  border-bottom: 1px solid var(--color-outline);
+  display: grid;
+  gap: 13px;
+}
+.crumb {
+  font-size: 12.5px;
+  color: var(--color-on-surface-faint);
+}
+.crumb a {
+  color: inherit;
+  text-decoration: none;
+}
+.crumb a:hover {
+  color: var(--color-on-surface-muted);
+}
+.crumb b {
+  color: var(--cat);
+  font-weight: 500;
+}
+.tool-id {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+.tool-id .ico {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-lg);
+}
+.tool-id h1 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, var(--text-headline-lg));
+  font-weight: var(--font-weight-headline-lg);
+  letter-spacing: var(--tracking-headline-lg);
+  line-height: 1.12;
+}
+.tool-head > p {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  color: var(--color-on-surface-muted);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.badge {
+  font-family: var(--font-mono);
+  font-size: var(--text-label-caps);
+  padding: 3px var(--spacing-sm);
+  border-radius: 5px;
+  border: 1px solid var(--color-outline);
+  color: var(--color-on-surface-muted);
+}
+/* The lead badge may take the category hue; the rest stay neutral. */
+.badge[data-lead] {
+  color: var(--cat);
+  border-color: color-mix(in oklab, var(--cat) 40%, transparent);
+  background: color-mix(in oklab, var(--cat) 10%, transparent);
+}
+
+/* Controls left, output right, always. */
+.tool-body {
+  position: relative;
+  z-index: 1;
+  padding-block: 18px var(--spacing-xl);
+  display: grid;
+  gap: var(--spacing-md);
+}
+@media (min-width: 820px) {
+  .tool-body {
+    grid-template-columns: 320px 1fr;
+    align-items: start;
+  }
+}
+.tool-body[data-single] {
+  grid-template-columns: 1fr;
+}
+
+/* --- Panel ---------------------------------------------------------------- */
+
+.panel {
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--color-outline);
+  background: color-mix(in oklab, var(--color-surface-inset) 60%, var(--color-surface-raised));
+  font-family: var(--font-mono);
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-faint);
+}
+.panel-head em {
+  font-style: normal;
+  margin-left: auto;
+  color: var(--color-on-surface-muted);
+}
+.panel-body {
+  padding: 13px;
+  display: grid;
+  gap: 10px;
+}
+
+/* --- Footer --------------------------------------------------------------- */
+
+.shell-foot {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--color-outline);
+  margin-top: var(--spacing-2xl);
+  padding-block: 14px 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm) var(--spacing-gutter);
+  font-size: 12.5px;
+  color: var(--color-on-surface-faint);
+}
+.shell-foot b {
+  color: var(--color-on-surface-muted);
+  font-weight: 500;
+}
+.shell-foot a {
+  color: inherit;
+}

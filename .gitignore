@@ -9,7 +9,9 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-astro
 dist-ssr
+.astro
 *.local
 package-lock.json
 

@@ -1,0 +1,111 @@
+---
+/**
+ * The page shell: head, theme, topbar, footer.
+ *
+ * Tools never import this, and never import SEO or config — they render
+ * inside it and declare what they need in their manifest. That is what keeps
+ * the "tool #16 is one new folder" property true.
+ */
+import '../styles/globals.css';
+import '../styles/shell.css';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
+
+const {
+  title,
+  description,
+  keywords = [],
+  canonical = new URL(Astro.url.pathname, Astro.site).href,
+  schema,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="canonical" href={canonical} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="russ.tools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
+
+    <!--
+      Theme before first paint. This runs synchronously in the head, so the
+      correct ground is painted rather than flashing the default and
+      correcting. `vite-ui-theme` is the key the React app already writes, so
+      a visitor's existing choice carries straight over to the new shell.
+      Dark is the default; only an explicit light choice, or a system
+      preference with no stored choice, moves off it.
+    -->
+    <script is:inline>
+      (() => {
+        try {
+          const stored = localStorage.getItem('vite-ui-theme') || 'system';
+          const light =
+            stored === 'light' ||
+            (stored === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches);
+          document.documentElement.classList.add(light ? 'light' : 'dark');
+        } catch {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div class="ambient" aria-hidden="true"></div>
+
+    <header class="shell">
+      <div class="topbar">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="13"
+              height="13"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 7h16M4 12h10M4 17h13" />
+            </svg>
+          </span>
+          russ.tools
+        </a>
+        <nav class="topnav" aria-label="Primary">
+          <a href="/" aria-current={Astro.url.pathname === '/' ? 'page' : undefined}>Tools</a>
+          <a href="/delete">Saved data</a>
+          <a href="https://github.com/russmckendrick/russ-tools">Source</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="shell">
+      <slot />
+    </main>
+
+    <footer class="shell">
+      <div class="shell-foot">
+        <span><b>Everything runs in your browser.</b> Nothing you paste is uploaded.</span>
+        <span>No trackers, no analytics, no accounts.</span>
+      </div>
+    </footer>
+  </body>
+</html>

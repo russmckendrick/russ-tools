@@ -1,0 +1,56 @@
+/**
+ * Markdown Table Tool — bridge manifest.
+ *
+ * Phase 2 manifests are thin: the island lazy-loads the existing component
+ * nearly unchanged, so the new shell reaches production with every tool
+ * still working. This tool gets its real manifest, its own store and its
+ * extracted pure core when it ports.
+ *
+ * Routes this manifest owns (frozen contract #1 — do not rename or drop):
+ *   /markdown-table-tool
+ */
+export default {
+  id: 'markdown-table-tool',
+  path: '/markdown-table-tool',
+  title: 'Markdown Table Tool',
+
+  // Rendered on the card, so a tool can never ship as a bare icon and a name.
+  shortDescription:
+    'Build, format and re-align Markdown tables from CSV or scratch.',
+  description:
+    'Create, format, and validate markdown tables with real-time ' +
+    'preview and advanced editing features',
+
+  // Selects the tool's hue everywhere it appears. A tool never picks a colour.
+  category: 'developer',
+  icon: 'table',
+  badges: [
+    'CSV',
+    'Align',
+    'Undo',
+  ],
+
+  // Deep-link segments. The generated _redirects turns each into a 200
+  // rewrite onto the prerendered page, which then reads the param.
+  params: [],
+
+  seo: {
+    title: 'Markdown Table Creator & Formatter - Professional Table Generator',
+    keywords: [
+      'markdown table',
+      'table creator',
+      'table formatter',
+      'markdown editor',
+      'table generator',
+      'csv to markdown',
+    ],
+  },
+
+  // Namespaced as rt:<id>:<slot>. legacyKeys are what the migration shim
+  // reads from; it never deletes them (frozen contract #3).
+  storageKeys: [],
+  legacyKeys: [],
+
+  island: () => import('@/components/tools/markdown-table-tool/MarkdownTableTool.jsx'),
+  hydrate: 'load',
+};
