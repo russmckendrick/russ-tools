@@ -3,7 +3,9 @@ import { persist } from 'zustand/middleware';
 
 const MAX_HISTORY_ITEMS = 50;
 
-export const useKQLStore = create((set, get) => ({
+export const useKQLStore = create(
+  persist(
+    (set) => ({
   selectedService: '',
   selectedTemplate: '',
   parameters: {},
@@ -86,4 +88,14 @@ export const useKQLStore = create((set, get) => ({
     parameters: {},
     generatedQuery: ''
   })
-}));
+    }),
+    {
+      name: 'rt:azure-kql:store',
+      partialize: (state) => ({
+        queryHistory: state.queryHistory,
+        favorites: state.favorites,
+        customTemplates: state.customTemplates
+      })
+    }
+  )
+);
