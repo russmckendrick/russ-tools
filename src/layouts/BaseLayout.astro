@@ -15,7 +15,17 @@ const {
   title,
   description,
   keywords = [],
-  canonical = new URL(Astro.url.pathname, Astro.site).href,
+  // `Astro.url.pathname` is the *output file* during a static build, so the
+  // index resolved to `https://russ.tools/index.html` and /delete to
+  // `/delete.html` — self-referencing canonicals pointing at URLs nobody
+  // links to, which is the one SEO fault a canonical tag can actually cause.
+  // Cloudflare Pages serves the extensionless path, so that is the canonical
+  // one. Tool pages pass their manifest path explicitly and were never
+  // affected. Caught by the rendered-meta diff; pinned by canonical.test.js.
+  canonical = new URL(
+    Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, ''),
+    Astro.site
+  ).href,
   schema,
   // For pages that are a control panel rather than content — /delete. The
   // sitemap is built from the registry and never listed them, but a link
@@ -31,7 +41,7 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="canonical" href={canonical} />
+    {canonical && <link rel="canonical" href={canonical} />}
     {noindex && <meta name="robots" content="noindex, follow" />}
 
     <title>{title}</title>
