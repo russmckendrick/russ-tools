@@ -19,11 +19,11 @@ const DNS_RECORD_TYPES = [
   { value: 'CAA', label: 'CAA Record (Certificate Authority)' }
 ];
 
+// Only providers with a public DoH JSON API. OpenDNS and "Browser Default"
+// were listed here and both silently queried Google (BEHAVIOR_CHANGES.md).
 const DNS_PROVIDERS = [
   { value: 'google', label: 'Google DNS (8.8.8.8)', server: '8.8.8.8' },
-  { value: 'cloudflare', label: 'Cloudflare DNS (1.1.1.1)', server: '1.1.1.1' },
-  { value: 'opendns', label: 'OpenDNS (208.67.222.222)', server: '208.67.222.222' },
-  { value: 'auto', label: 'Browser Default', server: 'auto' }
+  { value: 'cloudflare', label: 'Cloudflare DNS (1.1.1.1)', server: '1.1.1.1' }
 ];
 
 const DNSLookupForm = ({

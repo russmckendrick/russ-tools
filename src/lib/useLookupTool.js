@@ -31,6 +31,7 @@ import { createCache, createToolStorage } from '@/core';
  * @param {string} [config.urlParam] useParams key that triggers a lookup on mount
  * @param {(raw: string) => string} [config.normalize] query cleaner (default trim+lowercase)
  * @param {(query: string, context: object) => string} [config.cacheKey] compound cache key (dns needs provider+type)
+ * @param {(query: string, context: object) => string} [config.historyKey] history dedupe key (defaults to the query alone)
  * @param {(query: string, data: T, context: object) => object} [config.historyEntry] extra fields for a history item
  * @param {{ history?: string | string[] }} [config.legacy] legacy localStorage key(s) for history
  * @param {(query: string, data: T, fromCache: boolean) => void} [config.onSuccess] override the success toast
@@ -44,6 +45,7 @@ export function useLookupTool({
   urlParam,
   normalize = (raw) => raw.trim().toLowerCase(),
   cacheKey = (query) => query,
+  historyKey = (query) => query,
   historyEntry,
   legacy = {},
   onSuccess,
@@ -70,20 +72,21 @@ export function useLookupTool({
   const recordHistory = useCallback(
     (cleanQuery, data, context) => {
       setHistory((prev) => {
+        const key = historyKey(cleanQuery, context);
         const entry = {
           query: cleanQuery,
           timestamp: Date.now(),
           ...(historyEntry ? historyEntry(cleanQuery, data, context) : {}),
         };
-        const next = [entry, ...prev.filter((item) => item.query !== cleanQuery)].slice(
-          0,
-          maxHistory
-        );
+        const next = [
+          entry,
+          ...prev.filter((item) => historyKey(item.query, item) !== key),
+        ].slice(0, maxHistory);
         storage.set('history', next);
         return next;
       });
     },
-    [historyEntry, maxHistory, storage]
+    [historyEntry, historyKey, maxHistory, storage]
   );
 
   const lookup = useCallback(

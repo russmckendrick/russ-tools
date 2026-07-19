@@ -50,6 +50,20 @@ Middle gaps use `next.start - prev.end - 1`; the trailing gap uses
 
 ## Landed
 
+### dns-lookup no longer offers providers it cannot query
+
+| | |
+|---|---|
+| **Where** | `src/tools/dns-lookup/` (island + `DNSLookupForm`), `apiConfig.json` |
+| **Pinned by** | `src/tools/dns-lookup/__tests__/island.test.jsx` |
+| **Landed** | Phase 4, dns-lookup port (pre-declared in *Planned* below) |
+
+"OpenDNS (208.67.222.222)" and "Browser Default" were listed as providers and
+both silently queried `dns.google` — OpenDNS has no public DoH JSON API. Both
+options are removed rather than relabelled; Google and Cloudflare remain, and
+a history entry recorded under a removed provider replays via Google. The
+`apiConfig.json` aliases that encoded the lie are gone.
+
 ### `convertToCSV` keeps falsy cells
 
 | | |
@@ -97,10 +111,6 @@ Called out in the plan so they are not mistaken for regressions when they land:
 - **ssl-checker fabricated-certificate fallback** (Phase 4) — when analysis
   fails, the tool currently invents plausible certificate details. Replaced
   with an honest "analysis unavailable — HTTPS connectivity verified" state.
-- **dns-lookup OpenDNS provider** (Phase 4) — selecting OpenDNS silently
-  queries Google (`apiConfig.json` maps `opendns` and `auto` to
-  `dns.google/resolve`). Becomes either real OpenDNS DoH or an removed option;
-  either way the label stops lying.
 - **network-designer subnet colours** (Phase 5) — Mantine-era `{name, index}`
   colour objects become hex. Old share URLs carry the old shape, so this needs
   a share-URL shape-upgrade function with fixtures, not a bare format change.

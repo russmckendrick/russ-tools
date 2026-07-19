@@ -21,9 +21,7 @@
     "dns": {
       "google": "https://dns.google/resolve",
       "cloudflare": "https://1.1.1.1/dns-query",
-      "opendns": "https://dns.google/resolve",
-      "auto": "https://dns.google/resolve",
-      "description": "DNS over HTTPS providers (OpenDNS and auto fall back to Google as they lack public DoH JSON API)",
+      "description": "DNS over HTTPS providers with public JSON APIs",
       "timeout": 8000,
       "retries": 1
     },

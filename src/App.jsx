@@ -76,11 +76,6 @@ const SSLCheckerTool = lazy(() =>
     default: () => <div>Error loading SSL Checker Tool</div>
   }))
 );
-const DNSLookupTool = lazy(() => 
-  import('./components/tools/dns-lookup/DNSLookupShadcn').catch(() => ({
-    default: () => <div>Error loading DNS Lookup Tool</div>
-  }))
-);
 const DataConverterTool = lazy(() => 
   import('./components/tools/data-converter/DataConverterShadcn').catch(() => ({
     default: () => <div>Error loading Data Converter Tool</div>
@@ -173,7 +168,7 @@ export default function App() {
 
               <Route path="dns-lookup" element={
                 <LazyRoute>
-                  <DNSLookupTool />
+                  <SpaToolPage toolId="dns-lookup" />
                 </LazyRoute>
               } />
 

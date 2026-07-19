@@ -1,10 +1,8 @@
 /**
- * DNS Lookup Tool — bridge manifest.
+ * DNS Lookup Tool — ported.
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * Ported (Phase 4) onto useLookupTool: rt:dns-lookup:* slots, legacy
+ * history read forward, legacy cache enumerated for /delete but cold.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /dns-lookup
@@ -19,7 +17,7 @@ export default {
 
   // Rendered on the card, so a tool can never ship as a bare icon and a name.
   shortDescription:
-    'Query any record type against Google, Cloudflare or OpenDNS.',
+    'Query any record type against Google or Cloudflare DNS over HTTPS.',
   description:
     'Perform comprehensive DNS queries for various record types using ' +
     'multiple DNS providers. Get detailed DNS information with caching ' +
@@ -67,6 +65,6 @@ export default {
     'dns-lookup-cache',
   ],
 
-  island: () => import('@/components/tools/dns-lookup/DNSLookupShadcn.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };
