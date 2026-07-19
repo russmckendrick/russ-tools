@@ -1194,3 +1194,90 @@ is already proven against Cloudflare's own runtime locally (session 4), so the
 residual risk is the deploy itself, not the rewrite semantics. Also still carried
 from Phase 0: live worker response fixtures → MSW mocks, which is a Phase 4
 prerequisite rather than a shipping one.
+
+### 2026-07-19 — Session 7: Phase 3 — the six simple tools ported
+
+**Model:** Fable 5. **Branch:** `redesign/phase-0`. Six commits, one per tool.
+
+**The pilot (base64) set the recipe, and the recipe is the deliverable.** A port
+now means: extract anything pure into `lib/` *first* if the plan owes it tests;
+move the component to `src/tools/<id>/island.jsx` and drop the Shadcn suffix;
+delete the SEOHead/ToolHeader ritual outright; replace hand-rolled
+clipboard/download/storage with `core/` calls; declare `storageKeys`/`legacyKeys`
+in the manifest and read them through `createToolStorage`'s legacy fallback;
+point the manifest's `island` at `./island.jsx`; swap the tool's `App.jsx` route
+to `SpaToolPage`; delete the old folder. `pnpm test` + `pnpm lint` green, then a
+browser pass in the shell against both themes.
+
+**Two pieces of one-time scaffolding made the ritual deletion safe while the SPA
+is still production:**
+
+- **`SpaToolPage`** (`src/components/common/SpaToolPage.jsx`) — the SPA-side
+  page furniture for a *ported* tool: SEOHead + ToolHeader + the island, all
+  driven from the manifest, one implementation instead of fifteen copies of the
+  ritual the ports delete. Dies with the SPA at cutover.
+- **`toolIconMap`** (`src/components/common/toolIconMap.js`) — ToolHeader,
+  Sidebar and NewHomeView each held a 15-import copy of the icon map. Now one
+  registry-derived map, so every later port deletes its `<Tool>Icon.jsx` without
+  touching chrome. (Also fixed in passing: Sidebar's map never had
+  AzureNamingIcon, so azure-naming showed a generic file icon in the sidebar.)
+
+**Deferred coverage §B is paid.** `src/tools/base64/lib/base64.js` extracted
+verbatim under 27 characterization tests: the `escape`/`unescape` UTF-8
+mechanism is pinned (a lone surrogate **throws**; TextEncoder would silently
+emit U+FFFD — the exact modernisation trap §B predicted), urlsafe alphabet,
+MIME 76-char wrapping, validation, image signatures, and the >1000-char
+"likely image" quirk pinned as KNOWN-QUIRK.
+
+**A live deep-link bug found by writing §B's mount test.** `/base64/:input`
+processed the param with the component's *initial* mode (`encode`) while
+auto-detect flipped the visible switch — so a shared base64 link showed a
+Decode toggle over the payload *re-encoded* (verified against the running
+component first: `SGVsbG8gd29ybGQ=` → output `U0dWc2JHOGdkMjl5YkdRPQ==`).
+Fixed in the port — the mount effect now decides the operation the same way
+auto-detect does — pinned by a jsdom mount test, logged in BEHAVIOR_CHANGES.md.
+(`jsdom` + Testing Library joined the dev deps for exactly this class of test;
+note vitest runs `globals: false`, so tests must register their own `cleanup`.)
+
+**markdown-table's owed fixes landed with its port**, fixture updated in the
+same commit and both ledgered: `convertToCSV` now blanks only
+`null`/`undefined` (a numeric 0 and `false` are data — they exported as empty
+cells before), and `MarkdownPreview` warnings render with the `warning` variant
+instead of info. Its two localStorage keys moved to
+`rt:markdown-table-tool:state/history` through `core/storage` — the first real
+exercise of contract #3's read-old/write-new/never-delete outside a unit test,
+verified in the browser against a seeded legacy key.
+
+**buzzword-ipsum's invisible inline style** became `font-sans text-body-md` —
+and the `font-sans` matters: the shared Textarea is the *Input* contract
+(monospace data), while generated buzzwords are prose, which DESIGN.md says is
+never monospace. The API Usage button moved from ToolHeader's `actions` into
+the Options card header; markdown-table's Import/Export moved into its own
+toolbar the same way. That retires the only two users of ToolHeader's action
+slot.
+
+**`core/clipboard` grew `readText()`** (+ tests) — base64, jwt and later
+data-converter all paste; there is no fallback for paste off HTTPS, so it
+returns `null` and the caller toasts.
+
+**ESLint:** `src/tools/**` now holds the raw-palette and off-scale-type rules
+at **error** — the checklist's "flip to error" done once for the destination
+directory instead of per tool.
+
+**The stale-dep trap bit twice, in a new costume each time** (plan already
+documents it): the SPA dev server threw `require_react is not a function`
+after `node_modules/.vite` was cleared under it, and `astro dev` threw
+`Cannot read properties of null (reading 'useRef')` from a second React copy
+when `@radix-ui/react-dialog` entered the island graph mid-session. Both cured
+by `rm -rf node_modules/.vite` + restart, neither a code fault — but both
+looked exactly like one.
+
+**State at session end:** `pnpm test` **376 / 20 files** (was 340) · `pnpm lint`
+0 errors, 29 warnings (floor held) · both builds green · six of fifteen tools
+live in `src/tools/`, `src/components/tools/` down to the nine Phase 4/5 tools.
+
+**Next: Phase 4.** First the prerequisite carried since Phase 0 — capture live
+worker response fixtures (ssl/whois/tenant) and stand up MSW — then
+`useLookupTool` on top of `core/`'s cache + api client, then the five lookup
+tools. The two pre-declared behaviour changes (ssl-checker's honest fallback,
+dns-lookup's OpenDNS label) land with their ports.
