@@ -60,8 +60,12 @@ const {
             stored === 'light' ||
             (stored === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches);
           document.documentElement.classList.add(light ? 'light' : 'dark');
+          // The toggle's icon is chosen from this in CSS, so it is correct on
+          // the first frame rather than after hydration.
+          document.documentElement.dataset.themePref = stored;
         } catch {
           document.documentElement.classList.add('dark');
+          document.documentElement.dataset.themePref = 'dark';
         }
       })();
     </script>
@@ -94,6 +98,32 @@ const {
           <a href="/delete">Saved data</a>
           <a href="https://github.com/russmckendrick/russ-tools">Source</a>
         </nav>
+
+        <!--
+          The theme control. Three states rather than two, because the stored
+          key already has three and `system` is the default a first-time
+          visitor gets — a two-way toggle would give them no way back to it.
+          All three icons ship in the markup and CSS reveals the live one, so
+          the button never flashes the wrong glyph before script runs.
+        -->
+        <button
+          type="button"
+          class="rt-theme-toggle"
+          data-theme-toggle
+          aria-live="polite"
+        >
+          <svg class="rt-theme-icon" data-for="system" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2.5" y="4" width="19" height="13" rx="1.5" />
+            <path d="M8.5 20.5h7M12 17v3.5" />
+          </svg>
+          <svg class="rt-theme-icon" data-for="light" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.2" />
+            <path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" />
+          </svg>
+          <svg class="rt-theme-icon" data-for="dark" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z" />
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -112,5 +142,63 @@ const {
         <span>No accounts</span>
       </div>
     </footer>
+
+    <!--
+      Wiring for the theme control. Deliberately not an island: it is shell
+      chrome on every page, and shipping React to flip a class on <html>
+      would cost more than the whole rest of the shell's JavaScript.
+
+      It writes the same `vite-ui-theme` key the SPA's ThemeProvider reads,
+      so a choice made here survives a visit to an un-ported page and back.
+    -->
+    <script is:inline>
+      (() => {
+        const button = document.querySelector('[data-theme-toggle]');
+        if (!button) return;
+
+        const ORDER = ['system', 'light', 'dark'];
+        const LABEL = {
+          system: 'Theme: follow system. Switch to light.',
+          light: 'Theme: light. Switch to dark.',
+          dark: 'Theme: dark. Follow the system instead.',
+        };
+        const media = window.matchMedia('(prefers-color-scheme: light)');
+
+        const apply = (pref) => {
+          const light = pref === 'light' || (pref === 'system' && media.matches);
+          document.documentElement.classList.toggle('light', light);
+          document.documentElement.classList.toggle('dark', !light);
+          document.documentElement.dataset.themePref = pref;
+          button.setAttribute('aria-label', LABEL[pref]);
+          button.setAttribute('title', LABEL[pref]);
+        };
+
+        const read = () => {
+          try {
+            const stored = localStorage.getItem('vite-ui-theme');
+            return ORDER.includes(stored) ? stored : 'system';
+          } catch {
+            return 'system';
+          }
+        };
+
+        apply(read());
+
+        button.addEventListener('click', () => {
+          const next = ORDER[(ORDER.indexOf(read()) + 1) % ORDER.length];
+          try {
+            localStorage.setItem('vite-ui-theme', next);
+          } catch {
+            // Storage denied: the choice still applies for this page.
+          }
+          apply(next);
+        });
+
+        // Only meaningful while the preference is `system` — but adding and
+        // removing the listener as the preference changes buys nothing, since
+        // apply() re-derives from the stored value either way.
+        media.addEventListener('change', () => apply(read()));
+      })();
+    </script>
   </body>
 </html>

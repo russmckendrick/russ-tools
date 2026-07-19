@@ -88,6 +88,47 @@ body > main {
   color: var(--color-on-surface);
 }
 
+/* --- Theme toggle ---------------------------------------------------------
+   Sized to the topnav's optical line rather than to a touch target: it sits
+   in a row of 13px links and a 36px control would read as the most important
+   thing in the header, which it is not. */
+
+.rt-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 16px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-on-surface-muted);
+  cursor: pointer;
+}
+.rt-theme-toggle:hover {
+  color: var(--color-on-surface);
+  border-color: var(--color-outline);
+  background: var(--color-surface-inset);
+}
+.rt-theme-toggle:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* All three glyphs are in the markup; the live one is revealed from the
+   preference the pre-paint script has already written, so the button is
+   never briefly wrong. */
+.rt-theme-icon {
+  display: none;
+}
+:root[data-theme-pref='system'] .rt-theme-icon[data-for='system'],
+:root[data-theme-pref='light'] .rt-theme-icon[data-for='light'],
+:root[data-theme-pref='dark'] .rt-theme-icon[data-for='dark'] {
+  display: block;
+}
+
 /* --- The one ambient element ---------------------------------------------
    A broad wash of the house accent behind the top of the page, low enough
    that it never competes with content. DESIGN.md permits exactly this one. */
