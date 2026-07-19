@@ -6,12 +6,16 @@
  * tool hand-rolls its own header, its own SEO ritual and its own idea of
  * hierarchy, and the crawler receives an empty div with no h1. Here the tool
  * supplies a manifest and gets: a real prerendered h1, its description,
- * schema.org markup, its category hue carried through the breadcrumb, the
- * icon tile, and the two-column control /
- * result rhythm DESIGN.md specifies.
+ * schema.org markup, its category hue carried through the breadcrumb and the
+ * icon tile.
  *
- * A tool renders into the `controls` and default slots. It cannot reach the
- * head, cannot set its own colour, and cannot invent its own page furniture.
+ * A tool renders into one slot, full width, and composes its own body. It
+ * cannot reach the head, cannot set its own colour, and cannot invent its own
+ * page furniture. There was a `controls` slot here for a 320px control column;
+ * it is gone. Two reasons, and the second is the one that settles it: a slot
+ * is filled at build time, so it could never hold controls that share React
+ * state with the results beside them — and the fixed proportion was wrong for
+ * most of the fifteen tools anyway. See the plan's Session 6.
  *
  * The header is deliberately three lines and no more: breadcrumb, icon +
  * h1, one factual sentence. No capability pills, no route-pattern badge, no
@@ -39,7 +43,6 @@ const schema = {
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
 };
 
-const hasControls = Astro.slots.has('controls');
 ---
 
 <BaseLayout
@@ -69,19 +72,7 @@ const hasControls = Astro.slots.has('controls');
       <p>{tool.shortDescription}</p>
     </div>
 
-    <div class="rt-tool-body" data-single={hasControls ? undefined : true}>
-      {
-        hasControls && (
-          <section class="rt-panel">
-            <div class="rt-panel-head">
-              <span>{Astro.props.controlsTitle ?? 'Input'}</span>
-            </div>
-            <div class="rt-panel-body">
-              <slot name="controls" />
-            </div>
-          </section>
-        )
-      }
+    <div class="rt-tool-body">
       <slot />
     </div>
   </div>

@@ -453,21 +453,15 @@ body > main {
 }
 
 /* Controls left, output right, always. */
+/* One full-width column. A tool composes its own body inside it — the
+   fifteen tools are not one shape, and a fixed control column imposed on
+   all of them is what Session 6 reverted. */
 .rt-tool-body {
   position: relative;
   z-index: 1;
   padding-block: 18px var(--rt-space-xl);
   display: grid;
   gap: var(--rt-space-md);
-}
-@media (min-width: 820px) {
-  .rt-tool-body {
-    grid-template-columns: 320px 1fr;
-    align-items: start;
-  }
-}
-.rt-tool-body[data-single] {
-  grid-template-columns: 1fr;
 }
 
 /* --- Panel ---------------------------------------------------------------- */

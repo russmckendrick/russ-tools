@@ -39,68 +39,70 @@ const DNSLookupForm = ({
 }) => {
   return (
     <Card>
-      <CardContent className="grid gap-4 pt-6">
-        {/*
-          One field per row. This sits in the 320px control column, so a
-          multi-column form here would only reflow at a breakpoint the column
-          never reaches.
-        */}
-        <div className="grid gap-1.5">
-          <Label htmlFor="domain">Domain Name</Label>
-          <div className="relative">
-            <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="domain"
-              placeholder="example.com"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              onKeyPress={onKeyPress}
-              className="pl-9"
-            />
+      <CardContent className="pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="md:col-span-2">
+            <Label htmlFor="domain">Domain Name</Label>
+            <div className="relative">
+              <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="domain"
+                placeholder="example.com or mail.example.com"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                onKeyPress={onKeyPress}
+                className="pl-9"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="record-type">Record Type</Label>
+            <Select value={recordType} onValueChange={setRecordType}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DNS_RECORD_TYPES.map(type => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="dns-provider">DNS Provider</Label>
+            <Select value={dnsProvider} onValueChange={setDnsProvider}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DNS_PROVIDERS.map(provider => (
+                  <SelectItem key={provider.value} value={provider.value}>
+                    {provider.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end">
+            <Button 
+              onClick={onLookup}
+              disabled={loading}
+              className="w-full"
+            >
+              {loading ? (
+                <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />
+              ) : (
+                <Search className="mr-2 h-4 w-4" />
+              )}
+              Lookup DNS
+            </Button>
           </div>
         </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="record-type">Record Type</Label>
-          <Select value={recordType} onValueChange={setRecordType}>
-            <SelectTrigger id="record-type">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {DNS_RECORD_TYPES.map(type => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="dns-provider">DNS Provider</Label>
-          <Select value={dnsProvider} onValueChange={setDnsProvider}>
-            <SelectTrigger id="dns-provider">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {DNS_PROVIDERS.map(provider => (
-                <SelectItem key={provider.value} value={provider.value}>
-                  {provider.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <Button
-          onClick={onLookup}
-          disabled={loading}
-          className="w-full"
-        >
-          {loading ? (
-            <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />
-          ) : (
-            <Search className="mr-2 h-4 w-4" />
-          )}
-          Lookup DNS
-        </Button>
+        <p className="text-body-sm text-muted-foreground mt-2">
+          Enter a domain name (e.g., example.com) to perform DNS lookups
+        </p>
       </CardContent>
     </Card>
   );

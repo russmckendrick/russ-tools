@@ -361,12 +361,33 @@ every tool is equally reachable and hierarchy here would be a lie.
 Tools are always grouped by category, each group introduced by a coloured label,
 a hairline rule and a count. Category filter chips sit above the grid.
 
-On a tool page the body splits into a `320px` control column and a fluid result
-column above 820px, stacking below it. Controls left, output right, always.
+A tool page is **one full-width column**, and the tool composes its own body
+inside it. There is no prescribed control column.
+
+> **This replaces a rule that was tried and withdrawn.** The line here used to
+> read *"the body splits into a `320px` control column and a fluid result column
+> above 820px … controls left, output right, always"*. Built and applied across
+> ten tools, it was rejected on sight as unbalanced, and the reason is
+> structural rather than a matter of taste: a fixed narrow column forces the
+> controls to be **tall**, which only looks right when the result is a large
+> body that fills the height beside it. Where the result is a single artefact
+> you get a 450px column of selects against a 90px card and several hundred
+> pixels of void — cron's expression is one line and always will be. Where the
+> result is a browse surface you simply lose a column of it — Microsoft Portals
+> is 91 uniform cards.
+>
+> These fifteen tools are at least three shapes: **query → report**,
+> **form → artefact**, and **browse → grid**. The 320px figure described the
+> proportions of the first and was written down as if it governed all three.
+> Consistency across the set comes from the shared header, panel, type, spacing
+> and controls — not from a shared column ratio, and imposing one costs more
+> than it buys.
 
 Density is deliberate: aim for the whole tool index to be visible in roughly one
 and a half screens. **Empty vertical space below the content is a bug**, not
-breathing room.
+breathing room — and note that a two-column layout can create that bug
+sideways, beside the shorter column, which is exactly how the rule above
+failed.
 
 ## Elevation & Depth
 

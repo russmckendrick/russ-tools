@@ -259,11 +259,11 @@ What remains in Phase 2:
 1. **`core/`** — storage + the non-destructive migration shim (`rt:<id>:<slot>`,
    read-old/write-new, never delete — frozen contract #3), sharelink ported **verbatim**
    (frozen contract #2), clipboard, download, cache-with-TTL, api client.
-2. **The two-column split.** `DESIGN.md`'s Layout section specifies a 320px control column
-   beside a fluid result column, and `ToolLayout` already provides the `controls` slot —
-   but bridged tools render everything into the default slot, so only password-generator
-   has the shape, and it built its own grid. This is the largest remaining source of
-   "this page looks different from that one".
+2. ~~**The two-column split.**~~ **Withdrawn — do not restart this.** Built, applied to
+   ten tools, rejected as unbalanced and fully reverted in Session 6. `DESIGN.md`'s
+   Layout section now carries the reasoning and the shell no longer has a `controls`
+   slot. Page consistency comes from the shared header, panel, type, spacing and
+   controls, all of which are already done.
 3. **Theme toggle** in the shell (the pre-paint script exists; there is no control).
 4. **`/delete`** storage-clear page, driven by declared `storageKeys`.
 5. **The gates:** a real Pages preview deploy, the Playwright deep-link matrix against it,
@@ -373,10 +373,10 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       type steps as colours)
 - [x] `core/` — storage + migration shim, sharelink verbatim, clipboard, download, cache, api client
 - [x] Theme toggle in the new shell (three states, no island — the stored key already had three)
-- [~] Two-column control/result split — **the rule is narrower than the plan assumed.**
-      `ToolSplit` is built and lands on the five lookup tools + jwt; applied to four more
-      it was rejected as unbalanced and reverted. See [Session 6](#2026-07-19--session-6-core-the-theme-control-and-the-split-half-landed).
-      The Astro `controls` slot cannot carry it — controls and results share React state
+- [x] ~~Two-column control/result split~~ — **withdrawn, not deferred.** Built, applied to
+      ten tools, rejected and fully reverted in Session 6; `DESIGN.md` and `ToolLayout`
+      no longer carry the rule or the slot. A tool page is one full-width column and the
+      tool composes its own body
 - [ ] Remaining bespoke per-tool chrome (e.g. data-converter's `ControlPanel` header card)
 - [ ] Last `@tabler` import in a tool file (`IconBrandTerraform`, no lucide equivalent)
 - [ ] `/delete` storage-clear page driven by declared `storageKeys`
@@ -826,8 +826,8 @@ and asserts the registry serves every route the SPA serves today *and adds none*
 
 **`ToolLayout.astro` is the visible redesign.** Every tool page is now prerendered HTML with a
 real `h1`, its own description and schema.org markup — against today's empty div with no `h1`.
-Breadcrumb, category icon tile, badges, and the 320px control column beside a fluid result
-column, all from the manifest. The category hue is set once and inherited, so nothing
+Breadcrumb, category icon tile and badges, all from the manifest. (It also shipped a 320px
+control column beside a fluid result column — withdrawn in Session 6.) The category hue is set once and inherited, so nothing
 downstream knows which of the six it is. The index carries the approved composition: stat strip,
 filter chips, category groups, panelled cards with the hue-tinted hover glow. The bespoke icon
 set (15 icons, 24px grid, 1.6px stroke, `currentColor`) is in `src/shell/icons.mjs`.
@@ -1023,7 +1023,8 @@ not pushed. `pnpm test` 271 / 10 files · `pnpm lint` 0 errors, 29 warnings ·
 **Next session — see the [Phase 2 task board](#phase-2-task-board).** The
 shared layer and the sweep are done; what remains is `core/`, the theme toggle,
 the `/delete` page, the two-column control/result split per tool, and the
-deploy-and-verify gates.
+deploy-and-verify gates. *(Session 6 note: the split was attempted and
+withdrawn — see below.)*
 
 ### 2026-07-19 — Session 6: `core/`, the theme control, and the split half-landed
 
@@ -1060,11 +1061,15 @@ flip a class on `<html>` would cost more than the rest of the shell's JS. All th
 glyphs ship in the markup; CSS reveals the live one from the `data-theme-pref` the
 pre-paint script writes, so the button is never briefly wrong.
 
-**3. The split — and the lesson repeating for a third time.**
+**3. The split — built, rejected, and withdrawn completely.**
 
 `ToolSplit` was built and applied to ten tools. The owner's verdict on seeing the set:
 *"the split looks terrible across most of the tools — it makes this look unbalanced."*
-Four were reverted the same session.
+Four came off, then Microsoft Portals, then — *"lose the split full stop"* — all of them.
+`src/components/ui/tool-split.jsx` is deleted, `ToolLayout`'s `controls` slot and the
+320px grid rule in `shell.css` are gone, and `DESIGN.md`'s Layout section now says a tool
+page is one full-width column, with the withdrawn rule and the reason recorded in place
+so it is not proposed again.
 
 **The structural finding, which is the durable part.** A fixed 320px control column
 forces controls to be tall and narrow. That is right when the result is a **large body
@@ -1100,11 +1105,11 @@ lives inside the island and `ToolLayout` owns everything above it.
 **State at session end**
 - `pnpm test` → **329 passing / 14 files** (was 271) · `pnpm lint` → **0 errors, 29
   warnings** (unchanged floor) · `pnpm build` and `pnpm build:astro` green.
-- Split live on **five**: dns-lookup, whois, ssl-checker, tenant-lookup, jwt.
-- Reverted: cron, buzzword-ipsum, password-generator, azure-kql, **microsoft-portals**.
-- Not attempted: base64, data-converter, markdown-table (editors — input and output are
-  both large text bodies), azure-naming and network-designer (tab workspaces whose result
-  already lives on its own tab; both are Phase 5 anyway).
+- Split: **gone everywhere.** All fifteen tools render exactly as they did at the start of
+  the session; the net diff on `src/components/tools/` is zero.
+- What survives the episode is the finding, now written into `DESIGN.md`: page consistency
+  comes from the shared header, panel, type, spacing and controls — not from a shared
+  column ratio.
 
 **Dev-server note for the next session:** `astro dev` left running across sessions serves
 a stale optimised-dep graph, and the symptom is an island reporting "failed to load" with

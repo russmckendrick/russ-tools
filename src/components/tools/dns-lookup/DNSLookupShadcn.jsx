@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ToolSplit, ToolSplitEmpty } from "@/components/ui/tool-split";
 import { AlertCircle, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
@@ -237,50 +236,33 @@ const DNSLookupShadcn = () => {
   return (
     <TooltipProvider>
       <SEOHead {...seoData} />
-      <div className="grid gap-4">
-      {/*
-        Page furniture, so it sits above the split rather than inside the
-        control column. Under the Astro shell it stands down entirely
-        (ShellContext); in the SPA it is still the page's header.
-      */}
-      <ToolHeader
-        icon={DNSIcon}
-        title="DNS Lookup Tool"
-        description="Perform DNS queries for various record types using different DNS providers"
-        showTitle={false}
-        standalone={true}
-      />
+      <div className="space-y-6">
+        {/* Header */}
+        <ToolHeader
+          icon={DNSIcon}
+          title="DNS Lookup Tool"
+          description="Perform DNS queries for various record types using different DNS providers"
+          iconColor="indigo"
+          showTitle={false}
+          standalone={true}
+        />
 
-      {/*
-        Controls left, output right — DESIGN.md's Layout rule. History belongs
-        on the left because clicking an entry is an input: it re-runs that
-        lookup rather than displaying anything.
-      */}
-      <ToolSplit
-        controls={
-          <>
-            <DNSLookupForm
-              domain={domain}
-              setDomain={setDomain}
-              recordType={recordType}
-              setRecordType={setRecordType}
-              dnsProvider={dnsProvider}
-              setDnsProvider={setDnsProvider}
-              loading={loading}
-              onLookup={handleLookup}
-              onKeyPress={handleKeyPress}
-            />
+        {/* Lookup Form */}
+        <DNSLookupForm
+          domain={domain}
+          setDomain={setDomain}
+          recordType={recordType}
+          setRecordType={setRecordType}
+          dnsProvider={dnsProvider}
+          setDnsProvider={setDnsProvider}
+          loading={loading}
+          onLookup={handleLookup}
+          onKeyPress={handleKeyPress}
+        />
 
-            <DNSHistoryDisplay
-              lookupHistory={lookupHistory}
-              onHistoryItemClick={handleHistoryItemClick}
-              onClearHistory={clearHistory}
-            />
-          </>
-        }
-      >
+        {/* Loading State */}
         {loading && (
-          <div className="flex items-center justify-center rounded-lg border border-outline p-8">
+          <div className="flex items-center justify-center p-8 border rounded-md">
             <div className="flex items-center gap-3">
               <RotateCcw className="h-5 w-5 animate-spin-ccw" />
               <span>Performing DNS lookup for {domain}...</span>
@@ -288,6 +270,7 @@ const DNSLookupShadcn = () => {
           </div>
         )}
 
+        {/* Error Display */}
         {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -296,22 +279,21 @@ const DNSLookupShadcn = () => {
           </Alert>
         )}
 
+        {/* Results */}
         {lookupResults && !loading && (
-          <DNSResultsDisplay
+          <DNSResultsDisplay 
             results={lookupResults}
             domain={domain}
             recordType={recordType}
           />
         )}
 
-        {!loading && !error && !lookupResults && (
-          <ToolSplitEmpty
-            icon={<DNSIcon size={28} />}
-            title="No lookup yet"
-            hint="Enter a domain and choose a record type — the answer appears here."
-          />
-        )}
-      </ToolSplit>
+        {/* History */}
+        <DNSHistoryDisplay
+          lookupHistory={lookupHistory}
+          onHistoryItemClick={handleHistoryItemClick}
+          onClearHistory={clearHistory}
+        />
       </div>
     </TooltipProvider>
   );
