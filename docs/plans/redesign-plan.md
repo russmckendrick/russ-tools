@@ -1490,3 +1490,24 @@ warnings · both builds green · `_redirects` now carries 10 param rewrites +
 
 **Remaining, all owner-gated:** the Pages preview deploy + Playwright
 deep-link matrix, and the worker `ALLOWED_ORIGINS` decision. Then Phase 6.
+
+**Addendum — subnet-calculator polish, three owner-reported fixes.** All three
+turned out to involve Radix Select's hidden native `<select>`, which is worth
+knowing exists before writing any future form:
+
+1. **The calculate row didn't sit on one baseline** — the hidden native select
+   is a *sibling* of the trigger, so a `space-y-*` column gave the invisible
+   element a real 8px margin and `items-end` aligned the ghost instead of the
+   control. Columns holding a Select use `flex flex-col gap-2` (flex gap
+   ignores out-of-flow children). dns-lookup's grid form was checked and is
+   unaffected.
+2. **Copy buttons**: "Copy details" copies the whole panel as a padded
+   label/value block (verified by intercepting the clipboard write), and the
+   CIDR copy gained a visible label.
+3. **Share links opened onto a phantom error** — the payload restored
+   perfectly, but setting the select's value programmatically makes Radix echo
+   an **empty `onValueChange`** through the hidden native select; the handler
+   recalculated with `"10.0.0.0/"` and blanked the prefix. The handler now
+   ignores the empty echo. jsdom does not reproduce the echo, so the browser
+   reproduction (before/after, plus a with-splits round-trip and a real
+   dropdown selection) is the regression pin, recorded in the commit.
