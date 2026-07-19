@@ -154,6 +154,14 @@ const SubnetCalculatorTool = () => {
 
   const prefixOptions = Array.from({ length: FAMILIES[family].bits + 1 }, (_, i) => i);
 
+  const detailsAsText = () => {
+    const width = Math.max(...detailRows.map(([label]) => label.length)) + 2;
+    return [
+      details.cidr,
+      ...detailRows.map(([label, value]) => `${label.padEnd(width)}${value}`),
+    ].join('\n');
+  };
+
   const detailRows = details
     ? result.family === 4
       ? [
@@ -256,14 +264,24 @@ const SubnetCalculatorTool = () => {
                 <span className="font-mono text-data-lg truncate">{details.cidr}</span>
                 <Badge>IPv{result.family}</Badge>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleCopy(details.cidr, 'CIDR')}
-                aria-label="Copy CIDR"
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleCopy(detailsAsText(), 'Details')}
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy details
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleCopy(details.cidr, 'CIDR')}
+                  aria-label="Copy CIDR"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
