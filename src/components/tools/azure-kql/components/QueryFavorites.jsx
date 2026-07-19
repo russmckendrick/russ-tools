@@ -128,11 +128,11 @@ const QueryFavorites = ({ favorites, onLoad, onDelete }) => {
                       <span className="font-medium">{favorite.name}</span>
                     </div>
                     {favorite.description && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-body-sm text-muted-foreground">
                         {favorite.description}
                       </p>
                     )}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
                       <Database className="w-3 h-3" />
                       <span>{favorite.service}</span>
                       <span>•</span>
@@ -169,7 +169,7 @@ const QueryFavorites = ({ favorites, onLoad, onDelete }) => {
                 {favorite.tags && favorite.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {favorite.tags.map((tag, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs">
+                      <Badge key={idx} variant="secondary" className="text-body-sm">
                         <Tag className="w-3 h-3 mr-1" />
                         {tag}
                       </Badge>
@@ -177,7 +177,7 @@ const QueryFavorites = ({ favorites, onLoad, onDelete }) => {
                   </div>
                 )}
                 
-                <div className="bg-muted/30 p-2 rounded text-xs font-mono overflow-x-auto">
+                <div className="bg-muted/30 p-2 rounded text-data-sm font-mono overflow-x-auto">
                   <pre className="whitespace-pre-wrap">
                     {favorite.query.split('\n').slice(0, 2).join('\n')}
                     {favorite.query.split('\n').length > 2 && '\n...'}

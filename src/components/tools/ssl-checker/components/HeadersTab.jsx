@@ -21,21 +21,21 @@ const HeadersTab = ({ data }) => {
       {/* Request Information */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">HTTP Request</h3>
+          <h3 className="text-title-sm">HTTP Request</h3>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             <div>
-              <p className="text-sm text-muted-foreground">URL</p>
-              <p className="font-medium font-mono text-sm">{httpTransaction.requestUrl}</p>
+              <p className="text-body-sm text-muted-foreground">URL</p>
+              <p className="text-data-md font-mono">{httpTransaction.requestUrl}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Request Line</p>
-              <p className="font-medium font-mono text-sm">{httpTransaction.requestLine}</p>
+              <p className="text-body-sm text-muted-foreground">Request Line</p>
+              <p className="text-data-md font-mono">{httpTransaction.requestLine}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Request Headers</p>
-              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+              <p className="text-body-sm text-muted-foreground">Request Headers</p>
+              <div className="bg-muted p-3 rounded font-mono text-data-sm space-y-1">
                 {httpTransaction.requestHeaders?.map((header, index) => (
                   <div key={index}>{header}</div>
                 ))}
@@ -48,25 +48,25 @@ const HeadersTab = ({ data }) => {
       {/* Response Information */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">HTTP Response</h3>
+          <h3 className="text-title-sm">HTTP Response</h3>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Status Code</p>
+                <p className="text-body-sm text-muted-foreground">Status Code</p>
                 <Badge variant={httpTransaction.statusCode === 200 ? "default" : "destructive"}>
                   {httpTransaction.statusCode}
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Response Line</p>
-                <p className="font-medium font-mono text-sm">{httpTransaction.responseLine}</p>
+                <p className="text-body-sm text-muted-foreground">Response Line</p>
+                <p className="text-data-md font-mono">{httpTransaction.responseLine}</p>
               </div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Response Headers</p>
-              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1 max-h-96 overflow-y-auto">
+              <p className="text-body-sm text-muted-foreground">Response Headers</p>
+              <div className="bg-muted p-3 rounded font-mono text-data-sm space-y-1 max-h-96 overflow-y-auto">
                 {httpTransaction.responseHeaders?.map((header, index) => (
                   <div key={index} className="break-all">
                     <span className="text-primary font-medium">{header.name}:</span> {header.value}
@@ -82,7 +82,7 @@ const HeadersTab = ({ data }) => {
       {endpoint?.details && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Security Headers</h3>
+            <h3 className="text-title-sm">Security Headers</h3>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

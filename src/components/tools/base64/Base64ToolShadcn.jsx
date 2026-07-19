@@ -540,7 +540,7 @@ const Base64ToolShadcn = () => {
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="mode-switch" className="text-base font-medium">
+                <Label htmlFor="mode-switch" className="text-body-md font-medium">
                   {mode === 'encode' ? 'Encode to Base64' : 'Decode from Base64'}
                 </Label>
                 <div className="flex items-center space-x-2">
@@ -549,13 +549,13 @@ const Base64ToolShadcn = () => {
                     checked={mode === 'decode'}
                     onCheckedChange={(checked) => setMode(checked ? 'decode' : 'encode')}
                   />
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-body-sm text-muted-foreground">
                     {mode === 'encode' ? 'Convert text/files to Base64' : 'Convert Base64 back to original format'}
                   </span>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="encoding-type" className="text-base font-medium">Encoding Type</Label>
+                <Label htmlFor="encoding-type" className="text-body-md font-medium">Encoding Type</Label>
                 <Select value={encodingType} onValueChange={setEncodingType}>
                   <SelectTrigger>
                     <SelectValue />
@@ -577,7 +577,7 @@ const Base64ToolShadcn = () => {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">File Upload</h3>
+              <h3 className="text-title-sm">File Upload</h3>
               {selectedFile && (
                 <Badge variant="secondary">
                   {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
@@ -607,7 +607,7 @@ const Base64ToolShadcn = () => {
                 <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               )}
               <div>
-                <p className="text-lg">
+                <p className="text-title-sm">
                   {isDragActive
                     ? isDragAccept
                       ? 'Drop the file here'
@@ -615,7 +615,7 @@ const Base64ToolShadcn = () => {
                     : 'Drag files here or click to select'
                   }
                 </p>
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-body-sm text-muted-foreground mt-2">
                   Supports text, images, and documents up to 15MB
                 </p>
               </div>
@@ -629,7 +629,7 @@ const Base64ToolShadcn = () => {
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Input</h3>
+                <h3 className="text-title-sm">Input</h3>
                 <div className="flex items-center gap-2">
                   {selectedFile ? (
                     <Badge variant="outline">
@@ -653,7 +653,7 @@ const Base64ToolShadcn = () => {
               {inputImagePreview ? (
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium mb-2">
+                    <h4 className="text-body-sm font-medium mb-2">
                       {selectedFile ? 'Image Preview:' : 'Base64 Image Preview:'}
                     </h4>
                     <img
@@ -661,7 +661,7 @@ const Base64ToolShadcn = () => {
                       alt="Input image preview"
                       className="w-full h-48 object-contain rounded-md border bg-muted"
                     />
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-body-sm text-muted-foreground mt-2">
                       {selectedFile ? 'Image loaded' : 'Base64 image detected'} • {inputText.length} characters in Base64
                     </p>
                   </div>
@@ -676,10 +676,10 @@ const Base64ToolShadcn = () => {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     rows={8}
-                    className="min-h-[200px] font-mono text-sm"
+                    className="min-h-[200px] font-mono text-data-md"
                   />
                   {inputText && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-data-sm font-mono text-muted-foreground">
                       {inputText.length} characters
                     </p>
                   )}
@@ -692,7 +692,7 @@ const Base64ToolShadcn = () => {
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Output</h3>
+                <h3 className="text-title-sm">Output</h3>
                 <div className="flex items-center gap-2">
                   {outputText && (
                     <>
@@ -713,7 +713,7 @@ const Base64ToolShadcn = () => {
               {outputImagePreview ? (
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium mb-2">
+                    <h4 className="text-body-sm font-medium mb-2">
                       {mode === 'encode' ? 'Encoded Image:' : 'Decoded Image:'}
                     </h4>
                     <img
@@ -721,18 +721,18 @@ const Base64ToolShadcn = () => {
                       alt={mode === 'encode' ? 'Encoded image' : 'Decoded image'}
                       className="w-full h-48 object-contain rounded-md border bg-muted"
                     />
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-body-sm text-muted-foreground mt-2">
                       {mode === 'encode' ? 'Image encoded to Base64' : 'Image decoded successfully'} • {outputText.length} characters
                     </p>
                     
                     {mode === 'encode' && (
                       <div className="mt-4">
-                        <h4 className="text-sm font-medium mb-2">Base64 Output:</h4>
+                        <h4 className="text-body-sm font-medium mb-2">Base64 Output:</h4>
                         <Textarea
                           value={outputText}
                           readOnly
                           rows={4}
-                          className="font-mono text-sm"
+                          className="font-mono text-data-md"
                         />
                       </div>
                     )}
@@ -745,10 +745,10 @@ const Base64ToolShadcn = () => {
                     value={outputText}
                     readOnly
                     rows={8}
-                    className="min-h-[200px] font-mono text-sm"
+                    className="min-h-[200px] font-mono text-data-md"
                   />
                   {outputText && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-data-sm font-mono text-muted-foreground">
                       {outputText.length} characters
                     </p>
                   )}

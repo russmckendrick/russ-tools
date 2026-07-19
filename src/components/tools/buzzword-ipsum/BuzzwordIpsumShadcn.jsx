@@ -215,13 +215,13 @@ const BuzzwordIpsumShadcn = () => {
               <DialogTitle>Buzzword Ipsum API Documentation</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 Access the Buzzword Ipsum API programmatically to generate corporate buzzwords for your applications.
               </p>
               
               <div className="space-y-2">
                 <h4 className="font-semibold">Base URL</h4>
-                <div className="p-3 bg-muted rounded-md font-mono text-sm">
+                <div className="p-3 bg-muted rounded-md font-mono text-data-md">
                   https://buzzwords.russmckendrick.com
                 </div>
               </div>
@@ -232,41 +232,41 @@ const BuzzwordIpsumShadcn = () => {
                 <div className="space-y-3">
                   <div>
                     <p className="font-medium">Generate Phrases</p>
-                    <div className="p-2 bg-muted rounded text-sm font-mono">
+                    <div className="p-2 bg-muted rounded text-data-md font-mono">
                       GET /api/phrases?count={'{count}'}
                     </div>
-                    <p className="text-sm text-muted-foreground">Returns an array of buzzword phrases</p>
+                    <p className="text-body-sm text-muted-foreground">Returns an array of buzzword phrases</p>
                   </div>
                   
                   <div>
                     <p className="font-medium">Generate Adjectives</p>
-                    <div className="p-2 bg-muted rounded text-sm font-mono">
+                    <div className="p-2 bg-muted rounded text-data-md font-mono">
                       GET /api/adjectives?count={'{count}'}
                     </div>
-                    <p className="text-sm text-muted-foreground">Returns an array of corporate adjectives</p>
+                    <p className="text-body-sm text-muted-foreground">Returns an array of corporate adjectives</p>
                   </div>
                   
                   <div>
                     <p className="font-medium">Health Check</p>
-                    <div className="p-2 bg-muted rounded text-sm font-mono">
+                    <div className="p-2 bg-muted rounded text-data-md font-mono">
                       GET /api/health
                     </div>
-                    <p className="text-sm text-muted-foreground">Returns API status and version</p>
+                    <p className="text-body-sm text-muted-foreground">Returns API status and version</p>
                   </div>
                 </div>
               </div>
               
               <div className="space-y-2">
                 <h4 className="font-semibold">Parameters</h4>
-                <ul className="text-sm space-y-1">
+                <ul className="text-body-sm space-y-1">
                   <li><code className="bg-muted px-1 rounded">count</code> (optional): Number of items to generate (1-100, default: 10)</li>
                 </ul>
               </div>
               
               <div className="space-y-2">
                 <h4 className="font-semibold">Rate Limiting</h4>
-                <p className="text-sm text-muted-foreground">The API is rate limited to prevent abuse:</p>
-                <ul className="text-sm space-y-1">
+                <p className="text-body-sm text-muted-foreground">The API is rate limited to prevent abuse:</p>
+                <ul className="text-body-sm space-y-1">
                   <li>• 100 requests per minute per IP address</li>
                   <li>• Protected by Cloudflare's DDoS protection</li>
                   <li>• Rate limit headers included in responses</li>
@@ -275,7 +275,7 @@ const BuzzwordIpsumShadcn = () => {
               
               <div className="space-y-2">
                 <h4 className="font-semibold">Example Response</h4>
-                <div className="p-3 bg-muted rounded-md font-mono text-xs">
+                <div className="p-3 bg-muted rounded-md font-mono text-data-sm">
 {`{
   "success": true,
   "data": [
@@ -289,7 +289,7 @@ const BuzzwordIpsumShadcn = () => {
                 </div>
               </div>
               
-              <p className="text-sm text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 This API is provided free of charge for development and testing purposes.
               </p>
             </div>
@@ -300,7 +300,7 @@ const BuzzwordIpsumShadcn = () => {
           {/* Options Column */}
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-semibold">Options</h3>
+              <h3 className="text-title-sm">Options</h3>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -326,7 +326,7 @@ const BuzzwordIpsumShadcn = () => {
                   min={1}
                   max={20}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-body-sm text-muted-foreground">
                   Number of {outputFormat} to generate
                 </p>
               </div>
@@ -371,7 +371,7 @@ const BuzzwordIpsumShadcn = () => {
               <Card>
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Generated Text</h3>
+                    <h3 className="text-title-sm">Generated Text</h3>
                     <div className="flex gap-2">
                       <Button 
                         variant="outline"
@@ -411,7 +411,7 @@ const BuzzwordIpsumShadcn = () => {
                     </CardContent>
                   </Card>
                   
-                  <div className="flex justify-between text-xs text-muted-foreground">
+                  <div className="flex justify-between text-data-sm font-mono text-muted-foreground">
                     <span>Word count: {wordCount}</span>
                     <span>Character count: {charCount}</span>
                   </div>

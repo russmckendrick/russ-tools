@@ -53,7 +53,7 @@ const CodeEditor = ({
       {highlightedCode && value && (
         <pre
           ref={preRef}
-          className="absolute inset-0 p-3 m-0 font-mono text-sm leading-relaxed pointer-events-none overflow-auto whitespace-pre-wrap break-words z-10 code-highlight"
+          className="absolute inset-0 p-3 m-0 font-mono text-data-md pointer-events-none overflow-auto whitespace-pre-wrap break-words z-10 code-highlight"
           style={{
             background: 'transparent',
             minHeight,
@@ -79,7 +79,7 @@ const CodeEditor = ({
         placeholder={placeholder}
         readOnly={readOnly}
         className={`
-          relative w-full p-3 font-mono text-sm leading-relaxed resize-none
+          relative w-full p-3 font-mono text-data-md resize-none
           bg-transparent border-0 outline-none
           ${readOnly ? 'cursor-default' : 'cursor-text'}
           ${highlightedCode && value ? 'text-transparent caret-black dark:caret-white' : 'text-foreground'}

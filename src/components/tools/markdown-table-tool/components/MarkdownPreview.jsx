@@ -135,8 +135,8 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
             <div className="flex items-center space-x-2">
               <Table className="w-5 h-5 text-[var(--cat,var(--color-primary))]" />
               <div>
-                <p className="text-sm font-medium">Dimensions</p>
-                <p className="text-lg font-bold">{stats.rows} × {stats.columns}</p>
+                <p className="text-body-sm font-medium">Dimensions</p>
+                <p className="text-title-sm">{stats.rows} × {stats.columns}</p>
               </div>
             </div>
           </CardContent>
@@ -147,8 +147,8 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
             <div className="flex items-center space-x-2">
               <Hash className="w-5 h-5 text-[var(--cat,var(--color-primary))]" />
               <div>
-                <p className="text-sm font-medium">Total Cells</p>
-                <p className="text-lg font-bold">{stats.cells}</p>
+                <p className="text-body-sm font-medium">Total Cells</p>
+                <p className="text-title-sm">{stats.cells}</p>
               </div>
             </div>
           </CardContent>
@@ -159,8 +159,8 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
             <div className="flex items-center space-x-2">
               <FileText className="w-5 h-5 text-[var(--cat,var(--color-primary))]" />
               <div>
-                <p className="text-sm font-medium">Characters</p>
-                <p className="text-lg font-bold">{stats.totalCharacters}</p>
+                <p className="text-body-sm font-medium">Characters</p>
+                <p className="text-title-sm">{stats.totalCharacters}</p>
               </div>
             </div>
           </CardContent>
@@ -173,8 +173,8 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
                 validation.isValid ? 'bg-success' : 'bg-danger'
               }`} />
               <div>
-                <p className="text-sm font-medium">Status</p>
-                <p className="text-lg font-bold">{validation.isValid ? 'Valid' : 'Invalid'}</p>
+                <p className="text-body-sm font-medium">Status</p>
+                <p className="text-title-sm">{validation.isValid ? 'Valid' : 'Invalid'}</p>
               </div>
             </div>
           </CardContent>
@@ -184,7 +184,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
       {/* Validation Results */}
       {(!validation.isValid || validation.data.warnings.length > 0 || validation.markdown.warnings.length > 0) && (
         <div className="space-y-3">
-          <h3 className="text-lg font-medium">Validation Results</h3>
+          <h3 className="text-title-sm">Validation Results</h3>
           
           {/* Errors */}
           {validation.data.errors.map((error, index) => (
@@ -240,7 +240,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Live Preview</CardTitle>
+            <CardTitle className="text-title-sm">Live Preview</CardTitle>
             <Badge variant={validation.isValid ? 'default' : 'destructive'}>
               {validation.isValid ? 'Renders correctly' : 'May not render properly'}
             </Badge>
@@ -252,7 +252,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
               {renderMarkdownTable(markdown)}
               
               {/* Mobile Preview Note */}
-              <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
+              <div className="text-body-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
                 <div className="flex items-start space-x-2">
                   <Info className="w-4 h-4 mt-0.5" />
                   <div>
@@ -266,7 +266,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
             <div className="text-center py-8 text-muted-foreground">
               <Table className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>No table data to preview</p>
-              <p className="text-sm">Add some content to your table to see the preview</p>
+              <p className="text-body-sm">Add some content to your table to see the preview</p>
             </div>
           )}
         </CardContent>
@@ -275,12 +275,12 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
       {/* Raw Markdown */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Raw Markdown</CardTitle>
+          <CardTitle className="text-title-sm">Raw Markdown</CardTitle>
         </CardHeader>
         <CardContent>
           {markdown ? (
             <div className="bg-muted/30 rounded-lg p-4">
-              <pre className="text-sm font-mono whitespace-pre-wrap break-all">
+              <pre className="text-data-md font-mono whitespace-pre-wrap break-all">
                 {markdown}
               </pre>
             </div>

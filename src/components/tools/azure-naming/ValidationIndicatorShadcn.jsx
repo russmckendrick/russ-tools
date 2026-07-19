@@ -51,7 +51,7 @@ const ValidationIndicatorShadcn = ({ formState, validationState }) => {
               {Object.entries(validationState.errors)
                 .filter(([field]) => field !== 'general')
                 .map(([field, error]) => (
-                  <li key={field} className="text-sm">{error}</li>
+                  <li key={field} className="text-body-sm">{error}</li>
                 ))}
             </ul>
           </AlertDescription>

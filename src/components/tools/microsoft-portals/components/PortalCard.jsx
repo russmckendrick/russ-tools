@@ -20,8 +20,8 @@ const PortalCard = ({ portal, onToggleFavorite }) => {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-base truncate">{portal.name}</CardTitle>
-            <CardDescription className="text-sm line-clamp-2">
+            <CardTitle className="text-title-sm truncate">{portal.name}</CardTitle>
+            <CardDescription className="text-body-sm line-clamp-2">
               {portal.description}
             </CardDescription>
           </div>
@@ -42,11 +42,11 @@ const PortalCard = ({ portal, onToggleFavorite }) => {
       <CardContent className="pt-0">
         <div className="space-y-3">
           <div className="flex flex-wrap gap-1">
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-body-sm">
               {portal.category}
             </Badge>
             {portal.tags && portal.tags.slice(0, 2).map(tag => (
-              <Badge key={tag} variant="secondary" className="text-xs">
+              <Badge key={tag} variant="secondary" className="text-body-sm">
                 {tag}
               </Badge>
             ))}

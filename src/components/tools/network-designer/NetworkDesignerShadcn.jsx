@@ -98,7 +98,7 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
       <CardHeader>
         <div className="flex items-center gap-2">
           <Network className="h-5 w-5 text-info" />
-          <CardTitle className="text-lg">
+          <CardTitle className="text-title-sm">
             {existingNetwork ? 'Reconfigure Parent Network' : 'Configure Parent Network'}
           </CardTitle>
           {existingNetwork && (
@@ -110,7 +110,7 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
       </CardHeader>
       <CardContent className="space-y-4">
         {existingNetwork && (
-          <div className="p-3 bg-warning-subtle border border-warning/40 rounded-md text-sm text-warning">
+          <div className="p-3 bg-warning-subtle border border-warning/40 rounded-md text-body-sm text-warning">
             <div className="flex items-center gap-2">
               <Info className="h-4 w-4" />
               <strong>Warning:</strong> Changing the parent network will remove all existing subnets. You'll need to recreate them after saving.
@@ -130,7 +130,7 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
               onChange={(e) => setIp(e.target.value)}
               className={error && error.includes('IP') ? 'border-danger' : ''}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               Enter the base IP address for your network
             </p>
           </div>
@@ -151,7 +151,7 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               Smaller numbers = larger networks
             </p>
           </div>
@@ -164,14 +164,14 @@ function ParentNetworkForm({ onSubmit, existingNetwork = null, onCancel = null }
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               Descriptive name (optional)
             </p>
           </div>
         </div>
 
         {error && (
-          <div className="text-sm text-danger">{error}</div>
+          <div className="text-body-sm text-danger">{error}</div>
         )}
 
         <div className="flex justify-end gap-2 pt-4">
@@ -387,15 +387,15 @@ function SubnetForm({ onAddSubnet, parentCidr, parentNetwork, subnets }) {
       </div>
       
       {error && (
-        <div className="text-sm text-danger">{error}</div>
+        <div className="text-body-sm text-danger">{error}</div>
       )}
       {cidrOptions.length === 0 && parentNetwork && (
-        <div className="text-sm text-warning">
+        <div className="text-body-sm text-warning">
           No space available for additional subnets in this network
         </div>
       )}
       {cidrOptions.length > 0 && (
-        <div className="text-xs text-muted-foreground">
+        <div className="text-body-sm text-muted-foreground">
           Available CIDR sizes are calculated based on remaining space in your parent network
         </div>
       )}
@@ -802,18 +802,18 @@ const NetworkDesignerShadcn = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <p className="text-sm">
+                  <p className="text-body-sm">
                     <span className="font-medium">Network Name:</span> {current.parentNetwork.name}
                   </p>
-                  <p className="text-sm">
+                  <p className="text-body-sm">
                     <span className="font-medium">IP Address:</span> {current.parentNetwork.ip}
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm">
+                  <p className="text-body-sm">
                     <span className="font-medium">CIDR Notation:</span> /{current.parentNetwork.cidr}
                   </p>
-                  <p className="text-sm">
+                  <p className="text-body-sm">
                     <span className="font-medium">Subnet Mask:</span> {new Netmask(current.parentNetwork.ip + '/' + current.parentNetwork.cidr).mask}
                   </p>
                 </div>
@@ -979,7 +979,7 @@ const NetworkDesignerShadcn = () => {
                   variant: 'outline'
                 }} 
               />
-              <p className="text-sm text-muted-foreground">Export network diagrams as SVG files</p>
+              <p className="text-body-sm text-muted-foreground">Export network diagrams as SVG files</p>
             </div>
           </CardContent>
         </Card>

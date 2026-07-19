@@ -293,6 +293,24 @@ interface its compact, engineered feel. Body text loosens to near-normal for
 readability. Weights stay in the 400–660 range; there is no light weight and no
 black weight.
 
+**The ten steps above are the whole scale, and one class applies a step.**
+Each `text-*` token carries its own weight, line-height and letter-spacing, so
+`text-title-sm` is complete on its own — nothing should sit a `font-*`,
+`leading-*` or `tracking-*` beside it. Tailwind's stock sizes (`text-sm`,
+`text-lg`, `text-2xl`) are not on this scale and are blocked by ESLint, because
+a call-site class beats the shared component's: a single `text-lg` on a card
+title silently opts that heading out of the design system, and fifteen tools
+doing it is how the type ends up all over the place.
+
+> **Implementation note.** The per-step font-*family* tokens the exporter emits
+> (`--font-title-sm: "Inter"`) are stripped by `pnpm generate:tokens`. Tailwind's
+> `font-*` namespace covers both family and weight and the family wins, so
+> `font-title-sm` set `font-family: "Inter"` — which is not the self-hosted
+> family name (`"Inter Variable"`), so headings fell back to the browser default
+> **serif**, in a system whose rule is that there is no serif anywhere. Use
+> `font-mono` explicitly for the three data steps; that is the one thing worth
+> seeing at the call site.
+
 There is **no serif anywhere** in this system.
 
 Numerals in any column, table or statistic use `tabular-nums` so digits align.

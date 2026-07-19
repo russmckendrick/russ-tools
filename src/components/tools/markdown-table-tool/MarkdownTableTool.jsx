@@ -201,7 +201,7 @@ const MarkdownTableTool = () => {
           <TabsContent value="markdown">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Raw Markdown Output</h3>
+                <h3 className="text-title-sm">Raw Markdown Output</h3>
                 <Button
                   variant="outline"
                   size="sm"
@@ -213,7 +213,7 @@ const MarkdownTableTool = () => {
               </div>
               
               <div className="bg-muted/30 rounded-lg p-4">
-                <pre className="text-sm font-mono whitespace-pre-wrap break-all">
+                <pre className="text-data-md font-mono whitespace-pre-wrap break-all">
                   {exportToMarkdown()}
                 </pre>
               </div>
@@ -223,7 +223,7 @@ const MarkdownTableTool = () => {
                   <IconAlertTriangle className="w-4 h-4" />
                   <AlertDescription>
                     <div className="font-medium mb-2">Validation Errors:</div>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
+                    <ul className="list-disc list-inside space-y-1 text-body-sm">
                       {validation.data.errors.map((error, index) => (
                         <li key={index}>{error}</li>
                       ))}
@@ -240,7 +240,7 @@ const MarkdownTableTool = () => {
                   <IconAlertTriangle className="w-4 h-4" />
                   <AlertDescription>
                     <div className="font-medium mb-2">Warnings:</div>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
+                    <ul className="list-disc list-inside space-y-1 text-body-sm">
                       {validation.data.warnings.map((warning, index) => (
                         <li key={index}>{warning}</li>
                       ))}

@@ -40,7 +40,7 @@ const SecurityTab = ({ data }) => {
       {/* Vulnerabilities */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Vulnerability Assessment</h3>
+          <h3 className="text-title-sm">Vulnerability Assessment</h3>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -59,7 +59,7 @@ const SecurityTab = ({ data }) => {
       {/* Security Features */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Security Features</h3>
+          <h3 className="text-title-sm">Security Features</h3>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -68,7 +68,7 @@ const SecurityTab = ({ data }) => {
                 <span className="font-medium">{feature.name}</span>
                 <div className="flex items-center gap-2">
                   {feature.level !== null && (
-                    <span className="text-sm text-muted-foreground">Level {feature.level}</span>
+                    <span className="text-body-sm text-muted-foreground">Level {feature.level}</span>
                   )}
                   <Badge variant={feature.status ? "default" : "secondary"}>
                     {feature.status ? "Enabled" : "Disabled"}
@@ -84,20 +84,20 @@ const SecurityTab = ({ data }) => {
       {details.hstsPolicy && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">HSTS Policy</h3>
+            <h3 className="text-title-sm">HSTS Policy</h3>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Status</p>
+                <p className="text-body-sm text-muted-foreground">Status</p>
                 <Badge variant={details.hstsPolicy.status === 'present' ? "default" : "secondary"}>
                   {details.hstsPolicy.status}
                 </Badge>
               </div>
               {details.hstsPolicy.maxAge && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Max Age</p>
-                  <p className="font-medium">{Math.round(details.hstsPolicy.maxAge / 86400)} days</p>
+                  <p className="text-body-sm text-muted-foreground">Max Age</p>
+                  <p className="text-data-md font-mono">{Math.round(details.hstsPolicy.maxAge / 86400)} days</p>
                 </div>
               )}
             </div>

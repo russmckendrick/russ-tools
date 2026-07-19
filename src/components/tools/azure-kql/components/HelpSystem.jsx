@@ -35,7 +35,7 @@ const HelpSystem = ({ open, onClose, context: _context }) => {
                   <BookOpen className="w-4 h-4" />
                   Getting Started
                 </h3>
-                <ol className="list-decimal list-inside space-y-2 text-sm">
+                <ol className="list-decimal list-inside space-y-2 text-body-sm">
                   <li>Select an Azure service from the service selector</li>
                   <li>Choose a query template that matches your use case</li>
                   <li>Fill in the required parameters (marked with *)</li>
@@ -49,7 +49,7 @@ const HelpSystem = ({ open, onClose, context: _context }) => {
             <Card>
               <CardContent className="pt-6 space-y-3">
                 <h3 className="font-semibold">Keyboard Shortcuts</h3>
-                <div className="space-y-1 text-sm">
+                <div className="space-y-1 text-body-sm">
                   <div className="flex justify-between">
                     <span>Generate Query</span>
                     <Badge variant="secondary">Ctrl + Enter</Badge>
@@ -74,34 +74,34 @@ const HelpSystem = ({ open, onClose, context: _context }) => {
                   <Code2 className="w-4 h-4" />
                   Common KQL Operators
                 </h3>
-                <div className="space-y-2 text-sm font-mono">
+                <div className="space-y-2 text-data-md font-mono">
                   <div className="p-2 bg-muted rounded">
                     <strong>where</strong> - Filter rows based on conditions
-                    <div className="text-xs mt-1 text-muted-foreground">
+                    <div className="text-data-sm mt-1 text-muted-foreground">
                       Example: | where TimeGenerated {'>'} ago(1h)
                     </div>
                   </div>
                   <div className="p-2 bg-muted rounded">
                     <strong>project</strong> - Select specific columns
-                    <div className="text-xs mt-1 text-muted-foreground">
+                    <div className="text-data-sm mt-1 text-muted-foreground">
                       Example: | project TimeGenerated, Action, SourceIp
                     </div>
                   </div>
                   <div className="p-2 bg-muted rounded">
                     <strong>summarize</strong> - Aggregate data
-                    <div className="text-xs mt-1 text-muted-foreground">
+                    <div className="text-data-sm mt-1 text-muted-foreground">
                       Example: | summarize count() by Action
                     </div>
                   </div>
                   <div className="p-2 bg-muted rounded">
                     <strong>order by</strong> - Sort results
-                    <div className="text-xs mt-1 text-muted-foreground">
+                    <div className="text-data-sm mt-1 text-muted-foreground">
                       Example: | order by TimeGenerated desc
                     </div>
                   </div>
                   <div className="p-2 bg-muted rounded">
                     <strong>limit</strong> - Limit number of results
-                    <div className="text-xs mt-1 text-muted-foreground">
+                    <div className="text-data-sm mt-1 text-muted-foreground">
                       Example: | limit 100
                     </div>
                   </div>
@@ -121,10 +121,10 @@ const HelpSystem = ({ open, onClose, context: _context }) => {
                 <div className="space-y-3">
                   <div className="border rounded p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <strong className="text-sm">Find Denied Connections</strong>
+                      <strong className="text-body-sm font-semibold">Find Denied Connections</strong>
                       <Badge>Security</Badge>
                     </div>
-                    <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                    <pre className="text-data-sm font-mono bg-muted p-2 rounded overflow-x-auto">
 {`AZFWNetworkRule
 | where TimeGenerated >= ago(24h)
 | where Action == "Deny"
@@ -135,10 +135,10 @@ const HelpSystem = ({ open, onClose, context: _context }) => {
                   
                   <div className="border rounded p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <strong className="text-sm">Top Source IPs</strong>
+                      <strong className="text-body-sm font-semibold">Top Source IPs</strong>
                       <Badge>Traffic Analysis</Badge>
                     </div>
-                    <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                    <pre className="text-data-sm font-mono bg-muted p-2 rounded overflow-x-auto">
 {`AZFWNetworkRule
 | where TimeGenerated >= ago(7d)
 | summarize RequestCount = count() by SourceIp
@@ -149,10 +149,10 @@ const HelpSystem = ({ open, onClose, context: _context }) => {
                   
                   <div className="border rounded p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <strong className="text-sm">AVD User Sessions</strong>
+                      <strong className="text-body-sm font-semibold">AVD User Sessions</strong>
                       <Badge>Virtual Desktop</Badge>
                     </div>
-                    <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                    <pre className="text-data-sm font-mono bg-muted p-2 rounded overflow-x-auto">
 {`WVDConnections
 | where TimeGenerated > ago(30d)
 | where State == "Connected"
@@ -172,7 +172,7 @@ const HelpSystem = ({ open, onClose, context: _context }) => {
                   <Zap className="w-4 h-4" />
                   Performance Best Practices
                 </h3>
-                <ul className="list-disc list-inside space-y-2 text-sm">
+                <ul className="list-disc list-inside space-y-2 text-body-sm">
                   <li>Always filter by TimeGenerated first for best performance</li>
                   <li>Use specific values instead of wildcards when possible</li>
                   <li>Limit results to prevent overwhelming data returns</li>
@@ -188,7 +188,7 @@ const HelpSystem = ({ open, onClose, context: _context }) => {
                   <Shield className="w-4 h-4" />
                   Security Considerations
                 </h3>
-                <ul className="list-disc list-inside space-y-2 text-sm">
+                <ul className="list-disc list-inside space-y-2 text-body-sm">
                   <li>Never include sensitive data in shared URLs</li>
                   <li>Validate IP addresses and CIDR ranges</li>
                   <li>Use appropriate time ranges to avoid excessive data exposure</li>

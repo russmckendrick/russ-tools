@@ -40,7 +40,7 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
       {/* DNS Overview */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold flex items-center gap-2">
+          <h3 className="text-title-sm flex items-center gap-2">
             <Network className="h-5 w-5" />
             DNS Analysis Overview
           </h3>
@@ -48,13 +48,13 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Exchange Online</p>
+              <p className="text-body-sm text-muted-foreground">Exchange Online</p>
               <Badge variant={dnsInfo.hasExchangeOnline ? "default" : "secondary"}>
                 {dnsInfo.hasExchangeOnline ? "Detected" : "Not Detected"}
               </Badge>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Office 365 SPF</p>
+              <p className="text-body-sm text-muted-foreground">Office 365 SPF</p>
               <Badge variant={dnsInfo.hasOffice365SPF ? "default" : "secondary"}>
                 {dnsInfo.hasOffice365SPF ? "Configured" : "Not Configured"}
               </Badge>
@@ -67,7 +67,7 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
       {dnsInfo.mxRecords && dnsInfo.mxRecords.length > 0 && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold flex items-center gap-2">
+            <h3 className="text-title-sm flex items-center gap-2">
               <Mail className="h-5 w-5" />
               Mail Exchange (MX) Records
             </h3>
@@ -85,7 +85,7 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
                           {provider}
                         </Badge>
                       </div>
-                      <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
+                      <code className="text-data-md font-mono bg-muted px-2 py-1 rounded">
                         {mx.exchange}
                       </code>
                     </div>
@@ -109,7 +109,7 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
+              <h3 className="text-title-sm flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 TXT Records ({dnsInfo.txtRecords.length})
               </h3>
@@ -123,7 +123,7 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
                 
                 return (
                   <div key={index} className="flex items-center justify-between p-2 border rounded">
-                    <code className="flex-1 text-xs font-mono break-all pr-2">
+                    <code className="flex-1 text-data-sm font-mono break-all pr-2">
                       {cleanRecord}
                     </code>
                     <Button

@@ -311,7 +311,7 @@ const TemplateEditor = ({ onTemplateCreate, onTemplateUpdate }) => {
                           checked={field.essential}
                           onChange={(e) => updateField(index, 'essential', e.target.checked)}
                         />
-                        <span className="text-sm">Essential</span>
+                        <span className="text-body-sm">Essential</span>
                       </label>
                       <label className="flex items-center gap-1">
                         <input
@@ -319,7 +319,7 @@ const TemplateEditor = ({ onTemplateCreate, onTemplateUpdate }) => {
                           checked={field.required}
                           onChange={(e) => updateField(index, 'required', e.target.checked)}
                         />
-                        <span className="text-sm">Required</span>
+                        <span className="text-body-sm">Required</span>
                       </label>
                       <Button
                         variant="outline"

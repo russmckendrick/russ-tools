@@ -33,7 +33,7 @@ const ValidationDisplay = ({ validationResult, detectedFormat }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {getValidationIcon()}
-            <CardTitle className="text-lg">
+            <CardTitle className="text-title-sm">
               Validation Results
             </CardTitle>
             <Badge variant={validationResult.success ? "default" : "destructive"}>
@@ -63,7 +63,7 @@ const ValidationDisplay = ({ validationResult, detectedFormat }) => {
             {validationResult.errors.map((error, index) => (
               <Alert key={index} variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="font-mono text-sm">
+                <AlertDescription className="font-mono text-data-md">
                   {formatErrorMessage(error)}
                 </AlertDescription>
               </Alert>
@@ -74,7 +74,7 @@ const ValidationDisplay = ({ validationResult, detectedFormat }) => {
       
       {validationResult.success && validationResult.metadata && (
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-body-sm">
             {validationResult.metadata.lineCount && (
               <div>
                 <span className="text-muted-foreground">Lines:</span>

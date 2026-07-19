@@ -271,7 +271,7 @@ const TenantLookupShadcn = () => {
                     Lookup Tenant
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-body-sm text-muted-foreground mt-1">
                   Enter a domain name (contoso.com) or email address (user@contoso.com)
                 </p>
               </div>
@@ -354,7 +354,7 @@ const TenantLookupShadcn = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <History className="h-5 w-5" />
-                  <h3 className="text-lg font-semibold">Saved Lookups</h3>
+                  <h3 className="text-title-sm">Saved Lookups</h3>
                 </div>
                 <Button
                   size="sm"
@@ -374,10 +374,10 @@ const TenantLookupShadcn = () => {
                       <Building className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="font-medium">{savedLookup.domain}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-body-sm text-muted-foreground">
                           {savedLookup.displayName || 'No display name'}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-body-sm text-muted-foreground">
                           Saved: {formatTimestamp(savedLookup.savedAt)}
                         </p>
                       </div>

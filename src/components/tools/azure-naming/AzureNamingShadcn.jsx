@@ -124,7 +124,7 @@ const AzureNamingShadcn = () => {
                       <Badge variant="outline" className="bg-info-subtle text-info border-info/40">
                         Resource Types
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-body-sm text-muted-foreground">
                         Select Azure resources to name
                       </span>
                     </div>
@@ -145,7 +145,7 @@ const AzureNamingShadcn = () => {
                     <Badge variant="outline" className="bg-success-subtle text-success border-success/40">
                       Required
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-body-sm text-muted-foreground">
                       Essential naming components
                     </span>
                   </div>
@@ -163,7 +163,7 @@ const AzureNamingShadcn = () => {
                     <Badge variant="outline" className="bg-warning-subtle text-warning border-warning/40">
                       Optional
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-body-sm text-muted-foreground">
                       Additional naming options
                     </span>
                   </div>

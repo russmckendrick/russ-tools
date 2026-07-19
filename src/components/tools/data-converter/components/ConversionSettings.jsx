@@ -41,14 +41,14 @@ const ConversionSettings = ({
           {/* Validation Settings */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Validation</CardTitle>
-              <CardDescription className="text-sm">
+              <CardTitle className="text-title-sm">Validation</CardTitle>
+              <CardDescription className="text-body-sm">
                 Configure validation behavior
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="enable-validation" className="text-sm font-medium">
+                <Label htmlFor="enable-validation" className="text-body-sm font-medium">
                   Enable Validation
                 </Label>
                 <Switch
@@ -59,7 +59,7 @@ const ConversionSettings = ({
               </div>
               
               <div className="flex items-center justify-between">
-                <Label htmlFor="schema-validation" className="text-sm font-medium">
+                <Label htmlFor="schema-validation" className="text-body-sm font-medium">
                   Schema Validation
                 </Label>
                 <Switch
@@ -72,7 +72,7 @@ const ConversionSettings = ({
               
               {settings.enableSchemaValidation && (
                 <div className="space-y-2">
-                  <Label htmlFor="schema-select" className="text-sm font-medium">
+                  <Label htmlFor="schema-select" className="text-body-sm font-medium">
                     Schema Type
                   </Label>
                   <Select 
@@ -98,14 +98,14 @@ const ConversionSettings = ({
           {/* Format Detection Settings */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Format Detection</CardTitle>
-              <CardDescription className="text-sm">
+              <CardTitle className="text-title-sm">Format Detection</CardTitle>
+              <CardDescription className="text-body-sm">
                 Automatic format detection options
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="auto-detect" className="text-sm font-medium">
+                <Label htmlFor="auto-detect" className="text-body-sm font-medium">
                   Auto Detect Format
                 </Label>
                 <Switch
@@ -116,7 +116,7 @@ const ConversionSettings = ({
               </div>
               
               <div className="flex items-center justify-between">
-                <Label htmlFor="prettify-output" className="text-sm font-medium">
+                <Label htmlFor="prettify-output" className="text-body-sm font-medium">
                   Prettify Output
                 </Label>
                 <Switch
@@ -131,14 +131,14 @@ const ConversionSettings = ({
           {/* History Settings */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">History</CardTitle>
-              <CardDescription className="text-sm">
+              <CardTitle className="text-title-sm">History</CardTitle>
+              <CardDescription className="text-body-sm">
                 Conversion history management
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="enable-history" className="text-sm font-medium">
+                <Label htmlFor="enable-history" className="text-body-sm font-medium">
                   Enable History
                 </Label>
                 <Switch
@@ -150,7 +150,7 @@ const ConversionSettings = ({
               
               {settings.enableHistory && (
                 <div className="space-y-2">
-                  <Label htmlFor="max-history" className="text-sm font-medium">
+                  <Label htmlFor="max-history" className="text-body-sm font-medium">
                     Max History Items
                   </Label>
                   <Select 

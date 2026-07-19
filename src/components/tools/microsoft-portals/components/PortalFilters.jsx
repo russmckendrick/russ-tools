@@ -65,7 +65,7 @@ const PortalFilters = ({
 
       {(selectedCategory !== 'all' || selectedTag) && (
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
+          <span className="text-body-sm text-muted-foreground">Active filters:</span>
           {selectedCategory !== 'all' && (
             <Badge variant="secondary" className="cursor-pointer" onClick={() => setSelectedCategory('all')}>
               {selectedCategory} <X className="h-3 w-3 ml-1" />

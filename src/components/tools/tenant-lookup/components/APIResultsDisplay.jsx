@@ -63,7 +63,7 @@ const APIResultsDisplay = ({ apiResults }) => {
   return (
     <Card>
       <CardHeader>
-        <h3 className="text-lg font-semibold flex items-center gap-2">
+        <h3 className="text-title-sm flex items-center gap-2">
           <Database className="h-5 w-5" />
           API Results Breakdown
         </h3>
@@ -90,7 +90,7 @@ const APIResultsDisplay = ({ apiResults }) => {
                       )}
                       <div>
                         <h4 className="font-medium">{apiName}</h4>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-body-sm text-muted-foreground">
                           {getApiDescription(apiName)}
                         </p>
                       </div>
@@ -115,7 +115,7 @@ const APIResultsDisplay = ({ apiResults }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {Object.entries(formattedData).map(([key, value]) => (
                             <div key={key} className="space-y-1">
-                              <p className="text-sm font-medium text-muted-foreground capitalize">
+                              <p className="text-body-sm font-medium text-muted-foreground capitalize">
                                 {key.replace(/([A-Z])/g, ' $1').trim()}
                               </p>
                               <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ const APIResultsDisplay = ({ apiResults }) => {
                                     ))}
                                   </div>
                                 ) : (
-                                  <code className="text-sm bg-background px-2 py-1 rounded font-mono">
+                                  <code className="text-data-md bg-background px-2 py-1 rounded font-mono">
                                     {String(value)}
                                   </code>
                                 )}
@@ -143,7 +143,7 @@ const APIResultsDisplay = ({ apiResults }) => {
                         
                         <div className="pt-3 border-t">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium">Raw JSON Response</span>
+                            <span className="text-body-sm font-medium">Raw JSON Response</span>
                             <Button
                               size="sm"
                               variant="ghost"
@@ -157,7 +157,7 @@ const APIResultsDisplay = ({ apiResults }) => {
                             value={JSON.stringify(formattedData, null, 2)}
                             readOnly
                             rows={6}
-                            className="font-mono text-xs"
+                            className="font-mono text-data-sm"
                           />
                         </div>
                       </div>

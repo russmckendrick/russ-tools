@@ -97,7 +97,7 @@ const SSLCheckerShadcn = () => {
     return (
       <Badge 
         variant="outline" 
-        className={`${gradeInfo.color} border-0 text-sm px-2 py-1 font-bold`}
+        className={`${gradeInfo.color} border-0 text-body-sm font-semibold px-2 py-1`}
       >
         <Award className="w-3 h-3 mr-1" />
         {grade}
@@ -116,7 +116,7 @@ const SSLCheckerShadcn = () => {
               <SSLCheckerIcon className="w-8 h-8 text-[var(--cat,var(--color-primary))]" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">SSL Certificate Checker</h1>
+              <h1 className="text-headline-md">SSL Certificate Checker</h1>
               <p className="text-muted-foreground">
                 Analyze SSL/TLS certificates and security configuration for any domain
               </p>
@@ -127,7 +127,7 @@ const SSLCheckerShadcn = () => {
         {/* SSL Check Form */}
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-semibold">Check SSL Certificate</h2>
+            <h2 className="text-title-sm">Check SSL Certificate</h2>
           </CardHeader>
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-4">
@@ -178,7 +178,7 @@ const SSLCheckerShadcn = () => {
                     <RotateCcw className="h-5 w-5 animate-spin-ccw" />
                     <span>Analyzing SSL certificate for {domain}...</span>
                   </div>
-                  <p className="text-sm text-muted-foreground max-w-md">
+                  <p className="text-body-sm text-muted-foreground max-w-md">
                     This may take up to 2 minutes as we perform comprehensive SSL Labs analysis. 
                     Please wait while we analyze the certificate configuration.
                   </p>
@@ -208,7 +208,7 @@ const SSLCheckerShadcn = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <History className="h-5 w-5" />
-                  <h3 className="text-lg font-semibold">Recent SSL Checks</h3>
+                  <h3 className="text-title-sm">Recent SSL Checks</h3>
                 </div>
                 <Button variant="outline" size="sm" onClick={clearHistory}>
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -222,8 +222,8 @@ const SSLCheckerShadcn = () => {
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col">
-                        <span className="font-medium">{item.domain}</span>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="text-data-md font-mono">{item.domain}</span>
+                        <div className="flex items-center gap-2 text-data-sm font-mono text-muted-foreground">
                           <Clock className="h-3 w-3" />
                           {new Date(item.timestamp).toLocaleDateString()} at {new Date(item.timestamp).toLocaleTimeString()}
                         </div>

@@ -73,7 +73,7 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Network Diagram</CardTitle>
+          <CardTitle className="text-title-sm">Network Diagram</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">Add a parent network and subnets to generate a diagram.</p>
@@ -216,7 +216,7 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-lg">Network Diagram</CardTitle>
+          <CardTitle className="text-title-sm">Network Diagram</CardTitle>
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -252,12 +252,12 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
           >
             <div className="flex items-center gap-2 mb-2">
               <Network className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">{parentNetwork.name || 'Parent Network'}</h3>
-              <Badge variant="outline" className="text-xs">
+              <h3 className="text-title-sm">{parentNetwork.name || 'Parent Network'}</h3>
+              <Badge variant="outline" className="text-data-sm font-mono">
                 {parentBlock.base}/{parentNetwork.cidr}
               </Badge>
             </div>
-            <div className="text-sm text-muted-foreground ml-7 space-y-1">
+            <div className="text-data-md font-mono text-muted-foreground ml-7 space-y-1">
               <div>Range: {parentBlock.first} - {parentBlock.last}</div>
               <div>Total IPs: {totalParentSize.toLocaleString()} ({freePercentage}% free)</div>
             </div>
@@ -293,11 +293,11 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
                           <div className="flex items-center gap-2">
                             <Layers3 className="h-4 w-4" style={{ color: borderColor }} />
                             <div>
-                              <div className="font-semibold text-sm">{subnet.name}</div>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="font-semibold text-body-sm">{subnet.name}</div>
+                              <div className="text-data-sm font-mono text-muted-foreground">
                                 Range: {subnet.block.base} - {subnet.block.broadcast} ({subnet.block.mask})
                               </div>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-data-sm font-mono text-muted-foreground">
                                 Usable IPs: {Math.max(0, subnet.block.size - 2).toLocaleString()}
                               </div>
                             </div>
@@ -322,8 +322,8 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
                         <div className="flex items-center gap-2">
                           <Square className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <div className="font-semibold text-sm text-foreground">Free Space</div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="font-semibold text-body-sm text-foreground">Free Space</div>
+                            <div className="text-data-sm font-mono text-muted-foreground">
                               Range: {space.startIp} - {space.endIp} ({space.size.toLocaleString()} IPs)
                             </div>
                           </div>
@@ -339,7 +339,7 @@ export function NetworkDiagramShadcn({ parentNetwork, subnets }) {
         </div>
         
         {/* Summary Footer */}
-        <div className="flex justify-center gap-4 mt-6 text-sm text-muted-foreground">
+        <div className="flex justify-center gap-4 mt-6 text-data-md font-mono text-muted-foreground">
           <span>Total subnets: {subnets.length}</span>
           <span>•</span>
           <span>Total IPs: {parentBlock.size.toLocaleString()}</span>

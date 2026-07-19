@@ -86,7 +86,7 @@ export function HelpDialog({
 export function HelpSection({ title, children }) {
   return (
     <section className="flex flex-col gap-2">
-      <h3 className="font-mono text-label-caps font-label-caps tracking-label-caps uppercase text-on-surface-faint">
+      <h3 className="font-mono text-label-caps uppercase text-on-surface-faint">
         {title}
       </h3>
       {children}

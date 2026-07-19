@@ -284,7 +284,7 @@ const CronFieldSelector = ({ field, value, onChange }) => {
     <Card>
       <CardContent className="pt-4 space-y-3">
         <div className="space-y-2">
-          <Label className="text-sm font-medium">{fieldLabels[field]}</Label>
+          <Label className="text-body-sm font-medium">{fieldLabels[field]}</Label>
           <Select value={showCustom ? 'custom' : value} onValueChange={handleSelectChange}>
             <SelectTrigger>
               <SelectValue />
@@ -293,8 +293,8 @@ const CronFieldSelector = ({ field, value, onChange }) => {
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value} className="py-3 pr-2">
                   <div className="flex flex-col space-y-1 w-full min-w-0">
-                    <span className="font-medium text-sm leading-tight">{option.label}</span>
-                    <span className="text-xs text-muted-foreground whitespace-normal leading-tight break-words">{option.description}</span>
+                    <span className="text-body-sm font-medium">{option.label}</span>
+                    <span className="text-body-sm text-muted-foreground whitespace-normal break-words">{option.description}</span>
                   </div>
                 </SelectItem>
               ))}
@@ -304,12 +304,12 @@ const CronFieldSelector = ({ field, value, onChange }) => {
         
         {showCustom && (
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Custom Value</Label>
+            <Label className="text-body-sm text-muted-foreground">Custom Value</Label>
             <Input
               value={customValue}
               onChange={handleCustomChange}
               placeholder="Enter custom value"
-              className="text-sm"
+              className="font-mono text-data-md"
             />
           </div>
         )}
@@ -406,24 +406,24 @@ const CronBuilderShadcn = () => {
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1 space-y-3">
-                    <Label className="text-sm text-muted-foreground">Generated Expression:</Label>
-                    <div className="p-3 bg-muted rounded-md font-mono text-lg font-bold text-primary">
+                    <Label className="text-body-sm text-muted-foreground">Generated Expression:</Label>
+                    <div className="p-3 bg-muted rounded-md font-mono text-data-md text-primary">
                       {cronString}
                     </div>
                     {validation.valid ? (
                       <div className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-success mt-0.5" />
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-success">Valid Expression</p>
-                          <p className="text-sm text-muted-foreground">{translation}</p>
+                          <p className="text-body-sm font-medium text-success">Valid Expression</p>
+                          <p className="text-body-sm text-muted-foreground">{translation}</p>
                         </div>
                       </div>
                     ) : (
                       <div className="flex items-start gap-2">
                         <AlertCircle className="w-4 h-4 text-danger mt-0.5" />
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-danger">Invalid Expression</p>
-                          <p className="text-sm text-muted-foreground">{validation.error}</p>
+                          <p className="text-body-sm font-medium text-danger">Invalid Expression</p>
+                          <p className="text-body-sm text-muted-foreground">{validation.error}</p>
                         </div>
                       </div>
                     )}
@@ -455,7 +455,7 @@ const CronBuilderShadcn = () => {
                     <Timer className="w-3 h-3 mr-1" />
                     Time
                   </Badge>
-                  <span className="text-sm text-muted-foreground">Configure when the job runs</span>
+                  <span className="text-body-sm text-muted-foreground">Configure when the job runs</span>
                 </div>
                 <div className="space-y-4">
                   <CronFieldSelector 
@@ -477,7 +477,7 @@ const CronBuilderShadcn = () => {
                     <Calendar className="w-3 h-3 mr-1" />
                     Date
                   </Badge>
-                  <span className="text-sm text-muted-foreground">Configure which dates to run</span>
+                  <span className="text-body-sm text-muted-foreground">Configure which dates to run</span>
                 </div>
                 <div className="space-y-4">
                   <CronFieldSelector 
@@ -530,16 +530,16 @@ const CronBuilderShadcn = () => {
                   <div className="flex items-start gap-2 p-3 bg-success-subtle rounded-md">
                     <Check className="w-4 h-4 text-success mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-success">Valid Expression</p>
-                      <p className="text-sm text-success">{translation}</p>
+                      <p className="text-body-sm font-medium text-success">Valid Expression</p>
+                      <p className="text-body-sm text-success">{translation}</p>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-start gap-2 p-3 bg-danger-subtle rounded-md">
                     <AlertCircle className="w-4 h-4 text-danger mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-danger">Invalid Expression</p>
-                      <p className="text-sm text-danger">{validation.error}</p>
+                      <p className="text-body-sm font-medium text-danger">Invalid Expression</p>
+                      <p className="text-body-sm text-danger">{validation.error}</p>
                     </div>
                   </div>
                 )}

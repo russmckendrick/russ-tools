@@ -330,7 +330,7 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-sm text-muted-foreground">{getFormatDescription(exportFormat)}</p>
+            <p className="text-body-sm text-muted-foreground">{getFormatDescription(exportFormat)}</p>
           </div>
 
           {/* Export Options */}
@@ -370,7 +370,7 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
                 onChange={(e) => setFilename(e.target.value)}
                 placeholder="Enter filename"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 Will be saved as: {filename}.{exportData.extension}
               </p>
             </div>
@@ -380,7 +380,7 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
           <div className="space-y-3">
             <Label>Preview</Label>
             <div className="border rounded-lg bg-muted/30 p-4 max-h-64 overflow-auto">
-              <pre className="text-sm font-mono whitespace-pre-wrap break-all">
+              <pre className="text-data-md font-mono whitespace-pre-wrap break-all">
                 {exportData.content.length > 2000 
                   ? exportData.content.substring(0, 2000) + '\n... (truncated for display)'
                   : exportData.content

@@ -340,9 +340,17 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] `ToolLayout.astro`, `BaseLayout.astro`, `[tool].astro`, `index.astro`, `404.astro`
 - [x] Generated `_redirects` from manifest `params`
 - [x] **Prove `_redirects` param handling** — all 8 rewrites correct against Cloudflare's runtime; the `@astrojs/cloudflare` fallback is not needed
-- [ ] The bridge — each manifest's `island` lazy-loads its existing component
+- [x] The bridge — each manifest's `island` lazy-loads its existing component
+- [x] Shared component layer rebuilt against `DESIGN.md` (`src/components/ui/`) — one card,
+      button, input, select, tabs, dialog, sheet, tooltip, table, alert, badge; one toaster;
+      one help affordance; one tool-icon source shared with the shell
+- [x] Page furniture owned by the shell — `ToolHeader`/`SEOHead` stand down under it; pills,
+      hero, stat strip and footer pitch removed
+- [x] Raw Tailwind palette classes in tools: 205 → 0
+- [x] Off-scale typography in tools → the `DESIGN.md` ten-step scale: 497 → 0, ESLint rule added
 - [ ] `core/` — storage + migration shim, sharelink verbatim, clipboard, download, cache, api client
 - [ ] Theme toggle in the new shell (the pre-paint script exists; the control does not)
+- [ ] Remaining bespoke per-tool chrome (e.g. data-converter's `ControlPanel` header card)
 - [ ] `/delete` storage-clear page driven by declared `storageKeys`
 - [ ] Real Pages preview deploy + Playwright deep-link matrix
 - [ ] Rendered-meta diff against production; sitemap URL-set diff
@@ -854,3 +862,77 @@ is an array.
 2. `core/`: storage + migration shim, sharelink verbatim, clipboard, download, cache, api client.
 3. A real Pages preview deploy, then the Playwright deep-link matrix against it.
 4. Still carried over from Phase 0: live worker response fixtures → MSW mocks.
+
+### 2026-07-19 — Session 5: the bridge, and the consistency sweep
+
+**Model:** Opus 4.8. **Branch:** `redesign/phase-0`.
+
+**1. The bridge landed, and the three predicted seams all closed cheaply.**
+
+`src/bridge/ToolIsland.jsx` mounts any tool's existing component into
+`ToolLayout.astro`. The plan predicted react-router, `ThemeProvider` and
+`ToolHeader`; the actual resolutions were smaller than expected:
+
+- **react-router** — rather than editing the nine tools that call `useParams`,
+  the island mounts a real `BrowserRouter` whose routes are *generated from the
+  manifest's `params`* — the same source `_redirects` comes from, so a deep link
+  cannot match in one place and miss in the other. Zero tool edits.
+- **ThemeProvider** — not needed at all. The theme is a class on `<html>` from
+  BaseLayout's pre-paint script, and no tool consumes `useTheme`.
+- **ToolHeader / SEOHead** — a React context (`ShellContext`), not a global, so
+  the SPA is untouched: `useShell()` is `null` there. Under the shell both stand
+  down, which is what removed the floating-globe artifact and the second `h1` on
+  fourteen pages.
+
+`client:only` rather than `client:load`: these components read `localStorage` and
+`window.location` on first render, and the crawler-visible content comes from
+ToolLayout, not the island.
+
+**2. "Make it consistent" turned out to be mostly one file each.**
+
+The owner's brief — *help, modals, forms, dropdowns, buttons, icons and toaster
+usage 100% consistent; remove as much bespoke per-tool design as possible* —
+resolved to changing shared components rather than fifteen tools, because 48
+files already render `ui/card` and 47 `ui/button`. That layer is now written
+against `DESIGN.md`, and the single highest-leverage change was making the
+primary button, focus ring, active tab and default badge take `var(--cat)`:
+ToolLayout sets it once per page from the manifest, so Network Designer's actions
+are teal and Microsoft Portals' violet **without either tool naming a colour**.
+
+One toaster (both apps import it), one help affordance, one tool-icon source
+shared with the prerendered shell.
+
+**3. Four real faults, three of them live in production.**
+
+| Fault | Effect | Where it came from |
+|---|---|---|
+| `.grid` in `shell.css` collided with Tailwind's `grid` utility | every `grid grid-cols-*` **inside every tool** became a 3-column grid | unprefixed shell classes; now all `rt-` |
+| `.shell` centred with `margin: 0 auto` inside a column flex `body` | `main` shrink-to-fit — the page rendered at 508px in a container claiming 1120px | session 4 |
+| `--spacing-lg` shadowed Tailwind's *container* scale | `max-w-lg` meant 16px, `max-w-3xl` 48px — **every dialog in both apps was a sliver** | session 4's token generation |
+| `font-title-sm` set `font-family: "Inter"` (not the self-hosted `"Inter Variable"`) | headings fell back to the browser default **serif**, in a system that bans serif | this session's own shared-layer rebuild |
+
+The last three were invisible until the bridge put real tool bodies on the page,
+which is the argument for bridging early rather than porting tool-by-tool first.
+
+**The pattern worth carrying:** DESIGN.md's token *names* (`lg`, `2xl`,
+`title-sm`) collide with Tailwind's own scales when emitted into Tailwind's
+namespaces. The fix is in `scripts/generate-tokens.mjs`, never in DESIGN.md —
+spacing moves to `--rt-space-*`, and each type step folds into one `--text-*`
+token carrying its weight, line-height and tracking, with the per-step family
+tokens deleted so the ambiguous `font-<scale>` cannot exist. Both are guarded by
+tests, because both were silent.
+
+**4. Lesson repeated from Phase 1, in a new costume.** The palette sweep mapped
+raw classes to semantic tokens mechanically, which faithfully preserved a fault
+it also made obvious: status colours were carrying *identity*. "Barracuda"
+rendered as an error, "SPF record" and "TOML" and "Hybrid" as warnings, a
+favourited star as a warning. Identity is `--cat` or neutral; DESIGN.md now says
+so with the examples, because the mapping table alone would reproduce it.
+
+**Also found, not fixed (logged for the ports):** ssl-checker's grade badges
+shipped white-on-accent labels (~2:1) — fixed in passing since it was a
+DESIGN.md violation; `MarkdownPreview.getValidationVariant` returns `'default'`
+for warnings so a warning renders as info; PasswordGenerator passes a Mantine-era
+colour name as a Badge `variant`.
+
+

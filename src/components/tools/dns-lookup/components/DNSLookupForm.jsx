@@ -100,7 +100,7 @@ const DNSLookupForm = ({
             </Button>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
+        <p className="text-body-sm text-muted-foreground mt-2">
           Enter a domain name (e.g., example.com) to perform DNS lookups
         </p>
       </CardContent>

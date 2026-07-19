@@ -38,7 +38,7 @@ const SSLResultsDisplay = ({ data }) => {
         <TooltipTrigger asChild>
           <Badge 
             variant="outline" 
-            className={`${gradeInfo.color} border-0 text-lg px-3 py-1 font-bold`}
+            className={`${gradeInfo.color} border-0 text-title-sm px-3 py-1`}
           >
             <Award className="w-4 h-4 mr-1" />
             {grade}
@@ -57,11 +57,11 @@ const SSLResultsDisplay = ({ data }) => {
       {data.assessmentProgress && data.status !== 'READY' && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Assessment Progress</h3>
+            <h3 className="text-title-sm">Assessment Progress</h3>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-body-sm">
                 <span>Progress</span>
                 <span>{data.assessmentProgress.completionPercentage}%</span>
               </div>
@@ -71,7 +71,7 @@ const SSLResultsDisplay = ({ data }) => {
                   style={{ width: `${data.assessmentProgress.completionPercentage}%` }}
                 ></div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-body-sm">
                 <div>
                   <p className="text-muted-foreground">Total</p>
                   <p className="font-medium">{data.assessmentProgress.totalEndpoints}</p>
@@ -90,7 +90,7 @@ const SSLResultsDisplay = ({ data }) => {
                 </div>
               </div>
               {data.assessmentProgress.estimatedTimeRemaining > 0 && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body-sm text-muted-foreground">
                   Estimated time remaining: {data.assessmentProgress.estimatedTimeRemaining} seconds
                 </p>
               )}
@@ -115,28 +115,28 @@ const SSLResultsDisplay = ({ data }) => {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">SSL Grade</h3>
+                  <h3 className="text-title-sm">SSL Grade</h3>
                   {overallGrade && getGradeBadge(overallGrade)}
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Status</p>
+                    <p className="text-body-sm text-muted-foreground">Status</p>
                     <p className="font-medium">{data.statusMessage || data.status || 'Unknown'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Host</p>
-                    <p className="font-medium">{data.host}</p>
+                    <p className="text-body-sm text-muted-foreground">Host</p>
+                    <p className="text-data-md font-mono">{data.host}</p>
                   </div>
                   {data.endpoints && data.endpoints.length > 0 && (
                     <>
                       <div>
-                        <p className="text-sm text-muted-foreground">Endpoints</p>
+                        <p className="text-body-sm text-muted-foreground">Endpoints</p>
                         <p className="font-medium">{data.endpoints.length} endpoint{data.endpoints.length !== 1 ? 's' : ''}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Analysis Time</p>
+                        <p className="text-body-sm text-muted-foreground">Analysis Time</p>
                         <p className="font-medium">
                           {data.startTime ? `${Math.round((Date.now() - data.startTime) / 1000)}s` : 'Unknown'}
                         </p>
@@ -175,7 +175,7 @@ const SSLResultsDisplay = ({ data }) => {
             {data.endpoints && data.endpoints.length > 0 && (
               <Card>
                 <CardHeader>
-                  <h3 className="text-lg font-semibold">Endpoints</h3>
+                  <h3 className="text-title-sm">Endpoints</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -183,8 +183,8 @@ const SSLResultsDisplay = ({ data }) => {
                       <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col">
-                            <p className="font-medium">{endpoint.ipAddress}</p>
-                            <p className="text-xs text-muted-foreground">{endpoint.statusMessage}</p>
+                            <p className="text-data-md font-mono">{endpoint.ipAddress}</p>
+                            <p className="text-body-sm text-muted-foreground">{endpoint.statusMessage}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">

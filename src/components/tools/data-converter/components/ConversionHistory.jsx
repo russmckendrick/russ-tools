@@ -76,7 +76,7 @@ const ConversionHistory = ({
               <div className="text-center py-8 text-muted-foreground">
                 <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No conversion history yet</p>
-                <p className="text-sm">Your conversions will appear here</p>
+                <p className="text-body-sm">Your conversions will appear here</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -93,22 +93,22 @@ const ConversionHistory = ({
                             <Badge className={getFormatColor(item.outputFormat || item.toFormat)}>
                               {(item.outputFormat || item.toFormat || 'unknown').toUpperCase()}
                             </Badge>
-                            <span className="text-xs text-muted-foreground ml-auto">
+                            <span className="text-data-sm font-mono text-muted-foreground ml-auto">
                               {formatTimestamp(item.timestamp)}
                             </span>
                           </div>
                           
                           <div className="space-y-2">
                             <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1">Input:</p>
-                              <pre className="text-xs font-mono bg-muted p-2 rounded max-h-20 overflow-hidden">
+                              <p className="text-body-sm font-medium text-muted-foreground mb-1">Input:</p>
+                              <pre className="text-data-sm font-mono bg-muted p-2 rounded max-h-20 overflow-hidden">
                                 {truncateData(item.inputData || item.input || '')}
                               </pre>
                             </div>
                             
                             <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1">Output:</p>
-                              <pre className="text-xs font-mono bg-muted p-2 rounded max-h-20 overflow-hidden">
+                              <p className="text-body-sm font-medium text-muted-foreground mb-1">Output:</p>
+                              <pre className="text-data-sm font-mono bg-muted p-2 rounded max-h-20 overflow-hidden">
                                 {truncateData(item.outputData || item.output || '')}
                               </pre>
                             </div>

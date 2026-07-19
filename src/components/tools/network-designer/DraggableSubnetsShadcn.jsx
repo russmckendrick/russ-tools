@@ -78,7 +78,7 @@ function SortableSubnet({ subnet, index, onRemoveSubnet }) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Network className="h-4 w-4" style={{ color: subnetColor }} />
-                    <span className="font-semibold text-sm">{subnet.name}</span>
+                    <span className="font-semibold text-body-sm">{subnet.name}</span>
                     <Badge variant="outline" style={{ color: subnetColor, borderColor: subnetColor }}>
                       /{subnet.cidr}
                     </Badge>
@@ -96,7 +96,7 @@ function SortableSubnet({ subnet, index, onRemoveSubnet }) {
             </div>
 
             {/* Network details */}
-            <div className="space-y-1 text-xs">
+            <div className="space-y-1 text-data-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Network</span>
                 <span className="font-mono font-medium">{block.base}</span>
@@ -189,8 +189,8 @@ export function DraggableSubnetsShadcn({ subnets, onReorder, onRemoveSubnet, par
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Network className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold text-center mb-2">No Subnets Added</h3>
-          <p className="text-sm text-muted-foreground text-center">
+          <h3 className="text-title-sm text-center mb-2">No Subnets Added</h3>
+          <p className="text-body-sm text-muted-foreground text-center">
             Add your first subnet using the form above to get started
           </p>
         </CardContent>
@@ -201,7 +201,7 @@ export function DraggableSubnetsShadcn({ subnets, onReorder, onRemoveSubnet, par
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body-sm text-muted-foreground">
           Drag and drop to reorder subnets. Order affects IP allocation.
         </p>
       </div>

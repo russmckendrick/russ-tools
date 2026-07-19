@@ -193,7 +193,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
   return (
     <Card>
       <CardHeader>
-        <h3 className="text-lg font-semibold flex items-center gap-2">
+        <h3 className="text-title-sm flex items-center gap-2">
           <Shield className="h-5 w-5" />
           Service Verifications ({verifications.length})
         </h3>
@@ -203,7 +203,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
           {Object.entries(groupedServices).map(([serviceName, serviceRecords]) => (
             <div key={serviceName} className="border rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg">{serviceRecords[0].icon}</span>
+                <span className="text-title-sm">{serviceRecords[0].icon}</span>
                 <h4 className="font-medium">{serviceName}</h4>
                 <Badge className={serviceRecords[0].color}>
                   {serviceRecords.length} record{serviceRecords.length > 1 ? 's' : ''}
@@ -223,7 +223,7 @@ const ServiceVerificationDisplay = ({ txtRecords }) => {
                         <Copy className="h-3 w-3" />
                       </Button>
                     </div>
-                    <code className="text-xs font-mono break-all block">
+                    <code className="text-data-sm font-mono break-all block">
                       {service.token}
                     </code>
                   </div>

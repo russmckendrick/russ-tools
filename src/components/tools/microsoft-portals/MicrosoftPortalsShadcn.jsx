@@ -371,7 +371,7 @@ const MicrosoftPortalsShadcn = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg">Microsoft Portals</CardTitle>
+                  <CardTitle className="text-title-sm">Microsoft Portals</CardTitle>
                   <CardDescription className="mt-1">
                     {filteredPortals.length} portals available
                     {tenantInfo && ` for ${tenantInfo.displayName || tenantInfo.domain}`}

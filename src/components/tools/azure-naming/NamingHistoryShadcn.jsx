@@ -54,15 +54,15 @@ const NamingHistoryShadcn = () => {
             className="flex items-center justify-between p-4 border rounded-lg bg-card"
           >
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-info truncate">
+              <h4 className="text-body-sm font-medium text-info truncate">
                 {item.configuration?.workload || 'Unnamed Workload'}
               </h4>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-body-sm text-muted-foreground mt-1">
                 {item.group && Array.isArray(item.group)
                   ? item.group.map((g) => getResourceTypeLabel(g.resourceType)).join(', ')
                   : ''}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-data-sm font-mono text-muted-foreground mt-1">
                 {new Date(item.timestamp).toLocaleString()}
               </p>
             </div>

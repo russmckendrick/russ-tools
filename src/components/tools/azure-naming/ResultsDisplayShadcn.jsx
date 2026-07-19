@@ -261,18 +261,18 @@ const ResultsDisplayShadcn = ({ formState, validationState }) => {
               {names.map((name, idx) => (
                 <TableRow key={name + idx}>
                   <TableCell>
-                    <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold">
+                    <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-data-md">
                       {name}
                     </code>
                   </TableCell>
-                  <TableCell className="text-sm">{getResourceTypeLabel(types[idx])}</TableCell>
-                  <TableCell className="text-sm">{generatedFormState.workload}</TableCell>
-                  <TableCell className="text-sm">{getEnvironmentLabel(generatedFormState.environment)}</TableCell>
-                  <TableCell className="text-sm">{getRegionLabel(generatedFormState.region)}</TableCell>
-                  {showInstance && <TableCell className="text-sm">{generatedFormState.instance}</TableCell>}
-                  {showCustomPrefix && <TableCell className="text-sm">{generatedFormState.customPrefix}</TableCell>}
-                  {showCustomSuffix && <TableCell className="text-sm">{generatedFormState.customSuffix}</TableCell>}
-                  {showRandom && <TableCell className="text-sm">{generatedFormState.randomLength}</TableCell>}
+                  <TableCell className="text-body-sm">{getResourceTypeLabel(types[idx])}</TableCell>
+                  <TableCell className="text-data-md font-mono">{generatedFormState.workload}</TableCell>
+                  <TableCell className="text-body-sm">{getEnvironmentLabel(generatedFormState.environment)}</TableCell>
+                  <TableCell className="text-body-sm">{getRegionLabel(generatedFormState.region)}</TableCell>
+                  {showInstance && <TableCell className="text-data-md font-mono">{generatedFormState.instance}</TableCell>}
+                  {showCustomPrefix && <TableCell className="text-data-md font-mono">{generatedFormState.customPrefix}</TableCell>}
+                  {showCustomSuffix && <TableCell className="text-data-md font-mono">{generatedFormState.customSuffix}</TableCell>}
+                  {showRandom && <TableCell className="text-data-md font-mono">{generatedFormState.randomLength}</TableCell>}
                 </TableRow>
               ))}
             </TableBody>

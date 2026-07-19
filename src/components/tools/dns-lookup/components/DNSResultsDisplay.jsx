@@ -74,7 +74,7 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Globe className="h-5 w-5" />
-                  <h3 className="text-lg font-semibold">DNS Query Results</h3>
+                  <h3 className="text-title-sm">DNS Query Results</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge className={getRecordTypeColor(recordType)}>
@@ -94,15 +94,15 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Domain</p>
+                  <p className="text-body-sm text-muted-foreground">Domain</p>
                   <p className="font-medium font-mono">{domain}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Record Type</p>
+                  <p className="text-body-sm text-muted-foreground">Record Type</p>
                   <p className="font-medium">{recordType}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-body-sm text-muted-foreground">Status</p>
                   <Badge variant={results.Status === 0 ? "default" : "destructive"}>
                     {results.Status === 0 ? "Success" : "Error"}
                   </Badge>
@@ -115,7 +115,7 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
           {hasRecords && (
             <Card>
               <CardHeader>
-                <h3 className="text-lg font-semibold flex items-center gap-2">
+                <h3 className="text-title-sm flex items-center gap-2">
                   <Server className="h-5 w-5" />
                   Answer Records ({results.Answer.length})
                 </h3>
@@ -134,7 +134,7 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
           {hasAuthority && (
             <Card>
               <CardHeader>
-                <h3 className="text-lg font-semibold flex items-center gap-2">
+                <h3 className="text-title-sm flex items-center gap-2">
                   <Server className="h-5 w-5" />
                   Authority Records ({results.Authority.length})
                 </h3>
@@ -153,7 +153,7 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
           {hasAdditional && (
             <Card>
               <CardHeader>
-                <h3 className="text-lg font-semibold flex items-center gap-2">
+                <h3 className="text-title-sm flex items-center gap-2">
                   <Server className="h-5 w-5" />
                   Additional Records ({results.Additional.length})
                 </h3>
@@ -174,7 +174,7 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
               <CardContent className="pt-6">
                 <div className="text-center py-8">
                   <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Records Found</h3>
+                  <h3 className="text-title-sm mb-2">No Records Found</h3>
                   <p className="text-muted-foreground">
                     No {recordType} records were found for {domain}
                   </p>
@@ -188,7 +188,7 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
       <TabsContent value="details">
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold flex items-center gap-2">
+            <h3 className="text-title-sm flex items-center gap-2">
               <Clock className="h-5 w-5" />
               Query Details
             </h3>
@@ -196,11 +196,11 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Query Time</p>
+                <p className="text-body-sm text-muted-foreground">Query Time</p>
                 <p className="font-medium">{formatTimestamp(results.timestamp || Date.now())}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Response Code</p>
+                <p className="text-body-sm text-muted-foreground">Response Code</p>
                 <Badge variant={results.Status === 0 ? "default" : "destructive"}>
                   {results.Status === 0 ? "NOERROR" : `Error ${results.Status}`}
                 </Badge>
@@ -208,23 +208,23 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
               {results.Question && results.Question.length > 0 && (
                 <>
                   <div>
-                    <p className="text-sm text-muted-foreground">Query Name</p>
+                    <p className="text-body-sm text-muted-foreground">Query Name</p>
                     <p className="font-medium font-mono">{results.Question[0].name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Query Type</p>
+                    <p className="text-body-sm text-muted-foreground">Query Type</p>
                     <p className="font-medium">{results.Question[0].type}</p>
                   </div>
                 </>
               )}
               <div>
-                <p className="text-sm text-muted-foreground">Truncated</p>
+                <p className="text-body-sm text-muted-foreground">Truncated</p>
                 <Badge variant={results.TC ? "destructive" : "secondary"}>
                   {results.TC ? "Yes" : "No"}
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Recursion Available</p>
+                <p className="text-body-sm text-muted-foreground">Recursion Available</p>
                 <Badge variant={results.RA ? "default" : "secondary"}>
                   {results.RA ? "Yes" : "No"}
                 </Badge>
@@ -238,7 +238,7 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Raw DNS Response</h3>
+              <h3 className="text-title-sm">Raw DNS Response</h3>
               <Button
                 size="sm"
                 variant="outline"
@@ -254,7 +254,7 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
               value={JSON.stringify(results, null, 2)}
               readOnly
               rows={20}
-              className="font-mono text-xs"
+              className="font-mono text-data-sm"
             />
           </CardContent>
         </Card>

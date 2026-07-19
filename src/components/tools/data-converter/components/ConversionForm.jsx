@@ -97,10 +97,10 @@ const ConversionForm = ({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2">
+              <CardTitle className="text-title-sm flex items-center gap-2">
                 Input Data
                 {detectedFormat && detectedFormat !== inputFormat && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-data-sm font-mono">
                     Detected: {detectedFormat.toUpperCase()}
                   </Badge>
                 )}
@@ -136,7 +136,7 @@ const ConversionForm = ({
             />
             {validationResult && !validationResult.success && (
               <div className="absolute top-2 right-2">
-                <Badge variant="destructive" className="text-xs">
+                <Badge variant="destructive" className="text-body-sm">
                   Invalid
                 </Badge>
               </div>
@@ -189,7 +189,7 @@ const ConversionForm = ({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Output Data</CardTitle>
+              <CardTitle className="text-title-sm">Output Data</CardTitle>
               <CardDescription>
                 Converted result
               </CardDescription>

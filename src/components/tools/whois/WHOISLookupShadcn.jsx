@@ -310,7 +310,7 @@ const WHOISLookupShadcn = () => {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
+              <h3 className="text-title-sm flex items-center gap-2">
                 {getTypeIcon(data.type)}
                 Basic Information
               </h3>
@@ -320,16 +320,16 @@ const WHOISLookupShadcn = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Query</p>
-                <p className="font-medium font-mono">{data.query}</p>
+                <p className="text-body-sm text-muted-foreground">Query</p>
+                <p className="text-data-md font-mono">{data.query}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Type</p>
+                <p className="text-body-sm text-muted-foreground">Type</p>
                 <p className="font-medium">{data.type || 'Unknown'}</p>
               </div>
               {(normalized.status || rdap.status) && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-body-sm text-muted-foreground">Status</p>
                   <div className="space-y-1">
                     {(normalized.status || rdap.status)?.map((status, index) => (
                       <Badge key={index} variant="outline" className="mr-1 mb-1">
@@ -341,7 +341,7 @@ const WHOISLookupShadcn = () => {
               )}
               {normalized.registrar?.name && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Registrar</p>
+                  <p className="text-body-sm text-muted-foreground">Registrar</p>
                   <p className="font-medium">{normalized.registrar.name}</p>
                 </div>
               )}
@@ -353,7 +353,7 @@ const WHOISLookupShadcn = () => {
         {normalized.events && (
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-semibold flex items-center gap-2">
+              <h3 className="text-title-sm flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 Registration Dates
               </h3>
@@ -362,26 +362,26 @@ const WHOISLookupShadcn = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {normalized.events.registration && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Registration</p>
-                    <p className="font-medium">{formatDateFromISO(normalized.events.registration)}</p>
+                    <p className="text-body-sm text-muted-foreground">Registration</p>
+                    <p className="text-data-md font-mono">{formatDateFromISO(normalized.events.registration)}</p>
                   </div>
                 )}
                 {normalized.events['last changed'] && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Last Changed</p>
-                    <p className="font-medium">{formatDateFromISO(normalized.events['last changed'])}</p>
+                    <p className="text-body-sm text-muted-foreground">Last Changed</p>
+                    <p className="text-data-md font-mono">{formatDateFromISO(normalized.events['last changed'])}</p>
                   </div>
                 )}
                 {normalized.events.expiration && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Expiration</p>
-                    <p className="font-medium">{formatDateFromISO(normalized.events.expiration)}</p>
+                    <p className="text-body-sm text-muted-foreground">Expiration</p>
+                    <p className="text-data-md font-mono">{formatDateFromISO(normalized.events.expiration)}</p>
                   </div>
                 )}
                 {normalized.events['last update of RDAP database'] && (
                   <div className="md:col-span-3">
-                    <p className="text-sm text-muted-foreground">Last RDAP Update</p>
-                    <p className="font-medium">{formatDateFromISO(normalized.events['last update of RDAP database'])}</p>
+                    <p className="text-body-sm text-muted-foreground">Last RDAP Update</p>
+                    <p className="text-data-md font-mono">{formatDateFromISO(normalized.events['last update of RDAP database'])}</p>
                   </div>
                 )}
               </div>
@@ -393,7 +393,7 @@ const WHOISLookupShadcn = () => {
         {normalized.nameservers && normalized.nameservers.length > 0 && (
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-semibold flex items-center gap-2">
+              <h3 className="text-title-sm flex items-center gap-2">
                 <Server className="h-4 w-4" />
                 Name Servers
               </h3>
@@ -402,11 +402,11 @@ const WHOISLookupShadcn = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {normalized.nameservers.map((ns, index) => (
                   <div key={index} className="p-3 bg-muted/50 rounded border">
-                    <p className="font-mono text-sm font-medium">{ns.name}</p>
+                    <p className="text-data-md font-mono">{ns.name}</p>
                     {ns.status && (
                       <div className="mt-1">
                         {ns.status.map((status, statusIndex) => (
-                          <Badge key={statusIndex} variant="secondary" className="text-xs mr-1">
+                          <Badge key={statusIndex} variant="secondary" className="text-data-sm font-mono mr-1">
                             {status}
                           </Badge>
                         ))}
@@ -423,7 +423,7 @@ const WHOISLookupShadcn = () => {
         {rdap.secureDNS && (
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-semibold flex items-center gap-2">
+              <h3 className="text-title-sm flex items-center gap-2">
                 <Shield className="h-4 w-4" />
                 DNSSEC Information
               </h3>
@@ -431,23 +431,23 @@ const WHOISLookupShadcn = () => {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm text-muted-foreground">Delegation Signed:</p>
+                  <p className="text-body-sm text-muted-foreground">Delegation Signed:</p>
                   <Badge variant={rdap.secureDNS.delegationSigned ? "default" : "secondary"}>
                     {rdap.secureDNS.delegationSigned ? "Yes" : "No"}
                   </Badge>
                 </div>
                 {rdap.secureDNS.maxSigLife && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Max Signature Life</p>
-                    <p className="font-medium">{rdap.secureDNS.maxSigLife} day(s)</p>
+                    <p className="text-body-sm text-muted-foreground">Max Signature Life</p>
+                    <p className="text-data-md font-mono">{rdap.secureDNS.maxSigLife} day(s)</p>
                   </div>
                 )}
                 {rdap.secureDNS.dsData && rdap.secureDNS.dsData.length > 0 && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">DS Records</p>
+                    <p className="text-body-sm text-muted-foreground mb-2">DS Records</p>
                     <div className="space-y-2">
                       {rdap.secureDNS.dsData.map((ds, index) => (
-                        <div key={index} className="p-2 bg-muted/50 rounded font-mono text-xs border">
+                        <div key={index} className="p-2 bg-muted/50 rounded font-mono text-data-sm border">
                           <div className="grid grid-cols-2 gap-2">
                             <div>Key Tag: {ds.keyTag}</div>
                             <div>Algorithm: {ds.algorithm}</div>
@@ -468,7 +468,7 @@ const WHOISLookupShadcn = () => {
         {normalized.entities?.registrar && normalized.entities.registrar.length > 0 && (
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-semibold flex items-center gap-2">
+              <h3 className="text-title-sm flex items-center gap-2">
                 <Building className="h-4 w-4" />
                 Registrar Information
               </h3>
@@ -486,7 +486,7 @@ const WHOISLookupShadcn = () => {
                   return (
                     <div key={index} className="border-l-2 border-primary pl-4">
                       <h4 className="font-medium mb-2">{name || 'Registrar'}</h4>
-                      <div className="space-y-2 text-sm">
+                      <div className="space-y-2 text-body-sm">
                         {registrar.publicIds?.map((id, idIndex) => (
                           <div key={idIndex}>
                             <span className="text-muted-foreground">{id.type}: </span>
@@ -518,7 +518,7 @@ const WHOISLookupShadcn = () => {
         {data.sources && data.sources.length > 0 && (
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-semibold flex items-center gap-2">
+              <h3 className="text-title-sm flex items-center gap-2">
                 <Network className="h-4 w-4" />
                 Data Sources
               </h3>
@@ -528,14 +528,14 @@ const WHOISLookupShadcn = () => {
                 {data.sources.map((source, index) => (
                   <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                     <div>
-                      <p className="font-medium">{source.name.toUpperCase()}</p>
-                      <p className="text-xs text-muted-foreground">{source.service}</p>
+                      <p className="text-data-md font-mono">{source.name.toUpperCase()}</p>
+                      <p className="text-data-sm font-mono text-muted-foreground">{source.service}</p>
                     </div>
                     <div className="text-right">
                       <Badge variant={source.status === 'success' ? 'default' : 'destructive'}>
                         {source.status}
                       </Badge>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-data-sm font-mono text-muted-foreground mt-1">
                         {formatDate(source.timestamp)}
                       </p>
                     </div>
@@ -637,7 +637,7 @@ const WHOISLookupShadcn = () => {
               <Card>
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Raw WHOIS Response</h3>
+                    <h3 className="text-title-sm">Raw WHOIS Response</h3>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
@@ -663,7 +663,7 @@ const WHOISLookupShadcn = () => {
                     value={JSON.stringify(lookupResults, null, 2)}
                     readOnly
                     rows={20}
-                    className="font-mono text-xs"
+                    className="font-mono text-data-sm"
                   />
                 </CardContent>
               </Card>
@@ -678,7 +678,7 @@ const WHOISLookupShadcn = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <History className="h-5 w-5" />
-                  <h3 className="text-lg font-semibold">Recent Lookups</h3>
+                  <h3 className="text-title-sm">Recent Lookups</h3>
                 </div>
                 <Button
                   size="sm"
@@ -697,8 +697,8 @@ const WHOISLookupShadcn = () => {
                     <div className="flex items-center gap-3">
                       {getTypeIcon(item.type)}
                       <div>
-                        <p className="font-medium font-mono">{item.query}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-data-md font-mono">{item.query}</p>
+                        <p className="text-data-sm font-mono text-muted-foreground">
                           {formatDate(item.timestamp)} • {item.type}
                         </p>
                       </div>

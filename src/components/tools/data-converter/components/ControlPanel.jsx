@@ -23,7 +23,7 @@ const ControlPanel = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg">Data Converter</CardTitle>
+            <CardTitle className="text-title-sm">Data Converter</CardTitle>
             <CardDescription>
               Convert between JSON, YAML, and TOML formats with validation
             </CardDescription>

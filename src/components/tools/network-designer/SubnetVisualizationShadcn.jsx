@@ -116,8 +116,8 @@ export function SubnetVisualizationShadcn({ parentNetwork, subnets }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Subnet Visualization</CardTitle>
-        <p className="text-sm text-muted-foreground">
+        <CardTitle className="text-title-sm">Subnet Visualization</CardTitle>
+        <p className="text-body-sm text-muted-foreground">
           {percentFree}% of the parent network is free
         </p>
       </CardHeader>
@@ -163,7 +163,7 @@ export function SubnetVisualizationShadcn({ parentNetwork, subnets }) {
                 title={getSubnetTooltip(seg)}
               >
                 <span
-                  className="text-xs font-semibold select-none z-10"
+                  className="text-body-sm font-semibold select-none z-10"
                   style={{
                     color: getContrastColor(color),
                   }}
@@ -175,7 +175,7 @@ export function SubnetVisualizationShadcn({ parentNetwork, subnets }) {
           })}
         </div>
         
-        <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
+        <div className="flex justify-between items-center mt-3 text-data-sm font-mono text-muted-foreground">
           <span>{parentBlock.base}</span>
           <span>{parentBlock.broadcast}</span>
         </div>

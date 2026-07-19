@@ -24,21 +24,21 @@ const CompatibilityTab = ({ data }) => {
       {/* Summary */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Compatibility Summary</h3>
+          <h3 className="text-title-sm">Compatibility Summary</h3>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-success">{successful.length}</p>
-              <p className="text-sm text-muted-foreground">Compatible</p>
+              <p className="text-headline-md text-success">{successful.length}</p>
+              <p className="text-body-sm text-muted-foreground">Compatible</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-danger">{failed.length}</p>
-              <p className="text-sm text-muted-foreground">Incompatible</p>
+              <p className="text-headline-md text-danger">{failed.length}</p>
+              <p className="text-body-sm text-muted-foreground">Incompatible</p>
             </div>
             <div>
-              <p className="text-2xl font-bold">{sims.results.length}</p>
-              <p className="text-sm text-muted-foreground">Total Tested</p>
+              <p className="text-headline-md">{sims.results.length}</p>
+              <p className="text-body-sm text-muted-foreground">Total Tested</p>
             </div>
           </div>
         </CardContent>
@@ -48,7 +48,7 @@ const CompatibilityTab = ({ data }) => {
       {successful.length > 0 && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Compatible Clients ({successful.length})</h3>
+            <h3 className="text-title-sm">Compatible Clients ({successful.length})</h3>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -57,7 +57,7 @@ const CompatibilityTab = ({ data }) => {
                   <div>
                     <p className="font-medium">{sim.client.name} {sim.client.version}</p>
                     {sim.suiteName && (
-                      <p className="text-xs text-muted-foreground">{sim.suiteName}</p>
+                      <p className="text-data-sm font-mono text-muted-foreground">{sim.suiteName}</p>
                     )}
                   </div>
                   <div className="flex gap-2">
@@ -79,7 +79,7 @@ const CompatibilityTab = ({ data }) => {
       {failed.length > 0 && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Incompatible Clients ({failed.length})</h3>
+            <h3 className="text-title-sm">Incompatible Clients ({failed.length})</h3>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -88,7 +88,7 @@ const CompatibilityTab = ({ data }) => {
                   <div>
                     <p className="font-medium">{sim.client.name} {sim.client.version}</p>
                     {sim.errorMessage && (
-                      <p className="text-xs text-muted-foreground">{sim.errorMessage}</p>
+                      <p className="text-body-sm text-muted-foreground">{sim.errorMessage}</p>
                     )}
                   </div>
                   <Badge variant="destructive">✗ Incompatible</Badge>

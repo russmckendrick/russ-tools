@@ -97,7 +97,7 @@ const QueryHistory = ({ history, onLoad, onClear }) => {
                     <span className="font-medium">{entry.service}</span>
                     <Badge variant="secondary">{entry.template}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-body-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true })}
                   </p>
                 </div>
@@ -111,7 +111,7 @@ const QueryHistory = ({ history, onLoad, onClear }) => {
                 </Button>
               </div>
               
-              <div className="bg-muted/30 p-2 rounded text-xs font-mono overflow-x-auto">
+              <div className="bg-muted/30 p-2 rounded text-data-sm font-mono overflow-x-auto">
                 <pre className="whitespace-pre-wrap">
                   {entry.query.split('\n').slice(0, 3).join('\n')}
                   {entry.query.split('\n').length > 3 && '\n...'}
@@ -122,7 +122,7 @@ const QueryHistory = ({ history, onLoad, onClear }) => {
                 <div className="flex flex-wrap gap-1">
                   {Object.entries(entry.parameters).map(([key, value]) => (
                     value && value !== '' && value !== 'any' && (
-                      <Badge key={key} variant="outline" className="text-xs">
+                      <Badge key={key} variant="outline" className="text-data-sm font-mono">
                         {key}: {String(value)}
                       </Badge>
                     )

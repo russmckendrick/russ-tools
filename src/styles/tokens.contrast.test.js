@@ -218,6 +218,31 @@ describe('token layer integrity', () => {
     expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   });
 
+  it('folds each type step into one text-* token, with no family peer', () => {
+    const generated = readFileSync(
+      new URL('./tokens.generated.css', import.meta.url),
+      'utf8'
+    );
+
+    // A step must carry its own weight and line-height, so one class applies
+    // it and a call site cannot half-apply it.
+    for (const step of ['display', 'headline-lg', 'headline-md', 'title-sm', 'body-sm']) {
+      expect(generated, step).toMatch(
+        new RegExp(`--text-${step}--font-weight:\\s*\\d+`)
+      );
+      expect(generated, step).toMatch(
+        new RegExp(`--text-${step}--line-height:\\s*[\\d.]+`)
+      );
+    }
+
+    // And no per-step font-family token may exist. Tailwind's font-* namespace
+    // covers family and weight both, and family wins — so `font-title-sm`
+    // would set `font-family: "Inter"`, which is not the self-hosted name
+    // ("Inter Variable"), and headings fall back to the browser default serif.
+    // DESIGN.md: there is no serif anywhere in this system.
+    expect(generated).not.toMatch(/--font-(?!weight-|sans|mono)[\w-]+:\s*"/);
+  });
+
   it('keeps the spacing scale out of Tailwind\'s --spacing-* namespace', () => {
     // DESIGN.md names its spacing steps xs/sm/md/lg/xl/2xl/3xl, which are
     // exactly Tailwind 4's *container* scale keys. Emitted as `--spacing-lg`

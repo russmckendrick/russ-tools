@@ -48,7 +48,7 @@ const TenantInfoDisplay = ({ data, onSave }) => {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
+            <h3 className="text-title-sm flex items-center gap-2">
               <Building className="h-5 w-5" />
               Tenant Information
             </h3>
@@ -67,20 +67,20 @@ const TenantInfoDisplay = ({ data, onSave }) => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Domain</p>
+              <p className="text-body-sm text-muted-foreground">Domain</p>
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-muted-foreground" />
                 <p className="font-medium font-mono">{data.domain}</p>
               </div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Display Name</p>
+              <p className="text-body-sm text-muted-foreground">Display Name</p>
               <p className="font-medium">{data.displayName || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Tenant ID</p>
+              <p className="text-body-sm text-muted-foreground">Tenant ID</p>
               <div className="flex items-center gap-2">
-                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                <code className="bg-muted px-2 py-1 rounded text-data-sm font-mono">
                   {data.tenantId}
                 </code>
                 <Button
@@ -93,41 +93,41 @@ const TenantInfoDisplay = ({ data, onSave }) => {
               </div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Default Domain</p>
+              <p className="text-body-sm text-muted-foreground">Default Domain</p>
               <p className="font-medium font-mono">{data.defaultDomainName || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Tenant Type</p>
+              <p className="text-body-sm text-muted-foreground">Tenant Type</p>
               <Badge className={getTenantTypeColor(data.tenantType)}>
                 {data.tenantType || 'Unknown'}
               </Badge>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Category</p>
+              <p className="text-body-sm text-muted-foreground">Category</p>
               <Badge variant="outline">
                 {data.tenantCategory || 'Unknown'}
               </Badge>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Cloud Status</p>
+              <p className="text-body-sm text-muted-foreground">Cloud Status</p>
               <Badge className={getCloudStatusColor(data.isCloudOnly)}>
                 {data.isCloudOnly ? 'Cloud Only' : 'Hybrid'}
               </Badge>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Detection Method</p>
+              <p className="text-body-sm text-muted-foreground">Detection Method</p>
               <Badge variant="secondary">
                 {data.method || 'Unknown'}
               </Badge>
             </div>
             {data.federationBrandName && (
               <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground">Federation Brand Name</p>
+                <p className="text-body-sm text-muted-foreground">Federation Brand Name</p>
                 <p className="font-medium">{data.federationBrandName}</p>
               </div>
             )}
             <div className="md:col-span-2">
-              <p className="text-sm text-muted-foreground">Lookup Timestamp</p>
+              <p className="text-body-sm text-muted-foreground">Lookup Timestamp</p>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <p className="font-medium">{formatTimestamp(data.timestamp)}</p>
@@ -141,7 +141,7 @@ const TenantInfoDisplay = ({ data, onSave }) => {
       {data.authUrl && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold flex items-center gap-2">
+            <h3 className="text-title-sm flex items-center gap-2">
               <Shield className="h-5 w-5" />
               Authentication Endpoints
             </h3>
@@ -149,9 +149,9 @@ const TenantInfoDisplay = ({ data, onSave }) => {
           <CardContent>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-muted-foreground">Authorization URL</p>
+                <p className="text-body-sm text-muted-foreground">Authorization URL</p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-muted px-2 py-1 rounded text-xs font-mono break-all">
+                  <code className="flex-1 bg-muted px-2 py-1 rounded text-data-sm font-mono break-all">
                     {data.authUrl}
                   </code>
                   <Button
@@ -174,9 +174,9 @@ const TenantInfoDisplay = ({ data, onSave }) => {
               </div>
               {data.tokenUrl && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Token URL</p>
+                  <p className="text-body-sm text-muted-foreground">Token URL</p>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 bg-muted px-2 py-1 rounded text-xs font-mono break-all">
+                    <code className="flex-1 bg-muted px-2 py-1 rounded text-data-sm font-mono break-all">
                       {data.tokenUrl}
                     </code>
                     <Button

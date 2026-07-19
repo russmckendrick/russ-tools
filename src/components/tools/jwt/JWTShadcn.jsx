@@ -295,7 +295,7 @@ const JWTShadcn = () => {
                 placeholder="Paste your JWT token here..."
                 value={jwtToken}
                 onChange={(e) => setJwtToken(e.target.value)}
-                className="min-h-[100px] font-mono text-sm"
+                className="min-h-[100px] font-mono text-data-md"
               />
 
               {isValidFormat !== null && (
@@ -320,7 +320,7 @@ const JWTShadcn = () => {
 
               {/* Example Tokens */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-muted-foreground">Try examples:</span>
+                <span className="text-body-sm text-muted-foreground">Try examples:</span>
                 <Button
                   size="sm"
                   variant="outline"
@@ -367,8 +367,8 @@ const JWTShadcn = () => {
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  <div className="font-semibold text-sm mb-1">Browser Limitations & Security</div>
-                  <div className="text-xs">
+                  <div className="text-body-sm font-semibold mb-1">Browser Limitations & Security</div>
+                  <div className="text-body-sm">
                     HMAC (HS256/HS384/HS512) signature validation requires server-side processing for security reasons. 
                     Only RSA and ECDSA public key validation is supported in the browser. Your secret keys remain secure as they never leave your environment.
                   </div>
@@ -382,9 +382,9 @@ const JWTShadcn = () => {
                   placeholder="Enter PEM-formatted public key or JWK..."
                   value={publicKey}
                   onChange={(e) => setPublicKey(e.target.value)}
-                  className="min-h-[120px] font-mono text-sm"
+                  className="min-h-[120px] font-mono text-data-md"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-body-sm text-muted-foreground">
                   Supports PEM format (-----BEGIN PUBLIC KEY-----) or JWK format
                 </p>
               </div>
@@ -434,7 +434,7 @@ const JWTShadcn = () => {
                     <Card>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">Header</CardTitle>
+                          <CardTitle className="text-title-sm">Header</CardTitle>
                           <Button
                             variant="outline"
                             size="sm"
@@ -445,7 +445,7 @@ const JWTShadcn = () => {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <pre className="bg-muted p-3 rounded text-sm overflow-x-auto">
+                        <pre className="bg-muted p-3 rounded font-mono text-data-md overflow-x-auto">
                           {JSON.stringify(decodedHeader, null, 2)}
                         </pre>
                       </CardContent>
@@ -455,7 +455,7 @@ const JWTShadcn = () => {
                     <Card>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">Payload</CardTitle>
+                          <CardTitle className="text-title-sm">Payload</CardTitle>
                           <Button
                             variant="outline"
                             size="sm"
@@ -466,7 +466,7 @@ const JWTShadcn = () => {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <pre className="bg-muted p-3 rounded text-sm overflow-x-auto max-h-80 overflow-y-auto">
+                        <pre className="bg-muted p-3 rounded font-mono text-data-md overflow-x-auto max-h-80 overflow-y-auto">
                           {JSON.stringify(decodedPayload, null, 2)}
                         </pre>
                       </CardContent>
@@ -477,7 +477,7 @@ const JWTShadcn = () => {
                   <Card>
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">Signature</CardTitle>
+                        <CardTitle className="text-title-sm">Signature</CardTitle>
                         <Button
                           variant="outline"
                           size="sm"
@@ -488,7 +488,7 @@ const JWTShadcn = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <code className="block bg-muted p-3 rounded text-sm break-all">
+                      <code className="block bg-muted p-3 rounded font-mono text-data-md break-all">
                         {signature}
                       </code>
                     </CardContent>
@@ -511,7 +511,7 @@ const JWTShadcn = () => {
                             <AlertDescription>
                               <div className="font-semibold">{expStatus.message}</div>
                               {tokenAnalysis.expiresAt && (
-                                <div className="text-sm mt-1">
+                                <div className="text-body-sm mt-1">
                                   Expires: {formatTimestamp(tokenAnalysis.expiresAt)}
                                 </div>
                               )}
@@ -524,7 +524,7 @@ const JWTShadcn = () => {
                         {/* Token Information */}
                         <Card>
                           <CardHeader className="pb-3">
-                            <CardTitle className="text-lg">Token Information</CardTitle>
+                            <CardTitle className="text-title-sm">Token Information</CardTitle>
                           </CardHeader>
                           <CardContent>
                             <Table>
@@ -553,7 +553,7 @@ const JWTShadcn = () => {
                         {/* Timestamps */}
                         <Card>
                           <CardHeader className="pb-3">
-                            <CardTitle className="text-lg">Timestamps</CardTitle>
+                            <CardTitle className="text-title-sm">Timestamps</CardTitle>
                           </CardHeader>
                           <CardContent>
                             <Table>
@@ -617,7 +617,7 @@ const JWTShadcn = () => {
                       {/* Standard Claims */}
                       <Card>
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-lg">Standard Claims</CardTitle>
+                          <CardTitle className="text-title-sm">Standard Claims</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <Table>
@@ -654,7 +654,7 @@ const JWTShadcn = () => {
                         <Card>
                           <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
-                              <CardTitle className="text-lg">Custom Claims</CardTitle>
+                              <CardTitle className="text-title-sm">Custom Claims</CardTitle>
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -665,7 +665,7 @@ const JWTShadcn = () => {
                             </div>
                           </CardHeader>
                           <CardContent>
-                            <pre className="bg-muted p-3 rounded text-sm overflow-x-auto max-h-60 overflow-y-auto">
+                            <pre className="bg-muted p-3 rounded font-mono text-data-md overflow-x-auto max-h-60 overflow-y-auto">
                               {JSON.stringify(tokenAnalysis.customClaims, null, 2)}
                             </pre>
                           </CardContent>

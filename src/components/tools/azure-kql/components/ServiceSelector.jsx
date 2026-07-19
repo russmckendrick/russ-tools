@@ -36,7 +36,7 @@ const ServiceSelector = ({ value, onChange }) => {
                 <div className="text-left">
                   <div className="font-medium">{service.name}</div>
                   {service.description && (
-                    <div className={`text-xs mt-0.5 ${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                    <div className={`text-body-sm mt-0.5 ${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                       {service.description}
                     </div>
                   )}

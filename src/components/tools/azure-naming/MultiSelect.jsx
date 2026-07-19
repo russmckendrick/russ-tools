@@ -58,7 +58,7 @@ const MultiSelect = ({
     <div ref={containerRef} className={cn("relative", className)}>
       <div
         className={cn(
-          "flex min-h-20 w-full flex-wrap gap-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+          "flex min-h-20 w-full flex-wrap gap-1 rounded-md border border-input bg-background px-3 py-2 text-body-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
           error && "border-destructive focus-within:ring-destructive",
           isOpen && "ring-2 ring-ring ring-offset-2"
         )}
@@ -77,7 +77,7 @@ const MultiSelect = ({
                 variant="secondary"
                 className="gap-1 pr-1"
               >
-                <span className="text-xs">{label.replace(/ \([^)]+\)$/, '')}</span>
+                <span className="text-body-sm">{label.replace(/ \([^)]+\)$/, '')}</span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -105,7 +105,7 @@ const MultiSelect = ({
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-destructive">{error}</p>
+        <p className="mt-1 text-body-sm text-destructive">{error}</p>
       )}
 
       {isOpen && (
@@ -124,7 +124,7 @@ const MultiSelect = ({
           <div className="max-h-60 overflow-y-auto">
             <div className="p-1">
               {filteredData.length === 0 ? (
-                <div className="py-2 px-2 text-sm text-muted-foreground">
+                <div className="py-2 px-2 text-body-sm text-muted-foreground">
                   No items found
                 </div>
               ) : (
@@ -134,7 +134,7 @@ const MultiSelect = ({
                     <div
                       key={item.value}
                       className={cn(
-                        "flex cursor-pointer items-center justify-between rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground",
+                        "flex cursor-pointer items-center justify-between rounded-sm px-2 py-1.5 text-body-sm hover:bg-accent hover:text-accent-foreground",
                         isSelected && "bg-accent text-accent-foreground"
                       )}
                       onClick={() => toggleSelection(item)}

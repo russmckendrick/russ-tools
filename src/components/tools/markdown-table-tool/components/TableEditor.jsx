@@ -163,10 +163,10 @@ const TableEditor = ({
 
       {/* Column Alignment Controls */}
       <div className="flex items-center space-x-2 p-3 bg-muted/30 rounded-lg overflow-x-auto">
-        <span className="text-sm font-medium whitespace-nowrap">Column Alignment:</span>
+        <span className="text-body-sm font-medium whitespace-nowrap">Column Alignment:</span>
         {alignments.map((alignment, index) => (
           <div key={index} className="flex items-center space-x-1">
-            <span className="text-xs text-muted-foreground">Col {index + 1}</span>
+            <span className="text-data-sm font-mono text-muted-foreground">Col {index + 1}</span>
             <Select
               value={alignment}
               onValueChange={(value) => onUpdateAlignment(index, value)}
@@ -175,7 +175,7 @@ const TableEditor = ({
                 <SelectValue>
                   <div className="flex items-center space-x-1">
                     {getAlignmentIcon(alignment)}
-                    <span className="text-xs">{alignment}</span>
+                    <span className="text-body-sm">{alignment}</span>
                   </div>
                 </SelectValue>
               </SelectTrigger>
@@ -221,7 +221,7 @@ const TableEditor = ({
                     >
                       <IconPlus className="w-3 h-3" />
                     </Button>
-                    <span className="text-xs text-muted-foreground">{rowIndex + 1}</span>
+                    <span className="text-data-sm font-mono text-muted-foreground">{rowIndex + 1}</span>
                     {data.length > 1 && (
                       <Button
                         variant="ghost"
@@ -282,7 +282,7 @@ const TableEditor = ({
             {/* Column controls row */}
             <tr className="bg-muted/50">
               <td className="p-2 border-r">
-                <div className="text-xs text-muted-foreground text-center">Cols</div>
+                <div className="text-data-sm font-mono text-muted-foreground text-center">Cols</div>
               </td>
               {alignments.map((_, colIndex) => (
                 <td key={colIndex} className="border p-1">
@@ -320,7 +320,7 @@ const TableEditor = ({
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
           <button
-            className="w-full px-3 py-2 text-left text-sm hover:bg-muted/50 flex items-center space-x-2"
+            className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted/50 flex items-center space-x-2"
             onClick={() => {
               onAddRow(contextMenu.row + 1);
               setContextMenu(null);
@@ -331,7 +331,7 @@ const TableEditor = ({
           </button>
           
           <button
-            className="w-full px-3 py-2 text-left text-sm hover:bg-muted/50 flex items-center space-x-2"
+            className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted/50 flex items-center space-x-2"
             onClick={() => {
               onAddColumn(contextMenu.col + 1);
               setContextMenu(null);
@@ -342,7 +342,7 @@ const TableEditor = ({
           </button>
           
           <button
-            className="w-full px-3 py-2 text-left text-sm hover:bg-muted/50 flex items-center space-x-2"
+            className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted/50 flex items-center space-x-2"
             onClick={() => {
               duplicateRow(contextMenu.row);
               setContextMenu(null);
@@ -353,7 +353,7 @@ const TableEditor = ({
           </button>
           
           <button
-            className="w-full px-3 py-2 text-left text-sm hover:bg-muted/50 flex items-center space-x-2"
+            className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted/50 flex items-center space-x-2"
             onClick={() => {
               duplicateColumn(contextMenu.col);
               setContextMenu(null);
@@ -365,7 +365,7 @@ const TableEditor = ({
           
           {data.length > 1 && (
             <button
-              className="w-full px-3 py-2 text-left text-sm hover:bg-surface-inset flex items-center space-x-2 text-danger"
+              className="w-full px-3 py-2 text-left text-body-sm hover:bg-surface-inset flex items-center space-x-2 text-danger"
               onClick={() => {
                 onRemoveRow(contextMenu.row);
                 setContextMenu(null);
@@ -378,7 +378,7 @@ const TableEditor = ({
           
           {data[0]?.length > 1 && (
             <button
-              className="w-full px-3 py-2 text-left text-sm hover:bg-surface-inset flex items-center space-x-2 text-danger"
+              className="w-full px-3 py-2 text-left text-body-sm hover:bg-surface-inset flex items-center space-x-2 text-danger"
               onClick={() => {
                 onRemoveColumn(contextMenu.col);
                 setContextMenu(null);

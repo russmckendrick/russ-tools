@@ -43,7 +43,7 @@ const SamplesDialog = ({
       >
         <div className="text-left w-full">
           <div className="font-medium mb-1">{sample.name}</div>
-          <div className="text-xs text-muted-foreground">{sample.description}</div>
+          <div className="text-body-sm text-muted-foreground">{sample.description}</div>
         </div>
       </Button>
     ));

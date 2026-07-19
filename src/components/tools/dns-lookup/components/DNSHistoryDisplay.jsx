@@ -57,7 +57,7 @@ const DNSHistoryDisplay = ({
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <History className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Recent DNS Lookups</h3>
+            <h3 className="text-title-sm">Recent DNS Lookups</h3>
           </div>
           <Button
             size="sm"
@@ -88,11 +88,11 @@ const DNSHistoryDisplay = ({
                       {getProviderName(item.provider)}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-data-md font-mono text-muted-foreground">
                     {formatTimestamp(item.timestamp)}
                   </p>
                   {item.recordCount && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-body-sm text-muted-foreground">
                       {item.recordCount} record{item.recordCount !== 1 ? 's' : ''} found
                     </p>
                   )}

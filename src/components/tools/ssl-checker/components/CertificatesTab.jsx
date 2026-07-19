@@ -13,7 +13,7 @@ const CertificatesTab = ({ data }) => {
       {endpoint?.details?.certChains && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Certificate Chains</h3>
+            <h3 className="text-title-sm">Certificate Chains</h3>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -22,13 +22,13 @@ const CertificatesTab = ({ data }) => {
                   <h4 className="font-medium mb-3">Chain {index + 1}</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Issues</p>
+                      <p className="text-body-sm text-muted-foreground">Issues</p>
                       <Badge variant={chain.issues === 0 ? "default" : "destructive"}>
                         {chain.issues === 0 ? "No Issues" : `${chain.issues} Issues`}
                       </Badge>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">SNI Required</p>
+                      <p className="text-body-sm text-muted-foreground">SNI Required</p>
                       <Badge variant={chain.noSni ? "destructive" : "default"}>
                         {chain.noSni ? "SNI Required" : "SNI Optional"}
                       </Badge>
@@ -37,7 +37,7 @@ const CertificatesTab = ({ data }) => {
                   
                   {/* Trust Paths */}
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Trust Stores</p>
+                    <p className="text-body-sm text-muted-foreground mb-2">Trust Stores</p>
                     <div className="flex gap-2 flex-wrap">
                       {chain.trustPaths?.slice(0, 5).map((path, pathIndex) => {
                         const trust = path.trust?.[0];
@@ -60,7 +60,7 @@ const CertificatesTab = ({ data }) => {
       {certs.length > 0 && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Certificate Details</h3>
+            <h3 className="text-title-sm">Certificate Details</h3>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -68,28 +68,28 @@ const CertificatesTab = ({ data }) => {
                 <div key={index} className="border rounded-lg p-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Subject</p>
-                      <p className="font-medium font-mono text-sm">{cert.subject}</p>
+                      <p className="text-body-sm text-muted-foreground">Subject</p>
+                      <p className="text-data-md font-mono">{cert.subject}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Issuer</p>
-                      <p className="font-medium font-mono text-sm">{cert.issuerSubject}</p>
+                      <p className="text-body-sm text-muted-foreground">Issuer</p>
+                      <p className="text-data-md font-mono">{cert.issuerSubject}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Valid From</p>
-                      <p className="font-medium">{formatDate(cert.notBefore)}</p>
+                      <p className="text-body-sm text-muted-foreground">Valid From</p>
+                      <p className="text-data-md font-mono">{formatDate(cert.notBefore)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Valid Until</p>
-                      <p className="font-medium">{formatDate(cert.notAfter)}</p>
+                      <p className="text-body-sm text-muted-foreground">Valid Until</p>
+                      <p className="text-data-md font-mono">{formatDate(cert.notAfter)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Key Algorithm</p>
-                      <p className="font-medium">{cert.keyAlg || 'Unknown'}</p>
+                      <p className="text-body-sm text-muted-foreground">Key Algorithm</p>
+                      <p className="text-data-md font-mono">{cert.keyAlg || 'Unknown'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Key Size</p>
-                      <p className="font-medium">{cert.keySize ? `${cert.keySize} bits` : 'Unknown'}</p>
+                      <p className="text-body-sm text-muted-foreground">Key Size</p>
+                      <p className="text-data-md font-mono">{cert.keySize ? `${cert.keySize} bits` : 'Unknown'}</p>
                     </div>
                   </div>
                 </div>

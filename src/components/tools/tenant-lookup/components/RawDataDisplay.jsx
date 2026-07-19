@@ -38,7 +38,7 @@ const RawDataDisplay = ({ data }) => {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
+          <h3 className="text-title-sm flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Raw Response Data
           </h3>
@@ -60,7 +60,7 @@ const RawDataDisplay = ({ data }) => {
         <CardContent>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-body-sm text-muted-foreground">
                 Complete JSON Response ({jsonString.length.toLocaleString()} characters)
               </span>
               <div className="flex gap-2">
@@ -86,7 +86,7 @@ const RawDataDisplay = ({ data }) => {
               value={jsonString}
               readOnly
               rows={20}
-              className="font-mono text-xs"
+              className="font-mono text-data-sm"
             />
           </div>
         </CardContent>

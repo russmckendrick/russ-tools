@@ -49,7 +49,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <span className="text-sm font-medium">Workload/Application Name</span>
+                <span className="text-body-sm font-medium">Workload/Application Name</span>
                 <HelpTooltipShadcn content="Enter the name of your workload or application. This will be used as the main identifier in the resource name." />
               </Label>
               <Input
@@ -60,7 +60,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
                 className={validationState.errors.workload ? "border-destructive" : ""}
               />
               {validationState.errors.workload && (
-                <p className="text-sm text-destructive">{validationState.errors.workload}</p>
+                <p className="text-body-sm text-destructive">{validationState.errors.workload}</p>
               )}
             </div>
           </CardContent>
@@ -70,7 +70,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <span className="text-sm font-medium">Environment</span>
+                <span className="text-body-sm font-medium">Environment</span>
                 <HelpTooltipShadcn content="Select the environment where this resource will be deployed." />
               </Label>
               <Select
@@ -90,7 +90,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
                 </SelectContent>
               </Select>
               {validationState.errors.environment && (
-                <p className="text-sm text-destructive">{validationState.errors.environment}</p>
+                <p className="text-body-sm text-destructive">{validationState.errors.environment}</p>
               )}
             </div>
           </CardContent>
@@ -100,7 +100,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <span className="text-sm font-medium">Region</span>
+                <span className="text-body-sm font-medium">Region</span>
                 <HelpTooltipShadcn content="Select the Azure region for your resource. Display name is shown, but the abbreviation will be used in the generated name." />
               </Label>
               <Select
@@ -121,7 +121,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
                 </SelectContent>
               </Select>
               {validationState.errors.region && (
-                <p className="text-sm text-destructive">{validationState.errors.region}</p>
+                <p className="text-body-sm text-destructive">{validationState.errors.region}</p>
               )}
             </div>
           </CardContent>
@@ -139,11 +139,11 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Instance Number</span>
+                  <span className="text-body-sm font-medium">Instance Number</span>
                   <HelpTooltipShadcn content="Enter a number up to 5 digits (e.g., 001, 12345). Optional field for resources that support multiple instances." />
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="instance-toggle" className="text-sm">Enable</Label>
+                  <Label htmlFor="instance-toggle" className="text-body-sm">Enable</Label>
                   <Switch
                     id="instance-toggle"
                     checked={showInstance}
@@ -168,9 +168,9 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
                   />
                   {formState.instance && (
                     !/^\d+$/.test(formState.instance) ? (
-                      <p className="text-sm text-destructive">Only numbers are allowed</p>
+                      <p className="text-body-sm text-destructive">Only numbers are allowed</p>
                     ) : formState.instance.length > 5 ? (
-                      <p className="text-sm text-destructive">Maximum 5 digits allowed</p>
+                      <p className="text-body-sm text-destructive">Maximum 5 digits allowed</p>
                     ) : null
                   )}
                 </div>
@@ -185,11 +185,11 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Custom Prefix</span>
+                  <span className="text-body-sm font-medium">Custom Prefix</span>
                   <HelpTooltipShadcn content="Add a custom prefix to the resource name. This will be added before the resource type prefix." />
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="prefix-toggle" className="text-sm">Enable</Label>
+                  <Label htmlFor="prefix-toggle" className="text-body-sm">Enable</Label>
                   <Switch
                     id="prefix-toggle"
                     checked={showCustomPrefix}
@@ -216,11 +216,11 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Custom Suffix</span>
+                  <span className="text-body-sm font-medium">Custom Suffix</span>
                   <HelpTooltipShadcn content="Add a custom suffix to the resource name. This will be added at the end of the name." />
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="suffix-toggle" className="text-sm">Enable</Label>
+                  <Label htmlFor="suffix-toggle" className="text-body-sm">Enable</Label>
                   <Switch
                     id="suffix-toggle"
                     checked={showCustomSuffix}
@@ -247,11 +247,11 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Random Characters</span>
+                  <span className="text-body-sm font-medium">Random Characters</span>
                   <HelpTooltipShadcn content="Select how many random characters to append to the resource name for uniqueness." />
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="random-toggle" className="text-sm">Enable</Label>
+                  <Label htmlFor="random-toggle" className="text-body-sm">Enable</Label>
                   <Switch
                     id="random-toggle"
                     checked={showRandomChars}
@@ -262,7 +262,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
               
               {showRandomChars && (
                 <div className="space-y-4">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-body-sm text-muted-foreground">
                     Choose number of random characters to append (improves uniqueness)
                   </p>
                   <div className="space-y-2">
@@ -273,7 +273,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
                       step={1}
                       className="w-full"
                     />
-                    <div className="flex justify-between text-xs text-muted-foreground">
+                    <div className="flex justify-between text-data-sm font-mono text-muted-foreground">
                       <span>0</span>
                       <span>1</span>
                       <span>2</span>
@@ -283,7 +283,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
                     </div>
                   </div>
                   {(formState.randomLength || 0) > 0 && (
-                    <p className="text-xs text-info font-medium">
+                    <p className="text-body-sm text-info font-medium">
                       Will append {formState.randomLength} random character{formState.randomLength > 1 ? 's' : ''} (e.g., "abc123xy")
                     </p>
                   )}

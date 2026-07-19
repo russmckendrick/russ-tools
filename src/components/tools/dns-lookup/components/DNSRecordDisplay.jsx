@@ -55,7 +55,7 @@ const DNSRecordDisplay = ({ record }) => {
   
   return (
     <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
-      <div className="font-mono text-sm flex-1 break-all">
+      <div className="font-mono text-data-md flex-1 break-all">
         {recordText}
       </div>
       <div className="flex gap-2 ml-2 flex-shrink-0">

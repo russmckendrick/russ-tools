@@ -21,12 +21,12 @@ const ProtocolsTab = ({ data }) => {
       {/* Supported Protocols */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Supported Protocols</h3>
+          <h3 className="text-title-sm">Supported Protocols</h3>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2 flex-wrap">
             {details.protocols?.map((protocol, index) => (
-              <Badge key={index} variant="outline" className="text-sm">
+              <Badge key={index} variant="outline" className="text-data-md font-mono">
                 {protocol.name} {protocol.version}
               </Badge>
             ))}
@@ -38,12 +38,12 @@ const ProtocolsTab = ({ data }) => {
       {details.suites?.list && details.suites.list.length > 0 && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Cipher Suites ({details.suites.list.length})</h3>
+            <h3 className="text-title-sm">Cipher Suites ({details.suites.list.length})</h3>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {details.suites.list.slice(0, 20).map((suite, index) => (
-                <div key={index} className="flex items-center justify-between p-2 border rounded text-sm">
+                <div key={index} className="flex items-center justify-between p-2 border rounded text-data-md">
                   <span className="font-mono">{suite.name}</span>
                   <div className="flex gap-2">
                     <Badge variant="outline">{suite.kxType}</Badge>
@@ -52,7 +52,7 @@ const ProtocolsTab = ({ data }) => {
                 </div>
               ))}
               {details.suites.list.length > 20 && (
-                <p className="text-sm text-muted-foreground text-center pt-2">
+                <p className="text-body-sm text-muted-foreground text-center pt-2">
                   + {details.suites.list.length - 20} more cipher suites
                 </p>
               )}
@@ -65,13 +65,13 @@ const ProtocolsTab = ({ data }) => {
       {details.namedGroups?.list && (
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Named Groups</h3>
+            <h3 className="text-title-sm">Named Groups</h3>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {details.namedGroups.list.map((group, index) => (
                 <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  <span className="font-medium">{group.name}</span>
+                  <span className="text-data-md font-mono">{group.name}</span>
                   <div className="flex gap-2">
                     <Badge variant="outline">{group.bits} bits</Badge>
                     <Badge variant="outline">{group.namedGroupType}</Badge>

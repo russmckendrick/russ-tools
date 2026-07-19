@@ -50,7 +50,7 @@ const PortalTable = ({ portals, onToggleFavorite }) => {
               </Button>
             </TableCell>
             <TableCell className="font-medium">{portal.name}</TableCell>
-            <TableCell className="text-sm text-muted-foreground max-w-md">
+            <TableCell className="text-body-sm text-muted-foreground max-w-md">
               {portal.description}
             </TableCell>
             <TableCell>

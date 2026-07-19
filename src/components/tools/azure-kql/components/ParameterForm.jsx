@@ -65,13 +65,13 @@ const ParameterForm = ({
               </SelectContent>
             </Select>
             {error && (
-              <p className="text-sm text-destructive flex items-center gap-1">
+              <p className="text-body-sm text-destructive flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 {error}
               </p>
             )}
             {field.description && !error && (
-              <p className="text-sm text-muted-foreground">{field.description}</p>
+              <p className="text-body-sm text-muted-foreground">{field.description}</p>
             )}
           </div>
         );
@@ -97,13 +97,13 @@ const ParameterForm = ({
               className={cn(hasError && "border-destructive")}
             />
             {error && (
-              <p className="text-sm text-destructive flex items-center gap-1">
+              <p className="text-body-sm text-destructive flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 {error}
               </p>
             )}
             {field.description && !error && (
-              <p className="text-sm text-muted-foreground">{field.description}</p>
+              <p className="text-body-sm text-muted-foreground">{field.description}</p>
             )}
           </div>
         );
@@ -138,7 +138,7 @@ const ParameterForm = ({
               </SelectContent>
             </Select>
             {error && (
-              <p className="text-sm text-destructive flex items-center gap-1">
+              <p className="text-body-sm text-destructive flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 {error}
               </p>
@@ -189,7 +189,7 @@ const ParameterForm = ({
             </SelectContent>
           </Select>
           {currentTemplate.description && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {currentTemplate.description}
             </p>
           )}

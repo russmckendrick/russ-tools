@@ -202,14 +202,14 @@ const ImportDialog = ({ open, onClose, onImport }) => {
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">Preview ({data.length} of {totalRows} rows)</Label>
+          <Label className="text-body-sm font-medium">Preview ({data.length} of {totalRows} rows)</Label>
           {totalRows > 10 && (
-            <span className="text-xs text-muted-foreground">Showing first 10 rows</span>
+            <span className="text-body-sm text-muted-foreground">Showing first 10 rows</span>
           )}
         </div>
         
         <div className="border rounded-lg overflow-auto max-h-64">
-          <table className="w-full text-sm">
+          <table className="w-full text-data-md font-mono">
             <tbody>
               {data.map((row, rowIndex) => (
                 <tr 
@@ -264,9 +264,9 @@ const ImportDialog = ({ open, onClose, onImport }) => {
                   value={textInput}
                   onChange={(e) => handleTextInputChange(e.target.value)}
                   rows={8}
-                  className="font-mono text-sm"
+                  className="font-mono text-data-md"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-body-sm text-muted-foreground">
                   Supports CSV, TSV, JSON arrays, and Markdown tables
                 </p>
               </div>
@@ -286,13 +286,13 @@ const ImportDialog = ({ open, onClose, onImport }) => {
                       className="mb-4"
                     />
                     {selectedFile && (
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-body-sm text-muted-foreground">
                         Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
                       </div>
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-body-sm text-muted-foreground">
                   Supports CSV, TSV, TXT, XLSX, XLS, and JSON files (max 10MB)
                 </p>
               </div>

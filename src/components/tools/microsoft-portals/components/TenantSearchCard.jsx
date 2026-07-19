@@ -39,7 +39,7 @@ const TenantSearchCard = ({
   return (
     <Card className="relative rounded-xl shadow-sm ring-1 ring-border/60">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Tenant Lookup & Portal Access</CardTitle>
+        <CardTitle className="text-title-sm">Tenant Lookup & Portal Access</CardTitle>
         <CardDescription>
           Enter a domain name or email address to find the tenant and generate portal links
         </CardDescription>
@@ -52,7 +52,7 @@ const TenantSearchCard = ({
                 placeholder="Enter domain (e.g., contoso.com) or email address..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="text-sm"
+                className="text-data-md font-mono"
               />
             </div>
             <Button onClick={onSearch} disabled={loading}>
@@ -69,7 +69,7 @@ const TenantSearchCard = ({
           {lookupHistory.length > 0 && (
             <div className="rounded-lg p-3 ring-1 ring-border/60">
               <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium">Recent Searches</Label>
+                <Label className="text-body-sm font-medium">Recent Searches</Label>
                 <Button variant="outline" size="sm" onClick={onClearHistory}>
                   <Trash2 className="h-3 w-3 mr-1" />
                   Clear
@@ -81,7 +81,7 @@ const TenantSearchCard = ({
                     key={index}
                     variant="outline"
                     size="sm"
-                    className="h-7 text-xs"
+                    className="h-7 text-data-sm font-mono"
                     onClick={() => {
                       setSearchInput(item.domain);
                       onSearch(item.domain);
@@ -118,18 +118,18 @@ const TenantSearchCard = ({
           {tenantInfo && (
             <Card className="rounded-xl shadow-sm ring-1 ring-border/60">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Tenant Information</CardTitle>
+                <CardTitle className="text-title-sm">Tenant Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium">Domain</Label>
-                    <p className="text-sm text-muted-foreground">{tenantInfo.domain}</p>
+                    <Label className="text-body-sm font-medium">Domain</Label>
+                    <p className="text-data-md font-mono text-muted-foreground">{tenantInfo.domain}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium">Tenant ID</Label>
+                    <Label className="text-body-sm font-medium">Tenant ID</Label>
                     <div className="flex items-center gap-2">
-                      <code className="text-xs bg-muted p-1 rounded">
+                      <code className="text-data-sm font-mono bg-muted p-1 rounded">
                         {tenantInfo.tenantId}
                       </code>
                       <Button
@@ -143,14 +143,14 @@ const TenantSearchCard = ({
                   </div>
                   {tenantInfo.displayName && (
                     <div>
-                      <Label className="text-sm font-medium">Display Name</Label>
-                      <p className="text-sm text-muted-foreground">{tenantInfo.displayName}</p>
+                      <Label className="text-body-sm font-medium">Display Name</Label>
+                      <p className="text-body-sm text-muted-foreground">{tenantInfo.displayName}</p>
                     </div>
                   )}
                   {tenantInfo.method && (
                     <div>
-                      <Label className="text-sm font-medium">Lookup Method</Label>
-                      <Badge variant="secondary" className="text-xs">
+                      <Label className="text-body-sm font-medium">Lookup Method</Label>
+                      <Badge variant="secondary" className="text-data-sm font-mono">
                         {tenantInfo.method}
                       </Badge>
                     </div>

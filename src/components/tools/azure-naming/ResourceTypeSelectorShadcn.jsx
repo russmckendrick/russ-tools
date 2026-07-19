@@ -99,7 +99,7 @@ const ResourceTypeSelectorShadcn = ({ formState, updateFormState, validationStat
       {/* Individual Resource Type Selection */}
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
-          <span className="text-sm font-medium">
+          <span className="text-body-sm font-medium">
             Resource Types
             {showAsterisk && <span className="text-destructive ml-1">*</span>}
           </span>
@@ -122,7 +122,7 @@ const ResourceTypeSelectorShadcn = ({ formState, updateFormState, validationStat
       {/* Workload Group Quick Select */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground">Quick select:</span>
+          <span className="text-body-sm font-medium text-muted-foreground">Quick select:</span>
           <HelpTooltipShadcn
             content="Click a workload type to quickly add common resource types for that scenario."
           />
@@ -137,14 +137,14 @@ const ResourceTypeSelectorShadcn = ({ formState, updateFormState, validationStat
                     variant="outline"
                     size="sm"
                     onClick={() => handleWorkloadGroupSelect(group.id)}
-                    className="h-auto gap-2 px-3 py-2 text-xs transition-colors hover:bg-accent"
+                    className="h-auto gap-2 px-3 py-2 text-body-sm transition-colors hover:bg-accent"
                   >
                     <span>{group.name}</span>
                     {getWorkloadIcon(group.icon, 12)}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-60">
-                  <p className="text-sm">{group.description}</p>
+                  <p className="text-body-sm">{group.description}</p>
                 </TooltipContent>
               </Tooltip>
             ))}

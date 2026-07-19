@@ -398,19 +398,19 @@ Visit: https://russ.tools
           {/* Configuration Panel */}
           <Card>
             <CardHeader>
-              <h3 className="text-xl font-semibold">Password Settings</h3>
+              <h3 className="text-headline-md">Password Settings</h3>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Length Section */}
               <Card>
                 <CardContent className="pt-6 space-y-4">
                   <div className="flex justify-between items-center">
-                    <Label className="text-base font-medium">Password Length</Label>
+                    <Label className="text-body-md font-medium">Password Length</Label>
                     <div className="flex items-center gap-2">
-                      <Badge variant={strength.color} className="text-sm px-3">
+                      <Badge variant={strength.color} className="text-data-md font-mono px-3">
                         {currentLength}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">characters</span>
+                      <span className="text-body-sm text-muted-foreground">characters</span>
                     </div>
                   </div>
                   
@@ -444,17 +444,17 @@ Visit: https://russ.tools
                       <div className="relative">
                         <Progress value={strength.percentage} className="h-3" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-xs font-medium text-white drop-shadow">
+                          <span className="text-data-sm font-mono text-white drop-shadow">
                             {strength.percentage}%
                           </span>
                         </div>
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <Badge variant={strength.color} className="text-xs">
+                        <Badge variant={strength.color} className="text-body-sm">
                           {strength.level}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-body-sm text-muted-foreground">
                           {strength.description}
                         </span>
                       </div>
@@ -467,7 +467,7 @@ Visit: https://russ.tools
 
               {/* Character Types */}
               <div className="space-y-4">
-                <Label className="text-base font-medium">Character Types</Label>
+                <Label className="text-body-md font-medium">Character Types</Label>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -508,7 +508,7 @@ Visit: https://russ.tools
 
               {/* Exclusion Options */}
               <div className="space-y-4">
-                <Label className="text-base font-medium">Exclusion Options</Label>
+                <Label className="text-body-md font-medium">Exclusion Options</Label>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -516,7 +516,7 @@ Visit: https://russ.tools
                       checked={excludeSimilar}
                       onCheckedChange={setExcludeSimilar}
                     />
-                    <Label htmlFor="similar" className="text-sm">
+                    <Label htmlFor="similar" className="text-body-sm">
                       Exclude similar characters (i, l, 1, L, o, 0, O)
                     </Label>
                   </div>
@@ -526,7 +526,7 @@ Visit: https://russ.tools
                       checked={excludeAmbiguous}
                       onCheckedChange={setExcludeAmbiguous}
                     />
-                    <Label htmlFor="ambiguous" className="text-sm">
+                    <Label htmlFor="ambiguous" className="text-body-sm">
                       Exclude ambiguous symbols ({`{[()]}`})
                     </Label>
                   </div>
@@ -537,7 +537,7 @@ Visit: https://russ.tools
 
               {/* Generation Options */}
               <div className="space-y-4">
-                <Label htmlFor="count" className="text-base font-medium">
+                <Label htmlFor="count" className="text-body-md font-medium">
                   Number of passwords to generate
                 </Label>
                 <Input
@@ -573,7 +573,7 @@ Visit: https://russ.tools
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold">Security Analysis</h3>
+                  <h3 className="text-headline-md">Security Analysis</h3>
                   <Tooltip>
                     <TooltipTrigger>
                       <Info className="h-4 w-4 text-muted-foreground" />
@@ -587,29 +587,29 @@ Visit: https://russ.tools
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Entropy</p>
+                    <p className="text-body-sm text-muted-foreground">Entropy</p>
                     <div className="flex items-center gap-2">
                       <Lock className="h-4 w-4 text-[var(--cat)]" />
-                      <span className="text-sm font-medium">{strength.entropy} bits</span>
+                      <span className="text-data-md font-mono">{strength.entropy} bits</span>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Character Pool</p>
-                    <span className="text-sm font-medium">{strength.charsetSize} characters</span>
+                    <p className="text-body-sm text-muted-foreground">Character Pool</p>
+                    <span className="text-data-md font-mono">{strength.charsetSize} characters</span>
                   </div>
                   <div className="col-span-2 space-y-1">
-                    <p className="text-xs text-muted-foreground">Possible Combinations</p>
-                    <span className="text-sm font-medium">{strength.combinations}</span>
+                    <p className="text-body-sm text-muted-foreground">Possible Combinations</p>
+                    <span className="text-data-md font-mono">{strength.combinations}</span>
                   </div>
                   <div className="col-span-2 space-y-1">
-                    <p className="text-xs text-muted-foreground">Average Time to Crack</p>
+                    <p className="text-body-sm text-muted-foreground">Average Time to Crack</p>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-[var(--cat)]" />
-                      <Badge variant={strength.timeColor} className="text-sm">
+                      <Badge variant={strength.timeColor} className="text-body-sm">
                         {strength.timeToCrack}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground italic">
+                    <p className="text-body-sm text-muted-foreground italic">
                       Assumes 1 billion guesses per second
                     </p>
                   </div>
@@ -620,7 +620,7 @@ Visit: https://russ.tools
                   <>
                     <Separator />
                     <div className="space-y-3">
-                      <h4 className="text-sm font-medium">Security Recommendations</h4>
+                      <h4 className="text-body-sm font-medium">Security Recommendations</h4>
                       <div className="space-y-2">
                         {strength.feedback.map((item, index) => (
                           <div key={index} className="flex items-start gap-2">
@@ -631,7 +631,7 @@ Visit: https://russ.tools
                             ) : (
                               <Check className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                             )}
-                            <span className={`text-xs ${
+                            <span className={`text-body-sm ${
                               item.type === 'error' ? 'text-danger' : 
                               item.type === 'warning' ? 'text-warning' : 
                               'text-success'
@@ -651,7 +651,7 @@ Visit: https://russ.tools
             <Card className="flex-1">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold">Generated Passwords</h3>
+                  <h3 className="text-headline-md">Generated Passwords</h3>
                   {passwords.length > 0 && (
                     <div className="flex gap-2">
                       <Button
@@ -687,10 +687,10 @@ Visit: https://russ.tools
                         <CardContent className="pt-4">
                           <div className="flex justify-between items-start">
                             <div className="flex-1 min-w-0 space-y-2">
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-body-sm text-muted-foreground">
                                 Password {index + 1} • Generated at {password.timestamp}
                               </p>
-                              <p className="font-mono text-sm break-all select-all">
+                              <p className="font-mono text-data-md break-all select-all">
                                 {password.value}
                               </p>
                             </div>
