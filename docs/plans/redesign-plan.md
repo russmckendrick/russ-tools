@@ -134,7 +134,7 @@ Scaffold Astro 7 (React integration, Tailwind 4.3, regenerated primitives, theme
 
 ### Phase 3 — Simple tools (6) (≈3 weekends)
 
-`base64` first as the pilot (deep link + share + clipboard — exercises every seam), then password-generator, cron, jwt, buzzword-ipsum, markdown-table (adopts the shared history utility — undo fixed by construction). Per-tool PR checklist: move into `src/tools/<id>/`, real manifest replaces bridge manifest, delete the tool's SEO/header ritual + hand-rolled clipboard/download/storage code *in the same PR*, migrate storage keys, drop the Shadcn suffix, dark/light manual pass, tests green.
+`base64` first as the pilot (deep link + share + clipboard — exercises every seam). **Its first task is extracting `lib/base64.js` and writing its suite — see [Deferred test coverage](#deferred-test-coverage--the-two-missing-suites) §B; the codec has no Phase 0 cover, and the `escape`/`unescape` UTF-8 path must be pinned before it is modernised.** Then password-generator, cron, jwt, buzzword-ipsum, markdown-table (adopts the shared history utility — undo fixed by construction). Per-tool PR checklist: move into `src/tools/<id>/`, real manifest replaces bridge manifest, delete the tool's SEO/header ritual + hand-rolled clipboard/download/storage code *in the same PR*, migrate storage keys, drop the Shadcn suffix, dark/light manual pass, tests green.
 
 ### Phase 4 — The lookup family (5) on one hook (≈3–4 weekends)
 
@@ -145,7 +145,7 @@ Build `useLookupTool({toolId, fetcher, cacheTTL, maxHistory, urlParam})` — loa
 - **data-converter:** debounce validate-on-type (today: re-parses up to 3× and rewrites up to 5 MB of localStorage per keystroke), decouple history from auto-convert, move the ~450 lines of suggestion string tables to data files.
 - **azure-naming:** provider moves inside the island (the root-mount bug dies structurally); rules engine + CAF data untouched under Phase 0 tests.
 - **azure-kql:** port the *live* zustand implementation only (beware the naming trap: `AzureKQLTool.jsx` is real, the Shadcn-suffixed file was the dead one); make custom templates round-trip (today the Templates tab is write-only); fix the FILTER_PRIORITY case-mismatch that leaves filter ordering inert.
-- **network-designer last** (highest risk, most user data, 2 weekends alone): split the 1,088-line monolith, extract one pure allocator in `lib/` under the Phase 0 characterization tests, fix the aligned-block CIDR-size bug (compute per-gap largest *aligned* block, not `floor(log2(gap))`), kill the multi-million-entry candidate arrays, stable subnet ids, hex colors (with the share-URL shape-upgrade function for old `{name,index}` payloads), @dnd-kit unchanged inside the island.
+- **network-designer last** (highest risk, most user data, 2 weekends alone): **first task is extracting `lib/allocator.js` and writing its suite — see [Deferred test coverage](#deferred-test-coverage--the-two-missing-suites) §A. There is no Phase 0 cover for this code; nothing else in this tool should move until that suite is green,** including the differential test proving the two duplicate allocator copies agree. Then: split the 1,088-line monolith, fix the aligned-block CIDR-size bug (compute per-gap largest *aligned* block, not `floor(log2(gap))`), kill the multi-million-entry candidate arrays, stable subnet ids, hex colors (with the share-URL shape-upgrade function for old `{name,index}` payloads), @dnd-kit unchanged inside the island.
 
 ### Phase 6 — Finish (≈2 weekends)
 
@@ -196,7 +196,8 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] Dependency purge — 9 packages removed; `uuid` → `crypto.randomUUID`
 - [x] Characterization tests — **64 tests / 7 files**: sharelink codec, markdown-table `csvParser` + `tableFormatter`, Terraform export (AWS/Azure/VCD), data-converter tri-format validators, Azure CAF naming rules, Microsoft Portals link generator
 - [x] Bug fix (found while testing): **AWS Terraform export** emitted `cidr_block = "24"` (bare prefix length) — invalid Terraform
-- [ ] Blocked on extraction, deferred to their ports: **subnet allocator** (inline in the 1,088-line `NetworkDesignerShadcn.jsx`, duplicated twice) and **base64 round-trips** (logic inline in `Base64ToolShadcn.jsx`) — neither is a pure module yet, so testing them means doing the Phase 3/5 extraction
+- [ ] **Two test sets still missing — see [Deferred test coverage](#deferred-test-coverage--the-two-missing-suites)**: the **subnet allocator** and **base64 codec**. Both are blocked on extraction, not on effort, and both are the *first* task of their respective ports.
+
 **Carried into Phase 1 (small housekeeping, none blocking):**
 
 - [ ] Capture live worker response fixtures (ssl/whois/tenant) → MSW mocks
@@ -204,6 +205,82 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [ ] Investigate the 1 remaining ESLint parse-error file
 - [ ] Add `BEHAVIOR_CHANGES.md` ledger — first entry pending: `convertToCSV` drops falsy cells (`0`, `false`), captured as a KNOWN-BUG fixture in `csvParser.test.js`, to be fixed during the Phase 3 port
 - [ ] Flip CI lint to blocking once the Phase 1 ESLint overhaul clears the 83 remaining errors
+
+---
+
+## Deferred test coverage — the two missing suites
+
+Phase 0 characterized five pure cores (64 tests). **Two of the six named in frozen contract #6
+are still uncovered**, and both for the same structural reason: the logic is not a module, it
+is inline inside a large component, so there is nothing importable to test. Writing the tests
+therefore *is* the extraction — which is why each is scheduled as the **first task of its own
+port**, before any behaviour moves.
+
+This matters more than the count suggests: these are the two cores whose failure modes are
+silent. A broken allocator produces a plausible-looking but overlapping network plan; a broken
+codec produces a string that looks like base64 and isn't.
+
+### A. Subnet allocator (network-designer) — owed by Phase 5
+
+**Where it lives now:** `src/components/tools/network-designer/NetworkDesignerShadcn.jsx`
+(1,089 lines). The algorithm exists **twice**, and the two copies are not identical:
+
+| Concern | Location | Notes |
+|---|---|---|
+| Primary allocator | `handleAddSubnet` (~L513) | first-fit, aligned; overlap-checks against sorted used ranges |
+| Duplicate allocator | `handleReorderSubnets` (~L651, loop ~L680–715) | re-places *every* subnet after a drag reorder; has its own `safetyCounter`/`maxIterations` guard the primary lacks |
+| Size picker | `SubnetForm.cidrOptions` (~L241) | decides which `/n` options the user is offered |
+
+**Extract to** `src/tools/network-designer/lib/allocator.js` — pure, `netmask`-only, no React:
+
+```js
+export function allocateSubnet(parent, existingSubnets, prefixLength) // -> baseIp | null
+export function availablePrefixLengths(parent, existingSubnets)       // -> number[]
+export function reallocateAll(parent, orderedSubnets)                 // -> subnets[]
+```
+
+**Tests the suite must contain:**
+
+1. **First-fit alignment** — into an empty `10.0.0.0/24`, a `/26` lands at `10.0.0.0`; the next `/26` at `10.0.0.64`; the next at `.128`.
+2. **Gap reuse** — remove the middle subnet, and the next allocation of that size fills the hole rather than appending at the end.
+3. **Alignment is enforced, not just size** — a `/25` must never be placed at `10.0.0.64`; only `.0` or `.128` are legal starts.
+4. **Exhaustion** — returns `null` (today this surfaces only as a toast, so the contract is currently untested).
+5. **Differential test between the two copies** — `reallocateAll(parent, [a,b,c])` must produce exactly the same placements as adding `a`, then `b`, then `c` sequentially. *This test is the whole point of the extraction:* it is the only thing that proves the duplicate implementations agree, and it will very likely fail first time.
+6. **KNOWN-BUG to pin, then fix:** `cidrOptions` computes `32 - Math.floor(Math.log2(largestGapSize))` — it sizes options against the largest gap's **length while ignoring its alignment**. A 128-address gap starting at `.64` cannot hold a `/25`, but `/25` is still offered; selecting it then fails with "No available space for this subnet size." Capture the current (wrong) option list, then fix by computing, per gap, the largest *aligned* block that fits.
+7. **Off-by-one in gap measurement:** middle gaps use `next.start - prev.end - 1`, but the trailing gap uses `parentEnd - lastEnd` (no `- 1`). Pin both, then reconcile.
+8. **Performance guard:** both copies materialise every candidate address into an array before scanning (`for (addr = parentStart; …; addr += subnetSize) candidates.push(addr)`). For a `/8` parent with a `/30` subnet that is ~4M entries. Add a large-parent case that would be intolerably slow pre-fix, so the early-exit rewrite is verified rather than assumed.
+
+### B. Base64 codec — owed by Phase 3
+
+**Where it lives now:** `src/components/tools/base64/Base64ToolShadcn.jsx` (796 lines):
+
+| Concern | Location |
+|---|---|
+| `encodeBase64(text, type)` | ~L219 — `standard` / URL-safe / `mime` |
+| `decodeBase64(text, type)` | ~L248 |
+| `isValidBase64` | ~L106 — separate standard and URL-safe regexes |
+| Image signature detection | `FILE_TYPES` ~L40, `createImagePreviewUrl` ~L170 |
+| Double-encoding detection | ~L416 |
+
+**Extract to** `src/tools/base64/lib/base64.js` (pure; no DOM beyond `btoa`/`atob`).
+
+**Tests the suite must contain:**
+
+1. **Round-trip per mode** — `standard`, URL-safe and `mime`, for ASCII *and* multi-byte unicode (`café — ☕`).
+2. **Pin the UTF-8 mechanism.** Encoding goes through `btoa(unescape(encodeURIComponent(text)))`. `escape`/`unescape` are deprecated and a future rewrite will reach for `TextEncoder` — which is **not** byte-identical for lone surrogates and other edge inputs. Pin the current output for a surrogate case *before* touching it, or the "cleanup" silently changes encoded output.
+3. **URL-safe alphabet** — output contains no `+`, `/` or `=`, and decodes back to the original.
+4. **MIME line breaks** — 76-character wrapping is present, and the decoder tolerates embedded whitespace/newlines.
+5. **Validation** — accepts both standard and URL-safe input, rejects wrong-length and invalid-character strings.
+6. **Image signature detection** — `/9j/` → JPEG, `iVBORw0KGgo` → PNG, and a non-image string is not misidentified.
+7. **Deep-link contract** — `/base64/:input` decodes on mount. This is a frozen contract (#1) and currently has no test at any level.
+
+### Why these were not simply done in Phase 0
+
+Extracting either module is a real refactor of a large component with no test cover — exactly
+the change the plan says must happen *inside* a port PR, with the tool's own smoke tests
+around it, not as a drive-by during a stabilisation phase. Doing it early would have meant
+refactoring the riskiest file in the repo (`NetworkDesignerShadcn.jsx`) with nothing to catch
+a mistake. Listing them as blocked is the honest state, not a deferral of effort.
 
 ---
 
@@ -334,6 +411,11 @@ exported `resolveSubnetCidr()` used by both; Azure output is unchanged for real 
 allocator** is inline in `NetworkDesignerShadcn.jsx` (and duplicated twice), and **base64**
 round-trip logic is inline in `Base64ToolShadcn.jsx`. Testing either means doing the
 extraction that Phase 3/5 already schedules, so they are listed as blocked rather than done.
+Both are now specified in full — locations, extraction signatures, and the exact cases each
+suite must contain — under **[Deferred test coverage](#deferred-test-coverage--the-two-missing-suites)**,
+and are wired in as the *first task* of Phases 3 and 5 respectively. Writing that section also
+caught a stale claim in the plan body: Phase 5 previously said the allocator would be extracted
+"under the Phase 0 characterization tests", which was never true — no such tests exist.
 
 **State:** `pnpm test` → 64 passing · `pnpm build` → green (~4.7s) · `pnpm lint` → 83 errors
 (down from 98 at the session start, mostly via the dead-code purge).
