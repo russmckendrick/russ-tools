@@ -10,11 +10,24 @@ const SelectGroup = SelectPrimitive.Group
 
 const SelectValue = SelectPrimitive.Value
 
+/**
+ * The trigger is NOT the Input contract verbatim, and the difference matters.
+ *
+ * An input holds data the user typed — a domain, a token, a CIDR — so it is
+ * monospace. A select shows a *label the user picked from a list*, which is
+ * prose, and DESIGN.md's family rule is explicit that prose is never
+ * monospace. Setting `font-mono` here rendered cron's "Run every minute" in
+ * JetBrains Mono, which is what it looked like: wrong.
+ *
+ * `min-h-9`, not `h-9`. Tools put two lines in a trigger (a label over a
+ * description) and a fixed height made that content spill out through the
+ * border. The old `[&>span]:line-clamp-1` was fighting the same content.
+ */
 const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-9 w-full items-center justify-between gap-2 rounded-sm border border-outline-strong bg-surface px-[11px] py-2 font-mono text-data-md text-on-surface data-[placeholder]:text-on-surface-faint focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-raised disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex min-h-9 w-full items-center justify-between gap-2 rounded-sm border border-outline-strong bg-surface px-[11px] py-2 text-left text-body-sm text-on-surface data-[placeholder]:text-on-surface-faint focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-raised disabled:cursor-not-allowed disabled:opacity-50",
       className
     )}
     {...props}
@@ -97,7 +110,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-[4px] py-1.5 pl-8 pr-2 font-mono text-data-md outline-none focus:bg-surface-inset focus:text-on-surface data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-[4px] py-1.5 pl-8 pr-2 text-body-sm outline-none focus:bg-surface-inset focus:text-on-surface data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}

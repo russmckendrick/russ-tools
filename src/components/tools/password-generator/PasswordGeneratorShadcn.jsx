@@ -408,10 +408,13 @@ Visit: https://russ.tools
                       {[8, 12, 16, 24, 32, 48, 64].map((len) => (
                         <Button
                           key={len}
-                          variant={currentLength === len ? "default" : "outline"}
+                          variant={currentLength === len ? 'secondary' : 'outline'}
                           size="sm"
                           onClick={() => setLength([len])}
-                          className="w-12"
+                          aria-pressed={currentLength === len}
+                          className={`w-12 font-mono ${
+                            currentLength === len ? 'border-outline-strong text-on-surface' : ''
+                          }`}
                         >
                           {len}
                         </Button>
@@ -420,14 +423,7 @@ Visit: https://russ.tools
                     
                     {/* Custom Progress Bar */}
                     <div className="space-y-2">
-                      <div className="relative">
-                        <Progress value={strength.percentage} className="h-3" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-data-sm font-mono text-white drop-shadow">
-                            {strength.percentage}%
-                          </span>
-                        </div>
-                      </div>
+                      <Progress value={strength.percentage} className="h-1.5" />
                       
                       <div className="flex justify-between items-center">
                         <span className={`text-body-sm font-medium ${strength.tone}`}>
