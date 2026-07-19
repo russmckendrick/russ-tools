@@ -1,0 +1,40 @@
+---
+/**
+ * /delete — the storage page.
+ *
+ * The shell has linked "Saved data" here from every page since session 4 and
+ * the route did not exist, so the nav 404'd on the new shell while the SPA
+ * served it. This is the page, and it is the first consumer of `core/`'s
+ * `toolStorageKeys` / `clearTool`.
+ *
+ * The heading and the copy are prerendered; only the survey of what is
+ * actually stored needs the client, so the island is `client:only` — it
+ * reads `localStorage` on first render and there is nothing to hydrate
+ * against.
+ *
+ * `noindex`: it is a per-browser control panel, not content. There is
+ * nothing here for a crawler and a SERP result for it would be misleading.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StorageManager from '../components/common/StorageManager.jsx';
+---
+
+<BaseLayout
+  title="Saved data — russ.tools"
+  description="Review and delete the data russ.tools has saved in this browser. Nothing is stored anywhere else."
+  noindex
+>
+  <div class="rt-tool-head">
+    <nav class="rt-crumb" aria-label="Breadcrumb">
+      <a href="/">Tools</a> / <b>Saved data</b>
+    </nav>
+    <div class="rt-tool-id">
+      <h1>Saved data</h1>
+    </div>
+    <p>Everything russ.tools is holding in this browser, and how to delete it.</p>
+  </div>
+
+  <div class="rt-tool-body">
+    <StorageManager client:only="react" />
+  </div>
+</BaseLayout>

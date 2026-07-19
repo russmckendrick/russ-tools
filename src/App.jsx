@@ -4,7 +4,7 @@ import { NewLayout } from './components/layout/NewLayout';
 import { ThemeProvider } from './components/theme-provider';
 import { AzureNamingProviderShadcn } from './components/tools/azure-naming/context/AzureNamingContextShadcn';
 import { NewHomeView } from './components/layout/NewHomeView';
-import ClearAllStorage from './components/common/ClearAllStorage';
+import StorageManager from './components/common/StorageManager';
 
 // Error Boundary for lazy loading
 class LazyLoadErrorBoundary extends React.Component {
@@ -184,7 +184,7 @@ export default function App() {
                 </LazyRoute>
               } />
 
-              <Route path="delete" element={<ClearAllStorage />} />
+              <Route path="delete" element={<StorageManager />} />
 
               <Route path="cron" element={
                 <LazyRoute>

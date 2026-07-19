@@ -17,6 +17,10 @@ const {
   keywords = [],
   canonical = new URL(Astro.url.pathname, Astro.site).href,
   schema,
+  // For pages that are a control panel rather than content — /delete. The
+  // sitemap is built from the registry and never listed them, but a link
+  // from every page's nav is enough for a crawler to find one anyway.
+  noindex = false,
 } = Astro.props;
 ---
 
@@ -28,6 +32,7 @@ const {
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
 
     <title>{title}</title>
     <meta name="description" content={description} />

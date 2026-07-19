@@ -32,7 +32,12 @@ export default defineConfig({
     // also matches the stylesheets under src/components/tools/, and hands
     // them to the JSX transform.
     react(),
-    sitemap(),
+    sitemap({
+      // /delete is a per-browser control panel carrying `noindex`, and a
+      // sitemap entry for a noindex page is a contradiction Search Console
+      // reports as an error. 404 is excluded by Astro already.
+      filter: (page) => !page.endsWith('/delete/') && !page.endsWith('/delete'),
+    }),
   ],
 
   vite: {
