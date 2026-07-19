@@ -31,9 +31,9 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # Lint is informational for now: the codebase carries ~96 pre-existing errors
-      # that Phase 1 of the redesign clears (ESLint config overhaul + dead-code purge).
-      # Flip continue-on-error to false once Phase 1 lands. See docs/plans/redesign-plan.md.
-      - name: Lint (non-blocking)
+      # Blocking as of Phase 1: the error count is zero and must stay there.
+      # Warnings are still permitted — ~234 remain, dominated by the raw-palette
+      # ban (no-restricted-syntax), which each tool clears as it is ported.
+      # See docs/DESIGN_SPEC.md and docs/plans/redesign-plan.md.
+      - name: Lint
         run: pnpm lint
-        continue-on-error: true

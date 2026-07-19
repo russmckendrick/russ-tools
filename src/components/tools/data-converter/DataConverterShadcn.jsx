@@ -15,11 +15,8 @@ import {
 } from './validation';
 
 // Import sample data
-import { 
-  JSON_SAMPLES,
-  YAML_SAMPLES,
-  TOML_SAMPLES
-} from './samples';
+
+
 
 // Import components
 import ToolHeader from '../../common/ToolHeader';

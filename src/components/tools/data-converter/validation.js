@@ -1,7 +1,6 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import betterAjvErrors from 'better-ajv-errors';
-import jsonSourceMap from 'json-source-map';
 import parseJson from 'json-parse-even-better-errors';
 import yaml from 'js-yaml';
 import SourceMap from 'js-yaml-source-map';
@@ -549,7 +548,7 @@ export function validateWithDetection(input) {
 /**
  * Validate data against a JSON schema with enhanced error reporting
  */
-export function validateWithSchema(data, schema, originalInput = '', format = 'json') {
+export function validateWithSchema(data, schema, _originalInput = '', _format = 'json') {
   try {
     const validate = ajv.compile(schema);
     const valid = validate(data);
@@ -641,7 +640,7 @@ function getValidatedFields(data, schema) {
 /**
  * Generate suggestions for schema validation errors
  */
-function generateSchemaErrorSuggestions(error, schema) {
+function generateSchemaErrorSuggestions(error, _schema) {
   const suggestions = [];
   
   if (error.error.includes('should be')) {
@@ -741,7 +740,6 @@ export function formatErrorForDisplay(error, input) {
   }
   
   const lines = input.split('\n');
-  const errorLine = lines[error.line - 1];
   const lineNumber = error.line;
   
   // Create context around the error

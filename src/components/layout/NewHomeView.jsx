@@ -3,23 +3,11 @@ import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
   Network, 
-  Database, 
-  Shield, 
-  Code, 
-  Settings,
+  Database,
   ArrowRight,
-  Zap,
-  Globe,
-  Lock,
-  FileCode2,
   Copy,
-  Fingerprint,
-  PanelsTopLeft,
-  Users,
   RefreshCw,
-  History,
-  Key,
-  MessageSquareQuote
+  History
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
@@ -67,16 +55,98 @@ const iconByKey = {
   MarkdownTableIcon: MarkdownTableIcon,
 }
 
+const seededRandom = (seed) => {
+  let t = seed + 0x6D2B79F5
+  return () => {
+    t |= 0
+    t = t + 0x6D2B79F5 | 0
+    let r = Math.imul(t ^ t >>> 15, 1 | t)
+    r ^= r + Math.imul(r ^ r >>> 7, 61 | r)
+    return ((r ^ r >>> 14) >>> 0) / 4294967296
+  }
+}
+
+const stringToSeed = (str) => {
+  let h = 0
+  for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0
+  return h
+}
+
+/**
+ * The floating tool-icon map. Extracted from an inline IIFE inside
+ * NewHomeView's JSX, which called useRef/useState/useEffect from within a
+ * callback — it happened to work because the IIFE ran unconditionally on
+ * every render, but it violates the rules of hooks and would break the
+ * moment anything made it conditional.
+ */
+function ToolIconGrid({ tools }) {
+  const gridRef = useRef(null)
+  const [gridCols, setGridCols] = useState(6)
+  const total = tools.length
+
+  useEffect(() => {
+    const el = gridRef.current
+    if (!el) return
+    const calc = () => {
+      const w = el.clientWidth
+      const desiredRows = w < 640 ? 4 : (w < 1024 ? 3 : 4)
+      const minTile = 84
+      const gap = 32
+      const maxColsFit = Math.max(1, Math.floor((w + gap) / (minTile + gap)))
+      const colsNeeded = Math.ceil(total / desiredRows)
+      setGridCols(Math.min(Math.max(colsNeeded, 2), maxColsFit))
+    }
+    calc()
+    const ro = new ResizeObserver(calc)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [total])
+
+  return (
+    <div
+      ref={gridRef}
+      className="icon-grid grid gap-8 place-items-center"
+      style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(84px, 1fr))` }}
+    >
+      {tools.map((t, i) => {
+        const Icon = iconByKey[t.icon] || Network
+        const rnd = seededRandom(stringToSeed(t.id) ^ i)
+        const baseRot = (rnd() - 0.5) * 10
+        const baseScale = 0.95 + rnd() * 0.18
+        const dx = 2 + rnd() * 6
+        const dy = 2 + rnd() * 6
+        const drot = (rnd() - 0.5) * 1.8
+        const dur = 4.2 + rnd() * 4.8
+        const delay = -rnd() * 5
+        return (
+          <Link
+            key={t.id}
+            to={t.path}
+            className="icon-token"
+            aria-label={t.title}
+            title={t.title}
+            style={{
+              "--base-rot": `${baseRot}deg`,
+              "--base-scale": `${baseScale}`,
+              "--idle-dx": `${dx}px`,
+              "--idle-dy": `${dy}px`,
+              "--idle-rot": `${drot}deg`,
+              "--idle-dur": `${dur}s`,
+              "--idle-delay": `${delay}s`
+            }}
+          >
+            <Icon className="icon-el" />
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
 export function NewHomeView() {
-  const [buzzSeed, setBuzzSeed] = useState(0)
+  const [_buzzSeed, setBuzzSeed] = useState(0)
   const [ipsumSentences, setIpsumSentences] = useState(4)
   const [tones, setTones] = useState({ strategy: true, agile: false, ai: false })
-  const generateSecure = (len = 16) => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+'
-    const bytes = new Uint8Array(len)
-    crypto.getRandomValues(bytes)
-    return Array.from(bytes, b => chars[b % chars.length]).join('')
-  }
   const [pwdLength, setPwdLength] = useState(16)
   const [pwdOpts, setPwdOpts] = useState({ upper: true, lower: true, digits: true, symbols: true })
   const buildPwdChars = () => {
@@ -96,22 +166,6 @@ export function NewHomeView() {
   const [passwords, setPasswords] = useState(() => Array.from({ length: 6 }).map(() => generatePwd(16)))
   useEffect(() => { setPasswords(Array.from({ length: 6 }).map(() => generatePwd())) }, [pwdLength, pwdOpts.upper, pwdOpts.lower, pwdOpts.digits, pwdOpts.symbols])
   const visibleTools = toolsConfig.filter((t) => t.path && t.path.startsWith("/") && t.id !== "github-source" && t.id !== "ui-demo")
-
-  const seededRandom = (seed) => {
-    let t = seed + 0x6D2B79F5
-    return () => {
-      t |= 0
-      t = t + 0x6D2B79F5 | 0
-      let r = Math.imul(t ^ t >>> 15, 1 | t)
-      r ^= r + Math.imul(r ^ r >>> 7, 61 | r)
-      return ((r ^ r >>> 14) >>> 0) / 4294967296
-    }
-  }
-  const stringToSeed = (str) => {
-    let h = 0
-    for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0
-    return h
-  }
 
   const getToolIconForPath = (path) => {
     try {
@@ -143,67 +197,7 @@ export function NewHomeView() {
         </CardHeader>
       </Card>
 
-      {(() => {
-        const gridRef = useRef(null)
-        const [gridCols, setGridCols] = useState(6)
-        const total = visibleTools.length
-        useEffect(() => {
-          const el = gridRef.current
-          if (!el) return
-          const calc = () => {
-            const w = el.clientWidth
-            const desiredRows = w < 640 ? 4 : (w < 1024 ? 3 : 4)
-            const minTile = 84
-            const gap = 32
-            const maxColsFit = Math.max(1, Math.floor((w + gap) / (minTile + gap)))
-            const colsNeeded = Math.ceil(total / desiredRows)
-            const cols = Math.min(Math.max(colsNeeded, 2), maxColsFit)
-            setGridCols(cols)
-          }
-          calc()
-          const ro = new ResizeObserver(calc)
-          ro.observe(el)
-          return () => ro.disconnect()
-        }, [total])
-        return (
-          <div ref={gridRef} className="icon-grid grid gap-8 place-items-center"
-            style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(84px, 1fr))` }}
-          >
-        {visibleTools.map((t, i) => {
-          const Candidate = iconByKey[t.icon] || Network
-          const Icon = Candidate
-          const rnd = seededRandom(stringToSeed(t.id) ^ i)
-          const baseRot = (rnd() - 0.5) * 10
-          const baseScale = 0.95 + rnd() * 0.18
-          const dx = 2 + rnd() * 6
-          const dy = 2 + rnd() * 6
-          const drot = (rnd() - 0.5) * 1.8
-          const dur = 4.2 + rnd() * 4.8
-          const delay = -rnd() * 5
-          return (
-            <Link
-              key={t.id}
-              to={t.path}
-              className="icon-token"
-              aria-label={t.title}
-              title={t.title}
-              style={{
-                "--base-rot": `${baseRot}deg`,
-                "--base-scale": `${baseScale}`,
-                "--idle-dx": `${dx}px`,
-                "--idle-dy": `${dy}px`,
-                "--idle-rot": `${drot}deg`,
-                "--idle-dur": `${dur}s`,
-                "--idle-delay": `${delay}s`
-              }}
-            >
-              <Icon className="icon-el" />
-            </Link>
-          )
-        })}
-          </div>
-        )
-      })()}
+      <ToolIconGrid tools={visibleTools} />
 
       {/* Saved networks + quick generate sections */}
       <div className="grid gap-3 lg:grid-cols-2">
@@ -464,7 +458,6 @@ export function NewHomeView() {
               if (tones.ai) termsB = [...termsB, ...aiB]
               const sentence = () => `Leverage ${termsA[Math.floor(Math.random()*termsA.length)]} to drive ${termsB[Math.floor(Math.random()*termsB.length)]}.`
               const paragraph = () => Array.from({length:ipsumSentences}).map(sentence).join(' ')
-              const _ = buzzSeed
               return (
                 <div id="buzzword-paragraph" className="space-y-2">
                   <p className="text-sm leading-6 text-muted-foreground">{paragraph()}</p>

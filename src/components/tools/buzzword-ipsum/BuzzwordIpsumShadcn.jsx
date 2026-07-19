@@ -4,22 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import {
   Copy,
   RefreshCw,
   Download,
   MessageCircle,
-  Info,
-  Check,
-  Code,
-  FileText
+  Code
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useSearchParams } from 'react-router-dom';
 import BuzzwordIpsumIcon from './BuzzwordIpsumIcon';
 import SEOHead from '../../common/SEOHead';
 import ToolHeader from '../../common/ToolHeader';
@@ -28,7 +23,6 @@ import toolsConfig from '../../../utils/toolsConfig.json';
 import buzzwordData from './data/buzzwords.json';
 
 const BuzzwordIpsumShadcn = () => {
-  const [searchParams] = useSearchParams();
   
   const toolConfig = toolsConfig.find(tool => tool.id === 'buzzword-ipsum');
   const seoData = generateToolSEO(toolConfig);

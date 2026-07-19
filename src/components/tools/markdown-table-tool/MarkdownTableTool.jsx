@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { IconTable, IconPlus, IconMinus, IconArrowLeft, IconArrowRight, IconDownload, IconUpload, IconCopy, IconCheck, IconAlertTriangle } from '@tabler/icons-react';
+import { IconPlus, IconArrowLeft, IconArrowRight, IconDownload, IconUpload, IconCopy, IconCheck, IconAlertTriangle } from '@tabler/icons-react';
 import { toast } from 'sonner';
 import SEOHead from '@/components/common/SEOHead';
 import ToolHeader from '@/components/common/ToolHeader';

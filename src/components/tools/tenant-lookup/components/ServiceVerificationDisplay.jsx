@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Shield, Copy, ExternalLink } from 'lucide-react';
+import { Shield, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ServiceVerificationDisplay = ({ txtRecords }) => {

@@ -1,11 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { IconFileTypeSvg } from '@tabler/icons-react';
 import { devError } from '../../../utils/devLog';
 import { useState } from 'react';
 import { Netmask } from 'netmask';
-import { ipToLong, longToIp, getSubnetBgColorHex } from '../../../utils';
+import { getSubnetBgColorHex } from '../../../utils';
 import { processSubnets, calculateFreeSpace, getBaseColorHex } from '../../../utils/network/networkDiagramUtils';
 import networkSvg from '../../../assets/network.svg';
 import subnetSvg from '../../../assets/subnet.svg';
@@ -66,7 +65,6 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = 
     const freeSpaceBg = colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0];
     const freeSpaceBorder = colorScheme === 'dark' ? theme.colors.gray[7] : theme.colors.gray[4];
     const freeSpaceTextColor = colorScheme === 'dark' ? theme.colors.gray[4] : theme.colors.gray[7];
-    const freeSpaceIconColor = colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[6];
 
     // --- DATA PREP SHARED WITH INTERACTIVE DIAGRAM ---
     const parentBlock = new Netmask(parentNetwork.ip + '/' + parentNetwork.cidr);
@@ -76,7 +74,6 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = 
 
     // Compose items for rendering
     const items = [];
-    let subnetIdx = 0, spaceIdx = 0;
     for (let i = 0, s = 0, f = 0; i < processedSubnets.length + freeSpaces.length; ) {
       if (
         f < freeSpaces.length &&
@@ -105,7 +102,7 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = 
     svg += `<text x="${outerPad + innerPad + 32 + 220}" y="${outerPad + 24}" font-family="${theme.fontFamily}" font-size="${fontSizeXs}" font-weight="500" fill="${defaultTextColor}">(${parentBlock.base}/${parentNetwork.cidr})</text>`;
     svg += `<text x="${outerPad + innerPad + 32}" y="${outerPad + 44}" font-family="${theme.fontFamily}" font-size="${fontSizeXs}" fill="${defaultTextColor}">Range: ${parentBlock.first} - ${parentBlock.last}</text>`;
     svg += `<text x="${outerPad + innerPad + 32}" y="${outerPad + 60}" font-family="${theme.fontFamily}" font-size="${fontSizeXs}" fill="${defaultTextColor}">Total IPs: ${parentBlock.size}</text>`;
-    let itemCounter = 0;
+    let _itemCounter = 0;
     for (const item of items) {
       if (item.type === 'subnet') {
         const subnet = item.data;
@@ -145,7 +142,7 @@ export function NetworkDiagramSVGExport({ parentNetwork, subnets, buttonProps = 
         svg += `</g>`;
         currentY += freeSpaceHeight + subnetSpacing;
       }
-      itemCounter++;
+      _itemCounter++;
     }
     // End SVG after last row (no footer)
     svg += `</svg>`;

@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,7 +18,6 @@ import {
   FileText,
   Image as ImageIcon,
   File,
-  Check,
   X,
   AlertCircle,
   RefreshCw
@@ -95,7 +93,7 @@ const Base64ToolShadcn = () => {
       setIsValidBase64(null);
       setInputImagePreview(null);
     }
-  }, [inputText, selectedFile, mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [inputText, selectedFile, mode]);
 
   // Helper function to detect if text is Base64
   const detectBase64 = (text) => {
@@ -279,8 +277,7 @@ const Base64ToolShadcn = () => {
     getRootProps,
     getInputProps,
     isDragActive,
-    isDragAccept,
-    isDragReject
+    isDragAccept
   } = useDropzone({
     onDrop: (acceptedFiles, rejectedFiles) => {
       if (rejectedFiles.length > 0) {

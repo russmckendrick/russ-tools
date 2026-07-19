@@ -11,8 +11,7 @@ import {
   Network,
   Layers3,
   Square,
-  FileImage,
-  FileCode
+  FileImage
 } from 'lucide-react';
 
 // Import existing NetworkDiagramSVGExport component

@@ -11,11 +11,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { 
-  Building,
+import {
   Grid3X3,
-  List,
-  Building2
+  List
 } from 'lucide-react';
 import { getTenantId, isValidDomain, extractDomain } from './TenantLookup';
 import { generateAllPortalLinks } from './PortalLinkGenerator';
@@ -191,11 +189,6 @@ const MicrosoftPortalsShadcn = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Handle search input changes
-  const handleSearchChange = (value) => {
-    setSearchInput(value);
   };
 
   // Effect to handle domain lookup when search input changes (auto-search)

@@ -1,23 +1,18 @@
 import React from 'react';
 import { 
   Card, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
   CardContent 
 } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { Alert, AlertDescription } from '../../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
-import { Separator } from '../../ui/separator';
 import { 
   Cloud, 
   Edit, 
   History, 
   Info, 
-  Share, 
-  ExternalLink
+  Share
 } from 'lucide-react';
 import AzureNamingIcon from './AzureNamingIcon';
 import SEOHead from '../../common/SEOHead';

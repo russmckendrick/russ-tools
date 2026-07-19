@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { performSSLCheck } from '../utils/sslApi';
-import { validateDomain, cleanDomain, isSSLDataComplete, isCacheValid, CACHE_DURATION } from '../utils/sslUtils';
+import { validateDomain, cleanDomain, isSSLDataComplete, isCacheValid } from '../utils/sslUtils';
 
 export const useSSLChecker = () => {
   // State management

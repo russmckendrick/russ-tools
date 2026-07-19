@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Network, Mail, FileText, Copy, ExternalLink, Shield } from 'lucide-react';
+import { Network, Mail, FileText, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 const DNSAnalysisDisplay = ({ dnsInfo }) => {

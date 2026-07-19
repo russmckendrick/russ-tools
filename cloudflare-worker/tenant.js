@@ -58,7 +58,7 @@ const TENANT_APIS = [
 ];
 
 // Additional reconnaissance APIs for enhanced information gathering
-const ENHANCED_APIS = [
+const _ENHANCED_APIS = [
   {
     name: 'OpenID Configuration by Tenant ID',
     url: (tenantId) => `https://login.microsoftonline.com/${tenantId}/.well-known/openid_configuration`,

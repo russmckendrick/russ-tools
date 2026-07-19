@@ -8,7 +8,7 @@ import { Slider } from '../../ui/slider';
 import { useAzureNamingContextShadcn } from './context/AzureNamingContextShadcn';
 import HelpTooltipShadcn from './HelpTooltipShadcn';
 
-const NamingFormShadcn = ({ formState, updateFormState, validationState, generateName, column }) => {
+const NamingFormShadcn = ({ formState, updateFormState, validationState, generateName: _generateName, column }) => {
   const { environmentOptions, regionDropdownOptions, isLoading } = useAzureNamingContextShadcn();
   
   // Toggle states for optional fields

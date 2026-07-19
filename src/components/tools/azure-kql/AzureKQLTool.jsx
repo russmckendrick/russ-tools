@@ -4,7 +4,6 @@ import {
   Card, 
   CardHeader, 
   CardTitle, 
-  CardDescription, 
   CardContent 
 } from '../../ui/card';
 import { Button } from '../../ui/button';
@@ -15,8 +14,7 @@ import {
   HelpCircle,
   Copy,
   Download,
-  ExternalLink,
-  Plus
+  ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import SEOHead from '../../common/SEOHead';

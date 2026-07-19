@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Globe,
   Search,
@@ -18,14 +18,11 @@ import {
   RotateCcw,
   History,
   AlertCircle,
-  MapPin,
   Server,
   Calendar,
   Building,
-  Flag,
   Network,
-  Shield,
-  Clock
+  Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
@@ -42,21 +39,16 @@ const WHOISLookupShadcn = () => {
   const [lookupResults, setLookupResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [autocompleteData, setAutocompleteData] = useState([]);
+  const [_autocompleteData, setAutocompleteData] = useState([]);
 
   // Get tool configuration for SEO
   const toolConfig = toolsConfig.find(tool => tool.id === 'whois-lookup');
   const seoData = generateToolSEO(toolConfig);
   
-  // Use TLD utilities hook
-  let tldHookResult = {};
-  try {
-    tldHookResult = useTLDs() || {};
-  } catch (error) {
-    console.error('Error loading TLD utilities:', error);
-    tldHookResult = {};
-  }
-  const { generateSuggestions, isReady: tldReady } = tldHookResult;
+  // Use TLD utilities hook. See the note in DNSLookupShadcn: useTLDs handles
+  // its own load failures, so the old try/catch around it could only ever
+  // corrupt hook order.
+  const { generateSuggestions, isReady: tldReady } = useTLDs();
 
   // Get query from URL parameters
   const { query: urlQuery } = useParams();
@@ -292,13 +284,6 @@ const WHOISLookupShadcn = () => {
 
   const WHOISInfoDisplay = ({ data }) => {
     if (!data) return null;
-
-    const formatValue = (value) => {
-      if (Array.isArray(value)) {
-        return value.join(', ');
-      }
-      return value || 'Not available';
-    };
 
     const formatDateFromISO = (isoString) => {
       if (!isoString) return 'Not available';

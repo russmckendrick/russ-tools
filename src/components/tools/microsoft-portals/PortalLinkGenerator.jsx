@@ -1,4 +1,3 @@
-import React from 'react';
 import { getApiEndpoint } from '../../../utils/api/apiUtils';
 
 // Import portal data from JSON files
@@ -12,7 +11,7 @@ import advancedPortalsData from './data/advanced-portals.json';
  */
 
 // Azure Portal Deep Link Generators
-export const generateAzurePortalLinks = (tenantId, domain, options = {}) => {
+export const generateAzurePortalLinks = (tenantId, domain, _options = {}) => {
   const baseUrl = getApiEndpoint('external', 'azure_portal').url;
   const tenantParam = tenantId ? `?feature.customportal=false&Microsoft_Azure_Marketplace=true#@${tenantId}` : '';
   

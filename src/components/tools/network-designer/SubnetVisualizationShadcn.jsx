@@ -78,7 +78,7 @@ export function SubnetVisualizationShadcn({ parentNetwork, subnets }) {
   // Build segments: subnets and unused space
   let segments = [];
   let lastEnd = parentStart;
-  subnetBlocks.forEach((s, idx) => {
+  subnetBlocks.forEach((s) => {
     if (s.start > lastEnd) {
       // Unused space before this subnet
       segments.push({

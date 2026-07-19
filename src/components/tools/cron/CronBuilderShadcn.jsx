@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import {
   Copy,
@@ -205,7 +204,7 @@ const validateCronExpression = (cronString) => {
     const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
     
     // Basic validation rules
-    const validateRange = (value, min, max, name) => {
+    const validateRange = (value, min, max, _name) => {
       if (value === '*') return true;
       if (value.includes(',')) {
         return value.split(',').every(v => {

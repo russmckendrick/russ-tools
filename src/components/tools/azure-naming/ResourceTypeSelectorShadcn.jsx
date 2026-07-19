@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Label } from '../../ui/label';
 import { Button } from '../../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '../../ui/tooltip';
@@ -25,7 +25,6 @@ import { toast } from 'sonner';
 const ResourceTypeSelectorShadcn = ({ formState, updateFormState, validationState, showAsterisk }) => {
   // Get resourceTypes from context (array of { value: name, label: slug })
   const { resourceTypes } = useAzureNamingContextShadcn();
-  const [selectedWorkloadGroup, setSelectedWorkloadGroup] = useState(null);
 
   // Icon mapping for workload groups
   const getWorkloadIcon = (iconName, size = 16) => {

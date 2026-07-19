@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -12,8 +12,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
@@ -29,12 +27,10 @@ import {
   User,
   Fingerprint,
   Info,
-  Key,
-  Lock,
-  RefreshCw
+  Key
 } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
-import { jwtVerify, importJWK, importSPKI, importPKCS8 } from 'jose';
+import { jwtVerify, importJWK, importSPKI } from 'jose';
 import SEOHead from '../../common/SEOHead';
 import ToolHeader from '../../common/ToolHeader';
 import { generateToolSEO } from '../../../utils/seoUtils';

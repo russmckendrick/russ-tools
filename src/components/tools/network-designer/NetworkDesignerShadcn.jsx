@@ -19,8 +19,7 @@ import {
   Trash2,
   RefreshCw,
   Info,
-  Share,
-  Settings
+  Share
 } from 'lucide-react';
 
 import SEOHead from '../../common/SEOHead';
@@ -37,27 +36,6 @@ import { NetworkDiagramShadcn } from './NetworkDiagramShadcn';
 import { NetworkDiagramSVGExport } from './NetworkDiagramSVGExport';
 import { TerraformExportSection } from './TerraformExportSection';
 import { DraggableSubnetsShadcn } from './DraggableSubnetsShadcn';
-
-// Helper function to parse network input
-function parseInput(ipAddress, maskInput) {
-  const input = maskInput.trim();
-  
-  if (input.startsWith('/')) {
-    return new Netmask(ipAddress + input);
-  }
-  
-  if (/^\d{1,2}$/.test(input)) {
-    const prefix = parseInt(input, 10);
-    if (prefix < 0 || prefix > 32) throw new Error('CIDR prefix must be between 0 and 32');
-    return new Netmask(ipAddress + '/' + prefix);
-  }
-  
-  if (isValidIPv4(input)) {
-    return new Netmask(ipAddress + '/' + input);
-  }
-  
-  throw new Error('Invalid subnet mask or CIDR notation');
-}
 
 // Custom localStorage hook replacement
 function useLocalStorage(key, defaultValue) {
@@ -466,7 +444,7 @@ const NetworkDesignerShadcn = () => {
   // State management
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isReconfiguring, setIsReconfiguring] = useState(false);
-  const [animate, setAnimate] = useState(false);
+  const [_animate, setAnimate] = useState(false);
 
   // Create a new network
   const handleNewNetwork = () => {

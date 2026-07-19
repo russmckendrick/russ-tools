@@ -18,7 +18,7 @@ import {
   Database
 } from 'lucide-react';
 
-const HelpSystem = ({ open, onClose, context }) => {
+const HelpSystem = ({ open, onClose, context: _context }) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">

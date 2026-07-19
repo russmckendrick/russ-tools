@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Outlet, Link, useLocation } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
 import { Menu, ChevronLeft, ChevronRight, Github as GithubIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"

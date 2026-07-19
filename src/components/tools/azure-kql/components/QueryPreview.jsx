@@ -24,7 +24,7 @@ Prism.languages.kql = {
   'boolean': /\b(?:true|false)\b/i
 };
 
-const QueryPreview = ({ query, service, template }) => {
+const QueryPreview = ({ query, service: _service, template }) => {
   const [highlighted, setHighlighted] = useState('');
   const metadata = query ? getQueryMetadata(query) : null;
 

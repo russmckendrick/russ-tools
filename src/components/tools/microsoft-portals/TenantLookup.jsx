@@ -1,4 +1,3 @@
-import React from 'react';
 import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
 
 /**

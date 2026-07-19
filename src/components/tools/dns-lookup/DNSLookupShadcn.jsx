@@ -22,21 +22,17 @@ const DNSLookupShadcn = () => {
   const [lookupResults, setLookupResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [autocompleteData, setAutocompleteData] = useState([]);
+  const [_autocompleteData, setAutocompleteData] = useState([]);
 
   // Get tool configuration for SEO
   const toolConfig = toolsConfig.find(tool => tool.id === 'dns-lookup');
   const seoData = generateToolSEO(toolConfig);
   
-  // Use TLD utilities hook for domain autocomplete (with error handling)
-  let tldHookResult = {};
-  try {
-    tldHookResult = useTLDs() || {};
-  } catch (error) {
-    console.error('Error loading TLD utilities:', error);
-    tldHookResult = {};
-  }
-  const { generateSubdomainSuggestions, isReady: tldReady } = tldHookResult;
+  // Use TLD utilities hook for domain autocomplete. useTLDs handles its own
+  // load failures (it falls back to a built-in TLD list), so it cannot throw
+  // synchronously — wrapping it in try/catch only risked changing the hook
+  // count between renders.
+  const { generateSubdomainSuggestions, isReady: tldReady } = useTLDs();
 
   // Get domain from URL parameters
   const { domain: urlDomain } = useParams();

@@ -8,7 +8,7 @@ import { loadPrismLanguages, highlightCode } from '../../../utils/prismLoader';
 import '../../../styles/prism-theme.css';
 import { cn } from '@/lib/utils';
 
-import { IconCopy, IconBrandAws, IconBrandAzure, IconBrandTerraform, IconServer } from '@tabler/icons-react';
+import { IconCopy, IconBrandTerraform } from '@tabler/icons-react';
 import { toast } from 'sonner';
 import { generateAwsTerraform, generateAzureTerraform, generateVcdTerraform } from '../../../utils/network/terraformExport';
 import { loadAzureRegions } from '../../../utils/regions/AzureRegions';
@@ -24,7 +24,7 @@ export function TerraformExportSection({ network, subnets }) {
   const [azureRegion, setAzureRegion] = useState(savedRegion || defaultRegion);
   const [regionList, setRegionList] = useState([]);
   const [loadingRegions, setLoadingRegions] = useState(true);
-  const [regionError, setRegionError] = useState(null);
+  const [_regionError, setRegionError] = useState(null);
 
   // AWS region selection with persistence and dynamic loading
   const defaultAwsRegion = 'eu-west-2';
@@ -32,7 +32,7 @@ export function TerraformExportSection({ network, subnets }) {
   const [awsRegion, setAwsRegion] = useState(savedAwsRegion || defaultAwsRegion);
   const [regionListAws, setRegionListAws] = useState([]);
   const [loadingRegionsAws, setLoadingRegionsAws] = useState(true);
-  const [regionErrorAws, setRegionErrorAws] = useState(null);
+  const [_regionErrorAws, setRegionErrorAws] = useState(null);
 
   // VCD configuration with persistence
   const savedVcdOrg = typeof window !== 'undefined' ? window.localStorage.getItem('vcdOrg') : null;
@@ -49,7 +49,7 @@ export function TerraformExportSection({ network, subnets }) {
     let mounted = true;
     loadAzureRegions()
       .then(list => { if (mounted) { setRegionList(list); setLoadingRegions(false); } })
-      .catch(err => {
+      .catch(_err => {
         setRegionError('Failed to load Azure regions list');
         setRegionList([{ label: 'UK South', value: 'uksouth' }]);
         setLoadingRegions(false);
@@ -104,7 +104,7 @@ export function TerraformExportSection({ network, subnets }) {
     let mounted = true;
     loadAwsRegions()
       .then(list => { if (mounted) { setRegionListAws(list); setLoadingRegionsAws(false); } })
-      .catch(err => {
+      .catch(_err => {
         setRegionErrorAws('Failed to load AWS regions list');
         setRegionListAws([{ label: 'US East (N. Virginia)', value: 'us-east-1' }]);
         setLoadingRegionsAws(false);

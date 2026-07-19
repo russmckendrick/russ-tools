@@ -5,13 +5,11 @@ import { Input } from '../../../ui/input';
 import { Label } from '../../../ui/label';
 import { Textarea } from '../../../ui/textarea';
 import { Alert, AlertDescription } from '../../../ui/alert';
-import { Badge } from '../../../ui/badge';
 import { 
   Plus, 
   Save, 
   Trash2, 
   FileCode,
-  AlertCircle,
   Info
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select';

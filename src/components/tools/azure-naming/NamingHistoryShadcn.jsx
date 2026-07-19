@@ -59,7 +59,7 @@ const NamingHistoryShadcn = () => {
               </h4>
               <p className="text-xs text-muted-foreground mt-1">
                 {item.group && Array.isArray(item.group)
-                  ? item.group.map((g, idx) => getResourceTypeLabel(g.resourceType)).join(', ')
+                  ? item.group.map((g) => getResourceTypeLabel(g.resourceType)).join(', ')
                   : ''}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
