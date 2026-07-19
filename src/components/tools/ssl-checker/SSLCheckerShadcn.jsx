@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ToolSplit, ToolSplitEmpty } from "@/components/ui/tool-split";
 import {
   Globe,
   Search,
@@ -108,8 +109,8 @@ const SSLCheckerShadcn = () => {
   return (
     <TooltipProvider>
       <SEOHead {...seoData} />
-      <div className="space-y-6">
-        {/* Header */}
+      <div className="grid gap-4">
+        {/* Page furniture, so it sits above the split, not in the control column. */}
         {!shell && (
           <div className="flex items-center gap-4">
             <div className="p-3 bg-[color-mix(in_oklab,var(--cat,var(--color-primary))_13%,transparent)] rounded-xl">
@@ -124,135 +125,146 @@ const SSLCheckerShadcn = () => {
           </div>
         )}
 
-        {/* SSL Check Form */}
-        <Card>
-          <CardHeader>
-            <h2 className="text-title-sm">Check SSL Certificate</h2>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={onSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="domain">Domain Name</Label>
-                <div className="flex gap-2 mt-1">
-                  <div className="relative flex-1">
-                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      id="domain"
-                      type="text"
-                      placeholder="example.com"
-                      value={domain}
-                      onChange={(e) => setDomain(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  <Button 
-                    type="submit"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />
-                    ) : (
-                      <Search className="mr-2 h-4 w-4" />
-                    )}
-                    Check SSL
-                  </Button>
-                </div>
-                {validationError && (
-                  <Alert className="mt-2" variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{validationError}</AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Loading State */}
-        {loading && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center p-8">
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className="flex items-center gap-3">
-                    <RotateCcw className="h-5 w-5 animate-spin-ccw" />
-                    <span>Analyzing SSL certificate for {domain}...</span>
-                  </div>
-                  <p className="text-body-sm text-muted-foreground max-w-md">
-                    This may take up to 2 minutes as we perform comprehensive SSL Labs analysis. 
-                    Please wait while we analyze the certificate configuration.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Error Display */}
-        {error && !loading && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* SSL Results */}
-        {certificateData && !loading && (
-          <SSLResultsDisplay data={certificateData} />
-        )}
-
-        {/* Recent SSL Checks History */}
-        {hasHistory && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
-                  <h3 className="text-title-sm">Recent SSL Checks</h3>
-                </div>
-                <Button variant="outline" size="sm" onClick={clearHistory}>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Clear History
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {domainHistory.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col">
-                        <span className="text-data-md font-mono">{item.domain}</span>
-                        <div className="flex items-center gap-2 text-data-sm font-mono text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {new Date(item.timestamp).toLocaleDateString()} at {new Date(item.timestamp).toLocaleTimeString()}
-                        </div>
+        {/* Controls left, output right — DESIGN.md's Layout rule. */}
+        <ToolSplit
+          controls={
+            <>
+              <Card>
+                <CardHeader>
+                  <h2 className="text-title-sm">Check SSL Certificate</h2>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={onSubmit} className="grid gap-4">
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="domain">Domain Name</Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Input
+                          id="domain"
+                          type="text"
+                          placeholder="example.com"
+                          value={domain}
+                          onChange={(e) => setDomain(e.target.value)}
+                          className="pl-9"
+                        />
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {getGradeBadge(item.grade)}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRecheck(item.domain)}
-                      >
-                        <RotateCcw className="h-4 w-4 mr-1" />
-                        Recheck
-                      </Button>
+                    {validationError && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{validationError}</AlertDescription>
+                      </Alert>
+                    )}
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full"
+                    >
+                      {loading ? (
+                        <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />
+                      ) : (
+                        <Search className="mr-2 h-4 w-4" />
+                      )}
+                      Check SSL
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+
+              {hasHistory && (
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <History className="h-4 w-4 shrink-0 text-[var(--cat)]" />
+                        <h3 className="truncate text-title-sm">Recent Checks</h3>
+                      </div>
                       <Button
                         variant="ghost"
-                        size="sm"
-                        onClick={() => removeDomainFromHistory(item.domain)}
+                        size="icon"
+                        onClick={clearHistory}
+                        aria-label="Clear SSL check history"
+                        title="Clear history"
                       >
-                        <X className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* The row rechecks; the × stays a sibling rather than a
+                        nested button, which is invalid HTML. */}
+                    <div className="grid gap-1.5">
+                      {domainHistory.map((item, index) => (
+                        <div key={index} className="flex items-stretch gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleRecheck(item.domain)}
+                            title={`Recheck ${item.domain}`}
+                            className="grid min-w-0 flex-1 gap-1 rounded-md border border-outline p-2.5 text-left transition-colors hover:border-[var(--cat)] hover:bg-surface-inset focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                          >
+                            <div className="flex min-w-0 items-center gap-2">
+                              <span className="truncate text-data-md font-mono">{item.domain}</span>
+                              <span className="ml-auto shrink-0">{getGradeBadge(item.grade)}</span>
+                            </div>
+                            <span className="flex items-center gap-1.5 text-data-sm font-mono text-muted-foreground">
+                              <Clock className="h-3 w-3 shrink-0" />
+                              {new Date(item.timestamp).toLocaleDateString()}
+                            </span>
+                          </button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeDomainFromHistory(item.domain)}
+                            aria-label={`Remove ${item.domain} from history`}
+                            title="Remove"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          }
+        >
+          {loading && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center p-8">
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="flex items-center gap-3">
+                      <RotateCcw className="h-5 w-5 animate-spin-ccw" />
+                      <span>Analyzing SSL certificate for {domain}...</span>
+                    </div>
+                    <p className="text-body-sm text-muted-foreground max-w-md">
+                      This may take up to 2 minutes as we perform comprehensive SSL Labs analysis.
+                      Please wait while we analyze the certificate configuration.
+                    </p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {error && !loading && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {certificateData && !loading && <SSLResultsDisplay data={certificateData} />}
+          {!loading && !error && !certificateData && (
+            <ToolSplitEmpty
+              icon={<SSLCheckerIcon className="h-7 w-7" />}
+              title="No certificate checked yet"
+              hint="Enter a domain — the certificate, protocols and grade appear here."
+            />
+          )}
+        </ToolSplit>
       </div>
     </TooltipProvider>
   );

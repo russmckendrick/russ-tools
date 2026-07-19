@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ToolSplit, ToolSplitEmpty } from "@/components/ui/tool-split";
 import {
   Globe,
   Search,
@@ -552,38 +553,40 @@ const WHOISLookupShadcn = () => {
   return (
     <TooltipProvider>
       <SEOHead {...seoData} />
-      <div className="space-y-6">
-        {/* Header */}
+      <div className="grid gap-4">
+        {/* Page furniture, so it sits above the split, not in the control column. */}
         <ToolHeader
           icon={WHOISIcon}
           title="WHOIS Lookup Tool"
           description="Get detailed registration information for domains and IP addresses"
-          iconColor="violet"
           showTitle={false}
           standalone={true}
         />
 
-        {/* Lookup Form */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="query">Domain Name or IP Address</Label>
-                <div className="flex gap-2 mt-1">
-                  <div className="relative flex-1">
-                    <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="query"
-                      placeholder="example.com or 8.8.8.8"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onKeyPress={(event) => event.key === 'Enter' && handleLookup()}
-                      className="pl-9"
-                    />
+        {/* Controls left, output right — DESIGN.md's Layout rule. */}
+        <ToolSplit
+          controls={
+            <>
+              <Card>
+                <CardContent className="grid gap-4 pt-6">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="query">Domain Name or IP Address</Label>
+                    <div className="relative">
+                      <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="query"
+                        placeholder="example.com or 8.8.8.8"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        onKeyPress={(event) => event.key === 'Enter' && handleLookup()}
+                        className="pl-9"
+                      />
+                    </div>
                   </div>
-                  <Button 
+                  <Button
                     onClick={handleLookup}
                     disabled={loading}
+                    className="w-full"
                   >
                     {loading ? (
                       <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />
@@ -592,11 +595,58 @@ const WHOISLookupShadcn = () => {
                     )}
                     Lookup
                   </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+
+              {lookupHistory.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <History className="h-4 w-4 shrink-0 text-[var(--cat)]" />
+                        <h3 className="truncate text-title-sm">Recent Lookups</h3>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={clearHistory}
+                        aria-label="Clear WHOIS lookup history"
+                        title="Clear history"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* The row is the button — a history entry only ever
+                        repeats its own lookup, and the 320px column has no
+                        room for a separate control beside the query. */}
+                    <div className="grid gap-1.5">
+                      {lookupHistory.slice(0, 10).map((item, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => handleHistoryItemClick(item)}
+                          title={`Repeat lookup for ${item.query}`}
+                          className="grid w-full gap-1 rounded-md border border-outline p-2.5 text-left transition-colors hover:border-[var(--cat)] hover:bg-surface-inset focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            {getTypeIcon(item.type)}
+                            <span className="truncate font-mono text-data-md">{item.query}</span>
+                            <span className="ml-auto shrink-0">{getTypeBadge(item.type)}</span>
+                          </div>
+                          <span className="pl-6 text-data-sm font-mono text-muted-foreground">
+                            {formatDate(item.timestamp)}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          }
+        >
 
         {/* Loading State */}
         {loading && (
@@ -671,53 +721,14 @@ const WHOISLookupShadcn = () => {
           </Tabs>
         )}
 
-        {/* History */}
-        {lookupHistory.length > 0 && (
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
-                  <h3 className="text-title-sm">Recent Lookups</h3>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={clearHistory}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Clear History
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {lookupHistory.slice(0, 10).map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-md">
-                    <div className="flex items-center gap-3">
-                      {getTypeIcon(item.type)}
-                      <div>
-                        <p className="text-data-md font-mono">{item.query}</p>
-                        <p className="text-data-sm font-mono text-muted-foreground">
-                          {formatDate(item.timestamp)} • {item.type}
-                        </p>
-                      </div>
-                      {getTypeBadge(item.type)}
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleHistoryItemClick(item)}
-                    >
-                      <RotateCcw className="mr-2 h-4 w-4" />
-                      Repeat
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {!loading && !error && !lookupResults && (
+            <ToolSplitEmpty
+              icon={<WHOISIcon size={28} />}
+              title="No lookup yet"
+              hint="Enter a domain or an IP address — registration detail appears here."
+            />
+          )}
+        </ToolSplit>
       </div>
     </TooltipProvider>
   );

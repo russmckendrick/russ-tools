@@ -121,36 +121,41 @@ const TenantSearchCard = ({
                 <CardTitle className="text-title-sm">Tenant Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                {/* One field per row. The two-column version put a 36-char
+                    tenant GUID and its copy button into a ~140px track in
+                    the control column, and both spilled past the card. */}
+                <div className="grid gap-3">
+                  <div className="grid gap-0.5">
                     <Label className="text-body-sm font-medium">Domain</Label>
-                    <p className="text-data-md font-mono text-muted-foreground">{tenantInfo.domain}</p>
+                    <p className="truncate text-data-md font-mono text-muted-foreground">{tenantInfo.domain}</p>
                   </div>
-                  <div>
+                  <div className="grid gap-0.5">
                     <Label className="text-body-sm font-medium">Tenant ID</Label>
-                    <div className="flex items-center gap-2">
-                      <code className="text-data-sm font-mono bg-muted p-1 rounded">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <code className="min-w-0 flex-1 truncate rounded bg-muted p-1 text-data-sm font-mono">
                         {tenantInfo.tenantId}
                       </code>
                       <Button
                         variant="outline"
-                        size="sm"
+                        size="icon"
+                        className="shrink-0"
                         onClick={() => copyToClipboard(tenantInfo.tenantId, 'Tenant ID')}
+                        aria-label="Copy tenant ID"
                       >
                         <Copy className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
                   {tenantInfo.displayName && (
-                    <div>
+                    <div className="grid gap-0.5">
                       <Label className="text-body-sm font-medium">Display Name</Label>
                       <p className="text-body-sm text-muted-foreground">{tenantInfo.displayName}</p>
                     </div>
                   )}
                   {tenantInfo.method && (
-                    <div>
+                    <div className="grid justify-items-start gap-0.5">
                       <Label className="text-body-sm font-medium">Lookup Method</Label>
-                      <Badge variant="secondary" className="text-data-sm font-mono">
+                      <Badge variant="secondary" className="max-w-full truncate text-data-sm font-mono">
                         {tenantInfo.method}
                       </Badge>
                     </div>

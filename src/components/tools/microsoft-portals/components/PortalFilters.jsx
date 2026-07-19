@@ -22,9 +22,11 @@ const PortalFilters = ({
   favorites
 }) => {
   return (
-    <div className="mb-6 space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
+    // One filter per row: this lives in the 320px control column, which
+    // never reaches a side-by-side breakpoint.
+    <div className="grid gap-3">
+      <div className="grid gap-3">
+        <div className="grid gap-1.5">
           <Label htmlFor="category-filter">Category</Label>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger id="category-filter">
@@ -44,7 +46,7 @@ const PortalFilters = ({
         </div>
 
         {allTags.length > 0 && (
-          <div className="flex-1">
+          <div className="grid gap-1.5">
             <Label htmlFor="tag-filter">Filter by Tag</Label>
             <Select value={selectedTag || 'all-tags'} onValueChange={(value) => setSelectedTag(value === 'all-tags' ? null : value)}>
               <SelectTrigger id="tag-filter">
@@ -64,7 +66,7 @@ const PortalFilters = ({
       </div>
 
       {(selectedCategory !== 'all' || selectedTag) && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-body-sm text-muted-foreground">Active filters:</span>
           {selectedCategory !== 'all' && (
             <Badge variant="secondary" className="cursor-pointer" onClick={() => setSelectedCategory('all')}>
