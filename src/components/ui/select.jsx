@@ -21,13 +21,19 @@ const SelectValue = SelectPrimitive.Value
  *
  * `min-h-9`, not `h-9`. Tools put two lines in a trigger (a label over a
  * description) and a fixed height made that content spill out through the
- * border. The old `[&>span]:line-clamp-1` was fighting the same content.
+ * border.
+ *
+ * A plain text value still stays on one line and ellipsises — `truncate` on
+ * the value span — because a select that silently grows a row taller than the
+ * input beside it breaks every form it sits in. Rich content overrides that
+ * itself (cron's description sets `whitespace-normal`), so the two cases do
+ * not have to agree.
  */
 const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex min-h-9 w-full items-center justify-between gap-2 rounded-sm border border-outline-strong bg-surface px-[11px] py-2 text-left text-body-sm text-on-surface data-[placeholder]:text-on-surface-faint focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-raised disabled:cursor-not-allowed disabled:opacity-50",
+      "flex min-h-9 w-full items-center justify-between gap-2 rounded-sm border border-outline-strong bg-surface px-[11px] py-1.5 text-left text-body-sm text-on-surface data-[placeholder]:text-on-surface-faint focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-raised disabled:cursor-not-allowed disabled:opacity-50 [&>span]:min-w-0 [&>span]:truncate",
       className
     )}
     {...props}
