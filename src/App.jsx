@@ -133,11 +133,6 @@ const MarkdownTableTool = lazy(() =>
     default: () => <div>Error loading Markdown Table Tool</div>
   }))
 );
-const UIDemo = lazy(() => 
-  import('./components/ui/demo').catch(() => ({
-    default: () => <div>Failed to load UI Demo</div>
-  }))
-);
 
 // Loading component for lazy-loaded routes
 const LoadingFallback = () => (
@@ -306,12 +301,6 @@ export default function App() {
               <Route path="markdown-table-tool" element={
                 <LazyRoute>
                   <MarkdownTableTool />
-                </LazyRoute>
-              } />
-
-              <Route path="ui-demo" element={
-                <LazyRoute>
-                  <UIDemo />
                 </LazyRoute>
               } />
 
