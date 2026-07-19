@@ -1,10 +1,9 @@
 /**
- * WHOIS Lookup Tool — bridge manifest.
+ * WHOIS Lookup Tool — ported.
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * Ported (Phase 4). The island runs on useLookupTool: rt:whois-lookup:*
+ * slots, with the pre-port history read forward and never deleted. The
+ * legacy cache is enumerated for /delete but migrates cold.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /whois-lookup
@@ -65,6 +64,6 @@ export default {
     'whois-lookup-cache',
   ],
 
-  island: () => import('@/components/tools/whois/WHOISLookupShadcn.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };

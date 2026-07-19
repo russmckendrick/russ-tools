@@ -81,11 +81,6 @@ const DNSLookupTool = lazy(() =>
     default: () => <div>Error loading DNS Lookup Tool</div>
   }))
 );
-const WHOISLookupTool = lazy(() => 
-  import('./components/tools/whois/WHOISLookupShadcn').catch(() => ({
-    default: () => <div>Error loading WHOIS Lookup Tool</div>
-  }))
-);
 const DataConverterTool = lazy(() => 
   import('./components/tools/data-converter/DataConverterShadcn').catch(() => ({
     default: () => <div>Error loading Data Converter Tool</div>
@@ -184,12 +179,12 @@ export default function App() {
 
               <Route path="whois-lookup" element={
                 <LazyRoute>
-                  <WHOISLookupTool />
+                  <SpaToolPage toolId="whois-lookup" />
                 </LazyRoute>
               } />
               <Route path="whois-lookup/:query" element={
                 <LazyRoute>
-                  <WHOISLookupTool />
+                  <SpaToolPage toolId="whois-lookup" />
                 </LazyRoute>
               } />
 

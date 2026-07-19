@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,179 +25,57 @@ import {
   Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useParams } from 'react-router-dom';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/api/apiUtils';
-import WHOISIcon from './WHOISIcon';
-import { useTLDs } from '../../../utils';
+import { copyText, downloadFile, apiFetch, buildUrl } from '@/core';
+import { useLookupTool } from '@/lib/useLookupTool';
+import apiConfig from '@/utils/api/apiConfig.json';
 
-const WHOISLookupShadcn = () => {
-  const [query, setQuery] = useState('');
-  const [lookupResults, setLookupResults] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [_autocompleteData, setAutocompleteData] = useState([]);
+const WHOIS = apiConfig.endpoints.whois;
 
-  // Get tool configuration for SEO
-  const toolConfig = toolsConfig.find(tool => tool.id === 'whois-lookup');
-  const seoData = generateToolSEO(toolConfig);
-  
-  // Use TLD utilities hook. See the note in DNSLookupShadcn: useTLDs handles
-  // its own load failures, so the old try/catch around it could only ever
-  // corrupt hook order.
-  const { generateSuggestions, isReady: tldReady } = useTLDs();
-
-  // Get query from URL parameters
-  const { query: urlQuery } = useParams();
-
-  // WHOIS lookup history and caching
-  const [lookupHistory, setLookupHistory] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('whois-lookup-history')) || [];
-    } catch {
-      return [];
-    }
+async function fetchWhois(query, { signal }) {
+  const response = await apiFetch(buildUrl(WHOIS.url, { query }), {
+    headers: { Accept: 'application/json' },
+    timeout: WHOIS.timeout,
+    retries: WHOIS.retries,
+    signal,
   });
 
-  const [whoisCache, setWhoisCache] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('whois-lookup-cache')) || {};
-    } catch {
-      return {};
-    }
-  });
+  if (!response.ok) {
+    throw new Error(`WHOIS lookup failed: ${response.status} ${response.statusText}`);
+  }
 
-  // Cache duration in milliseconds (30 minutes for WHOIS)
-  const CACHE_DURATION = 30 * 60 * 1000;
+  return response.json();
+}
 
-  // Save to localStorage whenever state changes
-  useEffect(() => {
-    localStorage.setItem('whois-lookup-history', JSON.stringify(lookupHistory));
-  }, [lookupHistory]);
-
-  useEffect(() => {
-    localStorage.setItem('whois-lookup-cache', JSON.stringify(whoisCache));
-  }, [whoisCache]);
-
-  // Effect to update autocomplete data when query changes
-  useEffect(() => {
-    if (tldReady && generateSuggestions) {
-      try {
-        const suggestions = generateSuggestions(query, 10);
-        setAutocompleteData(Array.isArray(suggestions) ? suggestions : []);
-      } catch (error) {
-        console.error('Error generating suggestions:', error);
-        setAutocompleteData([]);
-      }
-    } else {
-      setAutocompleteData([]);
-    }
-  }, [query, tldReady, generateSuggestions]);
-
-  // Effect to handle URL query parameter
-  useEffect(() => {
-    if (urlQuery && urlQuery.trim()) {
-      const decodedQuery = decodeURIComponent(urlQuery);
-      setQuery(decodedQuery);
-      performWHOISLookup(decodedQuery);
-    }
-  }, [urlQuery]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Helper function to check if cached data is still valid
-  const isCacheValid = (cachedData) => {
-    if (!cachedData || !cachedData.timestamp) return false;
-    return (Date.now() - cachedData.timestamp) < CACHE_DURATION;
-  };
-
-  // Helper function to add lookup to history
-  const addToHistory = (query, results) => {
-    const historyItem = {
-      query,
-      type: results?.type || 'unknown',
-      timestamp: Date.now(),
-      status: results?.status || 'Unknown'
-    };
-
-    const filteredHistory = lookupHistory.filter(item => item.query !== query);
-    const newHistory = [historyItem, ...filteredHistory].slice(0, 100);
-    setLookupHistory(newHistory);
-  };
-
-  // Helper function to cache WHOIS data
-  const cacheWHOISData = (query, data) => {
-    const cacheItem = {
-      ...data,
-      timestamp: Date.now()
-    };
-    setWhoisCache(prev => ({
-      ...prev,
-      [query]: cacheItem
-    }));
-  };
-
-  // Function to perform WHOIS lookup
-  const performWHOISLookup = async (queryToLookup) => {
-    setLoading(true);
-    setError(null);
-    setLookupResults(null);
-
-    try {
-      const cleanQuery = queryToLookup.trim().toLowerCase();
-
-      // Check cache first
-      const cachedData = whoisCache[cleanQuery];
-      if (cachedData && isCacheValid(cachedData)) {
-        console.log(`📦 Using cached WHOIS data for: ${cleanQuery}`);
-        setLookupResults(cachedData);
-        addToHistory(cleanQuery, cachedData);
-        setLoading(false);
-        toast.success('WHOIS Lookup Complete (Cached)', {
-          description: `Cached ${cachedData.type} information loaded for ${cleanQuery}`,
-        });
-        return;
-      }
-
-      console.log(`🔍 Performing WHOIS lookup for: ${cleanQuery}`);
-
-      const whoisConfig = getApiEndpoint('whois');
-      const apiUrl = buildApiUrl(whoisConfig.url, { query: cleanQuery });
-
-      const response = await apiFetch(apiUrl, {
-        headers: {
-          ...whoisConfig.headers,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`WHOIS lookup failed: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      setLookupResults(data);
-      cacheWHOISData(cleanQuery, data);
-      addToHistory(cleanQuery, data);
-
-      toast.success('WHOIS Lookup Complete', {
-        description: `Successfully retrieved ${data.type} information for ${cleanQuery}`,
-      });
-
-    } catch (err) {
-      console.error('💥 WHOIS Lookup Error:', err);
-      const errorMessage = err.message || 'Failed to perform WHOIS lookup';
-      setError(errorMessage);
-      
+const WhoisLookupTool = () => {
+  const {
+    query,
+    setQuery,
+    result: lookupResults,
+    loading,
+    error,
+    lookup,
+    history: lookupHistory,
+    clearHistory: clearStoredHistory,
+  } = useLookupTool({
+    toolId: 'whois-lookup',
+    fetcher: fetchWhois,
+    cacheTTL: 30 * 60 * 1000,
+    maxHistory: 100,
+    urlParam: 'query',
+    legacy: { history: 'whois-lookup-history' },
+    historyEntry: (q, data) => ({
+      type: data?.type || 'unknown',
+      status: data?.status || 'Unknown',
+    }),
+    onSuccess: (q, data, fromCache) =>
+      toast.success(`WHOIS Lookup Complete${fromCache ? ' (Cached)' : ''}`, {
+        description: `${fromCache ? 'Cached' : 'Successfully retrieved'} ${data.type} information for ${q}`,
+      }),
+    onError: (q, err) =>
       toast.error('WHOIS Lookup Failed', {
-        description: errorMessage,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+        description: err.message || 'Failed to perform WHOIS lookup',
+      }),
+  });
 
   const handleLookup = () => {
     if (!query.trim()) {
@@ -206,42 +84,36 @@ const WHOISLookupShadcn = () => {
       });
       return;
     }
-    performWHOISLookup(query);
+    lookup(query);
   };
 
   const handleHistoryItemClick = (historyItem) => {
     setQuery(historyItem.query);
-    performWHOISLookup(historyItem.query);
+    lookup(historyItem.query);
   };
 
   const clearHistory = () => {
-    setLookupHistory([]);
-    setWhoisCache({});
+    clearStoredHistory();
     toast.success('History Cleared', {
-      description: 'All WHOIS lookup history and cache cleared',
+      description: 'All WHOIS lookup history cleared',
     });
   };
 
   const copyToClipboard = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
+    if (await copyText(text)) {
       toast.success('Copied to clipboard');
-    } catch (error) {
+    } else {
       toast.error('Failed to copy to clipboard');
     }
   };
 
   const exportResults = () => {
     if (!lookupResults) return;
-    
-    const dataStr = JSON.stringify(lookupResults, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `whois-lookup-${lookupResults.query}-${Date.now()}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadFile(
+      JSON.stringify(lookupResults, null, 2),
+      `whois-lookup-${lookupResults.query}-${Date.now()}.json`,
+      'application/json'
+    );
   };
 
   const formatDate = (timestamp) => {
@@ -551,18 +423,7 @@ const WHOISLookupShadcn = () => {
 
   return (
     <TooltipProvider>
-      <SEOHead {...seoData} />
       <div className="space-y-6">
-        {/* Header */}
-        <ToolHeader
-          icon={WHOISIcon}
-          title="WHOIS Lookup Tool"
-          description="Get detailed registration information for domains and IP addresses"
-          iconColor="violet"
-          showTitle={false}
-          standalone={true}
-        />
-
         {/* Lookup Form */}
         <Card>
           <CardContent className="pt-6">
@@ -723,4 +584,4 @@ const WHOISLookupShadcn = () => {
   );
 };
 
-export default WHOISLookupShadcn;
+export default WhoisLookupTool;
