@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
@@ -12,91 +12,92 @@ import {
   AlertCircle,
   Clock,
   History,
+  ShieldCheck,
   Trash2,
   RotateCcw,
   X,
   Award
 } from 'lucide-react';
-import { useParams } from 'react-router-dom';
-import SEOHead from '../../common/SEOHead';
-import toolsConfig from '@/utils/toolsConfig.json';
-import { generateToolSEO } from '@/utils/seoUtils';
-import { useTLDs } from '../../../utils';
-import { useShell } from '@/bridge/ShellContext';
-
-import { useSSLChecker } from './hooks/useSSLChecker';
+import { toast } from 'sonner';
+import { useLookupTool } from '@/lib/useLookupTool';
+import { performSSLCheck } from './lib/sslApi';
+import { validateDomain, cleanDomain, isSSLDataComplete, getGradeInfo } from './lib/sslUtils';
 import SSLResultsDisplay from './components/SSLResultsDisplay';
-import SSLCheckerIcon from './SSLCheckerIcon';
-import { getGradeInfo } from './utils/sslUtils';
 
-const SSLCheckerShadcn = () => {
-  // Get tool configuration for SEO
-  const toolConfig = toolsConfig.find(tool => tool.id === 'ssl-checker');
-  const seoData = generateToolSEO(toolConfig);
+const SslCheckerTool = () => {
+  const [validationError, setValidationError] = React.useState('');
 
-  // Get domain from URL parameters
-  const { domain: urlDomain } = useParams();
-
-  // Under the Astro shell ToolLayout already renders the icon, h1 and
-  // description from the manifest; this component's own header would be a
-  // second h1 on the page.
-  const shell = useShell();
-
-  // Use TLD utilities hook for domain autocomplete (with error handling)
-  const tldHookResult = useTLDs() || {};
-  const { generateSubdomainSuggestions, isReady: tldReady } = tldHookResult;
-
-  // Use SSL checker hook for all logic
   const {
-    domain,
-    setDomain,
-    certificateData,
+    query: domain,
+    setQuery: setDomain,
+    result: certificateData,
     loading,
     error,
-    validationError,
-    domainHistory,
-    handleDomainSubmit,
-    handleRecheck,
-    removeDomainFromHistory,
-    clearHistory,
-    hasHistory
-  } = useSSLChecker();
+    lookup,
+    history: domainHistory,
+    clearHistory: clearStoredHistory,
+    removeFromHistory,
+  } = useLookupTool({
+    toolId: 'ssl-checker',
+    fetcher: (q, { signal }) => performSSLCheck(q, { signal }),
+    cacheTTL: 5 * 60 * 1000,
+    maxHistory: 50,
+    urlParam: 'domain',
+    normalize: cleanDomain,
+    legacy: { history: 'ssl-checker-history' },
+    // A partial assessment must not be served again for five minutes.
+    cacheable: isSSLDataComplete,
+    historyEntry: (q, data) => ({
+      domain: q,
+      grade: data.endpoints?.[0]?.grade || 'Unknown',
+      hasWarnings: data.endpoints?.[0]?.hasWarnings || false,
+    }),
+    onSuccess: (q, data, fromCache) =>
+      toast.success(fromCache ? 'Loaded from cache' : 'SSL Check Complete', {
+        description: fromCache
+          ? `SSL data for ${q} loaded from cache`
+          : `SSL certificate analysis completed for ${q}`,
+      }),
+    onError: (q, err) =>
+      toast.error('SSL Check Failed', {
+        description: err.message || 'Failed to analyze SSL certificate',
+      }),
+  });
 
-  // Effect to update autocomplete data when domain changes
-  useEffect(() => {
-    if (tldReady && generateSubdomainSuggestions) {
-      try {
-        generateSubdomainSuggestions(domain, 10);
-        // Note: Autocomplete functionality disabled for now
-      } catch {
-        // Silently handle suggestion generation error
-      }
+  const handleDomainSubmit = (domainToCheck = domain) => {
+    if (!domainToCheck) return;
+
+    const cleaned = cleanDomain(domainToCheck);
+    const validation = validateDomain(cleaned);
+
+    if (validation) {
+      setValidationError(validation);
+      return;
     }
-  }, [domain, tldReady, generateSubdomainSuggestions]);
 
-  // Effect to handle URL domain parameter
-  useEffect(() => {
-    if (urlDomain && urlDomain.trim()) {
-      setDomain(urlDomain.trim());
-      handleDomainSubmit(urlDomain.trim());
-    }
-  }, [urlDomain, setDomain, handleDomainSubmit]);
+    setValidationError('');
+    lookup(cleaned);
+  };
 
-  // Handle form submission
   const onSubmit = (e) => {
     e.preventDefault();
     handleDomainSubmit();
   };
 
+  const clearHistory = () => {
+    clearStoredHistory();
+    toast.success('History cleared');
+  };
+
   // Grade badge component to match main results
   const getGradeBadge = (grade) => {
     if (!grade || grade === '-') return null;
-    
+
     const gradeInfo = getGradeInfo(grade);
-    
+
     return (
-      <Badge 
-        variant="outline" 
+      <Badge
+        variant="outline"
         className={`${gradeInfo.color} border-0 text-body-sm font-semibold px-2 py-1`}
       >
         <Award className="w-3 h-3 mr-1" />
@@ -107,23 +108,7 @@ const SSLCheckerShadcn = () => {
 
   return (
     <TooltipProvider>
-      <SEOHead {...seoData} />
       <div className="space-y-6">
-        {/* Header */}
-        {!shell && (
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-[color-mix(in_oklab,var(--cat,var(--color-primary))_13%,transparent)] rounded-xl">
-              <SSLCheckerIcon className="w-8 h-8 text-[var(--cat,var(--color-primary))]" />
-            </div>
-            <div>
-              <h1 className="text-headline-md">SSL Certificate Checker</h1>
-              <p className="text-muted-foreground">
-                Analyze SSL/TLS certificates and security configuration for any domain
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* SSL Check Form */}
         <Card>
           <CardHeader>
@@ -145,7 +130,7 @@ const SSLCheckerShadcn = () => {
                       className="pl-9"
                     />
                   </div>
-                  <Button 
+                  <Button
                     type="submit"
                     disabled={loading}
                   >
@@ -179,7 +164,7 @@ const SSLCheckerShadcn = () => {
                     <span>Analyzing SSL certificate for {domain}...</span>
                   </div>
                   <p className="text-body-sm text-muted-foreground max-w-md">
-                    This may take up to 2 minutes as we perform comprehensive SSL Labs analysis. 
+                    This may take up to 2 minutes as we perform comprehensive SSL Labs analysis.
                     Please wait while we analyze the certificate configuration.
                   </p>
                 </div>
@@ -196,13 +181,28 @@ const SSLCheckerShadcn = () => {
           </Alert>
         )}
 
+        {/* Connectivity-only result: the analysis pipeline was unreachable and
+            the browser probe proved HTTPS works. Nothing more is claimed —
+            this replaces a fallback that fabricated a grade and certificate. */}
+        {certificateData?.connectivityOnly && !loading && (
+          <Alert>
+            <ShieldCheck className="h-4 w-4" />
+            <AlertTitle>Analysis unavailable — HTTPS connectivity verified</AlertTitle>
+            <AlertDescription>
+              {certificateData.host} accepted a secure connection, so it presents a working
+              certificate — but the SSL Labs analysis service could not be reached, and no
+              grade or configuration details are available. Try again later for the full report.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* SSL Results */}
-        {certificateData && !loading && (
+        {certificateData && !certificateData.connectivityOnly && !loading && (
           <SSLResultsDisplay data={certificateData} />
         )}
 
         {/* Recent SSL Checks History */}
-        {hasHistory && (
+        {domainHistory.length > 0 && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -234,7 +234,7 @@ const SSLCheckerShadcn = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRecheck(item.domain)}
+                        onClick={() => handleDomainSubmit(item.domain)}
                       >
                         <RotateCcw className="h-4 w-4 mr-1" />
                         Recheck
@@ -242,7 +242,8 @@ const SSLCheckerShadcn = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeDomainFromHistory(item.domain)}
+                        onClick={() => removeFromHistory((entry) => (entry.query ?? entry.domain) === item.domain)}
+                        aria-label={`Remove ${item.domain} from history`}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -258,4 +259,4 @@ const SSLCheckerShadcn = () => {
   );
 };
 
-export default SSLCheckerShadcn;
+export default SslCheckerTool;

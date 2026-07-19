@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from '../utils/sslUtils';
+import { formatDate } from '../lib/sslUtils';
 
 const CertificatesTab = ({ data }) => {
   const endpoint = data.endpoints?.[0];

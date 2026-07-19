@@ -50,6 +50,24 @@ Middle gaps use `next.start - prev.end - 1`; the trailing gap uses
 
 ## Landed
 
+### ssl-checker stops fabricating certificates when analysis is unavailable
+
+| | |
+|---|---|
+| **Where** | `src/tools/ssl-checker/lib/sslApi.js` + the island |
+| **Pinned by** | `src/tools/ssl-checker/__tests__/island.test.jsx` |
+| **Landed** | Phase 4, ssl-checker port (pre-declared in *Planned* below) |
+
+When the analysis worker was unreachable, the browser fallback returned an
+*invented* assessment: grade B, a certificate with made-up validity dates,
+issuer "Browser Verified Certificate Authority" — plausible details for a
+check that never ran. It now returns a `connectivityOnly` result and the page
+renders an honest state: **"Analysis unavailable — HTTPS connectivity
+verified"**, with no grade, no certificate, and nothing cached as an
+assessment (`isSSLDataComplete` now rejects probe results — the old code
+counted them "always complete", which is exactly how the fabrication
+propagated into cache and history).
+
 ### dns-lookup no longer offers providers it cannot query
 
 | | |
@@ -108,9 +126,6 @@ param behaves exactly as before.
 
 Called out in the plan so they are not mistaken for regressions when they land:
 
-- **ssl-checker fabricated-certificate fallback** (Phase 4) — when analysis
-  fails, the tool currently invents plausible certificate details. Replaced
-  with an honest "analysis unavailable — HTTPS connectivity verified" state.
 - **network-designer subnet colours** (Phase 5) — Mantine-era `{name, index}`
   colour objects become hex. Old share URLs carry the old shape, so this needs
   a share-URL shape-upgrade function with fixtures, not a bare format change.

@@ -71,11 +71,6 @@ const AzureNamingTool = lazy(() =>
     default: () => <div>Error loading Azure Naming Tool</div>
   }))
 );
-const SSLCheckerTool = lazy(() => 
-  import('./components/tools/ssl-checker/SSLCheckerShadcn').catch(() => ({
-    default: () => <div>Error loading SSL Checker Tool</div>
-  }))
-);
 const DataConverterTool = lazy(() => 
   import('./components/tools/data-converter/DataConverterShadcn').catch(() => ({
     default: () => <div>Error loading Data Converter Tool</div>
@@ -147,12 +142,12 @@ export default function App() {
 
               <Route path="ssl-checker" element={
                 <LazyRoute>
-                  <SSLCheckerTool />
+                  <SpaToolPage toolId="ssl-checker" />
                 </LazyRoute>
               } />
               <Route path="ssl-checker/:domain" element={
                 <LazyRoute>
-                  <SSLCheckerTool />
+                  <SpaToolPage toolId="ssl-checker" />
                 </LazyRoute>
               } />
 

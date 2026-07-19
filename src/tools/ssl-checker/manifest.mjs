@@ -1,10 +1,9 @@
 /**
- * SSL Certificate Checker — bridge manifest.
+ * SSL Certificate Checker — ported.
  *
- * Phase 2 manifests are thin: the island lazy-loads the existing component
- * nearly unchanged, so the new shell reaches production with every tool
- * still working. This tool gets its real manifest, its own store and its
- * extracted pure core when it ports.
+ * Ported (Phase 4) onto useLookupTool. Partial assessments are never
+ * cached; the browser fallback no longer fabricates a certificate
+ * (BEHAVIOR_CHANGES.md).
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /ssl-checker
@@ -66,6 +65,6 @@ export default {
     'ssl-checker-domain-history',
   ],
 
-  island: () => import('@/components/tools/ssl-checker/SSLCheckerShadcn.jsx'),
+  island: () => import('./island.jsx'),
   hydrate: 'load',
 };

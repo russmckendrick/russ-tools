@@ -51,10 +51,11 @@ export const cleanDomain = (domain) => {
 // Check if SSL data is complete
 export const isSSLDataComplete = (sslData) => {
   if (!sslData) return false;
-  
-  // Browser-based checks are always complete
-  if (sslData.browserCheck) return true;
-  
+
+  // A connectivity-only probe proves reachability, not an assessment —
+  // never treat it as complete (or cache it as one).
+  if (sslData.connectivityOnly || sslData.browserCheck) return false;
+
   // For API checks, ensure we have complete data
   if (sslData.status === 'READY') return true;
   

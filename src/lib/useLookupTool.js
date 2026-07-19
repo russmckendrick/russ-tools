@@ -34,6 +34,8 @@ import { createCache, createToolStorage } from '@/core';
  * @param {(query: string, context: object) => string} [config.cacheKey] compound cache key (dns needs provider+type)
  * @param {(query: string, context: object) => string} [config.historyKey] history dedupe key (defaults to the query alone)
  * @param {(query: string, data: T, context: object) => object} [config.historyEntry] extra fields for a history item
+ * @param {(data: T) => boolean} [config.cacheable] gate on what may be cached
+ *   (ssl-checker refuses to cache partial assessments)
  * @param {{ history?: string | string[] }} [config.legacy] legacy localStorage key(s) for history
  * @param {(query: string, data: T, fromCache: boolean) => void} [config.onSuccess] override the success toast
  * @param {(query: string, error: Error) => void} [config.onError] override the error toast
@@ -48,6 +50,7 @@ export function useLookupTool({
   cacheKey = (query) => query,
   historyKey = (query) => query,
   historyEntry,
+  cacheable = () => true,
   legacy = {},
   onSuccess,
   onError,
@@ -111,7 +114,7 @@ export function useLookupTool({
         const data = hit !== null ? hit : await fetcher(cleanQuery, { signal: controller.signal, context });
         if (controller.signal.aborted) return null;
 
-        if (hit === null) cache.set(key, data);
+        if (hit === null && cacheable(data)) cache.set(key, data);
 
         setResult(data);
         setFromCache(hit !== null);
@@ -135,7 +138,7 @@ export function useLookupTool({
         if (abortRef.current === controller) setLoading(false);
       }
     },
-    [cache, cacheKey, fetcher, maxHistory, normalize, onError, onSuccess, recordHistory]
+    [cache, cacheKey, cacheable, fetcher, maxHistory, normalize, onError, onSuccess, recordHistory]
   );
 
   // Deep link: /tool/:param runs the lookup on mount with the param applied,

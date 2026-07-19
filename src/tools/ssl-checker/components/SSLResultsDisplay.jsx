@@ -11,7 +11,7 @@ import SecurityTab from './SecurityTab';
 import ProtocolsTab from './ProtocolsTab';
 import CompatibilityTab from './CompatibilityTab';
 import HeadersTab from './HeadersTab';
-import { getGradeInfo } from '../utils/sslUtils';
+import { getGradeInfo } from '../lib/sslUtils';
 
 const SSLResultsDisplay = ({ data }) => {
   if (!data) return null;
