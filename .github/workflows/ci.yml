@@ -11,10 +11,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No version input: action-setup reads `packageManager` from
+      # package.json, and specifying both makes it error on any mismatch —
+      # `11` vs `11.14.0` included. One source of truth.
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       - name: Set up Node
         uses: actions/setup-node@v4
