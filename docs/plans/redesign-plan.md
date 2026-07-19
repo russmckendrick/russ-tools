@@ -384,9 +384,9 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       lucide, `IconBrandTerraform` drawn locally as `TerraformMark.jsx`. @tabler now
       survives only in the two SPA-only layout files Phase 6 deletes
 - [x] `/delete` storage-clear page driven by declared `storageKeys`
-- [ ] Real Pages preview deploy + Playwright deep-link matrix — **owner's call,
-      deliberately not done.** `_redirects` is proven against Cloudflare's runtime
-      locally (session 4); a deployed preview is the remaining step
+- [x] Real Pages preview deploy + Playwright deep-link matrix — **done, session 8.**
+      `russ-tools-preview.pages.dev` (throwaway direct-upload project), 19/19
+      against it; the session-4 caveat is closed
 - [x] Rendered-meta diff against production (**found a real canonical fault**);
       sitemap URL-set diff, now pinned as `sitemap.test.js`
 - [x] exceljs dynamic-import smoke test under the new toolchain — **found a real
@@ -1596,6 +1596,25 @@ new origins). Then the matrix runs against the preview:
 Cloudflare runtime) · `pnpm lint` 0 errors, 13 warnings · both builds green
 · branch pushed through commit `1c8cceb`, gate commits on top.
 
-**Next:** owner runs the runbook → matrix against the preview → cutover
-walk-through (Pages build settings) → Phase 6 demolition, with the
-react-router/`useDeepLinkParam` question asked before `src/bridge/` moves.
+**The owner ran the runbook, and the gates are closed.**
+
+- **Gate 1 verified by re-probe:** all three workers now 200 the OPTIONS
+  preflight for `localhost:4321`, `localhost:5173` and the preview origin.
+- **Gate 2 live:** `https://russ-tools-preview.pages.dev` serves
+  `dist-astro` on real Pages infrastructure.
+- **Gate 3 against the deployed preview: 19/19 in 2.7s.** Every param
+  rewrite 200s with the URL intact, the 301 and its wildcard hold, the IPv6
+  deep link routes, the `?config` restore renders three subnets and no
+  phantom error. Browser pass on top of the tests: a live WHOIS lookup
+  succeeds from the preview origin (worker CORS end-to-end), dark theme
+  correct, share-restore divide table shows `10.0.0.0/18` / `10.0.64.0/18`
+  / `10.0.128.0/17`.
+
+The plan's riskiest platform assumption — `_redirects` param handling on
+real Pages — is now proven **deployed**, closing the caveat session 4
+recorded. Phase 2's task board is complete.
+
+**Next:** cutover — PR → merge (CI's first run) → flip the Pages build
+settings (`pnpm build:astro` / `dist-astro`) → verify live → then Phase 6
+demolition, with the react-router/`useDeepLinkParam` question asked before
+`src/bridge/` moves.
