@@ -55,7 +55,7 @@ export default function ToolIsland({ toolId }) {
 
   return (
     <ShellContext.Provider value={{ toolId }}>
-      <div className="island" onClickCapture={interceptLinks}>
+      <div className="rt-island" onClickCapture={interceptLinks}>
         <BrowserRouter>
           <Suspense fallback={<IslandLoading title={tool.title} />}>
             <IslandErrorBoundary title={tool.title}>
@@ -104,13 +104,13 @@ function interceptLinks(event) {
 /** @param {{ title: string }} props */
 function IslandLoading({ title }) {
   return (
-    <section className="panel">
-      <div className="panel-head">
+    <section className="rt-panel">
+      <div className="rt-panel-head">
         <span>{title}</span>
         <em>loading</em>
       </div>
-      <div className="panel-body">
-        <p className="island-note">Loading the tool…</p>
+      <div className="rt-panel-body">
+        <p className="rt-island-note">Loading the tool…</p>
       </div>
     </section>
   );
@@ -134,16 +134,16 @@ class IslandErrorBoundary extends React.Component {
     if (!this.state.error) return this.props.children;
 
     return (
-      <section className="panel">
-        <div className="panel-head">
+      <section className="rt-panel">
+        <div className="rt-panel-head">
           <span>{this.props.title}</span>
           <em>failed to load</em>
         </div>
-        <div className="panel-body">
-          <p className="island-note">
+        <div className="rt-panel-body">
+          <p className="rt-island-note">
             This tool could not be loaded. Reloading the page usually fixes it.
           </p>
-          <button type="button" className="island-retry" onClick={() => window.location.reload()}>
+          <button type="button" className="rt-island-retry" onClick={() => window.location.reload()}>
             Reload
           </button>
         </div>

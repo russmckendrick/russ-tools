@@ -16,21 +16,21 @@ const suggestions = TOOLS.filter((t) =>
 ---
 
 <BaseLayout title="Not found — russ.tools" description="That page does not exist on russ.tools.">
-  <section class="hero">
+  <div class="rt-notfound">
     <h1>That page does not exist.</h1>
     <p>
       The URL may be mistyped, or the tool may have moved. Every tool is listed on
       <a href="/">the index</a>.
     </p>
-  </section>
+  </div>
 
-  <div class="board">
-    <section class="group">
-      <div class="group-head">
+  <div class="rt-board">
+    <section class="rt-group">
+      <div class="rt-group-head">
         <b style="color:var(--color-on-surface-muted)">Popular tools</b>
         <hr />
       </div>
-      <div class="grid">
+      <div class="rt-grid">
         {suggestions.map((tool) => <ToolCard tool={tool} />)}
       </div>
     </section>

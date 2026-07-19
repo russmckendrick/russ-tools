@@ -177,12 +177,6 @@ components:
   chip-active:
     backgroundColor: "{colors.surface-inset}"
     textColor: "{colors.on-surface}"
-  badge:
-    textColor: "{colors.on-surface-muted}"
-    borderColor: "{colors.outline}"
-    typography: "{typography.data-sm}"
-    rounded: 5px
-    padding: 3px 8px
   table-row:
     typography: "{typography.data-md}"
     padding: 7px 13px
@@ -204,8 +198,13 @@ The tone is **quiet, dense and engineered**. It borrows structure from
 monitoring consoles — panels, hairline borders, tabular data, information
 visible without interaction — and restraint from modern product UI: near-black
 grounds, a single ambient wash, tight letter-spacing, generous but purposeful
-space. Nothing decorative. Every colour, badge and rule encodes something true
-about the content.
+space. Nothing decorative. Every colour and rule encodes something true about
+the content.
+
+Nothing on a page is there to sell the page. There is no hero, no statistic
+that is really a slogan, and no capability pill restating what the tool
+plainly is. A visitor arrived to use a tool; anything above that tool which
+is not navigation is in the way.
 
 Dark is the primary target and where the design is at its best. Light is a
 designed peer with its own values, not an inversion of the dark theme.
@@ -331,7 +330,7 @@ low enough that it never competes with content.
 The shape language is rectangular and lightly softened — engineered, not
 friendly.
 
-- `6px` (`sm`) — controls: buttons, inputs, chips, badges.
+- `6px` (`sm`) — controls: buttons, inputs and chips.
 - `8px` (`md`) — icon tiles.
 - `10px` (`lg`) — cards and panels.
 - `12px` (`xl`) — the outermost application frame.
@@ -366,11 +365,11 @@ Borders are always exactly `1px`. There are no thick borders and no double rules
   `6px` radius. Inputs sit *darker* than their panel, not lighter.
 - **Chip** — the category filter. Carries a small hue dot; the active chip
   moves to `surface-inset` with a hue-tinted border.
-- **Badge** — a monospace outline pill for capabilities and route patterns
-  (`Client-side`, `/dns-lookup/:domain`). The lead badge may take the category
-  hue; the rest stay neutral.
-- **Stat** — a large tabular number over a `label-caps` caption, in a hairline
-  grid. Used for index-level summaries.
+- **Tool header** — breadcrumb, then a category-tinted icon beside the `h1`,
+  then one factual sentence. Three lines, and nothing else: no capability
+  pills, no route-pattern badge, no blurb. The long `description` in a
+  manifest is written for a search snippet and belongs in `<meta>`, not on
+  the page; the page renders `shortDescription`.
 - **Table row** — monospace, odd rows tinted with `surface-inset`, the type
   column in the category hue. This is how all record-style output is rendered.
 
@@ -387,6 +386,9 @@ Borders are always exactly `1px`. There are no thick borders and no double rules
   card. **Don't** ship a tool represented only by an icon and a name.
 - **Do** keep the interface dense enough to scan in one or two screens.
   **Don't** pad the page with empty space or decorative full-width sections.
+- **Do** let a page open on the thing the visitor came for. **Don't** add a
+  hero, a stat tile that is a slogan with a number on it, a capability pill,
+  or a sentence describing what the tool below plainly does.
 - **Do** keep the hover glow as the only ornament. **Don't** add gradients,
   ambient animation, floating elements or drifting icons.
 - **Do** use status colours only for state. **Don't** use them for emphasis or

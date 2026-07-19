@@ -9,14 +9,14 @@ import ToolIcon from './ToolIcon.astro';
 const { tool } = Astro.props;
 ---
 
-<a class="card" href={tool.path} style={`--cat: var(--color-category-${tool.category})`}>
-  <span class="card-top">
+<a class="rt-card" href={tool.path} style={`--cat: var(--color-category-${tool.category})`}>
+  <span class="rt-card-top">
     <ToolIcon icon={tool.icon} />
-    <span class="card-name">{tool.title}</span>
+    <span class="rt-card-name">{tool.title}</span>
   </span>
   <p>{tool.shortDescription}</p>
-  <span class="card-foot">
+  <span class="rt-card-foot">
     <span>{tool.badges.join(' · ')}</span>
-    <span class="go" aria-hidden="true">{tool.path} &rarr;</span>
+    <span class="rt-go" aria-hidden="true">{tool.path} &rarr;</span>
   </span>
 </a>

@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '../ui/tooltip';
 import { Info, HelpCircle } from 'lucide-react';
 import toolsConfig from '@/utils/toolsConfig.json';
+import { useShell } from '@/bridge/ShellContext';
 import { IconNetwork, IconBrandAzure, IconChartDots3, IconClock, IconShield, IconMessageCircle, IconBrandGithub } from '@tabler/icons-react';
 import Base64Icon from '@/components/tools/base64/Base64Icon';
 import JSONIcon from '@/components/tools/data-converter/JSONIcon';
@@ -25,7 +26,16 @@ import MarkdownTableIcon from '@/components/tools/markdown-table-tool/MarkdownTa
 /**
  * Unified Tool Header Component
  * Provides consistent styling and layout across all tools
- * 
+ *
+ * Under the Astro shell, ToolLayout owns the page furniture — icon, h1 and
+ * description all come from the manifest, prerendered. This component then
+ * renders only the parts that are actual functionality: the action buttons
+ * and the alert. Rendering its own icon and h1 as well is what produced the
+ * floating-globe artifact on /dns-lookup, and a second h1 on fourteen pages.
+ *
+ * The header is not restyled here — it is deleted per tool as that tool
+ * ports, along with the `iconColor` prop nothing has ever read.
+ *
  * @param {Object} props
  * @param {React.ReactNode} props.icon - Tool icon (Lucide React icon)
  * @param {string} props.title - Tool title
@@ -50,6 +60,7 @@ const ToolHeader = ({
 }) => {
   // Resolve icon/color from toolsConfig for consistency
   const location = useLocation();
+  const shell = useShell();
   const iconByKey = {
     IconNetwork: IconNetwork,
     IconBrandAzure: IconBrandAzure,
@@ -123,6 +134,59 @@ const ToolHeader = ({
     };
   }, [detectedTool, location.pathname]);
 
+  const ActionButtons = () =>
+    actions.length > 0 || helpButton ? (
+      <div className="flex flex-wrap gap-2">
+        {/* Render action buttons */}
+        {actions.map((action, index) => (
+          <Button
+            key={index}
+            variant={action.variant || 'outline'}
+            size={action.size || 'sm'}
+            onClick={action.onClick}
+            disabled={action.disabled}
+          >
+            {action.icon && <action.icon className="w-4 h-4 mr-2" />}
+            {action.text}
+          </Button>
+        ))}
+
+        {/* Render help button if provided */}
+        {helpButton && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={helpButton.onClick}
+                >
+                  <HelpCircle className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{helpButton.tooltip || "Get help"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+    ) : null;
+
+  const AlertSlot = () =>
+    alert ? (
+      <Alert
+        variant={alert.variant || 'default'}
+        className="border-info bg-info-subtle"
+      >
+        <Info className="h-4 w-4 text-info" />
+        <AlertDescription className="text-info">
+          {alert.title && <span className="font-semibold">{alert.title}: </span>}
+          {alert.description}
+        </AlertDescription>
+      </Alert>
+    ) : null;
+
   // Header content structure
   const HeaderContent = () => (
     <div className="space-y-4">
@@ -155,60 +219,25 @@ const ToolHeader = ({
         </div>
 
         {/* Right side: Action buttons or Help button */}
-        {(actions.length > 0 || helpButton) && (
-          <div className="flex flex-wrap gap-2">
-            {/* Render action buttons */}
-            {actions.map((action, index) => (
-              <Button
-                key={index}
-                variant={action.variant || 'outline'}
-                size={action.size || 'sm'}
-                onClick={action.onClick}
-                disabled={action.disabled}
-              >
-                {action.icon && <action.icon className="w-4 h-4 mr-2" />}
-                {action.text}
-              </Button>
-            ))}
-            
-            {/* Render help button if provided */}
-            {helpButton && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={helpButton.onClick}
-                    >
-                      <HelpCircle className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{helpButton.tooltip || "Get help"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
-        )}
+        <ActionButtons />
       </div>
 
       {/* Alert section (if provided) */}
-      {alert && (
-        <Alert
-          variant={alert.variant || 'default'}
-          className="border-info bg-info-subtle"
-        >
-          <Info className="h-4 w-4 text-info" />
-          <AlertDescription className="text-info">
-            {alert.title && <span className="font-semibold">{alert.title}: </span>}
-            {alert.description}
-          </AlertDescription>
-        </Alert>
-      )}
+      <AlertSlot />
     </div>
   );
+
+  // Under the shell: actions and alert only. Everything else on this page is
+  // ToolLayout's, and duplicating it is the artifact this branch removes.
+  if (shell) {
+    if (actions.length === 0 && !helpButton && !alert) return null;
+    return (
+      <div className="rt-tool-actions">
+        <ActionButtons />
+        <AlertSlot />
+      </div>
+    );
+  }
 
   // Render with or without Card wrapper
   if (standalone) {

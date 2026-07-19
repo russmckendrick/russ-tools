@@ -7,11 +7,16 @@
  * hierarchy, and the crawler receives an empty div with no h1. Here the tool
  * supplies a manifest and gets: a real prerendered h1, its description,
  * schema.org markup, its category hue carried through the breadcrumb, the
- * icon tile, the badges and the primary action, and the two-column control /
+ * icon tile, and the two-column control /
  * result rhythm DESIGN.md specifies.
  *
  * A tool renders into the `controls` and default slots. It cannot reach the
  * head, cannot set its own colour, and cannot invent its own page furniture.
+ *
+ * The header is deliberately three lines and no more: breadcrumb, icon +
+ * h1, one factual sentence. No capability pills, no route-pattern badge, no
+ * blurb — the tool itself is the content, and anything above it that is not
+ * navigation is in the way.
  */
 import BaseLayout from './BaseLayout.astro';
 import ToolIcon from '../shell/ToolIcon.astro';
@@ -46,39 +51,32 @@ const hasControls = Astro.slots.has('controls');
 >
   <!-- The hue is set once, here. Everything below inherits it. -->
   <div style={`--cat: var(--color-category-${tool.category})`}>
-    <div class="tool-head">
-      <nav class="crumb" aria-label="Breadcrumb">
+    <div class="rt-tool-head">
+      <nav class="rt-crumb" aria-label="Breadcrumb">
         <a href="/">Tools</a> / <b>{categoryLabel(tool.category)}</b>
       </nav>
 
-      <div class="tool-id">
+      <div class="rt-tool-id">
         <ToolIcon icon={tool.icon} size={22} />
         <h1>{tool.title}</h1>
       </div>
 
-      <p>{tool.description}</p>
-
-      <div class="badges">
-        <span class="badge" data-lead>Client-side</span>
-        {tool.badges.map((badge) => <span class="badge">{badge}</span>)}
-        {
-          tool.params.length > 0 && (
-            <span class="badge">
-              {tool.path}/{tool.params.map((p) => `:${p}`).join('/')}
-            </span>
-          )
-        }
-      </div>
+      <!--
+        The one-line `shortDescription`, not the long `description`. The long
+        one is written for a SERP snippet and reads like a brochure on the
+        page; it stays as the meta description above and nowhere else.
+      -->
+      <p>{tool.shortDescription}</p>
     </div>
 
-    <div class="tool-body" data-single={hasControls ? undefined : true}>
+    <div class="rt-tool-body" data-single={hasControls ? undefined : true}>
       {
         hasControls && (
-          <section class="panel">
-            <div class="panel-head">
+          <section class="rt-panel">
+            <div class="rt-panel-head">
               <span>{Astro.props.controlsTitle ?? 'Input'}</span>
             </div>
-            <div class="panel-body">
+            <div class="rt-panel-body">
               <slot name="controls" />
             </div>
           </section>

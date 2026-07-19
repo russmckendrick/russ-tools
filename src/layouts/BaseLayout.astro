@@ -68,12 +68,12 @@ const {
   </head>
 
   <body>
-    <div class="ambient" aria-hidden="true"></div>
+    <div class="rt-ambient" aria-hidden="true"></div>
 
-    <header class="shell">
-      <div class="topbar">
-        <a class="brand" href="/">
-          <span class="brand-mark" aria-hidden="true">
+    <header class="rt-shell">
+      <div class="rt-topbar">
+        <a class="rt-brand" href="/">
+          <span class="rt-brand-mark" aria-hidden="true">
             <svg
               viewBox="0 0 24 24"
               width="13"
@@ -89,7 +89,7 @@ const {
           </span>
           russ.tools
         </a>
-        <nav class="topnav" aria-label="Primary">
+        <nav class="rt-topnav" aria-label="Primary">
           <a href="/" aria-current={Astro.url.pathname === '/' ? 'page' : undefined}>Tools</a>
           <a href="/delete">Saved data</a>
           <a href="https://github.com/russmckendrick/russ-tools">Source</a>
@@ -97,14 +97,19 @@ const {
       </div>
     </header>
 
-    <main class="shell">
+    <main class="rt-shell">
       <slot />
     </main>
 
-    <footer class="shell">
-      <div class="shell-foot">
-        <span><b>Everything runs in your browser.</b> Nothing you paste is uploaded.</span>
-        <span>No trackers, no analytics, no accounts.</span>
+    <footer class="rt-shell">
+      <!--
+        Stated once, as metadata rather than as a pitch. The old footer said
+        the same three things in two sentences of sales voice.
+      -->
+      <div class="rt-shell-foot">
+        <span>Client-side only</span>
+        <span>No analytics</span>
+        <span>No accounts</span>
       </div>
     </footer>
   </body>
