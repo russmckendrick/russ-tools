@@ -4,14 +4,25 @@ import { validateTableData, sanitizeTableData, normalizeTableData, getTableStats
 
 const STORAGE_KEY = 'markdown-table-tool-state';
 const HISTORY_KEY = 'markdown-table-tool-history';
+const MAX_HISTORY = 50;
+
+const INITIAL_TABLE_DATA = [['Header 1', 'Header 2'], ['Cell 1', 'Cell 2']];
+const INITIAL_ALIGNMENTS = ['left', 'left'];
+
+const cloneState = (data, aligns, header) => ({
+  tableData: JSON.parse(JSON.stringify(data)),
+  alignments: [...aligns],
+  hasHeader: header,
+  timestamp: Date.now()
+});
 
 export const useTableEditor = () => {
-  const [tableData, setTableData] = useState([['Header 1', 'Header 2'], ['Cell 1', 'Cell 2']]);
-  const [alignments, setAlignments] = useState(['left', 'left']);
+  const [tableData, setTableData] = useState(INITIAL_TABLE_DATA);
+  const [alignments, setAlignments] = useState(INITIAL_ALIGNMENTS);
   const [hasHeader, setHasHeader] = useState(true);
   const [selectedCell, setSelectedCell] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [history, setHistory] = useState(() => [cloneState(INITIAL_TABLE_DATA, INITIAL_ALIGNMENTS, true)]);
+  const [historyIndex, setHistoryIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
 
@@ -41,32 +52,29 @@ export const useTableEditor = () => {
     }
   }, []);
 
+  // Records the state AFTER a change. history[historyIndex] is always the state
+  // currently on screen, which is what makes undo/redo symmetrical.
   const addToHistory = useCallback((data, aligns, header) => {
-    const newState = {
-      tableData: JSON.parse(JSON.stringify(data)),
-      alignments: [...aligns],
-      hasHeader: header,
-      timestamp: Date.now()
-    };
+    const newState = cloneState(data, aligns, header);
 
     setHistory(prev => {
       const newHistory = prev.slice(0, historyIndex + 1);
       newHistory.push(newState);
-      
-      if (newHistory.length > 50) {
+
+      while (newHistory.length > MAX_HISTORY) {
         newHistory.shift();
       }
-      
+
       try {
         localStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory.slice(-20)));
       } catch (error) {
         console.warn('Failed to save history:', error);
       }
-      
+
       return newHistory;
     });
-    
-    setHistoryIndex(prev => prev + 1);
+
+    setHistoryIndex(prev => Math.min(prev + 1, MAX_HISTORY - 1));
   }, [historyIndex]);
 
   const updateTable = useCallback((newData, newAlignments = null, newHasHeader = null) => {
@@ -84,16 +92,16 @@ export const useTableEditor = () => {
       updatedAlignments.push('left');
     }
     
+    const finalAlignments = updatedAlignments.slice(0, maxCols);
     const updatedHasHeader = newHasHeader !== null ? newHasHeader : hasHeader;
-    
-    addToHistory(tableData, alignments, hasHeader);
-    
+
     setTableData(normalizedData);
-    setAlignments(updatedAlignments.slice(0, maxCols));
+    setAlignments(finalAlignments);
     setHasHeader(updatedHasHeader);
-    
-    saveState(normalizedData, updatedAlignments.slice(0, maxCols), updatedHasHeader);
-  }, [tableData, alignments, hasHeader, addToHistory, saveState]);
+
+    addToHistory(normalizedData, finalAlignments, updatedHasHeader);
+    saveState(normalizedData, finalAlignments, updatedHasHeader);
+  }, [alignments, hasHeader, addToHistory, saveState]);
 
   const updateCell = useCallback((rowIndex, colIndex, value) => {
     if (rowIndex < 0 || colIndex < 0) return;
@@ -185,17 +193,17 @@ export const useTableEditor = () => {
   }, [alignments, tableData, hasHeader, saveState]);
 
   const clearTable = useCallback(() => {
-    addToHistory(tableData, alignments, hasHeader);
     const newData = [['Header 1', 'Header 2'], ['', '']];
     const newAlignments = ['left', 'left'];
-    
+
     setTableData(newData);
     setAlignments(newAlignments);
     setHasHeader(true);
     setSelectedCell(null);
-    
+
+    addToHistory(newData, newAlignments, true);
     saveState(newData, newAlignments, true);
-  }, [tableData, alignments, hasHeader, addToHistory, saveState]);
+  }, [addToHistory, saveState]);
 
   const undo = useCallback(() => {
     if (historyIndex > 0) {

@@ -354,7 +354,7 @@ const ExportDialog = ({ open, onClose, tableData, alignments, hasHeader, markdow
                     <SelectContent>
                       <SelectItem value=",">Comma (,)</SelectItem>
                       <SelectItem value=";">Semicolon (;)</SelectItem>
-                      <SelectItem value="\t">Tab (\t)</SelectItem>
+                      <SelectItem value={'\t'}>Tab (\t)</SelectItem>
                       <SelectItem value="|">Pipe (|)</SelectItem>
                     </SelectContent>
                   </Select>
