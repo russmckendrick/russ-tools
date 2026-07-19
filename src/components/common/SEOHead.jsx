@@ -1,21 +1,32 @@
 import { useEffect } from 'react';
+import { useShell } from '@/bridge/ShellContext';
 
 /**
  * SEO Head component for managing dynamic meta tags with hybrid approach:
  * - useEffect for immediate DOM updates (works for SEO crawlers and browsers)
  * - React 19 metadata for future compatibility
+ *
+ * Under the Astro shell this stands down entirely. BaseLayout has already
+ * written the title, meta, canonical and ld+json into prerendered HTML from
+ * the manifest; running this as well would replace crawler-visible markup
+ * with client-side rewrites of the same values, and would clobber the page's
+ * structured data (it reuses the first ld+json script it finds).
  * @param {Object} props - SEO configuration object
  */
-export default function SEOHead({ 
-  title, 
-  description, 
-  keywords, 
-  canonical, 
-  openGraph, 
-  twitter, 
-  structuredData 
+export default function SEOHead({
+  title,
+  description,
+  keywords,
+  canonical,
+  openGraph,
+  twitter,
+  structuredData
 }) {
+  const shell = useShell();
+
   useEffect(() => {
+    if (shell) return;
+
     // Helper function to update or create meta tag
     const updateMetaTag = (selector, content) => {
       let meta = document.querySelector(selector);
@@ -83,7 +94,12 @@ export default function SEOHead({
       }
       script.textContent = JSON.stringify(structuredData);
     }
-  }, [title, description, keywords, canonical, openGraph, twitter, structuredData]);
+  }, [shell, title, description, keywords, canonical, openGraph, twitter, structuredData]);
+
+  // React 19 hoists these into <head>, so they have to go too — otherwise the
+  // island would append a second <title> and a second ld+json to a document
+  // that already has the right ones.
+  if (shell) return null;
 
   // React 19 metadata for future compatibility
   return (

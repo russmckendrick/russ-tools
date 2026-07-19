@@ -516,3 +516,28 @@ body > main {
 .shell-foot a {
   color: inherit;
 }
+
+/* --- Bridge island --------------------------------------------------------
+   Phase 2 only. The tool bodies are still the SPA's components, classed
+   against shadcn's token names (aliased in globals.css) rather than the
+   shell's own CSS. This wrapper gives them the page rhythm and nothing
+   else; it goes away as each tool ports. */
+
+.island {
+  min-width: 0;
+}
+.island-note {
+  margin: 0;
+  color: var(--color-on-surface-muted);
+  font-size: var(--text-body-sm);
+}
+.island-retry {
+  justify-self: start;
+  border: 1px solid var(--color-outline-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-on-surface);
+  padding: 8px 13px;
+  font-size: var(--text-body-sm);
+  cursor: pointer;
+}

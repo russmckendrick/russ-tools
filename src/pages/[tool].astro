@@ -6,12 +6,16 @@
  * own — they reach this same document through the generated _redirects 200
  * rewrite, keeping their URL. The island reads the segment on mount.
  *
- * The island slot is deliberately empty for now: Phase 2's next step is the
- * bridge, where each manifest's `island` lazy-loads the existing React
- * component into this layout. The shell, the routes and the SEO are real
- * today; the tool bodies arrive next.
+ * The body is one bridge island per tool (src/bridge/ToolIsland.jsx), which
+ * resolves the manifest's `island` and mounts the existing React component.
+ *
+ * `client:only` rather than `client:load`: these components read
+ * localStorage and `window.location` during their first render, so there is
+ * no meaningful server pass to hydrate — and the crawler-visible content
+ * (h1, description, schema) comes from ToolLayout, not from the island.
  */
 import ToolLayout from '../layouts/ToolLayout.astro';
+import ToolIsland from '../bridge/ToolIsland.jsx';
 import { TOOLS } from '../tools/registry.mjs';
 
 export function getStaticPaths() {
@@ -25,21 +29,5 @@ const { tool } = Astro.props;
 ---
 
 <ToolLayout tool={tool}>
-  <section class="panel">
-    <div class="panel-head">
-      <span>Tool</span>
-      <em>bridge pending</em>
-    </div>
-    <div class="panel-body">
-      <p style="margin:0;color:var(--color-on-surface-muted);font-size:var(--text-body-sm)">
-        The shell, routes and metadata for <b>{tool.title}</b> are live. Its interface bridges in
-        next, loading the existing component into this layout unchanged.
-      </p>
-      <p
-        style="margin:0;font-family:var(--font-mono);font-size:var(--text-data-sm);color:var(--color-on-surface-faint)"
-      >
-        island → {tool.id}
-      </p>
-    </div>
-  </section>
+  <ToolIsland client:only="react" toolId={tool.id} />
 </ToolLayout>

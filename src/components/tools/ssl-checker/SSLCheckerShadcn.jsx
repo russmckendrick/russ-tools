@@ -22,6 +22,7 @@ import SEOHead from '../../common/SEOHead';
 import toolsConfig from '@/utils/toolsConfig.json';
 import { generateToolSEO } from '@/utils/seoUtils';
 import { useTLDs } from '../../../utils';
+import { useShell } from '@/bridge/ShellContext';
 
 import { useSSLChecker } from './hooks/useSSLChecker';
 import SSLResultsDisplay from './components/SSLResultsDisplay';
@@ -35,6 +36,11 @@ const SSLCheckerShadcn = () => {
 
   // Get domain from URL parameters
   const { domain: urlDomain } = useParams();
+
+  // Under the Astro shell ToolLayout already renders the icon, h1 and
+  // description from the manifest; this component's own header would be a
+  // second h1 on the page.
+  const shell = useShell();
 
   // Use TLD utilities hook for domain autocomplete (with error handling)
   const tldHookResult = useTLDs() || {};
@@ -104,17 +110,19 @@ const SSLCheckerShadcn = () => {
       <SEOHead {...seoData} />
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
-            <SSLCheckerIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+        {!shell && (
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
+              <SSLCheckerIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">SSL Certificate Checker</h1>
+              <p className="text-muted-foreground">
+                Analyze SSL/TLS certificates and security configuration for any domain
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">SSL Certificate Checker</h1>
-            <p className="text-muted-foreground">
-              Analyze SSL/TLS certificates and security configuration for any domain
-            </p>
-          </div>
-        </div>
+        )}
 
         {/* SSL Check Form */}
         <Card>
