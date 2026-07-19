@@ -71,11 +71,6 @@ const AzureNamingTool = lazy(() =>
     default: () => <div>Error loading Azure Naming Tool</div>
   }))
 );
-const CronBuilderTool = lazy(() => 
-  import('./components/tools/cron/CronBuilderShadcn').catch(() => ({
-    default: () => <div>Error loading Cron Builder Tool</div>
-  }))
-);
 const SSLCheckerTool = lazy(() => 
   import('./components/tools/ssl-checker/SSLCheckerShadcn').catch(() => ({
     default: () => <div>Error loading SSL Checker Tool</div>
@@ -181,7 +176,7 @@ export default function App() {
 
               <Route path="cron" element={
                 <LazyRoute>
-                  <CronBuilderTool />
+                  <SpaToolPage toolId="cron-builder" />
                 </LazyRoute>
               } />
 

@@ -18,11 +18,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import SEOHead from '../../common/SEOHead';
-import ToolHeader from '../../common/ToolHeader';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import toolsConfig from '../../../utils/toolsConfig.json';
-import CronIcon from './CronIcon';
+import { copyText } from '@/core';
 
 const defaultFields = {
   minute: '*',
@@ -318,14 +314,10 @@ const CronFieldSelector = ({ field, value, onChange }) => {
   );
 };
 
-const CronBuilderShadcn = () => {
+const CronBuilderTool = () => {
   const [fields, setFields] = useState(defaultFields);
   const [copied, setCopied] = useState(false);
   const [manualInput, setManualInput] = useState('');
-
-  // Get tool configuration for SEO
-  const toolConfig = toolsConfig.find(tool => tool.id === 'cron-builder');
-  const seoData = generateToolSEO(toolConfig);
 
   // Build cron string from fields
   const cronString = `${fields.minute} ${fields.hour} ${fields.dayOfMonth} ${fields.month} ${fields.dayOfWeek}`;
@@ -335,12 +327,11 @@ const CronBuilderShadcn = () => {
   };
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(cronString);
+    if (await copyText(cronString)) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast.success(`CRON expression "${cronString}" copied to clipboard`);
-    } catch (error) {
+    } else {
       toast.error('Failed to copy to clipboard');
     }
   };
@@ -376,18 +367,7 @@ const CronBuilderShadcn = () => {
 
   return (
     <TooltipProvider>
-      <SEOHead {...seoData} />
       <div className="space-y-6">
-        {/* Header */}
-        <ToolHeader
-          icon={CronIcon}
-          title="CRON Expression Builder"
-          description="Build and validate cron expressions with ease"
-          iconColor="orange"
-          showTitle={false}
-          standalone={true}
-        />
-
         <Tabs defaultValue="builder">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="builder" className="flex items-center gap-2">
@@ -561,4 +541,4 @@ const CronBuilderShadcn = () => {
   );
 };
 
-export default CronBuilderShadcn;
+export default CronBuilderTool;
