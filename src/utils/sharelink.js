@@ -110,11 +110,6 @@ export const generateShareableURL = (config, baseUrl) => {
     return shareableUrl;
   } catch (error) {
     console.error('Failed to generate shareable URL:', error);
-    notifications.show({
-      title: 'URL Generation Error',
-      message: 'Failed to generate shareable URL',
-      color: 'red'
-    });
     return null;
   }
 };
@@ -142,11 +137,6 @@ export const parseConfigFromURL = (searchParams) => {
       return legacyConfig;
     } catch (legacyError) {
       console.error('Failed to parse legacy config format:', legacyError);
-      notifications.show({
-        title: 'URL Config Error',
-        message: 'Failed to load configuration from URL',
-        color: 'orange'
-      });
       return null;
     }
   }
