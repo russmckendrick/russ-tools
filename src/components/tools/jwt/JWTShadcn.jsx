@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToolSplit, ToolSplitEmpty } from '@/components/ui/tool-split';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
@@ -254,18 +255,20 @@ const JWTShadcn = () => {
   return (
     <>
       <SEOHead {...seoData} />
-      <div className="space-y-6">
+      <div className="grid gap-4">
         <ToolHeader
           icon={Key}
           title="JWT Decoder/Validator"
           description="Decode JWT tokens and validate signatures without sending to external services"
-          iconColor="red"
           showTitle={false}
           standalone={true}
         />
 
-        {/* Input Section */}
-        <Card className="mb-6">
+        {/* Controls left, output right — DESIGN.md's Layout rule. */}
+        <ToolSplit
+          controls={
+            <>
+          <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>JWT Token Input</CardTitle>
@@ -347,8 +350,7 @@ const JWTShadcn = () => {
           </CardContent>
         </Card>
 
-        {/* Signature Validation Section */}
-        <Card className="mb-6">
+          <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Signature Validation (Optional)</CardTitle>
@@ -405,8 +407,10 @@ const JWTShadcn = () => {
           )}
         </Card>
 
-        {/* Results Section */}
-        {(decodedHeader || decodedPayload) && (
+            </>
+          }
+        >
+          {(decodedHeader || decodedPayload) ? (
           <Card>
             <CardHeader>
               <CardTitle>Decoded JWT Token</CardTitle>
@@ -677,7 +681,14 @@ const JWTShadcn = () => {
               </Tabs>
             </CardContent>
           </Card>
-        )}
+          ) : (
+            <ToolSplitEmpty
+              icon={<Key className="h-7 w-7" />}
+              title="No token decoded yet"
+              hint="Paste a JWT — the header, payload and claims appear here. Nothing leaves the browser."
+            />
+          )}
+        </ToolSplit>
       </div>
     </>
   );

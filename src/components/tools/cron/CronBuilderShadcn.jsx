@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { ToolSplit } from "@/components/ui/tool-split";
 import {
   Copy,
   Check,
@@ -401,6 +402,58 @@ const CronBuilderShadcn = () => {
           </TabsList>
 
           <TabsContent value="builder" className="space-y-6">
+            <ToolSplit
+              controls={
+                /* One group per row: the control column is 320px and never
+                   reaches a side-by-side breakpoint. */
+                <div className="grid gap-5">
+                  <div className="grid gap-3">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[var(--cat)]">
+                        <Timer className="w-3 h-3 mr-1" />
+                        Time
+                      </Badge>
+                      <span className="text-body-sm text-muted-foreground">When the job runs</span>
+                    </div>
+                    <CronFieldSelector
+                      field="minute"
+                      value={fields.minute}
+                      onChange={val => handleFieldChange('minute', val)}
+                    />
+                    <CronFieldSelector
+                      field="hour"
+                      value={fields.hour}
+                      onChange={val => handleFieldChange('hour', val)}
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[var(--cat)]">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        Date
+                      </Badge>
+                      <span className="text-body-sm text-muted-foreground">Which dates to run</span>
+                    </div>
+                    <CronFieldSelector
+                      field="dayOfMonth"
+                      value={fields.dayOfMonth}
+                      onChange={val => handleFieldChange('dayOfMonth', val)}
+                    />
+                    <CronFieldSelector
+                      field="month"
+                      value={fields.month}
+                      onChange={val => handleFieldChange('month', val)}
+                    />
+                    <CronFieldSelector
+                      field="dayOfWeek"
+                      value={fields.dayOfWeek}
+                      onChange={val => handleFieldChange('dayOfWeek', val)}
+                    />
+                  </div>
+                </div>
+              }
+            >
             {/* CRON Expression Output */}
             <Card>
               <CardContent className="pt-6">
@@ -455,58 +508,7 @@ const CronBuilderShadcn = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Field Selectors */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-[var(--cat)]">
-                    <Timer className="w-3 h-3 mr-1" />
-                    Time
-                  </Badge>
-                  <span className="text-body-sm text-muted-foreground">Configure when the job runs</span>
-                </div>
-                <div className="space-y-4">
-                  <CronFieldSelector 
-                    field="minute" 
-                    value={fields.minute} 
-                    onChange={val => handleFieldChange('minute', val)} 
-                  />
-                  <CronFieldSelector 
-                    field="hour" 
-                    value={fields.hour} 
-                    onChange={val => handleFieldChange('hour', val)} 
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-[var(--cat)]">
-                    <Calendar className="w-3 h-3 mr-1" />
-                    Date
-                  </Badge>
-                  <span className="text-body-sm text-muted-foreground">Configure which dates to run</span>
-                </div>
-                <div className="space-y-4">
-                  <CronFieldSelector 
-                    field="dayOfMonth" 
-                    value={fields.dayOfMonth} 
-                    onChange={val => handleFieldChange('dayOfMonth', val)} 
-                  />
-                  <CronFieldSelector 
-                    field="month" 
-                    value={fields.month} 
-                    onChange={val => handleFieldChange('month', val)} 
-                  />
-                  <CronFieldSelector 
-                    field="dayOfWeek" 
-                    value={fields.dayOfWeek} 
-                    onChange={val => handleFieldChange('dayOfWeek', val)} 
-                  />
-                </div>
-              </div>
-            </div>
+            </ToolSplit>
           </TabsContent>
 
           <TabsContent value="input" className="space-y-6">
