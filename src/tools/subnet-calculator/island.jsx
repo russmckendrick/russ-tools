@@ -277,9 +277,9 @@ const SubnetCalculatorTool = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => handleCopy(details.cidr, 'CIDR')}
-                  aria-label="Copy CIDR"
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy CIDR
                 </Button>
               </div>
             </div>
