@@ -1,7 +1,8 @@
 # russ-tools Redesign — Plan of Attack
 
 **Date:** 2026-07-19
-**Status:** Phase 0 in progress · branch `redesign/phase-0`
+**Status:** Phase 0 substantially complete · branch `redesign/phase-0` (pushed, no PR)
+· next decision point: start Phase 1 (toolchain + design pass)
 **Owner directive:** start-from-scratch redesign, keep all functionality; nothing off limits framework-wise or CSS-wise; modern and useful.
 
 > **This is a living document.** Update the [Session Log](#session-log) and the
@@ -196,10 +197,13 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] Characterization tests — **64 tests / 7 files**: sharelink codec, markdown-table `csvParser` + `tableFormatter`, Terraform export (AWS/Azure/VCD), data-converter tri-format validators, Azure CAF naming rules, Microsoft Portals link generator
 - [x] Bug fix (found while testing): **AWS Terraform export** emitted `cidr_block = "24"` (bare prefix length) — invalid Terraform
 - [ ] Blocked on extraction, deferred to their ports: **subnet allocator** (inline in the 1,088-line `NetworkDesignerShadcn.jsx`, duplicated twice) and **base64 round-trips** (logic inline in `Base64ToolShadcn.jsx`) — neither is a pure module yet, so testing them means doing the Phase 3/5 extraction
+**Carried into Phase 1 (small housekeeping, none blocking):**
+
 - [ ] Capture live worker response fixtures (ssl/whois/tenant) → MSW mocks
 - [ ] Purge certificate-chain-analyzer remnants from `src/utils/api/apiConfig.json` (`certificate`, `hackertarget_ssl`) and the two docs that mention them
 - [ ] Investigate the 1 remaining ESLint parse-error file
 - [ ] Add `BEHAVIOR_CHANGES.md` ledger — first entry pending: `convertToCSV` drops falsy cells (`0`, `false`), captured as a KNOWN-BUG fixture in `csvParser.test.js`, to be fixed during the Phase 3 port
+- [ ] Flip CI lint to blocking once the Phase 1 ESLint overhaul clears the 83 remaining errors
 
 ---
 
@@ -331,8 +335,9 @@ allocator** is inline in `NetworkDesignerShadcn.jsx` (and duplicated twice), and
 round-trip logic is inline in `Base64ToolShadcn.jsx`. Testing either means doing the
 extraction that Phase 3/5 already schedules, so they are listed as blocked rather than done.
 
-**State:** `pnpm test` → 64 passing · `pnpm build` → green (~4.7s) · `pnpm lint` → 94 errors.
+**State:** `pnpm test` → 64 passing · `pnpm build` → green (~4.7s) · `pnpm lint` → 83 errors
+(down from 98 at the session start, mostly via the dead-code purge).
 
-**Housekeeping note:** `git remote` still points at the old `subnet-fit` URL; GitHub redirects,
-so the push worked, but `git remote set-url origin git@github.com:russmckendrick/russ-tools.git`
-is worth running (my attempt was blocked by a local permission rule).
+**Resolved:** the `git remote` pointed at the old `subnet-fit` URL; Russ has repointed it at
+`git@github.com:russmckendrick/russ-tools.git`. Branch `redesign/phase-0` is pushed. No PR
+opened — deliberate, this stays a branch for now.

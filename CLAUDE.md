@@ -28,8 +28,10 @@ A prior version of this file misdescribed the codebase. Corrected facts:
 - Routes are **hand-maintained** in `src/App.jsx` (~26 `<Route>` entries incl. param
   routes). There is **no** automatic route generation today.
 - `src/utils/_iconImports.js`, `src/utils/toolsUtils.js`, `src/utils/cron.js` and
-  `src/utils/generateSitemap.js` are **dead code** slated for deletion — do not build on them.
-- Several dependencies are installed but **never imported** (see "Do not re-adopt" below).
+  `src/utils/generateSitemap.js` **have been deleted** (Phase 0) — older docs still reference
+  them. The live sitemap generator is `scripts/generate-sitemap.js`.
+- The azure-kql `*Shadcn` files **have been deleted**; they were a dead parallel
+  implementation. The live entry is `AzureKQLTool.jsx`.
 - `docs/ARCHITECTURE.md` and `docs/DEVELOPMENT.md` are **half-migrated / partly Mantine-era**
   and untrustworthy; they will be regenerated in a later phase. Prefer the redesign plan.
 
@@ -41,7 +43,8 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
 - `pnpm install` — install deps (esbuild is the one approved build script, see `pnpm.onlyBuiltDependencies`)
 - `pnpm dev` — Vite dev server
 - `pnpm build` — generate sitemap + Vite production build
-- `pnpm lint` — ESLint (currently ~98 pre-existing errors; being cleaned in Phase 1 — see plan)
+- `pnpm test` — Vitest (64 tests; **keep these green**) · `pnpm test:watch` to iterate
+- `pnpm lint` — ESLint (83 pre-existing errors; cleaned in Phase 1 — see plan)
 - `pnpm preview` — preview the production build
 - `pnpm generate:sitemap` — regenerate `public/sitemap.xml`
 
@@ -99,22 +102,35 @@ Data Converter (JSON/YAML/TOML), CRON Builder, Markdown Table · Utility: Buzzwo
 - Prefer editing existing files; if a file exceeds ~200 lines, factor additions into a component.
 - Documentation lives in `docs/` (see `docs/README.md`). Redesign notes go in the plan's Session Log.
 
-## Do not re-adopt (installed but dead — being removed in Phase 0)
+## Do not re-add (removed in Phase 0 — verified unused)
 
 `dayjs`, `framer-motion`, `d3-force`, `@svgdotjs/svg.js`, `next-themes`,
-`tailwindcss-animate`, `uuid` (use `crypto.randomUUID()`), `autoprefixer`. Icons: the
-project has **two** icon libraries (`@tabler/icons-react` + `lucide-react`); the redesign
-standardises on **lucide only** — do not add new `@tabler` usage.
+`tailwindcss-animate`, `uuid` (use `crypto.randomUUID()`), `autoprefixer`,
+`@radix-ui/react-scroll-area`. Icons: the project still has **two** icon libraries
+(`@tabler/icons-react` + `lucide-react`); the redesign standardises on **lucide only** —
+do not add new `@tabler` usage.
 
-## Known live bugs (fixed early in Phase 0 — check the plan/Session Log for status)
+> Removing a package can break `vite.config.js` `manualChunks`, which lists vendor entries
+> by name — a stale entry becomes a hard "Could not resolve entry module" build failure.
 
-- Microsoft Portals: `undefined/…` URLs for 24 of 31 Azure links (`baseUrl` resolution bug).
-- azure-kql: zustand `persist` imported but never applied → history/favourites lost on refresh.
-- markdown-table: undo/redo off-by-one; literal `'\t'` CSV delimiter.
-- sharelink: calls to an un-imported `notifications` throw `ReferenceError` on error paths.
-- Password Generator: uses `Math.random()` instead of `crypto.getRandomValues`.
-- **Naming trap:** for azure-kql the live entry is `AzureKQLTool.jsx`; the
-  `AzureKQLShadcn.jsx` stack is **dead** and being deleted. Do not pattern-match on the suffix.
+## Traps and open issues
+
+- **Gotcha:** TOML integers come back from `@ltd/j-toml` as **`BigInt`**, and `JSON.stringify`
+  throws on them. Any TOML→JSON path must coerce. Pinned in `validation.test.js`.
+- **Gotcha:** the JSON parser attaches `Symbol(newline)`/`Symbol(indent)` metadata to parsed
+  objects, so `toEqual` against a plain object fails — compare structurally.
+- **Gotcha:** JSX attribute string literals do **not** process escapes — `value="\t"` is a
+  backslash and a `t`, not a tab. Use `value={'\t'}`.
+- **KNOWN-BUG (deliberately unfixed, pinned in `csvParser.test.js`):** `convertToCSV` coerces
+  falsy cells via `String(field || '')`, so a numeric `0` or `false` is lost on export. Fix
+  during the markdown-table port and update the fixture in the same PR.
+- Subnet-allocator and base64 logic are still inline in their components, so neither has
+  characterization tests yet. Extract them first when porting those tools.
+
+All six bugs found in the Phase 0 audit are **fixed** (Microsoft Portals `undefined/…` URLs,
+azure-kql missing `persist`, markdown-table undo/redo + tab delimiter, sharelink
+`ReferenceError`, `Math.random` passwords, AWS Terraform bare prefix lengths). See the plan's
+Session Log for details.
 
 ## Documentation map
 
