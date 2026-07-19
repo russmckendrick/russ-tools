@@ -94,7 +94,15 @@ export const convertToTSV = (data) => {
 
 export const parseExcelData = async (file) => {
   try {
-    const ExcelJS = await import('exceljs');
+    // `.default`, not the namespace. exceljs is a UMD bundle, so what a
+    // dynamic import yields depends on the bundler: the Vite SPA build emits
+    // Rollup's `_mergeNamespaces` helper, which copies the CJS exports onto
+    // the namespace and makes bare `ExcelJS.Workbook` work — the Astro build
+    // does not, and neither does Node. This line read `await import('exceljs')`
+    // and worked in exactly one of the three, which is why dropping an .xlsx
+    // on the import dialog threw `Workbook is not a constructor` under the new
+    // shell. Pinned by exceljs.smoke.test.js.
+    const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();
     
     const arrayBuffer = await file.arrayBuffer();
