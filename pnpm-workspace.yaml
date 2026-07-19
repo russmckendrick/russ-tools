@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: true
+# pnpm 11+ reads project settings from here (not the "pnpm" field in package.json).
+# esbuild needs its install script to run so Vite's native binary is available.
+onlyBuiltDependencies:
+  - esbuild

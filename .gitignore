@@ -15,6 +15,7 @@ package-lock.json
 
 # AI
 .claude
+graphify-out
 
 # Generated files
 public/sitemap.xml
@@ -31,3 +32,4 @@ public/sitemap.xml
 *.sw?
 .windsurfrules
 .wrangler
+

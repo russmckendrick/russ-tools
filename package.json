@@ -3,11 +3,17 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "pnpm@11.14.0",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "npm run generate:sitemap && vite build",
+    "build": "pnpm generate:sitemap && vite build",
     "generate:sitemap": "node scripts/generate-sitemap.js",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -79,6 +85,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11",
     "tailwindcss-animate": "^1.0.7",
-    "vite": "^6.3.1"
+    "vite": "^6.3.1",
+    "vitest": "^4.1.10"
   }
 }

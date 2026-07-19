@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      # Lint is informational for now: the codebase carries ~96 pre-existing errors
+      # that Phase 1 of the redesign clears (ESLint config overhaul + dead-code purge).
+      # Flip continue-on-error to false once Phase 1 lands. See docs/plans/redesign-plan.md.
+      - name: Lint (non-blocking)
+        run: pnpm lint
+        continue-on-error: true
