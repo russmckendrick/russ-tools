@@ -1,6 +1,19 @@
 // Utility functions for generating Terraform code for AWS and Azure network resources
 // To be implemented: generateAwsTerraform, generateAzureTerraform
 
+// Subnets from the network designer are { base, cidr } where cidr is the prefix
+// LENGTH (a number), not a full CIDR string. Other shapes are tolerated for
+// imported/legacy configurations.
+export function resolveSubnetCidr(subnet) {
+  if (!subnet) return '';
+  if (typeof subnet.cidr === 'string' && subnet.cidr.includes('/')) return subnet.cidr;
+  if (subnet.base && subnet.cidr) return `${subnet.base}/${subnet.cidr}`;
+  if (subnet.ip && subnet.cidr) return `${subnet.ip}/${subnet.cidr}`;
+  if (subnet.cidrBlock) return subnet.cidrBlock;
+  if (subnet.address_prefix) return subnet.address_prefix;
+  return '';
+}
+
 export function generateAwsTerraform({ vpcName, vpcCidr, region, subnets }) {
   // Helper to sanitize Terraform resource names
   const safeName = (name) => name.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
@@ -17,7 +30,7 @@ export function generateAwsTerraform({ vpcName, vpcCidr, region, subnets }) {
     const subnetName = safeName(subnet.name || `subnet_${idx+1}`);
     tf += `resource "aws_subnet" "${subnetName}" {\n` +
       `  vpc_id            = aws_vpc.${vpcResourceName}.id\n` +
-      `  cidr_block        = "${subnet.cidr}"\n` +
+      `  cidr_block        = "${resolveSubnetCidr(subnet)}"\n` +
       (subnet.az ? `  availability_zone = "${subnet.az}"\n` : '') +
       `  map_public_ip_on_launch = ${subnet.public ? 'true' : 'false'}\n` +
       `  tags = {\n    Name = "${subnet.name || `Subnet ${idx+1}`}"\n  }\n` +
@@ -69,16 +82,7 @@ export function generateAzureTerraform({ vnetName, vnetCidr, location, subnets }
     const purpose = tfVarName(subnet.name || `subnet${idx+1}`);
     const subnetResName = cafResourceName('snet', project, env, regionShort, (purpose !== project ? purpose : '') + (subnets.length > 1 ? `-${idx+1}` : ''));
     const subnetTfName = tfVarName(subnetResName);
-    let cidr = '';
-    if (subnet.base && subnet.cidr) {
-      cidr = `${subnet.base}/${subnet.cidr}`;
-    } else if (subnet.ip && subnet.cidr) {
-      cidr = `${subnet.ip}/${subnet.cidr}`;
-    } else if (subnet.cidrBlock) {
-      cidr = subnet.cidrBlock;
-    } else if (subnet.address_prefix) {
-      cidr = subnet.address_prefix;
-    }
+    const cidr = resolveSubnetCidr(subnet);
     return `resource "azurerm_subnet" "${subnetTfName}" {
   name                 = "${subnetResName}"
   resource_group_name  = azurerm_resource_group.main.name
