@@ -371,12 +371,12 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] Three silent token/merge collisions fixed and pinned by tests (`--spacing-*` vs
       Tailwind's container scale, `font-<scale>` vs the family namespace, `cn()` filing
       type steps as colours)
-- [ ] `core/` — storage + migration shim, sharelink verbatim, clipboard, download, cache, api client
-- [ ] Theme toggle in the new shell (the pre-paint script exists; the control does not)
-- [ ] Two-column control/result split per tool — tools render into `ToolLayout`'s
-      `controls` slot rather than one full-width column. **The largest remaining source of
-      "this page looks different from that one";** only password-generator has it today,
-      and it built its own grid rather than using the slot
+- [x] `core/` — storage + migration shim, sharelink verbatim, clipboard, download, cache, api client
+- [x] Theme toggle in the new shell (three states, no island — the stored key already had three)
+- [~] Two-column control/result split — **the rule is narrower than the plan assumed.**
+      `ToolSplit` is built and lands on the five lookup tools + jwt; applied to four more
+      it was rejected as unbalanced and reverted. See [Session 6](#2026-07-19--session-6-core-the-theme-control-and-the-split-half-landed).
+      The Astro `controls` slot cannot carry it — controls and results share React state
 - [ ] Remaining bespoke per-tool chrome (e.g. data-converter's `ControlPanel` header card)
 - [ ] Last `@tabler` import in a tool file (`IconBrandTerraform`, no lucide equivalent)
 - [ ] `/delete` storage-clear page driven by declared `storageKeys`
@@ -1025,4 +1025,83 @@ shared layer and the sweep are done; what remains is `core/`, the theme toggle,
 the `/delete` page, the two-column control/result split per tool, and the
 deploy-and-verify gates.
 
+### 2026-07-19 — Session 6: `core/`, the theme control, and the split half-landed
 
+**Model:** Opus 4.8. **Branch:** `redesign/phase-0`. Seven commits, tree clean.
+
+**1. `core/` is built — 58 tests, 271 → 329.**
+
+Six modules in `src/core/`, framework-agnostic, backend/clock/fetch all injected so
+the whole thing runs under Vitest's `node` environment.
+
+- **`storage.js`** — frozen contract #3. `rt:<id>:<slot>`, read-old-if-new-missing,
+  copy-forward on read, and the legacy key is **never** removed by a read. `clearTool()`
+  is the only delete path and exists for `/delete`.
+- **`sharelink.js`** — frozen contract #2, byte-for-byte. The fixtures now assert
+  **re-encoding**, not only decoding. Pinning `safeStringify` turned up one worth
+  remembering: **a `Date` survives as an ISO string**, because `toJSON()` runs before the
+  replacer ever sees the value — so the constructor check that drops a `Map` or a class
+  instance never applies to a Date. A future "serialise dates properly" cleanup would
+  silently change the bytes of every link carrying one.
+- **`api.js`** — the three faults in `apiUtils.js` that reach users: the configured
+  timeout is never applied, a 404 is retried three times with backoff, and transport
+  errors are detected by matching English message text only Chrome produces.
+- **`cache.js`** (TTL + eviction), **`clipboard.js`**, **`download.js`**.
+
+**Deliberately not done:** per-slot legacy mappings in the manifests. network-designer's
+four slots are fed by nine legacy keys, and ssl-checker keeps a result history and a
+domain-string history under names that look like a pair and are not. Those need a real
+merge written against real data, which is port work. `legacyKeys` stays the enumeration
+for clearing; the mapping is taken at the call site.
+
+**2. Theme control.** Three states, because the stored key already has three and `system`
+is what a first-time visitor gets. Not an island — chrome on every page, and React to
+flip a class on `<html>` would cost more than the rest of the shell's JS. All three
+glyphs ship in the markup; CSS reveals the live one from the `data-theme-pref` the
+pre-paint script writes, so the button is never briefly wrong.
+
+**3. The split — and the lesson repeating for a third time.**
+
+`ToolSplit` was built and applied to ten tools. The owner's verdict on seeing the set:
+*"the split looks terrible across most of the tools — it makes this look unbalanced."*
+Four were reverted the same session.
+
+**The structural finding, which is the durable part.** A fixed 320px control column
+forces controls to be tall and narrow. That is right when the result is a **large body
+that fills the height beside it** — a DNS record table, a certificate report, a decoded
+token. It is wrong when the result is a **single artefact**, because you get a 450px
+column of selects next to a 90px card and several hundred pixels of void. cron is the
+clearest case: the expression is one line and always will be, and it belonged in the
+full-width banner above the fields where it already was.
+
+So DESIGN.md's *"controls left, output right, always"* describes a proportion, and it was
+read as a structure. There are at least two legitimate compositions in this set —
+**query → report** (the split) and **form → artefact** (banner above, fields below) — and
+forcing one onto the other is what produced the imbalance.
+
+**Same shape as the Phase 1 lesson, third costume.** Phase 1: recolouring an undesigned
+layout. Session 5: mapping status colours mechanically onto things carrying identity.
+Here: applying a layout rule mechanically to content it does not fit. In all three the
+mapping was applied correctly and was still wrong, because the thing being mapped was
+wrong for the target.
+
+**Also found:** the Astro `controls` slot **cannot** carry the split. A slot is filled at
+build time and a tool's controls and results share React state, so they cannot be split
+across two slots without splitting the island and inventing a channel between the halves.
+The plan's "tools render into `ToolLayout`'s `controls` slot" is not reachable; the layout
+lives inside the island and `ToolLayout` owns everything above it.
+
+**State at session end**
+- `pnpm test` → **329 passing / 14 files** (was 271) · `pnpm lint` → **0 errors, 29
+  warnings** (unchanged floor) · `pnpm build` and `pnpm build:astro` green.
+- Split live on: dns-lookup, whois, ssl-checker, tenant-lookup, microsoft-portals, jwt —
+  **awaiting the owner's verdict on whether these six stay.**
+- Reverted: cron, buzzword-ipsum, password-generator, azure-kql.
+- Not attempted: base64, data-converter, markdown-table (editors — input and output are
+  both large text bodies), azure-naming and network-designer (tab workspaces whose result
+  already lives on its own tab; both are Phase 5 anyway).
+
+**Dev-server note for the next session:** `astro dev` left running across sessions serves
+a stale optimised-dep graph, and the symptom is an island reporting "failed to load" with
+a 504 on `/node_modules/.vite/deps/*`. It is not a code fault. `rm -rf node_modules/.vite`
+and restart.
