@@ -193,7 +193,9 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] Bug fix: **Password Generator** → `crypto.getRandomValues` (+ unbiased Fisher–Yates shuffle)
 - [x] Dead-code purge — 23 files / ~3,300 LOC, verified by transitive reachability (now zero unreachable files)
 - [x] Dependency purge — 9 packages removed; `uuid` → `crypto.randomUUID`
-- [~] Characterization tests: **done** sharelink codec, markdown-table csvParser · **todo** subnet allocator (+ Terraform snapshots), tableFormatter parse/format, data-converter tri-format, azure-naming rules, base64 round-trips
+- [x] Characterization tests — **64 tests / 7 files**: sharelink codec, markdown-table `csvParser` + `tableFormatter`, Terraform export (AWS/Azure/VCD), data-converter tri-format validators, Azure CAF naming rules, Microsoft Portals link generator
+- [x] Bug fix (found while testing): **AWS Terraform export** emitted `cidr_block = "24"` (bare prefix length) — invalid Terraform
+- [ ] Blocked on extraction, deferred to their ports: **subnet allocator** (inline in the 1,088-line `NetworkDesignerShadcn.jsx`, duplicated twice) and **base64 round-trips** (logic inline in `Base64ToolShadcn.jsx`) — neither is a pure module yet, so testing them means doing the Phase 3/5 extraction
 - [ ] Capture live worker response fixtures (ssl/whois/tenant) → MSW mocks
 - [ ] Purge certificate-chain-analyzer remnants from `src/utils/api/apiConfig.json` (`certificate`, `hackertarget_ssl`) and the two docs that mention them
 - [ ] Investigate the 1 remaining ESLint parse-error file
@@ -297,3 +299,40 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 3. Chase the single ESLint parse-error file, then decide whether to start Phase 1
    (toolchain to Vite 8 / ESLint 10 + flip CI lint to blocking) or go straight to the
    Phase 1 design pass.
+
+### 2026-07-19 — Session 1 (continued): characterization suite + a third bug
+
+Branch pushed to `origin/redesign/phase-0` (12 commits). Suite now **64 tests / 7 files**.
+
+**Method:** rather than guessing expected values, I probed each real module and wrote the
+observed output into assertions — characterization, not aspiration. The throwaway probe was
+deleted afterwards.
+
+**Covered:** sharelink codec · markdown-table `csvParser` + `tableFormatter` · Terraform
+export (AWS/Azure/VCD) · data-converter tri-format validators · Azure CAF naming rules ·
+Microsoft Portals link generator.
+
+**Third live bug found (and fixed) while writing them — AWS Terraform export.** Subnets are
+stored as `{ base: '10.0.1.0', cidr: 24 }` where `cidr` is the prefix *length*.
+`generateAzureTerraform` resolved that correctly via a 4-branch chain, but
+`generateAwsTerraform` interpolated `subnet.cidr` directly, so **every AWS subnet exported as
+`cidr_block = "24"`** — invalid Terraform that would fail `terraform plan`. The two generators
+silently disagreed on the subnet contract. Fixed by extracting Azure's chain into a shared
+exported `resolveSubnetCidr()` used by both; Azure output is unchanged for real inputs.
+
+**Two behaviours pinned deliberately (they will bite the port):**
+- The JSON parser (`json-parse-even-better-errors`) attaches `Symbol(newline)` /
+  `Symbol(indent)` metadata to parsed objects, so `toEqual` against a plain object fails.
+- **`@ltd/j-toml` returns TOML integers as `BigInt`**, and `JSON.stringify` throws on BigInt.
+  Any TOML→JSON conversion path in the redesign must coerce these.
+
+**Not testable without extraction** (honest gap, deferred to their ports): the **subnet
+allocator** is inline in `NetworkDesignerShadcn.jsx` (and duplicated twice), and **base64**
+round-trip logic is inline in `Base64ToolShadcn.jsx`. Testing either means doing the
+extraction that Phase 3/5 already schedules, so they are listed as blocked rather than done.
+
+**State:** `pnpm test` → 64 passing · `pnpm build` → green (~4.7s) · `pnpm lint` → 94 errors.
+
+**Housekeeping note:** `git remote` still points at the old `subnet-fit` URL; GitHub redirects,
+so the push worked, but `git remote set-url origin git@github.com:russmckendrick/russ-tools.git`
+is worth running (my attempt was blocked by a local permission rule).
