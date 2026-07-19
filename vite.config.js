@@ -15,13 +15,12 @@ export default defineConfig({
         manualChunks: {
           // Keep React ecosystem together
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          // (formerly Mantine) placeholder removed
           // Icons
           'vendor-icons': ['@tabler/icons-react'],
           // Data processing libraries (excluding ExcelJS)
           'vendor-data': ['js-yaml', '@ltd/j-toml', 'ajv', 'ajv-formats', 'better-ajv-errors'],
           // UI utilities
-          'vendor-ui': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities', '@svgdotjs/svg.js', 'html2canvas'],
+          'vendor-ui': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities', 'html2canvas'],
           // Syntax highlighting
           'vendor-syntax': ['prismjs']
         },

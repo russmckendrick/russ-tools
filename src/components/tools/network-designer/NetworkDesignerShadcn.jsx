@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { Netmask } from 'netmask';
-import { v4 as uuidv4 } from 'uuid';
 import {
   Network,
   Layers3,
@@ -472,7 +471,7 @@ const NetworkDesignerShadcn = () => {
   // Create a new network
   const handleNewNetwork = () => {
     const newNet = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       name: 'New Network',
       parentNetwork: null,
       subnets: [],

@@ -5,7 +5,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Copy, Check, Download, Save } from 'lucide-react';
 import { useAzureNamingContextShadcn } from './context/AzureNamingContextShadcn';
 import { devError } from '../../../utils/devLog';
-import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 
 const ResultsDisplayShadcn = ({ formState, validationState }) => {
@@ -210,7 +209,7 @@ const ResultsDisplayShadcn = ({ formState, validationState }) => {
       generatedName: name
     }));
     addToHistory({
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       group,
       configuration: { ...formState },
       timestamp: Date.now()
