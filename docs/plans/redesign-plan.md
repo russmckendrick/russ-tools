@@ -1511,3 +1511,91 @@ knowing exists before writing any future form:
    ignores the empty echo. jsdom does not reproduce the echo, so the browser
    reproduction (before/after, plus a with-splits round-trip and a real
    dropdown selection) is the regression pin, recorded in the commit.
+   *(Session 8: that pin is now a Playwright test, not a commit message.)*
+
+### 2026-07-19 — Session 8: the gates — push, sitemap seam, and the matrix
+
+**Model:** Fable 5. **Branch:** `redesign/phase-0`.
+
+**Four owner decisions, asked early and answered:**
+
+1. **Push only** — the 21 commits are pushed (`origin/redesign/phase-0`), no
+   PR yet. Noted for later: CI triggers on PRs and pushes to `main` only, so
+   the branch push ran nothing; CI's first real run comes with the PR.
+2. **Preview host: a separate direct-upload Pages project**
+   (`russ-tools-preview`). The production project is git-connected, wrangler
+   direct-uploads into one are rejected, and a git preview of the branch
+   would build the SPA (previews use the production build settings) — so a
+   throwaway project is the only way to put `dist-astro` on real Cloudflare
+   infrastructure before cutover. Deleted after.
+3. **ALLOWED_ORIGINS gains the preview origin** alongside the two localhost
+   ports, so ssl/whois/tenant lookups work on the deployed preview.
+4. **The home-page password widget is dropped.** The shell home stays a pure
+   static zero-JS index; the generator is one click away. This closes the
+   plan's "password widget as a tiny island" line item as *won't-build* —
+   log it in BEHAVIOR_CHANGES.md when the SPA home dies in Phase 6.
+
+**The sitemap seam was a live cutover bug, found and fixed.**
+`public/sitemap.xml` is generated and **gitignored** (the comment in
+`sitemap.test.js` claiming it was committed was wrong), and only the SPA's
+`pnpm build` wrote it. Two consequences: on a clean CI runner the sitemap
+test would read a file that does not exist yet, and — the real one —
+post-cutover Pages builds run `build:astro` alone, so production would have
+served a `robots.txt` pointing at a 404 sitemap. `build:astro` now runs
+`generate:sitemap` first (before Astro copies `public/`), which fixes both.
+**Seam decision:** `/sitemap.xml` stays the canonical sitemap URL through
+cutover — continuity with `robots.txt` and Search Console — and the
+`@astrojs/sitemap` duplicate (`sitemap-index.xml`) retires in Phase 6, when
+the generator is repointed from `toolsConfig.json` to `loadManifests`.
+
+**The Playwright deep-link matrix exists and is green — 19 tests.**
+`@playwright/test` + chromium, `e2e/deeplinks.spec.js`, `pnpm test:e2e`.
+Against a `PW_BASE_URL` (the deployed preview — the real gate) or, with none
+set, it auto-starts `wrangler pages dev dist-astro` — Cloudflare's engine
+run locally. The matrix: all ten param rewrites with realistic values (a
+real minted HS256 JWT, real domains, `2001:db8:abcd::/48` — the IPv6 deep
+link's first proof through `_redirects`, which post-dates session 4's), URL
+intact + prerendered `h1` + island param application per route, the
+`/network-designer` 301 and its wildcard, follow-the-301 lands on the
+calculator, a real 404, `/delete` + its `noindex`, the home index,
+`/sitemap.xml` + `robots.txt` agreeing, and the subnet-calculator `?config`
+restore asserting the phantom error's absence — the Radix empty-echo
+regression's only pin, now a test. **19/19 green against `wrangler pages
+dev`.** One test bug caught by the first run: a `/16` splits at the third
+octet, not the second — the leaves are `10.0.64.0/18` / `10.0.128.0/17`,
+verified against `lib/divide.js` directly.
+
+**The owner runbook (gates 1–2, in order):**
+
+```bash
+# 0. once, if needed
+pnpm dlx wrangler login
+
+# 1. deploy the preview (gate 2)
+pnpm build:astro
+pnpm dlx wrangler pages project create russ-tools-preview --production-branch main
+pnpm dlx wrangler pages deploy dist-astro --project-name russ-tools-preview --branch main --commit-dirty=true
+#    → serves at https://russ-tools-preview.pages.dev
+
+# 2. rotate the worker origin lists (gate 1) — values are the probed current
+#    list + both localhost ports + the preview origin
+echo 'https://russ.tools,https://www.russ.tools,http://localhost:3000,http://localhost:5173,http://localhost:4321,https://russ-tools-preview.pages.dev' | pnpm dlx wrangler secret put ALLOWED_ORIGINS --config cloudflare-worker/configs/wrangler-whois.toml
+echo 'https://russ.tools,https://www.russ.tools,http://localhost:5173,http://localhost:4321,https://russ-tools-preview.pages.dev' | pnpm dlx wrangler secret put ALLOWED_ORIGINS --config cloudflare-worker/configs/wrangler-ssl.toml
+echo 'https://russ.tools,https://www.russ.tools,http://localhost:5173,http://localhost:4321,https://russ-tools-preview.pages.dev' | pnpm dlx wrangler secret put ALLOWED_ORIGINS --config cloudflare-worker/configs/wrangler-tenant.toml
+```
+
+The per-worker values differ because the current lists were **probed, not
+assumed** (OPTIONS preflights against the live workers): whois additionally
+allows `localhost:3000`; all three 403 `localhost:4321` today. buzzwords
+hardcodes its list in source and no tool calls it from the page, so it is
+out of scope (edit + `wrangler deploy` only if its public API should admit
+new origins). Then the matrix runs against the preview:
+`PW_BASE_URL=https://russ-tools-preview.pages.dev pnpm test:e2e`.
+
+**State:** `pnpm test` **437 / 30** · `pnpm test:e2e` **19/19** (local
+Cloudflare runtime) · `pnpm lint` 0 errors, 13 warnings · both builds green
+· branch pushed through commit `1c8cceb`, gate commits on top.
+
+**Next:** owner runs the runbook → matrix against the preview → cutover
+walk-through (Pages build settings) → Phase 6 demolition, with the
+react-router/`useDeepLinkParam` question asked before `src/bridge/` moves.
