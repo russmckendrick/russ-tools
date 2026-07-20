@@ -28,8 +28,7 @@ import {
   Fingerprint,
   Info
 } from 'lucide-react';
-import { jwtDecode } from 'jwt-decode';
-import { jwtVerify, importJWK, importSPKI } from 'jose';
+import { jwtVerify, importJWK, importSPKI, decodeJwt } from 'jose';
 import { copyText, readText } from '@/core';
 
 const JWTTool = () => {
@@ -98,7 +97,7 @@ const JWTTool = () => {
 
       // Decode without verification first
       const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
-      const payload = jwtDecode(token);
+      const payload = decodeJwt(token);
       
       if (!header || !payload) {
         setError('Failed to decode JWT token');
