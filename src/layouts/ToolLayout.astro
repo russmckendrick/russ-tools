@@ -1,0 +1,106 @@
+---
+/**
+ * ToolLayout — every tool page, derived entirely from its manifest.
+ *
+ * This is what the redesign buys, and the reason Phase 2 exists. Today each
+ * tool hand-rolls its own header, its own SEO ritual and its own idea of
+ * hierarchy, and the crawler receives an empty div with no h1. Here the tool
+ * supplies a manifest and gets: a real prerendered h1, its description,
+ * schema.org markup, its category hue carried through the breadcrumb and icon.
+ *
+ * A tool renders into one slot, full width, and composes its own body. It
+ * cannot reach the head, cannot set its own colour, and cannot invent its own
+ * page furniture. There was a `controls` slot here for a 320px control column;
+ * it is gone. Two reasons, and the second is the one that settles it: a slot
+ * is filled at build time, so it could never hold controls that share React
+ * state with the results beside them — and the fixed proportion was wrong for
+ * most of the fifteen tools anyway. See the plan's Session 6.
+ *
+ * The header is deliberately three lines and no more: breadcrumb, icon +
+ * h1, one factual sentence. No capability pills, no route-pattern badge, no
+ * blurb — the tool itself is the content, and anything above it that is not
+ * navigation is in the way.
+ */
+import BaseLayout from './BaseLayout.astro';
+import ToolIcon from '../shell/ToolIcon.astro';
+import { categoryLabel, categorySchema } from '../shell/categories.mjs';
+import { PERSON_SCHEMA, SITE_NAME, SITE_URL, WEBSITE_SCHEMA } from '../shell/site.mjs';
+
+const { tool } = Astro.props;
+
+const seoTitle = tool.seo?.title ?? `${tool.title} — ${SITE_NAME}`;
+const toolUrl = new URL(tool.path, Astro.site).href;
+
+/**
+ * Two graph nodes per tool page.
+ *
+ * The SoftwareApplication had regressed against what the SPA published: every
+ * one of the fifteen claimed `DeveloperApplication`, and `author`,
+ * `publisher`, `featureList`, `keywords` and `isPartOf` had all been dropped
+ * in the port. `featureList` is why `features` now lives in the manifest.
+ *
+ * The BreadcrumbList is new — the crumb was rendered for humans but never
+ * described, so the trail did not appear in results.
+ */
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.title,
+    description: tool.description,
+    applicationCategory: categorySchema(tool.category),
+    operatingSystem: 'Any',
+    url: toolUrl,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    author: PERSON_SCHEMA,
+    publisher: PERSON_SCHEMA,
+    isPartOf: WEBSITE_SCHEMA,
+    ...(tool.features?.length ? { featureList: tool.features } : {}),
+    ...(tool.seo?.keywords?.length ? { keywords: tool.seo.keywords.join(', ') } : {}),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Tools', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: categoryLabel(tool.category) },
+      { '@type': 'ListItem', position: 3, name: tool.title, item: toolUrl },
+    ],
+  },
+];
+
+---
+
+<BaseLayout
+  title={seoTitle}
+  description={tool.description}
+  keywords={tool.seo?.keywords ?? []}
+  canonical={toolUrl}
+  image={`/og/${tool.id}.png`}
+  schema={schema}
+>
+  <!-- The hue is set once, here. Everything below inherits it. -->
+  <div style={`--cat: var(--color-category-${tool.category})`}>
+    <div class="rt-tool-head">
+      <nav class="rt-crumb" aria-label="Breadcrumb">
+        <a href="/">Tools</a> / <b>{categoryLabel(tool.category)}</b>
+      </nav>
+
+      <div class="rt-tool-id">
+        <ToolIcon icon={tool.icon} size={34} />
+        <h1>{tool.title}</h1>
+      </div>
+
+      <!--
+        The one-line `shortDescription`, not the long `description`. The long
+        one is written for a SERP snippet and reads like a brochure on the
+        page; it stays as the meta description above and nowhere else.
+      -->
+      <p>{tool.shortDescription}</p>
+    </div>
+
+    <div class="rt-tool-body">
+      <slot />
+    </div>
+  </div>
+</BaseLayout>

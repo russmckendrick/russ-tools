@@ -10,14 +10,20 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.astro
 *.local
 package-lock.json
 
 # AI
 .claude
+graphify-out
 
 # Generated files
 public/sitemap.xml
+
+# Playwright
+test-results
+playwright-report
 
 # Editor directories and files
 .vscode/*
@@ -31,3 +37,4 @@ public/sitemap.xml
 *.sw?
 .windsurfrules
 .wrangler
+

@@ -1,430 +1,276 @@
-# RussTools - Development Guide
+# Development
 
-## Getting Started
+How to work on russ.tools. For how the site is put together, read
+[`ARCHITECTURE.md`](ARCHITECTURE.md) first; for anything touching styling, read
+[`DESIGN.md`](../DESIGN.md) in the repo root, which is the authority for colour, type,
+layout, shape and components.
 
-### Prerequisites
-- Node.js 18+ (recommended: use nvm or volta)
-- npm or yarn package manager
-- Git for version control
+## Prerequisites
 
-### Quick Setup
+- **Node ≥ 20** (`package.json` `engines`; CI runs Node 22)
+- **pnpm** — `packageManager` pins `pnpm@11.14.0`, and the lockfile is `pnpm-lock.yaml`.
+  A stale, gitignored `package-lock.json` may linger in a working copy; ignore it.
+
 ```bash
-# Clone the repository
-git clone <repository-url>
+git clone https://github.com/russmckendrick/russ-tools.git
 cd russ-tools
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Open http://localhost:5173 in your browser
+pnpm install
+pnpm dev
 ```
 
-### Available Scripts
+`pnpm install` builds one dependency (`esbuild`, so Vite has its native binary). pnpm 11
+reads that from `pnpm-workspace.yaml` — `allowBuilds` / `onlyBuiltDependencies` — not from
+a `pnpm` field in `package.json`. `msw` is deliberately not built: its postinstall only
+prepares the browser service-worker artefact, and the tests use `msw/node`. If a bare `pnpm <script>` fails with a `runDepsStatusCheck`
+or ignored-builds error, run the binary directly (`./node_modules/.bin/eslint .`) or
+`pnpm approve-builds`.
+
+## Scripts
+
+Every script below exists in `package.json`.
+
+| Command | What it runs | When to use it |
+|---|---|---|
+| `pnpm dev` | `astro dev` | Day-to-day development. Note that param deep links 404 here — there is no `_redirects` layer in the dev server. |
+| `pnpm build` | `generate:sitemap` → `astro build` → `generate:redirects` | Produce `dist/`. Also required before the built-output test suites will run. |
+| `pnpm preview` | `astro preview` | Serve the built `dist/` as static files. Still no `_redirects` handling — for that, use `wrangler pages dev dist`. |
+| `pnpm test` | `vitest run` | The unit and contract suites. |
+| `pnpm test:watch` | `vitest` | Iterating on a test. |
+| `pnpm test:e2e` | `playwright test` | The deep-link matrix. Needs a Cloudflare runtime — see Testing. |
+| `pnpm lint` | `eslint .` | Zero errors is enforced in CI. |
+| `pnpm generate:sitemap` | `scripts/generate-sitemap.js` | Rewrite `public/sitemap.xml` from the manifests. Runs as part of `build`. |
+| `pnpm generate:redirects` | `scripts/generate-redirects.mjs` | Rewrite `dist/_redirects` from the manifests. Runs as part of `build`; requires `dist/` to exist. |
+| `pnpm generate:tokens` | `scripts/generate-tokens.mjs` | Regenerate `src/styles/tokens.generated.css` after editing `DESIGN.md`. Needs network access. |
+| `pnpm generate:og` | `scripts/generate-og.mjs` | Regenerate the committed Open Graph cards in `public/og/`. |
+| `pnpm generate:docs` | `scripts/generate-docs.mjs` | Regenerate the tool tables in `README.md` and `docs/README.md`. |
+
+Worker-backed lookups (WHOIS, SSL, tenant) call the deployed Cloudflare Workers, which
+enforce a CORS origin allowlist. A local development origin must be in the relevant
+worker's `ALLOWED_ORIGINS` for those lookups to succeed; everything else works offline.
+
+## Adding a tool
+
+A tool is one folder. Nothing central is edited — no routing table, no page, no registry
+entry.
+
+```
+src/tools/<id>/
+  manifest.mjs          the contract
+  island.jsx            the React entry component
+  lib/                  pure logic, unit-testable without React
+  components/           sub-components, if the island outgrows one file
+  __tests__/            island tests
+```
+
+### 1. Write the manifest
+
+`manifest.mjs` default-exports one plain object. Every field, and what it drives:
+
+| Field | Type | What it drives |
+|---|---|---|
+| `id` | string | The folder name. Namespaces storage (`rt:<id>:<slot>`), names the Open Graph card, keys `TOOLS_BY_ID`. |
+| `path` | `/kebab-case` | The URL, the prerendered page, the canonical, the sitemap entry, the router patterns. |
+| `title` | string | The `h1`, the index card, the documentation tables, the schema `name`. |
+| `shortDescription` | string, ≤ 80 chars | The index card and the sentence under the `h1`. |
+| `description` | string | The meta description and the schema `description`. |
+| `category` | one of `network`, `azure`, `microsoft`, `security`, `developer`, `content` | The hue, the index group, the breadcrumb label, the schema `applicationCategory`. |
+| `icon` | key of `TOOL_ICONS` in `src/shell/icons.mjs` | The tool's drawing. Must be unused by any other tool. |
+| `badges` | string[] | The short capability strings on the index card. |
+| `params` | string[] | Deep-link segments, in order. Drives the `_redirects` rewrites and the island's router patterns. Empty array if the tool has none. |
+| `redirectFrom` | string[], optional | Retired paths that 301 here. |
+| `features` | string[] | The schema.org `featureList`. |
+| `seo.title` | string, ≤ 65 chars | The `<title>`. Must equal `title` or start with `"<title> - "`. |
+| `seo.keywords` | string[] | The keywords meta and the schema `keywords`. |
+| `storageKeys` | string[] | The `rt:<id>:<slot>` slots the tool owns. Enumerated and cleared by `/delete`. |
+| `legacyKeys` | string[] | Pre-rewrite localStorage keys read forward and also cleared by `/delete`. |
+| `island` | `() => import('./island.jsx')` | The lazily loaded component. |
+
+Copy an existing manifest as the starting point — `src/tools/dns-lookup/manifest.mjs` for
+a tool with no params, `src/tools/subnet-calculator/manifest.mjs` for one with two.
+
+### 2. Write the island
+
+`island.jsx` default-exports a React component. It renders into `ToolLayout`'s slot, so it
+must not render its own `h1`, description, breadcrumb or SEO — the shell already did.
+
+- Import shared plumbing from `@/core` (`copyText`, `downloadFile`, `createToolStorage`,
+  `createCache`, `apiFetch`, the share-link helpers) and UI from `@/components/ui/*`.
+- Read deep-link segments with `useParams()` from `react-router-dom` — `ToolIsland`
+  provides the router.
+- For a lookup-shaped tool (query in, cached result out, history), use
+  `useLookupTool` from `@/lib/useLookupTool.js` rather than hand-rolling loading state, a
+  cache and a history.
+- Never name a colour. The category hue arrives as `--cat`, already set by `ToolLayout`.
+
+### 3. Regenerate and test
+
 ```bash
-npm run dev      # Start development server with hot reload
-npm run build    # Build for production
-npm run preview  # Preview production build locally
-npm run lint     # Run ESLint for code quality
+pnpm generate:docs     # tool tables in README.md and docs/README.md
+pnpm generate:og       # the tool's Open Graph card
+pnpm build             # sitemap and _redirects pick the tool up automatically
+pnpm test
 ```
 
-## Project Structure
+`registry.test.js` will reject a malformed manifest, a duplicate icon, an over-long
+`shortDescription` or `seo.title`, and a route that is not on the frozen list —
+adding a new URL means adding it to that list deliberately.
 
-```
-russ-tools/
-├── src/
-│   ├── components/        # React components
-│   │   ├── common/        # Shared components
-│   │   ├── layout/        # Layout components
-│   │   └── tools/         # Individual tool components
-│   ├── data/              # Static data files
-│   ├── pages/             # Page components
-│   ├── styles/            # Global styles
-│   ├── utils/             # Utility functions
-│   ├── App.jsx            # Main app component
-│   └── main.jsx           # Entry point
-├── public/                # Static assets
-├── docs/                  # Documentation
-├── cloudflare-worker/     # Backend API workers
-├── package.json           # Dependencies and scripts
-├── vite.config.js         # Build configuration
-└── eslint.config.js       # Linting rules
-```
+## Testing
 
-## Development Workflow
+### Vitest
 
-### 1. Creating a New Tool
+`vitest.config.js` runs with `environment: 'node'` by default; component tests opt into
+jsdom per file. `src/test/setup.js` repoints Node's own experimental `localStorage` and
+`sessionStorage` globals at jsdom's, because under Node ≥ 22 they shadow jsdom's
+origin-scoped storage and every storage-backed test silently no-ops. jsdom is given a real
+origin (`http://localhost/`) for the same reason — an opaque origin carries no storage.
 
-#### Step 1: Add Tool Configuration
-Add your tool to `src/utils/toolsConfig.json`:
+`include` is `src/**/*.{test,spec}.{js,jsx}`, so the Playwright specs in `e2e/` are not
+picked up.
 
-```json
-{
-  "id": "my-new-tool",
-  "title": "My New Tool",
-  "description": "Description of what the tool does",
-  "shortDescription": "Brief description for cards",
-  "icon": "IconName",
-  "iconColor": "blue",
-  "badges": ["Feature1", "Feature2"],
-  "path": "/my-new-tool"
-}
-```
+Worker responses are stubbed with MSW: handlers in `src/test/msw/handlers.js`, captured
+fixtures in `src/test/fixtures/workers/`.
 
-#### Step 2: Create Tool Components
-Create a new directory: `src/components/tools/my-new-tool/`
+Roughly what the suites cover:
 
-```
-my-new-tool/
-├── MyNewToolTool.jsx      # Main component (note the Tool suffix)
-├── MyNewToolIcon.jsx      # Custom icon (optional)
-├── SubComponent.jsx       # Additional components as needed
-└── data/                  # Tool-specific data files
-```
+- **Contracts** — `src/tools/registry.test.js` (manifest shape, the frozen 26-route list,
+  the two loaders agreeing), `src/tools/sitemap.test.js`, `src/tools/docs.test.js`,
+  `src/core/sharelink.test.js` (golden fixtures for the share codec),
+  `src/core/storage.test.js` (the never-delete migration).
+- **Design tokens** — `src/styles/tokens.contrast.test.js` re-reads `DESIGN.md` and fails
+  if `tokens.generated.css` has drifted or any pair drops below its WCAG floor.
+  `src/lib/utils.test.js` pins the tailwind-merge type-scale fix.
+- **Tools** — pure logic under each tool's `lib/`, plus island tests under `__tests__/`.
 
-#### Step 3: Implement the Main Component
-Follow the standard tool pattern:
+### The built-output suites, and why CI builds first
 
-```jsx
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Paper, Stack, Group, Title, Text, ThemeIcon } from '@mantine/core';
-import { useLocalStorage } from '@mantine/hooks';
-import { SEOHead } from '../../common/SEOHead';
-import { generateToolSEO } from '../../../utils/seoUtils';
-import { toolsConfig } from '../../../utils/toolsConfig.json';
-import { IconName } from '@tabler/icons-react';
+Three suites assert the contents of `dist/` rather than the source:
 
-export function MyNewToolTool() {
-  // SEO Configuration
-  const toolConfig = toolsConfig.find(tool => tool.id === 'my-new-tool');
-  const seoData = generateToolSEO(toolConfig);
+- `src/layouts/canonical.test.js` — the index canonical is the bare origin, no canonical
+  anywhere carries a `.html` suffix, and each tool page is canonical to its manifest path.
+- `src/layouts/seo.test.js` — the emitted head and JSON-LD: theme colour, description, Open
+  Graph and Twitter tags, and the `SoftwareApplication`/`BreadcrumbList` nodes with their
+  `author`, `publisher`, `featureList`, `keywords` and `isPartOf`.
+- `src/tools/sitemap.test.js` — the generated `public/sitemap.xml` matches the registry
+  exactly, in both directions.
 
-  // State Management
-  const [state, setState] = useState(initialState);
-  const [settings, setSettings] = useLocalStorage({
-    key: 'my-new-tool-settings',
-    defaultValue: {}
-  });
+They read the build because the faults they guard against are invisible in the source.
+`Astro.url.pathname` is the *output filename* during a static build, so a canonical that
+looks correct in the layout resolves to `/index.html`; and a structured-data regression
+leaves valid JSON-LD on a page that looks identical.
 
-  // URL Parameter Handling
-  const { param } = useParams();
-  useEffect(() => {
-    if (param) {
-      // Handle URL parameter
-    }
-  }, [param]);
+Each is wrapped in `describe.runIf(built)` and skips when `dist/` is absent, so `pnpm test`
+stays useful without a build. `.github/workflows/ci.yml` therefore runs **build → test →
+lint**, in that order: without the build step those suites silently skip.
 
-  // Business Logic
-  const handleOperation = () => {
-    // Tool-specific logic
-  };
+### Playwright
 
-  return (
-    <>
-      <SEOHead {...seoData} />
-      <Paper withBorder p="xl" radius="lg">
-        <Stack gap="lg">
-          <Group gap="md">
-            <ThemeIcon size={48} color="blue" radius="md" variant="light">
-              <IconName size={24} />
-            </ThemeIcon>
-            <div>
-              <Title order={2} fw={600}>
-                {toolConfig.title}
-              </Title>
-              <Text size="sm" c="dimmed">
-                {toolConfig.description}
-              </Text>
-            </div>
-          </Group>
-          
-          {/* Tool content */}
-        </Stack>
-      </Paper>
-    </>
-  );
-}
-```
+`pnpm test:e2e` runs `e2e/deeplinks.spec.js` — the browser-level gate for the deep-link
+contract. It proves what only the Cloudflare Pages layer can: that a param deep link
+200-rewrites with the URL intact, that the prerendered page underneath is the right tool,
+that `/network-designer` 301s to `/subnet-calculator`, and that the island applies the param
+after hydration. It also covers the index grouping and the mobile navigation.
 
-#### Step 4: Add Routing
-Add the route to `src/App.jsx`:
+`astro dev` serves param routes as 404s by design, so the matrix never runs against it.
+Two targets:
 
-```jsx
-import { MyNewToolTool } from './components/tools/my-new-tool/MyNewToolTool';
-
-// Inside the Routes component:
-<Route path="/my-new-tool" element={<MyNewToolTool />} />
-<Route path="/my-new-tool/:param" element={<MyNewToolTool />} />
-```
-
-#### Step 5: Register Icon (if custom)
-Add to `src/utils/_iconImports.js`:
-
-```javascript
-import MyNewToolIcon from '../components/tools/my-new-tool/MyNewToolIcon';
-
-export const iconMap = {
-  // ... existing icons
-  MyNewToolIcon,
-};
-```
-
-### 2. State Management Patterns
-
-#### Local Component State
-```jsx
-const [inputValue, setInputValue] = useState('');
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState(null);
-```
-
-#### Persistent State
-```jsx
-const [settings, setSettings] = useLocalStorage({
-  key: 'tool-settings',
-  defaultValue: {
-    option1: true,
-    option2: 'default'
-  }
-});
-```
-
-#### Complex State with Context
-```jsx
-// For tools with shared state across components
-const MyToolContext = createContext();
-
-export function MyToolProvider({ children }) {
-  const [state, setState] = useState(initialState);
-  
-  return (
-    <MyToolContext.Provider value={{ state, setState }}>
-      {children}
-    </MyToolContext.Provider>
-  );
-}
-```
-
-### 3. API Integration Patterns
-
-#### Using Centralized API Configuration
-```jsx
-import { getApiEndpoint, apiFetch } from '../../../utils/apiUtils';
-
-const handleApiCall = async () => {
-  try {
-    const endpoint = getApiEndpoint('service-name');
-    const response = await apiFetch(endpoint.url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data)
-    });
-    
-    const result = await response.json();
-    // Handle response
-  } catch (error) {
-    console.error('API call failed:', error);
-    // Handle error
-  }
-};
-```
-
-#### Adding New API Endpoints
-Update `src/utils/api/apiConfig.json`:
-
-```json
-{
-  "endpoints": {
-    "new-service": {
-      "url": "https://api.example.com/",
-      "description": "New service API",
-      "timeout": 10000,
-      "retries": 2
-    }
-  }
-}
-```
-
-### 4. Styling Guidelines
-
-#### Using Shadcn UI Components
-```jsx
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-
-<Card>
-  <CardHeader>
-    <CardTitle>Section title</CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-3">
-    <Input placeholder="Your input" />
-    <Button>Action</Button>
-  </CardContent>
-</Card>
-```
-
-#### Dark Mode Support
-Tailwind + `ThemeProvider` handles theming. Prefer semantic classes and avoid hard-coded colors.
-```jsx
-<div className="bg-background text-foreground">Content</div>
-```
-
-#### CSS Modules (when needed)
-```jsx
-import styles from './MyComponent.module.css';
-
-<div className={styles.customClass}>
-  Content
-</div>
-```
-
-### 5. SEO and Meta Tags
-
-#### Tool-Specific SEO
-```jsx
-import { generateToolSEO } from '../../../utils/seoUtils';
-
-const toolConfig = toolsConfig.find(tool => tool.id === 'tool-id');
-const seoData = generateToolSEO(toolConfig, {
-  // Optional custom data
-  dynamicTitle: `Custom title for ${parameter}`,
-  customDescription: `Processed ${parameter}`,
-});
-
-return (
-  <>
-    <SEOHead {...seoData} />
-    {/* Component content */}
-  </>
-);
-```
-
-## Testing Guidelines
-
-### Manual Testing Checklist
-- [ ] Tool works in both light and dark themes
-- [ ] Responsive design works on mobile devices
-- [ ] URL parameters work correctly
-- [ ] State persistence works across browser sessions
-- [ ] All interactive elements are accessible
-- [ ] Error states are handled gracefully
-- [ ] Loading states provide feedback
-- [ ] Export/download functionality works
-
-### Cross-Browser Testing
-Test in:
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-## Performance Guidelines
-
-### Code Splitting
-```jsx
-// Lazy load components for better performance
-const HeavyComponent = lazy(() => import('./HeavyComponent'));
-
-<Suspense fallback={<LoadingOverlay visible />}>
-  <HeavyComponent />
-</Suspense>
-```
-
-### Optimization Best Practices
-1. **Use React.memo** for expensive components
-2. **Debounce user input** for search/filter operations
-3. **Implement virtual scrolling** for large lists
-4. **Optimize images** (use appropriate formats and sizes)
-5. **Minimize bundle size** (analyze with `npm run build`)
-
-## Build and Deployment
-
-### Production Build
 ```bash
-npm run build
+# Local Cloudflare runtime — the config auto-starts `wrangler pages dev dist` on :8788
+pnpm build && pnpm test:e2e
+
+# A deployed preview (the real gate)
+PW_BASE_URL=https://russ-tools-preview.pages.dev pnpm test:e2e
 ```
 
-### Build Analysis
-```bash
-# Add to package.json scripts:
-"analyze": "vite build --mode analyze"
-```
+Worker-backed lookups fire on mount but are not asserted: the matrix proves routing and
+param application, which is origin-independent, whereas live lookups depend on the target
+origin being in each worker's `ALLOWED_ORIGINS`.
 
-### Environment Variables
-Create `.env.local` for local development:
-```
-VITE_API_BASE_URL=http://localhost:3000
-VITE_FEATURE_FLAG_NEW_TOOL=true
-```
+## Linting
 
-## Contributing Guidelines
+`pnpm lint` runs ESLint over the whole tree (`dist`, `.astro`, `.wrangler` and `coverage`
+are ignored). **Zero errors, and CI blocks on that.** Warnings are permitted but the count
+should not climb.
 
-### Code Style
-- Use ESLint configuration provided
-- Follow existing naming conventions
-- Add JSDoc comments for complex functions
-- Use TypeScript where beneficial
+Base rules everywhere: `eslint:recommended`, the react-hooks recommended set,
+`react/jsx-uses-vars` and `react/jsx-uses-react`, `no-unused-vars` with an `^_` ignore
+pattern, `no-empty` with `allowEmptyCatch` (the house idiom for storage that may be
+unavailable), and `react-refresh/only-export-components` as a warning.
 
-### Git Workflow
-1. Create feature branch from `main`
-2. Make commits with descriptive messages
-3. Test thoroughly before submitting PR
-4. Update documentation as needed
+Two restrictions come from `DESIGN.md` and are enforced as `no-restricted-syntax`, in both
+string literals and template elements:
 
-### Pull Request Template
-- [ ] Tool works in both themes
-- [ ] Mobile responsive
-- [ ] SEO meta tags configured
-- [ ] Documentation updated
-- [ ] No console errors
-- [ ] Follows design system patterns
+| Restriction | What it catches | Where it is an error |
+|---|---|---|
+| Raw Tailwind palette classes | `bg-green-50`, `text-red-500`, `hover:border-blue-300` and every prefixed variant | `src/components/ui/**` and `src/tools/**` |
+| Off-scale typography | Tailwind's stock sizes (`text-xs`…`text-9xl`) and weights outside 400–660 (`font-bold`, `font-light`, …) | `src/components/ui/**` and `src/tools/**` |
 
-## Troubleshooting
+Use semantic tokens instead of palette classes — `bg-success-subtle`, `text-danger`,
+`border-info`, `text-muted-foreground`. Use the type steps `DESIGN.md` defines instead of
+stock sizes: `text-display`, `text-headline-lg`, `text-headline-md`, `text-title-sm`,
+`text-body-lg`, `text-body-md`, `text-body-sm`, `text-label-caps`, `text-data-lg`,
+`text-data-md`, `text-data-sm`. Each step carries its own weight, line-height and tracking,
+so it never takes a `font-*`, `leading-*` or `tracking-*` alongside it. (The ESLint message
+lists ten of the eleven — `data-lg` is missing from it, but the step exists in `DESIGN.md`
+and in `cn()`'s merge configuration.)
 
-### Common Issues
+Both rules see source text only. A class written as a computed string, or an inline
+`style={{ fontSize }}`, passes lint regardless — lint proves a class was written, only the
+rendered DOM proves it was applied.
 
-#### Theming Issues
-Ensure you use semantic Tailwind tokens via `globals.css` theme variables and component tokens rather than hard-coded colors.
+## Conventions
 
-#### State Not Persisting
-```jsx
-// Ensure localStorage key is unique
-const [state, setState] = useLocalStorage({
-  key: 'unique-tool-name-state', // ✅ Specific key
-  defaultValue: {}
-});
-```
+- **JavaScript and JSX only.** Not a TypeScript project. JSDoc is used on the framework,
+  manifest and `core/` layers; full TypeScript is not on the table.
+- `.jsx` for components, `.js` for utilities, `.mjs` for manifests and Node-side modules.
+  PascalCase component files, camelCase utilities.
+- Functional components with hooks. No class components — the one exception is the island
+  error boundary in `src/bridge/ToolIsland.jsx`, because React offers no hook for it.
+- **No code comments unless asked.** Where a comment does exist in this tree it explains
+  why something is the way it is, usually because the obvious alternative was tried and
+  broke something.
+- Prefer editing an existing file to adding one. If a file passes roughly 200 lines, factor
+  the addition into a component or a `lib/` module rather than growing it.
+- Change the shared component, not the call site. `src/components/ui/` is the design
+  surface and the one place a change reaches every tool at once.
+- Shell CSS classes in `src/styles/shell.css` are `rt-`-prefixed. Do not add an unprefixed
+  class there — it will collide with the Tailwind utility of the same name.
+- Never hand-edit `src/styles/tokens.generated.css`. Edit `DESIGN.md`, run
+  `pnpm generate:tokens`, run `pnpm test`.
+- Documentation lives in `docs/` (see [`docs/README.md`](README.md)). Deliberate
+  divergences from previously captured behaviour go in
+  [`BEHAVIOR_CHANGES.md`](BEHAVIOR_CHANGES.md), in the change that makes them.
 
-#### Build Errors
-```bash
-# Clear cache and reinstall
-rm -rf node_modules package-lock.json
-npm install
-```
+## The generator scripts
 
-### Debug Tools
-- React Developer Tools browser extension
-- Vite's built-in HMR error overlay
-- Browser DevTools Network tab for API issues
+All five read the manifests (via `src/tools/loadManifests.mjs`, the plain-Node twin of the
+registry) and write files that are otherwise hand-maintained and therefore drift.
 
-## Resources
+| Script | Output | Committed? | Run by |
+|---|---|---|---|
+| `scripts/generate-sitemap.js` | `public/sitemap.xml` | No — gitignored | `pnpm build`, first step |
+| `scripts/generate-redirects.mjs` | `dist/_redirects` | No — build artefact | `pnpm build`, last step |
+| `scripts/generate-tokens.mjs` | `src/styles/tokens.generated.css` | Yes | On demand, after editing `DESIGN.md` |
+| `scripts/generate-og.mjs` | `public/og/<id>.png` and `public/og/default.png` | Yes | On demand |
+| `scripts/generate-docs.mjs` | The tables between `<!-- TOOLS:START -->` and `<!-- TOOLS:END -->` in `README.md` and `docs/README.md` | Yes | On demand |
 
-- Shadcn UI components live under `src/components/ui/*`
-- [Radix Primitives](https://www.radix-ui.com/)
-- [React Router Documentation](https://reactrouter.com/)
-- [Vite Documentation](https://vitejs.dev/)
-- [ESLint Configuration](https://eslint.org/)
+Notes worth knowing before running them:
 
-## Support
-
-For development questions or issues:
-1. Check existing documentation
-2. Search through codebase for similar patterns
-3. Review component implementations in other tools
-4. Test with different browsers and screen sizes
+- **Tokens** shells out to `pnpm dlx @google/design.md`, so it needs network access on
+  first run. That is why the output is committed and CI never regenerates it — the contrast
+  test is what proves the committed file still matches `DESIGN.md`.
+- **Open Graph cards** are drawn by headless Chromium (via `@playwright/test`) rather than
+  satori or sharp, because `@fontsource-variable/inter` ships woff2 only and the
+  alternatives cannot read it without extra packages or a font that happens to exist on the
+  build image. Colours are read out of `tokens.generated.css`, so run `generate:tokens`
+  first if the palette changed. Cards are committed because they change roughly never and a
+  font pipeline has no business on the critical path of a deploy.
+- **Docs tables** are pinned by `src/tools/docs.test.js`, so adding a tool without running
+  `pnpm generate:docs` fails CI. The two tables differ only in link prefix (`docs/tools/…`
+  from the root README, `tools/…` from `docs/README.md`), and a doc link is only emitted
+  when `docs/tools/<id>/` actually exists.
+- **Sitemap** takes `lastmod` from each tool's last commit date, not the build clock, and
+  omits the field entirely outside a git checkout. Param routes are deliberately absent:
+  a deep link is a link into a result, not a page worth indexing.
+- **Redirects** exits non-zero if `dist/` is missing, so it cannot silently produce nothing
+  when run outside `pnpm build`.

@@ -1,6 +1,42 @@
 import { clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { extendTailwindMerge } from "tailwind-merge"
 import { useEffect, useState } from "react"
+
+/**
+ * tailwind-merge has to be told about DESIGN.md's type scale.
+ *
+ * Out of the box it knows Tailwind's stock sizes (`text-sm`, `text-lg`) and
+ * assumes any other `text-*` is a colour. So in
+ * `cn("text-body-sm ... text-on-surface-muted")` it saw two colours, kept the
+ * last, and **silently dropped the size** — which is why labels and inputs
+ * rendered without their step even though the class was right there in the
+ * source. Every custom step was affected wherever it shared a component with
+ * a text colour, which is most of them.
+ *
+ * Declaring the ten steps as `font-size` makes the two groups distinct again.
+ * Guarded by src/lib/utils.test.js.
+ */
+const TYPE_SCALE = [
+  "display",
+  "headline-lg",
+  "headline-md",
+  "title-sm",
+  "body-lg",
+  "body-md",
+  "body-sm",
+  "label-caps",
+  "data-lg",
+  "data-md",
+  "data-sm",
+]
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [{ text: TYPE_SCALE }],
+    },
+  },
+})
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs))

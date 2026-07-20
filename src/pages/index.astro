@@ -1,0 +1,133 @@
+---
+/**
+ * The tool index. Entirely derived from the registry — adding tool #16
+ * changes nothing in this file.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolCard from '../shell/ToolCard.astro';
+import { TOOLS, groupedByCategory } from '../tools/registry.mjs';
+import { PERSON_SCHEMA, SITE_NAME, SITE_URL } from '../shell/site.mjs';
+
+/**
+ * The index published no structured data at all, so nothing tied the fifteen
+ * tool pages to a site or an author. The WebSite node is what a crawler reads
+ * the tool pages' `isPartOf` against; the ItemList states outright that this
+ * page is a catalogue and what is in it.
+ */
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: SITE_URL,
+    author: PERSON_SCHEMA,
+    publisher: PERSON_SCHEMA,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Tools',
+    numberOfItems: TOOLS.length,
+    itemListElement: TOOLS.map((tool, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: tool.title,
+      description: tool.shortDescription,
+      url: `${SITE_URL}${tool.path}`,
+    })),
+  },
+];
+
+const categoryGroups = groupedByCategory();
+const azure = categoryGroups.find((group) => group.id === 'azure');
+const microsoft = categoryGroups.find((group) => group.id === 'microsoft');
+const groups = categoryGroups.flatMap((group) => {
+  if (group.id === 'microsoft') return [];
+  if (group.id !== 'azure') {
+    return [{ ...group, accent: `var(--color-category-${group.id})` }];
+  }
+
+  return [
+    {
+      id: 'microsoft-azure',
+      label: 'Microsoft & Azure',
+      accent: 'var(--color-primary)',
+      tools: [...azure.tools, ...microsoft.tools].sort((a, b) => a.title.localeCompare(b.title)),
+    },
+  ];
+});
+---
+
+<BaseLayout
+  title="russ.tools — client-side network, cloud and developer utilities"
+  description="Fifteen small utilities for people who work with networks, cloud platforms and certificates. Subnet planning, DNS and WHOIS lookups, Azure naming, JWTs, encoders and converters — all running entirely in your browser."
+  keywords={['network tools', 'subnet calculator', 'dns lookup', 'whois', 'azure naming', 'jwt decoder', 'base64', 'developer tools']}
+  schema={schema}
+>
+  <!--
+    No hero and no stat strip. Both were selling the site to someone already
+    on it: a headline that repeated the footer's claim, a subtitle that
+    repeated the headline, and four tiles of which two ("100% client-side",
+    "0 trackers") were slogans wearing a number's clothes. The h1 stays
+    because the page needs one; it says what the page is and stops.
+  -->
+  <h1 class="rt-index-title">Tools</h1>
+
+  <div class="rt-filters" id="filters" role="group" aria-label="Filter tools by category">
+    <button class="rt-chip" type="button" data-filter="all" aria-pressed="true">
+      All <em>{TOOLS.length}</em>
+    </button>
+    {
+      groups.map((g) => (
+        <button
+          class="rt-chip"
+          type="button"
+          data-filter={g.id}
+          aria-pressed="false"
+          style={`--cat: ${g.accent}`}
+        >
+          <i aria-hidden="true" />
+          {g.label} <em>{g.tools.length}</em>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="rt-board" id="board">
+    {
+      groups.map((g) => (
+        <section class="rt-group" data-category={g.id} style={`--cat: ${g.accent}`}>
+          <div class="rt-group-head">
+            <b>{g.label}</b>
+            <hr />
+          </div>
+          <div class="rt-grid">
+            {g.tools.map((tool) => (
+              <ToolCard tool={tool} />
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<script>
+  // Filtering is a show/hide over prerendered groups — no framework, and it
+  // degrades to "all tools visible" if the script never runs.
+  const filters = document.getElementById('filters');
+  const groups = [...document.querySelectorAll('#board .rt-group')];
+
+  filters?.addEventListener('click', (event) => {
+    const chip = event.target instanceof Element ? event.target.closest('.rt-chip') : null;
+    if (!chip) return;
+
+    const active = chip.dataset.filter;
+    for (const c of filters.querySelectorAll('.rt-chip')) {
+      c.setAttribute('aria-pressed', String(c.dataset.filter === active));
+    }
+    for (const group of groups) {
+      group.hidden = active !== 'all' && group.dataset.category !== active;
+    }
+  });
+</script>

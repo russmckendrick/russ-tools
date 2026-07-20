@@ -1,0 +1,330 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createToolStorage } from '@/core';
+import { formatMarkdownTable, parseMarkdownTable, validateMarkdownTable } from '../utils/tableFormatter';
+import { validateTableData, sanitizeTableData, normalizeTableData, getTableStats } from '../utils/tableValidator';
+
+// rt:markdown-table-tool:<slot>, with the pre-port names as read-only legacy
+// fallbacks (frozen contract #3 — read old, write new, never delete).
+const storage = createToolStorage('markdown-table-tool');
+const LEGACY_STATE_KEY = 'markdown-table-tool-state';
+const LEGACY_HISTORY_KEY = 'markdown-table-tool-history';
+const MAX_HISTORY = 50;
+
+const INITIAL_TABLE_DATA = [['Header 1', 'Header 2'], ['Cell 1', 'Cell 2']];
+const INITIAL_ALIGNMENTS = ['left', 'left'];
+
+const cloneState = (data, aligns, header) => ({
+  tableData: JSON.parse(JSON.stringify(data)),
+  alignments: [...aligns],
+  hasHeader: header,
+  timestamp: Date.now()
+});
+
+export const useTableEditor = () => {
+  const [tableData, setTableData] = useState(INITIAL_TABLE_DATA);
+  const [alignments, setAlignments] = useState(INITIAL_ALIGNMENTS);
+  const [hasHeader, setHasHeader] = useState(true);
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [history, setHistory] = useState(() => [cloneState(INITIAL_TABLE_DATA, INITIAL_ALIGNMENTS, true)]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
+
+  const saveState = useCallback((data, aligns, header) => {
+    const state = {
+      tableData: data,
+      alignments: aligns,
+      hasHeader: header,
+      timestamp: Date.now()
+    };
+    storage.set('state', state);
+    setLastSaved(Date.now());
+  }, []);
+
+  const loadState = useCallback(() => {
+    const state = storage.get('state', { legacy: LEGACY_STATE_KEY });
+    if (state) {
+      setTableData(state.tableData || [['Header 1', 'Header 2'], ['Cell 1', 'Cell 2']]);
+      setAlignments(state.alignments || ['left', 'left']);
+      setHasHeader(state.hasHeader !== undefined ? state.hasHeader : true);
+      setLastSaved(state.timestamp);
+    }
+  }, []);
+
+  // Records the state AFTER a change. history[historyIndex] is always the state
+  // currently on screen, which is what makes undo/redo symmetrical.
+  const addToHistory = useCallback((data, aligns, header) => {
+    const newState = cloneState(data, aligns, header);
+
+    setHistory(prev => {
+      const newHistory = prev.slice(0, historyIndex + 1);
+      newHistory.push(newState);
+
+      while (newHistory.length > MAX_HISTORY) {
+        newHistory.shift();
+      }
+
+      storage.set('history', newHistory.slice(-20));
+
+      return newHistory;
+    });
+
+    setHistoryIndex(prev => Math.min(prev + 1, MAX_HISTORY - 1));
+  }, [historyIndex]);
+
+  const updateTable = useCallback((newData, newAlignments = null, newHasHeader = null) => {
+    const sanitizedData = sanitizeTableData(newData);
+    const normalizedData = normalizeTableData(sanitizedData);
+    
+    if (normalizedData.length === 0) {
+      return;
+    }
+
+    const maxCols = Math.max(...normalizedData.map(row => row.length));
+    const updatedAlignments = newAlignments || [...alignments];
+    
+    while (updatedAlignments.length < maxCols) {
+      updatedAlignments.push('left');
+    }
+    
+    const finalAlignments = updatedAlignments.slice(0, maxCols);
+    const updatedHasHeader = newHasHeader !== null ? newHasHeader : hasHeader;
+
+    setTableData(normalizedData);
+    setAlignments(finalAlignments);
+    setHasHeader(updatedHasHeader);
+
+    addToHistory(normalizedData, finalAlignments, updatedHasHeader);
+    saveState(normalizedData, finalAlignments, updatedHasHeader);
+  }, [alignments, hasHeader, addToHistory, saveState]);
+
+  const updateCell = useCallback((rowIndex, colIndex, value) => {
+    if (rowIndex < 0 || colIndex < 0) return;
+    
+    const newData = [...tableData];
+    
+    while (newData.length <= rowIndex) {
+      const newRow = new Array(Math.max(newData[0]?.length || 1, colIndex + 1)).fill('');
+      newData.push(newRow);
+    }
+    
+    while (newData[rowIndex].length <= colIndex) {
+      newData[rowIndex].push('');
+    }
+    
+    newData[rowIndex][colIndex] = value;
+    updateTable(newData);
+  }, [tableData, updateTable]);
+
+  const addRow = useCallback((index = -1) => {
+    const newData = [...tableData];
+    const columnCount = Math.max(...newData.map(row => row.length));
+    const newRow = new Array(columnCount).fill('');
+    
+    if (index === -1 || index >= newData.length) {
+      newData.push(newRow);
+    } else {
+      newData.splice(index, 0, newRow);
+    }
+    
+    updateTable(newData);
+  }, [tableData, updateTable]);
+
+  const removeRow = useCallback((index) => {
+    if (tableData.length <= 1) return;
+    
+    const newData = tableData.filter((_, i) => i !== index);
+    updateTable(newData);
+    
+    if (selectedCell && selectedCell.row === index) {
+      setSelectedCell(null);
+    } else if (selectedCell && selectedCell.row > index) {
+      setSelectedCell({ ...selectedCell, row: selectedCell.row - 1 });
+    }
+  }, [tableData, updateTable, selectedCell]);
+
+  const addColumn = useCallback((index = -1) => {
+    const newData = tableData.map(row => {
+      const newRow = [...row];
+      if (index === -1 || index >= newRow.length) {
+        newRow.push('');
+      } else {
+        newRow.splice(index, 0, '');
+      }
+      return newRow;
+    });
+    
+    const newAlignments = [...alignments];
+    if (index === -1 || index >= newAlignments.length) {
+      newAlignments.push('left');
+    } else {
+      newAlignments.splice(index, 0, 'left');
+    }
+    
+    updateTable(newData, newAlignments);
+  }, [tableData, alignments, updateTable]);
+
+  const removeColumn = useCallback((index) => {
+    if (tableData[0]?.length <= 1) return;
+    
+    const newData = tableData.map(row => row.filter((_, i) => i !== index));
+    const newAlignments = alignments.filter((_, i) => i !== index);
+    
+    updateTable(newData, newAlignments);
+    
+    if (selectedCell && selectedCell.col === index) {
+      setSelectedCell(null);
+    } else if (selectedCell && selectedCell.col > index) {
+      setSelectedCell({ ...selectedCell, col: selectedCell.col - 1 });
+    }
+  }, [tableData, alignments, updateTable, selectedCell]);
+
+  const updateAlignment = useCallback((columnIndex, alignment) => {
+    const newAlignments = [...alignments];
+    newAlignments[columnIndex] = alignment;
+    
+    setAlignments(newAlignments);
+    saveState(tableData, newAlignments, hasHeader);
+  }, [alignments, tableData, hasHeader, saveState]);
+
+  const clearTable = useCallback(() => {
+    const newData = [['Header 1', 'Header 2'], ['', '']];
+    const newAlignments = ['left', 'left'];
+
+    setTableData(newData);
+    setAlignments(newAlignments);
+    setHasHeader(true);
+    setSelectedCell(null);
+
+    addToHistory(newData, newAlignments, true);
+    saveState(newData, newAlignments, true);
+  }, [addToHistory, saveState]);
+
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      const prevState = history[historyIndex - 1];
+      setTableData(prevState.tableData);
+      setAlignments(prevState.alignments);
+      setHasHeader(prevState.hasHeader);
+      setHistoryIndex(prev => prev - 1);
+      setSelectedCell(null);
+      
+      saveState(prevState.tableData, prevState.alignments, prevState.hasHeader);
+    }
+  }, [history, historyIndex, saveState]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const nextState = history[historyIndex + 1];
+      setTableData(nextState.tableData);
+      setAlignments(nextState.alignments);
+      setHasHeader(nextState.hasHeader);
+      setHistoryIndex(prev => prev + 1);
+      setSelectedCell(null);
+      
+      saveState(nextState.tableData, nextState.alignments, nextState.hasHeader);
+    }
+  }, [history, historyIndex, saveState]);
+
+  const importFromMarkdown = useCallback((markdownText) => {
+    try {
+      setIsLoading(true);
+      const { data, alignments: parsedAlignments, hasHeader: parsedHasHeader } = parseMarkdownTable(markdownText);
+      
+      if (data.length > 0) {
+        updateTable(data, parsedAlignments, parsedHasHeader);
+      }
+    } catch (error) {
+      console.error('Failed to import markdown:', error);
+      throw new Error(`Failed to import markdown: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [updateTable]);
+
+  const exportToMarkdown = useCallback(() => {
+    return formatMarkdownTable(tableData, alignments, hasHeader);
+  }, [tableData, alignments, hasHeader]);
+
+  const validation = useMemo(() => {
+    const dataValidation = validateTableData(tableData);
+    const markdown = exportToMarkdown();
+    const markdownValidation = validateMarkdownTable(markdown);
+    
+    return {
+      data: dataValidation,
+      markdown: markdownValidation,
+      isValid: dataValidation.isValid && markdownValidation.isValid
+    };
+  }, [tableData, exportToMarkdown]);
+
+  const stats = useMemo(() => {
+    return getTableStats(tableData);
+  }, [tableData]);
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < history.length - 1;
+
+  useEffect(() => {
+    loadState();
+    
+    const historyData = storage.get('history', { legacy: LEGACY_HISTORY_KEY });
+    if (Array.isArray(historyData) && historyData.length > 0) {
+      setHistory(historyData);
+      setHistoryIndex(historyData.length - 1);
+    }
+  }, [loadState]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
+
+  return {
+    tableData,
+    alignments,
+    hasHeader,
+    selectedCell,
+    isLoading,
+    lastSaved,
+    validation,
+    stats,
+    canUndo,
+    canRedo,
+    
+    setTableData,
+    setAlignments,
+    setHasHeader: (value) => {
+      setHasHeader(value);
+      saveState(tableData, alignments, value);
+    },
+    setSelectedCell,
+    
+    updateTable,
+    updateCell,
+    addRow,
+    removeRow,
+    addColumn,
+    removeColumn,
+    updateAlignment,
+    clearTable,
+    undo,
+    redo,
+    
+    importFromMarkdown,
+    exportToMarkdown,
+    
+    saveState: () => saveState(tableData, alignments, hasHeader),
+    loadState
+  };
+};

@@ -1,0 +1,655 @@
+<title>russ.tools — Catalogue, panelled</title>
+
+<style>
+  /* ===========================================================
+     Catalogue direction, kept — restraint, real descriptions,
+     six categories. Changed per feedback:
+       · serif  -> crisp sans
+       · index rows -> panels
+       · icons added, not bolted on
+     Finish target: Linear polish, Grafana density.
+     Dark is primary; light is a full peer, not an inversion.
+     =========================================================== */
+  :root {
+    --bg:        #0d0f12;
+    --bg-glow:   #6e8aff;
+    --panel:     #14171c;
+    --panel-2:   #191d23;
+    --line:      #23282f;
+    --line-2:    #2e353e;
+    --fg:        #e7eaee;
+    --dim:       #98a1ab;
+    --faint:     #6a727c;
+    --accent:    #7d94ff;
+
+    --net: #2dd4bf;
+    --azr: #60a5fa;
+    --msf: #a78bfa;
+    --sec: #fbbf24;
+    --dev: #4ade80;
+    --txt: #f472b6;
+
+    --sans: -apple-system, BlinkMacSystemFont, "Inter", system-ui, "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    --r: 10px;
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:      #fafafb;
+      --bg-glow: #6e8aff;
+      --panel:   #ffffff;
+      --panel-2: #f6f7f9;
+      --line:    #e5e8ec;
+      --line-2:  #d5dae1;
+      --fg:      #14171a;
+      --dim:     #5a636d;
+      --faint:   #8b939d;
+      --accent:  #3b5bdb;
+
+      --net: #0d9488;
+      --azr: #2563eb;
+      --msf: #7c3aed;
+      --sec: #b45309;
+      --dev: #15803d;
+      --txt: #be1a63;
+      color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fafafb; --bg-glow: #6e8aff; --panel: #ffffff; --panel-2: #f6f7f9;
+    --line: #e5e8ec; --line-2: #d5dae1; --fg: #14171a; --dim: #5a636d;
+    --faint: #8b939d; --accent: #3b5bdb;
+    --net: #0d9488; --azr: #2563eb; --msf: #7c3aed;
+    --sec: #b45309; --dev: #15803d; --txt: #be1a63;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d0f12; --bg-glow: #6e8aff; --panel: #14171c; --panel-2: #191d23;
+    --line: #23282f; --line-2: #2e353e; --fg: #e7eaee; --dim: #98a1ab;
+    --faint: #6a727c; --accent: #7d94ff;
+    --net: #2dd4bf; --azr: #60a5fa; --msf: #a78bfa;
+    --sec: #fbbf24; --dev: #4ade80; --txt: #f472b6;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.006em;
+  }
+
+  .sheet { max-width: 1120px; margin: 0 auto; padding: 0 24px 88px; }
+
+  /* ---------- framing note (not part of the design) ---------- */
+  .intro { padding: 54px 0 8px; display: grid; gap: 12px; }
+  .intro-k {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint);
+  }
+  .intro h1 {
+    margin: 0; font-size: clamp(26px, 3.4vw, 36px); font-weight: 640;
+    letter-spacing: -0.03em; line-height: 1.1;
+  }
+  .intro p { margin: 0; max-width: 64ch; color: var(--dim); }
+  .intro strong { color: var(--fg); font-weight: 600; }
+
+  /* ---------- app frame ---------- */
+  .frame {
+    margin-top: 24px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg);
+    box-shadow: 0 18px 50px -26px rgba(0,0,0,.7);
+  }
+  .frame-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  .fdot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); }
+  .furl { margin-left: 8px; font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+
+  /* ===========================================================
+     THE DESIGN
+     =========================================================== */
+  .app { position: relative; }
+
+  /* Linear-ish ambient wash, kept very low */
+  .app::before {
+    content: "";
+    position: absolute; inset: 0 0 auto 0; height: 320px;
+    background: radial-gradient(120% 100% at 50% 0%,
+      color-mix(in oklab, var(--bg-glow) 13%, transparent), transparent 62%);
+    pointer-events: none;
+  }
+  @media (prefers-color-scheme: light) {
+    .app::before { opacity: .5; }
+  }
+
+  .topbar {
+    position: relative;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 14px 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 620; letter-spacing: -0.02em; }
+  .brand .mark {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: linear-gradient(140deg, var(--accent), color-mix(in oklab, var(--net) 70%, var(--accent)));
+    display: grid; place-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.28);
+  }
+  .brand .mark svg { width: 13px; height: 13px; color: #fff; }
+  .topbar nav { display: flex; gap: 18px; font-size: 13.5px; color: var(--dim); }
+  .topbar nav span:first-child { color: var(--fg); }
+
+  .hero { position: relative; padding: 40px 22px 26px; display: grid; gap: 16px; }
+  .hero h2 {
+    margin: 0; font-size: clamp(28px, 4vw, 40px); font-weight: 660;
+    letter-spacing: -0.035em; line-height: 1.06; max-width: 19ch; text-wrap: balance;
+  }
+  .hero p { margin: 0; color: var(--dim); max-width: 58ch; font-size: 16px; }
+
+  /* Grafana-ish stat strip */
+  .stats {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line);
+    border-radius: var(--r); overflow: hidden; margin-top: 6px;
+  }
+  @media (min-width: 640px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--panel); padding: 11px 14px; display: grid; gap: 2px; }
+  .stat b {
+    font-size: 19px; font-weight: 640; letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat span {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
+  }
+  .stat.ok b { color: var(--dev); }
+
+  /* filter chips */
+  .filters {
+    position: relative;
+    display: flex; flex-wrap: wrap; gap: 7px;
+    padding: 4px 22px 20px;
+  }
+  .chip {
+    font: inherit; font-size: 13px; line-height: 1;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 12px; border-radius: 7px;
+    background: var(--panel); color: var(--dim);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    transition: color .13s ease, border-color .13s ease, background .13s ease;
+  }
+  .chip i { width: 6px; height: 6px; border-radius: 50%; background: var(--cat, var(--faint)); display: block; }
+  .chip:hover { color: var(--fg); border-color: var(--line-2); }
+  .chip[aria-pressed="true"] {
+    color: var(--fg); background: var(--panel-2);
+    border-color: color-mix(in oklab, var(--cat, var(--accent)) 55%, var(--line));
+  }
+  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- the grid of panels ---- */
+  .board { position: relative; padding: 0 22px 30px; display: grid; gap: 26px; }
+
+  .group { display: grid; gap: 11px; }
+  .group-head { display: flex; align-items: center; gap: 10px; }
+  .group-head b {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--cat);
+  }
+  .group-head i { flex: 1; height: 1px; background: var(--line); display: block; }
+  .group-head em {
+    font-style: normal; font-family: var(--mono); font-size: 10.5px; color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .grid { display: grid; gap: 11px; }
+  @media (min-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 940px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .card {
+    position: relative;
+    display: grid; gap: 9px; align-content: start;
+    padding: 15px 16px 14px;
+    border-radius: var(--r);
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(180deg,
+        color-mix(in oklab, var(--panel-2) 70%, var(--panel)),
+        var(--panel));
+    box-shadow: inset 0 1px 0 color-mix(in oklab, #fff 5%, transparent);
+    text-decoration: none; color: inherit;
+    transition: border-color .14s ease, transform .14s ease, box-shadow .14s ease;
+  }
+  .card:hover {
+    border-color: color-mix(in oklab, var(--cat) 45%, var(--line));
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, #fff 7%, transparent),
+      0 6px 22px -12px color-mix(in oklab, var(--cat) 60%, transparent);
+  }
+  .card:focus-visible { outline: 2px solid var(--cat); outline-offset: 2px; }
+
+  .card-top { display: flex; align-items: center; gap: 10px; }
+  .ico {
+    flex: none;
+    width: 32px; height: 32px; border-radius: 8px;
+    display: grid; place-items: center;
+    color: var(--cat);
+    background: color-mix(in oklab, var(--cat) 13%, transparent);
+    border: 1px solid color-mix(in oklab, var(--cat) 26%, transparent);
+  }
+  .ico svg { width: 17px; height: 17px; display: block; }
+  .card-name {
+    font-size: 14.5px; font-weight: 600; letter-spacing: -0.015em;
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .card p {
+    margin: 0; font-size: 13.5px; color: var(--dim); line-height: 1.45;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card-foot {
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 9px; margin-top: 1px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; color: var(--faint);
+    min-width: 0;
+  }
+  .card-foot span {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .card-foot .go { margin-left: auto; flex: none; color: var(--cat); opacity: 0; transition: opacity .14s ease; }
+  .card:hover .card-foot .go { opacity: 1; }
+
+  .empty {
+    padding: 26px 22px 40px; color: var(--faint); font-size: 14px;
+  }
+
+  .appfoot {
+    position: relative;
+    border-top: 1px solid var(--line);
+    padding: 14px 22px;
+    display: flex; flex-wrap: wrap; gap: 8px 22px;
+    font-size: 12.5px; color: var(--faint);
+  }
+  .appfoot b { color: var(--dim); font-weight: 500; }
+
+  /* ===========================================================
+     TOOL PAGE
+     =========================================================== */
+  .tp { position: relative; }
+  .tp-head {
+    padding: 22px 22px 18px;
+    border-bottom: 1px solid var(--line);
+    display: grid; gap: 13px;
+  }
+  .tp-crumb { font-size: 12.5px; color: var(--faint); }
+  .tp-crumb b { color: var(--cat); font-weight: 500; }
+  .tp-id { display: flex; align-items: center; gap: 12px; }
+  .tp-id .ico { width: 42px; height: 42px; border-radius: 10px; }
+  .tp-id .ico svg { width: 22px; height: 22px; }
+  .tp-id h3 {
+    margin: 0; font-size: clamp(22px, 3vw, 28px); font-weight: 650;
+    letter-spacing: -0.032em; line-height: 1.12;
+  }
+  .tp-head > p { margin: 0; color: var(--dim); max-width: 62ch; font-size: 14.5px; }
+  .tp-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+  .badge {
+    font-family: var(--mono); font-size: 10.5px;
+    padding: 3px 8px; border-radius: 5px;
+    border: 1px solid var(--line); color: var(--dim);
+  }
+  .badge.on {
+    color: var(--cat);
+    border-color: color-mix(in oklab, var(--cat) 40%, transparent);
+    background: color-mix(in oklab, var(--cat) 10%, transparent);
+  }
+
+  .tp-body { padding: 18px 22px 26px; display: grid; gap: 12px; }
+  @media (min-width: 820px) { .tp-body { grid-template-columns: 320px 1fr; align-items: start; } }
+
+  .panel {
+    border: 1px solid var(--line); border-radius: var(--r);
+    background: var(--panel); overflow: hidden;
+  }
+  .panel-h {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 13px; border-bottom: 1px solid var(--line);
+    background: color-mix(in oklab, var(--panel-2) 60%, var(--panel));
+    font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint);
+  }
+  .panel-h em { font-style: normal; margin-left: auto; color: var(--dim); }
+  .panel-b { padding: 13px; display: grid; gap: 10px; }
+
+  .fieldrow { display: grid; gap: 5px; }
+  .fieldrow label {
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint);
+  }
+  .fld {
+    border: 1px solid var(--line-2); background: var(--bg);
+    border-radius: 7px; padding: 8px 11px;
+    font-family: var(--mono); font-size: 13px; color: var(--fg);
+  }
+  .btn {
+    font: inherit; font-size: 13.5px; font-weight: 550;
+    padding: 8px 13px; border-radius: 7px; cursor: pointer;
+    border: 1px solid transparent;
+    color: #fff;
+    background: linear-gradient(180deg,
+      color-mix(in oklab, var(--cat) 92%, #fff), var(--cat));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .rows { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+  .row {
+    display: grid; grid-template-columns: 9rem 3.5rem 1fr;
+    gap: 12px; padding: 7px 13px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .row:last-child { border-bottom: 0; }
+  .row:nth-child(odd) { background: color-mix(in oklab, var(--panel-2) 45%, transparent); }
+  .row .k { color: var(--dim); }
+  .row .t { color: var(--cat); }
+  .row .v { color: var(--fg); overflow: hidden; text-overflow: ellipsis; }
+
+  /* ---------- notes ---------- */
+  .notes { padding-top: 58px; }
+  .notes h3 {
+    margin: 0 0 14px; font-size: 21px; font-weight: 640; letter-spacing: -0.025em;
+    padding-bottom: 10px; border-bottom: 1px solid var(--line);
+  }
+  .ngrid { display: grid; gap: 10px; }
+  @media (min-width: 760px) { .ngrid { grid-template-columns: repeat(2, 1fr); } }
+  .note {
+    border: 1px solid var(--line); border-radius: var(--r);
+    background: var(--panel); padding: 14px 16px; display: grid; gap: 5px;
+  }
+  .note h4 {
+    margin: 0; font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); font-weight: 500;
+  }
+  .note p { margin: 0; font-size: 14px; color: var(--dim); line-height: 1.5; }
+  .note strong { color: var(--fg); font-weight: 600; }
+
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 7rem 3rem 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+    .card:hover { transform: none; }
+  }
+</style>
+
+<div class="sheet">
+
+  <section class="intro">
+    <div class="intro-k">russ.tools · catalogue, panelled</div>
+    <h1>Same direction, different finish</h1>
+    <p>
+      Catalogue's substance is intact — six categories, real descriptions, nothing shouting. What
+      changed is the finish you flagged: <strong>serif out, crisp sans in</strong>;
+      <strong>index rows out, panels in</strong>; and the <strong>icons live inside the cards</strong>
+      rather than arriving as a new visual language. Dark is the primary target; light is a peer.
+    </p>
+  </section>
+
+  <div class="frame">
+    <div class="frame-bar">
+      <span class="fdot"></span><span class="fdot"></span><span class="fdot"></span>
+      <span class="furl">russ.tools</span>
+    </div>
+
+    <div class="app">
+      <div class="topbar">
+        <div class="brand">
+          <span class="mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h16M4 12h10M4 17h13"/>
+            </svg>
+          </span>
+          russ.tools
+        </div>
+        <nav><span>Tools</span><span>Saved</span><span>About</span></nav>
+      </div>
+
+      <div class="hero">
+        <h2>Fifteen tools. Nothing leaves the browser.</h2>
+        <p>Network planning, Azure and Microsoft lookups, certificates, tokens and converters — all
+        running locally, all deep-linkable.</p>
+        <div class="stats">
+          <div class="stat"><b>15</b><span>Tools</span></div>
+          <div class="stat"><b>6</b><span>Categories</span></div>
+          <div class="stat ok"><b>100%</b><span>Client-side</span></div>
+          <div class="stat"><b>0</b><span>Trackers</span></div>
+        </div>
+      </div>
+
+      <div class="filters" id="filters"></div>
+      <div class="board" id="board"></div>
+
+      <div class="appfoot">
+        <span><b>15</b> tools indexed</span>
+        <span><b>No</b> account required</span>
+        <span><b>Nothing</b> uploaded, logged or stored off-device</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TOOL PAGE ============ -->
+  <section class="intro" style="padding-bottom:0">
+    <div class="intro-k">one level down</div>
+    <h1 style="font-size:clamp(21px,2.6vw,27px)">A tool page</h1>
+    <p>Same panels, same icon treatment, category colour carried through to the primary action and
+    the result table. This is what <code>ToolLayout.astro</code> renders from a manifest.</p>
+  </section>
+
+  <div class="frame">
+    <div class="frame-bar">
+      <span class="fdot"></span><span class="fdot"></span><span class="fdot"></span>
+      <span class="furl">russ.tools/dns-lookup/russ.tools</span>
+    </div>
+
+    <div class="app tp" style="--cat: var(--net)">
+      <div class="topbar">
+        <div class="brand">
+          <span class="mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h16M4 12h10M4 17h13"/>
+            </svg>
+          </span>
+          russ.tools
+        </div>
+        <nav><span>Tools</span><span>Saved</span><span>About</span></nav>
+      </div>
+
+      <div class="tp-head">
+        <div class="tp-crumb">Tools / <b>Network</b></div>
+        <div class="tp-id">
+          <span class="ico" id="tpico"></span>
+          <h3>DNS Lookup</h3>
+        </div>
+        <p>Query any record type against Google, Cloudflare or OpenDNS resolvers. Results are cached
+        locally for five minutes.</p>
+        <div class="tp-badges">
+          <span class="badge on">Client-side</span>
+          <span class="badge">A · AAAA · MX · TXT · NS</span>
+          <span class="badge">/dns-lookup/:domain</span>
+        </div>
+      </div>
+
+      <div class="tp-body">
+        <div class="panel">
+          <div class="panel-h">Query</div>
+          <div class="panel-b">
+            <div class="fieldrow">
+              <label for="f-dom">Domain</label>
+              <div class="fld" id="f-dom">russ.tools</div>
+            </div>
+            <div class="fieldrow">
+              <label for="f-res">Resolver</label>
+              <div class="fld" id="f-res">cloudflare</div>
+            </div>
+            <button class="btn" type="button">Look up</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h">Answer <em>4 records · ttl 300 · 38 ms</em></div>
+          <div class="rows">
+            <div class="row"><span class="k">russ.tools</span><span class="t">A</span><span class="v">104.21.42.8</span></div>
+            <div class="row"><span class="k">russ.tools</span><span class="t">A</span><span class="v">172.67.191.55</span></div>
+            <div class="row"><span class="k">russ.tools</span><span class="t">MX</span><span class="v">10 mx1.improvmx.com</span></div>
+            <div class="row"><span class="k">russ.tools</span><span class="t">TXT</span><span class="v">"v=spf1 include:spf.improvmx.com ~all"</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="notes">
+    <h3>What changed, and what didn't</h3>
+    <div class="ngrid">
+      <div class="note">
+        <h4>Kept from Catalogue</h4>
+        <p>Six categories as the organising spine, a real description on every tool, and a quiet
+        ground that lets the content carry the page. <strong>No motif to maintain</strong> across 15
+        tools — just a panel, a type scale and a colour code.</p>
+      </div>
+      <div class="note">
+        <h4>Typography</h4>
+        <p>System sans throughout — SF on your machines — at tight tracking with a real weight range.
+        Mono is reserved for <strong>data only</strong>: records, paths, counts. No serif anywhere.</p>
+      </div>
+      <div class="note">
+        <h4>Panels, not rows</h4>
+        <p>Cards with a hairline border, a faint top highlight and a category-tinted glow on hover.
+        Density comes from Grafana; the restraint of the surface comes from Linear.</p>
+      </div>
+      <div class="note">
+        <h4>Colour is still a code</h4>
+        <p>Six hues drive the icon tile, the group rule, the hover glow, the primary button and the
+        record type column. It all derives from <code>category</code> in the manifest, so a
+        <strong>new tool colours itself</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const I = {
+    subnet:  '<rect x="3.2" y="4.5" width="17.6" height="15" rx="1.6"/><path d="M3.2 10.2h17.6M9.4 10.2v9.3M15.2 4.5v5.7"/>',
+    globe:   '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5a13 13 0 0 1 0 17a13 13 0 0 1 0-17Z"/>',
+    whois:   '<circle cx="10.8" cy="10.8" r="6.3"/><path d="m19.6 19.6-4.3-4.3"/><path d="M8.2 9.4h5.2M8.2 12.2h3.2"/>',
+    filter:  '<path d="M3.6 5h16.8l-6.6 7.6v6.1l-3.6 1.8v-7.9z"/>',
+    tag:     '<path d="M3.4 11.6V4.6a1.3 1.3 0 0 1 1.3-1.3h7l9.1 9.1-8.3 8.3z"/><circle cx="7.6" cy="7.5" r="1.35"/>',
+    portals: '<rect x="3.3" y="3.3" width="7" height="7" rx="1"/><rect x="13.7" y="3.3" width="7" height="7" rx="1"/><rect x="3.3" y="13.7" width="7" height="7" rx="1"/><path d="M14 20.4l6.4-6.4m0 0h-4.3m4.3 0v4.3"/>',
+    tenant:  '<path d="M4.4 20.6V4.9a1.2 1.2 0 0 1 1.2-1.2h7.8a1.2 1.2 0 0 1 1.2 1.2v15.7"/><path d="M2.4 20.6h13"/><path d="M7.4 7.9h3.4M7.4 11.6h3.4"/><circle cx="18.6" cy="15.4" r="3.1"/>',
+    cert:    '<rect x="2.8" y="4.2" width="18.4" height="11.4" rx="1.6"/><path d="M6.4 8.1h11M6.4 11.4h5.6"/><path d="M14.9 17.1v4.3l2.6-1.5 2.6 1.5v-4.3"/>',
+    jwt:     '<rect x="1.8" y="9" width="5.7" height="6" rx="1.2"/><rect x="9.15" y="9" width="5.7" height="6" rx="1.2"/><rect x="16.5" y="9" width="5.7" height="6" rx="1.2"/>',
+    key:     '<circle cx="6.9" cy="12" r="3.6"/><path d="M10.5 12h10.6m-3.4 0v3.1m-3.3-3.1v2.4"/>',
+    clock:   '<circle cx="12" cy="12" r="8.5"/><path d="M12 6.9V12l3.6 2.1"/>',
+    swap:    '<path d="M3.6 8.1h13.1m0 0-3.4-3.4m3.4 3.4-3.4 3.4"/><path d="M20.4 15.9H7.3m0 0 3.4-3.4m-3.4 3.4 3.4 3.4"/>',
+    braces:  '<path d="M8.4 3.9c-2.6 0-2.6 5.1-2.6 8.1s0 8.1 2.6 8.1"/><path d="M15.6 3.9c2.6 0 2.6 5.1 2.6 8.1s0 8.1-2.6 8.1"/><path d="M9.9 12h4.2"/>',
+    table:   '<rect x="3.2" y="4.4" width="17.6" height="15.2" rx="1.6"/><path d="M3.2 9.5h17.6M3.2 14.6h17.6M9.6 9.5v10.1"/>',
+    bubble:  '<path d="M20.2 4.2H3.8a1.1 1.1 0 0 0-1.1 1.1v9.6a1.1 1.1 0 0 0 1.1 1.1h3.5v3.8l4.3-3.8h8.6a1.1 1.1 0 0 0 1.1-1.1V5.3a1.1 1.1 0 0 0-1.1-1.1Z"/><path d="M6.6 8.4h9.6M6.6 11.9h5.4"/>'
+  };
+
+  const CATS = [
+    { name: "Network",   k: "net" },
+    { name: "Azure",     k: "azr" },
+    { name: "Microsoft", k: "msf" },
+    { name: "Security",  k: "sec" },
+    { name: "Developer", k: "dev" },
+    { name: "Content",   k: "txt" }
+  ];
+
+  const TOOLS = [
+    { c:"Network",   i:"subnet",  n:"Network Designer",        p:"/network-designer",   d:"Plan your cloud network and carve it into subnets.",              m:"VNet · CIDR · Terraform" },
+    { c:"Network",   i:"globe",   n:"DNS Lookup",              p:"/dns-lookup",         d:"Query any record type against Google, Cloudflare or OpenDNS.",    m:"A · AAAA · MX · TXT · NS" },
+    { c:"Network",   i:"whois",   n:"WHOIS Lookup",            p:"/whois-lookup",       d:"Registration and ownership detail for domains and IPs.",          m:"Domains · IPv4 · IPv6" },
+    { c:"Azure",     i:"filter",  n:"Azure KQL Builder",       p:"/azure-kql",          d:"Build Kusto queries for Azure services with guided forms.",       m:"Templates · Favourites" },
+    { c:"Azure",     i:"tag",     n:"Azure Resource Naming",   p:"/azure-naming",       d:"Generate and validate names against Microsoft CAF rules.",        m:"CAF · 200+ types" },
+    { c:"Microsoft", i:"portals", n:"Microsoft Portals",       p:"/microsoft-portals",  d:"Deep links into 31 Microsoft portals, scoped to a tenant.",       m:"GDAP · 31 portals" },
+    { c:"Microsoft", i:"tenant",  n:"Tenant Lookup",           p:"/tenant-lookup",      d:"Discover the Microsoft tenant behind any domain.",                m:"Tenant ID · Domains" },
+    { c:"Security",  i:"cert",    n:"SSL Certificate Checker", p:"/ssl-checker",        d:"Inspect the chain, ciphers and expiry for any host.",             m:"TLS · Chain · Expiry" },
+    { c:"Security",  i:"jwt",     n:"JWT Decoder",             p:"/jwt",                d:"Decode and validate tokens without them leaving the tab.",        m:"HS256 · RS256 · ES256" },
+    { c:"Security",  i:"key",     n:"Password Generator",      p:"/password-generator", d:"Cryptographically random passwords, generated on-device.",        m:"crypto.getRandomValues" },
+    { c:"Developer", i:"clock",   n:"CRON Builder",            p:"/cron",               d:"Build and read cron expressions in plain English.",               m:"5-field · Presets" },
+    { c:"Developer", i:"swap",    n:"Data Converter",          p:"/data-converter",     d:"Convert between JSON, YAML and TOML, with validation.",           m:"JSON · YAML · TOML" },
+    { c:"Developer", i:"braces",  n:"Base64 Encoder",          p:"/base64",             d:"Encode and decode text and files, including URL-safe output.",    m:"Text · Files · URL-safe" },
+    { c:"Developer", i:"table",   n:"Markdown Table Tool",     p:"/markdown-table",     d:"Build, format and re-align Markdown tables from CSV or scratch.", m:"CSV · Align · Undo" },
+    { c:"Content",   i:"bubble",  n:"Buzzword Ipsum",          p:"/buzzword-ipsum",     d:"Corporate filler text, for when real words will not do.",         m:"Strategy · Agile · AI" }
+  ];
+
+  const kOf = (c) => CATS.find((x) => x.name === c).k;
+  const svg = (k) =>
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + I[k] + "</svg>";
+
+  document.getElementById("tpico").innerHTML = svg("globe");
+
+  /* filter chips */
+  let active = "All";
+  const filters = document.getElementById("filters");
+  filters.innerHTML =
+    '<button class="chip" type="button" data-c="All" aria-pressed="true">All <span style="color:var(--faint);font-family:var(--mono);font-size:11px">15</span></button>'
+    + CATS.map((c) => {
+        const n = TOOLS.filter((t) => t.c === c.name).length;
+        return '<button class="chip" type="button" data-c="' + c.name + '" aria-pressed="false" style="--cat: var(--' + c.k + ')">'
+          + '<i></i>' + c.name
+          + ' <span style="color:var(--faint);font-family:var(--mono);font-size:11px">' + n + "</span></button>";
+      }).join("");
+
+  const board = document.getElementById("board");
+
+  function render() {
+    const shown = CATS.filter((c) => active === "All" || c.name === active);
+    board.innerHTML = shown.map((c) => {
+      const ts = TOOLS.filter((t) => t.c === c.name);
+      return '<section class="group" style="--cat: var(--' + c.k + ')">'
+        + '<div class="group-head"><b>' + c.name + "</b><i></i><em>"
+        + String(ts.length).padStart(2, "0") + "</em></div>"
+        + '<div class="grid">'
+        + ts.map((t) =>
+            '<a class="card" href="#" style="--cat: var(--' + c.k + ')">'
+            + '<span class="card-top"><span class="ico">' + svg(t.i) + "</span>"
+            + '<span class="card-name">' + t.n + "</span></span>"
+            + "<p>" + t.d + "</p>"
+            + '<span class="card-foot"><span>' + t.m + "</span>"
+            + '<span class="go">' + t.p + " &rarr;</span></span>"
+            + "</a>"
+          ).join("")
+        + "</div></section>";
+    }).join("");
+  }
+
+  filters.addEventListener("click", (e) => {
+    const b = e.target.closest(".chip");
+    if (!b) return;
+    active = b.dataset.c;
+    filters.querySelectorAll(".chip").forEach((x) =>
+      x.setAttribute("aria-pressed", String(x.dataset.c === active))
+    );
+    render();
+  });
+
+  render();
+</script>

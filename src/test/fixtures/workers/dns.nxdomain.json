@@ -1,0 +1,1 @@
+{"Status":3,"TC":false,"RD":true,"RA":true,"AD":true,"CD":false,"Question":[{"name":"nxdomain-fixture-nope.example.","type":1}],"Authority":[{"name":".","type":6,"TTL":86397,"data":"a.root-servers.net. nstld.verisign-grs.com. 2026071900 1800 900 604800 86400"}]}

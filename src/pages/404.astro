@@ -1,0 +1,48 @@
+---
+/**
+ * Without this file Cloudflare Pages has nothing to serve for an unknown
+ * path, and a mistyped URL soft-404s into the index — a real page, status
+ * 200, wrong content. That is the shape of thing frozen contract #4 exists
+ * to catch, so the shell ships with a genuine 404 from the start.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolCard from '../shell/ToolCard.astro';
+import { TOOLS } from '../tools/registry.mjs';
+
+// Rather than a dead end, offer the tools most likely to have been meant.
+const suggestions = TOOLS.filter((t) =>
+  ['subnet-calculator', 'dns-lookup', 'ssl-checker'].includes(t.id)
+);
+---
+
+<!--
+  No canonical and `noindex`: the default canonical would resolve to
+  `/404.html`, a path nobody links to, and a not-found page has nothing to
+  be the canonical version of.
+-->
+<BaseLayout
+  title="Not found — russ.tools"
+  description="That page does not exist on russ.tools."
+  canonical={null}
+  noindex
+>
+  <div class="rt-notfound">
+    <h1>That page does not exist.</h1>
+    <p>
+      The URL may be mistyped, or the tool may have moved. Every tool is listed on
+      <a href="/">the index</a>.
+    </p>
+  </div>
+
+  <div class="rt-board">
+    <section class="rt-group">
+      <div class="rt-group-head">
+        <b style="color:var(--color-on-surface-muted)">Popular tools</b>
+        <hr />
+      </div>
+      <div class="rt-grid">
+        {suggestions.map((tool) => <ToolCard tool={tool} />)}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

@@ -2,7 +2,7 @@
 // Provides buzzword generation services with rate limiting and CORS support
 
 // Import buzzwords from the source file
-import BUZZWORDS from '../src/components/tools/buzzword-ipsum/data/buzzwords.json';
+import BUZZWORDS from '../src/tools/buzzword-ipsum/data/buzzwords.json';
 
 function createCorsHeaders(origin) {
   const allowedOrigins = [
@@ -108,7 +108,7 @@ function generateBuzzwordList(type, count = 10) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, _env) {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin');
     const corsHeaders = createCorsHeaders(origin);
@@ -148,7 +148,7 @@ export default {
             }
           });
 
-        case '/generate':
+        case '/generate': {
           if (request.method !== 'GET' && request.method !== 'POST') {
             return new Response(JSON.stringify({
               error: 'Method not allowed'
@@ -235,7 +235,9 @@ export default {
             }
           });
 
-        case '/words':
+        }
+
+        case '/words': {
           const wordType = url.searchParams.get('type');
           const wordCount = Math.min(Math.max(parseInt(url.searchParams.get('count')) || 10, 1), 100);
 
@@ -274,6 +276,8 @@ export default {
               'Cache-Control': 'public, max-age=1800'
             }
           });
+
+        }
 
         default:
           return new Response(JSON.stringify({

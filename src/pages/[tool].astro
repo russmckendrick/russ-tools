@@ -1,0 +1,33 @@
+---
+/**
+ * One prerendered page per tool, from the registry.
+ *
+ * Param deep links (/ssl-checker/:domain and friends) have no page of their
+ * own — they reach this same document through the generated _redirects 200
+ * rewrite, keeping their URL. The island reads the segment on mount.
+ *
+ * The body is one bridge island per tool (src/bridge/ToolIsland.jsx), which
+ * resolves the manifest's `island` and mounts the existing React component.
+ *
+ * `client:only` rather than `client:load`: these components read
+ * localStorage and `window.location` during their first render, so there is
+ * no meaningful server pass to hydrate — and the crawler-visible content
+ * (h1, description, schema) comes from ToolLayout, not from the island.
+ */
+import ToolLayout from '../layouts/ToolLayout.astro';
+import ToolIsland from '../bridge/ToolIsland.jsx';
+import { TOOLS } from '../tools/registry.mjs';
+
+export function getStaticPaths() {
+  return TOOLS.map((tool) => ({
+    params: { tool: tool.path.slice(1) },
+    props: { tool },
+  }));
+}
+
+const { tool } = Astro.props;
+---
+
+<ToolLayout tool={tool}>
+  <ToolIsland client:only="react" toolId={tool.id} />
+</ToolLayout>

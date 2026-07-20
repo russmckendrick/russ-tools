@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # No version input: action-setup reads `packageManager` from
+      # package.json, and specifying both makes it error on any mismatch —
+      # `11` vs `11.14.0` included. One source of truth.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Before the tests, not after: `canonical.test.js`, `seo.test.js` and
+      # the sitemap suite all assert the **built** output, because the faults
+      # they guard against are invisible in the source — `Astro.url.pathname`
+      # is the output filename during a static build, and a meta tag can name
+      # an asset the build does not ship. Without this step those suites
+      # silently skip.
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      # Blocking as of Phase 1: the error count is zero and must stay there.
+      # Warnings are still permitted — 11 remain (exhaustive-deps and
+      # react-refresh); the raw-palette and off-scale-type warnings are
+      # cleared. See DESIGN.md and docs/plans/redesign-plan.md.
+      - name: Lint
+        run: pnpm lint
