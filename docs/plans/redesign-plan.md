@@ -1708,3 +1708,101 @@ and hidden/preserved preference data.
 
 Follow-up gates: `pnpm test` **1010 / 31** · `pnpm test:e2e` **22/22** ·
 `pnpm lint` 0 errors, 13 existing warnings · both production builds green.
+
+### 2026-07-20 — Session 10: Phase 6 opens — SEO reworked, dead weight gone
+
+**Model:** Opus 4.8. **Branch:** `redesign/phase-0`.
+
+**Cutover is still deliberately on hold** (owner's call, unchanged since
+session 8), and that fact sequences this phase. `main` is ~28 commits behind
+and Cloudflare Pages still builds it with the *old* settings (`pnpm build` →
+`dist/`), so deleting the SPA now would break the production build the moment
+the branch merges. The split turned out cleaner than expected: the Astro side
+is not live, so **everything except the SPA's own entry points is safe to do
+now**. Demolition of `index.html` / `main.jsx` / `App.jsx` / `vite.config.js`
+and the SPA-only components waits for the dashboard flip.
+
+A repointing of `pnpm build` at Astro was considered — it would make the
+merge itself the cutover and remove the one runbook step that cannot be
+rehearsed. **Rejected:** it collapses "code on main" and "site changes" into
+one event, and the separation is the insurance the plan always intended.
+After the flip, `"build": "pnpm build:astro"` becomes an alias so the
+dashboard setting stays valid.
+
+**An audit first, not a rewrite.** Two mapping passes over the tree, because
+`CLAUDE.md` could not be trusted on this: it describes tools living under
+`src/components/tools/`, and **that directory does not exist** — all fifteen
+are real implementations under `src/tools/<id>/`, no re-export shims. The
+remaining SPA surface is 13 source files plus 4 root config/entry files.
+`src/bridge/ToolIsland.jsx` is **load-bearing** despite its docblock saying
+the directory dies at cutover; only `ShellContext.jsx` goes with the SPA.
+
+**The SEO findings were worse than "needs a tidy".**
+
+- **Three sitemaps shipped, all with the identical URL set** — verified
+  byte-identical. `public/sitemap.xml` from `toolsConfig.json`, plus
+  `sitemap-index.xml`/`sitemap-0.xml` from `@astrojs/sitemap`, of which
+  `robots.txt` advertises only the first. The integration is removed and the
+  generator now reads the manifests, which also severs the sitemap's last
+  dependency on `toolsConfig.json` — unblocking its retirement without
+  touching the SPA. `lastmod` now comes from each tool's last commit rather
+  than the build clock; `changefreq`/`priority` dropped as Google ignores both.
+- **No `og:image` existed anywhere.** The SPA had pointed at `/og-image.png`
+  for years against a file that has never been in the repo, and the shell
+  emitted nothing at all. Fifteen per-tool cards plus a default now ship.
+- **The port had silently regressed the structured data**: all fifteen tools
+  claimed `DeveloperApplication`, and `author`, `publisher`, `featureList`,
+  `keywords` and `isPartOf` were gone. Restored with the SPA's category
+  mapping. `features` moved from `toolsConfig.json` into the manifests to feed
+  `featureList`. Breadcrumbs were rendered but never described; the index
+  published no graph at all.
+- Missing `theme-color` (and the two sources disagreed — `#1c7ed6` against the
+  manifest's `#1e1e2e`), `author`, `twitter:creator`, webmanifest `start_url`.
+- Param deep links were **already correct** and are unchanged: the 200 rewrite
+  serves the base page's document, so they self-canonicalise and stay out of
+  the sitemap. Recorded so it is not "fixed" later by mistake.
+
+**The OG pipeline is Playwright, not sharp.** `@fontsource-variable/inter`
+ships **woff2 only**; satori cannot read it and sharp/resvg need a TTF handed
+to them, so build-time rasterising meant either three more packages or
+trusting the build image's fonts — which fails as a silent fallback typeface,
+not an error. Playwright's chromium is already a devDependency and reads the
+same woff2 the site does. Cards are generated on demand (`pnpm generate:og`)
+and committed; they change only when a tool's title, icon or hue does.
+
+**`public/images/` was 80MB of unreferenced screenshots and videos** from June
+2025 — including a set for the retired Network Designer — uploaded to Pages on
+every deploy, referenced by nothing. Gone, along with the genuinely dead
+modules: `src/utils/index.js` (already broken — it re-exported a
+`getSubnetBgColorHex` that does not exist, harmless only because nothing
+imports the barrel), `tldUtils`, `api/apiUtils`, the superseded
+`utils/sharelink.js` + suite, the regions modules and their JSON, and
+`prism-theme.css` (confirmed by running a conversion in the browser after
+removing it, not by grep).
+
+**A pre-existing e2e failure, found and fixed.** The mobile burger test
+dismissed the menu by clicking the h1, but at 390px the open panel covers the
+viewport past y≈240 — the h1 is *underneath* the menu, not outside it.
+Deterministic 3/3, and it fails identically on this branch's base commit, so
+session 9's "22/22" had already stopped being true. Verified in the browser
+that dismissal itself works; the test now clicks a raw point in main's left
+gutter, since every locator-based target gets scrolled under the sticky header.
+
+**Documentation drift is now mechanical rather than moral.** The docs claimed
+11, 14 *and* 15 tools in different places and still advertised the Network
+Designer. `scripts/generate-docs.mjs` writes the inventory from the registry
+into both READMEs and `src/tools/docs.test.js` fails on drift — it caught real
+drift on its first run. `DESIGN_SPEC.md`, `DESIGN_SYSTEM.md` and
+`STYLE_GUIDE.md` are deleted; `docs/tools/subnet-calculator/` is written from
+the code; `docs/tools/markdown-table/` renamed to its manifest id.
+ARCHITECTURE/DEVELOPMENT/DEPLOYMENT and the workers README are **deliberately
+left** for the commit that deletes the SPA, rather than written twice.
+
+**State:** `pnpm test` **1015 / 32** · `pnpm test:e2e` **22/22** · `pnpm lint`
+0 errors, 13 warnings · both builds green. Four commits on
+`redesign/phase-0`, not pushed.
+
+**What remains in Phase 6**, gated on the owner's flip: delete the SPA tree and
+`toolsConfig.json`, collapse `src/bridge/` to `ToolIsland.jsx`, drop CI's SPA
+build step and the stale `src/components/tools/**` globs, alias `build` to
+`build:astro`, and regenerate the four SPA-era documents from the final tree.
