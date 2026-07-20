@@ -14,14 +14,12 @@ import {
   AlertCircle,
   History,
   Trash2,
-  RotateCcw,
-  HelpCircle
+  RotateCcw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiError, apiFetch, buildUrl, createToolStorage } from '@/core';
 import { useLookupTool } from '@/lib/useLookupTool';
 import apiConfig from '@/utils/api/apiConfig.json';
-import HelpSystemShadcn from './components/HelpSystemShadcn';
 import TenantInfoDisplay from './components/TenantInfoDisplay';
 import DNSAnalysisDisplay from './components/DNSAnalysisDisplay';
 import ServiceVerificationDisplay from './components/ServiceVerificationDisplay';
@@ -62,8 +60,6 @@ async function fetchTenant(domain, { signal }) {
 }
 
 const TenantLookupTool = () => {
-  const [showHelp, setShowHelp] = useState(false);
-
   const {
     query: domain,
     setQuery: setDomain,
@@ -175,17 +171,7 @@ const TenantLookupTool = () => {
           <CardContent className="pt-6">
             <div className="space-y-4">
               <div>
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="domain">Domain or Email Address</Label>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setShowHelp(true)}
-                  >
-                    <HelpCircle className="mr-2 h-4 w-4" />
-                    Help
-                  </Button>
-                </div>
+                <Label htmlFor="domain">Domain or Email Address</Label>
                 <div className="flex gap-2 mt-1">
                   <div className="relative flex-1">
                     <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -348,12 +334,6 @@ const TenantLookupTool = () => {
             </CardContent>
           </Card>
         )}
-
-        {/* Help System */}
-        <HelpSystemShadcn
-          opened={showHelp}
-          onClose={() => setShowHelp(false)}
-        />
       </div>
     </TooltipProvider>
   );

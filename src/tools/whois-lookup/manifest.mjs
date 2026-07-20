@@ -75,5 +75,6 @@ export default {
     'whois-lookup-cache',
   ],
 
+  help: () => import('../../../docs/tools/whois-lookup/README.md?raw'),
   island: () => import('./island.jsx'),
 };

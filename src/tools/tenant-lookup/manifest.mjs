@@ -72,5 +72,6 @@ export default {
     'tenant-lookup-saved',
   ],
 
+  help: () => import('../../../docs/tools/tenant-lookup/README.md?raw'),
   island: () => import('./island.jsx'),
 };

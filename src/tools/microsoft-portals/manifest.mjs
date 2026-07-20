@@ -75,5 +75,6 @@ export default {
     'microsoft-portals-favorites',
   ],
 
+  help: () => import('../../../docs/tools/microsoft-portals/README.md?raw'),
   island: () => import('./island.jsx'),
 };

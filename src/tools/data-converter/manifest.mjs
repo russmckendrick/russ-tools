@@ -73,5 +73,6 @@ export default {
     'dataConverter_settings',
   ],
 
+  help: () => import('../../../docs/tools/data-converter/README.md?raw'),
   island: () => import('./island.jsx'),
 };

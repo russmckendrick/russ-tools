@@ -7,11 +7,11 @@ import {
   CardContent 
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ToolAction } from '@/components/ui/tool-actions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Share, 
   Star,
-  HelpCircle,
   Copy,
   Download,
   ExternalLink
@@ -24,7 +24,6 @@ import QueryPreview from './components/QueryPreview';
 import QueryHistory from './components/QueryHistory';
 import QueryFavorites from './components/QueryFavorites';
 import TemplateEditor from './components/TemplateEditor';
-import HelpSystem from './components/HelpSystem';
 import { useKQLStore } from './store/useKQLStore';
 import { generateKQLQuery } from './utils/queryGenerator';
 import { validateParameters } from './utils/validators';
@@ -54,7 +53,6 @@ const AzureKqlTool = () => {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
-  const [helpOpen, setHelpOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('builder');
 
   const currentTemplate = useMemo(() => {
@@ -236,23 +234,18 @@ const AzureKqlTool = () => {
 
   return (
     <>
+      <ToolAction>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleShareConfiguration}
+          disabled={!selectedService || !selectedTemplate}
+        >
+          <Share className="w-4 h-4 mr-2" />
+          Share Configuration
+        </Button>
+      </ToolAction>
       <div className="space-y-6">
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShareConfiguration}
-            disabled={!selectedService || !selectedTemplate}
-          >
-            <Share className="w-4 h-4 mr-2" />
-            Share Configuration
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setHelpOpen(true)}>
-            <HelpCircle className="w-4 h-4 mr-2" />
-            Help
-          </Button>
-        </div>
-
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="builder">Query Builder</TabsTrigger>
@@ -351,12 +344,6 @@ const AzureKqlTool = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      <HelpSystem 
-        open={helpOpen}
-        onClose={() => setHelpOpen(false)}
-        context={{ service: selectedService, template: selectedTemplate }}
-      />
     </>
   );
 };

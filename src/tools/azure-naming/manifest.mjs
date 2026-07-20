@@ -68,5 +68,6 @@ export default {
     'azure-naming-history',
   ],
 
+  help: () => import('../../../docs/tools/azure-naming/README.md?raw'),
   island: () => import('./island.jsx'),
 };

@@ -69,5 +69,6 @@ export default {
   storageKeys: [],
   legacyKeys: [],
 
+  help: () => import('../../../docs/tools/jwt/README.md?raw'),
   island: () => import('./island.jsx'),
 };

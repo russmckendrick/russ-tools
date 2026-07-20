@@ -64,5 +64,6 @@ export default {
   storageKeys: [],
   legacyKeys: [],
 
+  help: () => import('../../../docs/tools/password-generator/README.md?raw'),
   island: () => import('./island.jsx'),
 };

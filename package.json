@@ -52,6 +52,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-dropzone": "^14.4.1",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.18.1",
     "read-excel-file": "^9.3.2",
     "sonner": "^2.0.7",

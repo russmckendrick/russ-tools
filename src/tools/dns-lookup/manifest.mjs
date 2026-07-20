@@ -76,5 +76,6 @@ export default {
     'dns-lookup-cache',
   ],
 
+  help: () => import('../../../docs/tools/dns-lookup/README.md?raw'),
   island: () => import('./island.jsx'),
 };

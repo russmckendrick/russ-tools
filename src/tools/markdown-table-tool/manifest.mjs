@@ -69,5 +69,6 @@ export default {
     'markdown-table-tool-history',
   ],
 
+  help: () => import('../../../docs/tools/markdown-table-tool/README.md?raw'),
   island: () => import('./island.jsx'),
 };

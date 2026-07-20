@@ -65,5 +65,6 @@ export default {
   storageKeys: [],
   legacyKeys: [],
 
+  help: () => import('../../../docs/tools/buzzword-ipsum/README.md?raw'),
   island: () => import('./island.jsx'),
 };

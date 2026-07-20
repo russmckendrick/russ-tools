@@ -4,6 +4,7 @@ import { TOOLS, TOOLS_BY_ID, allRoutes, groupedByCategory } from './registry.mjs
 import { loadManifests } from './loadManifests.mjs';
 import { CATEGORY_IDS } from '../shell/categories.mjs';
 import { ICON_NAMES, TOOL_ICONS, iconSvg } from '../shell/icons.mjs';
+import { extractHelpMarkdown } from '../lib/helpMarkdown.js';
 
 /**
  * The manifest contract.
@@ -39,7 +40,16 @@ describe('manifest contract', () => {
     expect(Array.isArray(tool.legacyKeys), 'legacyKeys').toBe(true);
     expect(Array.isArray(tool.seo?.keywords), 'seo.keywords').toBe(true);
 
+    expect(typeof tool.help, 'help').toBe('function');
     expect(typeof tool.island, 'island').toBe('function');
+  });
+
+  it.each(TOOLS.map((t) => [t.id, t]))('%s loads canonical Markdown help', async (id, tool) => {
+    const source = await tool.help();
+    const help = extractHelpMarkdown(source.default);
+
+    expect(help, `${id} help`).toContain('## Quick start');
+    expect(help.match(/^## /gm)?.length, `${id} help sections`).toBeGreaterThanOrEqual(4);
   });
 
   it('has unique ids and unique paths', () => {

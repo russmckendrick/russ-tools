@@ -360,6 +360,8 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] Shared component layer rebuilt against `DESIGN.md` (`src/components/ui/`) — one card,
       button, input, select, tabs, dialog, sheet, tooltip, table, alert, badge; one toaster;
       one help affordance; one tool-icon source shared with the shell
+- [x] Every tool has docs-backed help — its manifest lazily imports the canonical per-tool
+      README, and the shared sheet renders the marked user-guide section
 - [x] Page furniture owned by the shell — `ToolHeader`/`SEOHead` stand down under it; pills,
       hero, stat strip and footer pitch removed
 - [x] Raw Tailwind palette classes in tools: 205 → 0
@@ -1916,3 +1918,31 @@ header and the 40px React island.
 **State:** `pnpm test` **1006 / 32** · `pnpm test:e2e` **22/22** · `pnpm lint`
 0 errors, 11 existing warnings · build green · Open Graph cards and dark/light
 rendering visually checked.
+
+### 2026-07-20 — Session 12: per-tool documentation becomes in-app help
+
+**Model:** GPT-5. **Branch:** `main`.
+
+The owner spotted that only Azure KQL and Tenant Lookup exposed tool-level help,
+then used the gap to remove a deeper duplication: help copy and per-tool
+documentation should not be separate bodies of text. All fifteen READMEs were
+reviewed against the current implementations and rewritten as concise, accurate
+guides. This removed thousands of lines of stale claims about retired routes,
+storage behavior, APIs, packages, and UI that no longer exists.
+
+Each README now contains a `help:start` / `help:end` block with quick-start,
+feature guidance, practical tips, privacy/storage behavior, and troubleshooting.
+The manifest contract gained a lazy raw-Markdown loader, and `ToolHelp` renders
+that block through the shared right-hand sheet with `react-markdown`. The help
+chunk is requested only when the sheet first opens. The two old bespoke help
+components and their local trigger state were deleted, leaving one trigger,
+placement, renderer, and content source across the site.
+
+The registry contract now requires a help loader and executes every one during
+tests, asserting that all fifteen documents contain a valid block with at least
+four sections. A Playwright matrix opens and closes the sheet on every tool and
+checks the tool-specific title plus rendered Quick start heading, which also
+guards against duplicate triggers and Markdown-loading failures.
+
+**State:** `pnpm test` **1021 / 32** · `pnpm test:e2e` **37/37** · `pnpm lint`
+0 errors, 11 existing warnings · build green.

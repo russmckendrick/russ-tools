@@ -76,5 +76,6 @@ export default {
     'ssl-checker-domain-history',
   ],
 
+  help: () => import('../../../docs/tools/ssl-checker/README.md?raw'),
   island: () => import('./island.jsx'),
 };

@@ -1,7 +1,9 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
+import { ToolActionsProvider } from '@/components/ui/tool-actions';
 import { TOOLS_BY_ID } from '../tools/registry.mjs';
+import ToolHelp from './ToolHelp';
 
 /**
  * One island entry that mounts any tool's React component inside
@@ -31,6 +33,7 @@ import { TOOLS_BY_ID } from '../tools/registry.mjs';
  */
 export default function ToolIsland({ toolId }) {
   const tool = TOOLS_BY_ID[toolId];
+  const [actionsTarget, setActionsTarget] = React.useState(null);
 
   if (!tool) {
     // Unreachable via getStaticPaths, but a silent blank panel would be the
@@ -56,15 +59,21 @@ export default function ToolIsland({ toolId }) {
   return (
     <div className="rt-island" onClickCapture={interceptLinks}>
       <BrowserRouter>
-        <Suspense fallback={<IslandLoading title={tool.title} />}>
-          <IslandErrorBoundary title={tool.title}>
-            <Routes>
-              {patterns.map((pattern) => (
-                <Route key={pattern} path={pattern} element={<Tool />} />
-              ))}
-            </Routes>
-          </IslandErrorBoundary>
-        </Suspense>
+        <ToolActionsProvider target={actionsTarget}>
+          <div className="mb-4 flex justify-end gap-2">
+            <div ref={setActionsTarget} className="contents" />
+            <ToolHelp tool={tool} />
+          </div>
+          <Suspense fallback={<IslandLoading title={tool.title} />}>
+            <IslandErrorBoundary title={tool.title}>
+              <Routes>
+                {patterns.map((pattern) => (
+                  <Route key={pattern} path={pattern} element={<Tool />} />
+                ))}
+              </Routes>
+            </IslandErrorBoundary>
+          </Suspense>
+        </ToolActionsProvider>
       </BrowserRouter>
       <Toaster />
     </div>

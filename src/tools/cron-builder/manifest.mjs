@@ -65,5 +65,6 @@ export default {
   storageKeys: [],
   legacyKeys: [],
 
+  help: () => import('../../../docs/tools/cron-builder/README.md?raw'),
   island: () => import('./island.jsx'),
 };

@@ -75,5 +75,6 @@ export default {
     'azure-kql-custom-templates',
   ],
 
+  help: () => import('../../../docs/tools/azure-kql/README.md?raw'),
   island: () => import('./island.jsx'),
 };
