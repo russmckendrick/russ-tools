@@ -89,7 +89,14 @@ test.describe('home and shell pages', () => {
     await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
 
     await menuToggle.click();
-    await page.locator('h1').click();
+    // A raw coordinate rather than a locator, deliberately. The open panel
+    // covers the middle of the viewport down past y≈240, so the h1 this used
+    // to click is underneath the menu, not outside it, and Playwright
+    // correctly refuses the click as intercepted by the panel's own "Tools"
+    // link. Every locator-based alternative gets scrolled into view first,
+    // which puts it back under the sticky header. This point is in main's
+    // left gutter — clear of the panel, not a link, and needs no scrolling.
+    await page.mouse.click(10, 300);
     await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
   });
 
