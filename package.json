@@ -17,6 +17,7 @@
     "generate:redirects": "node scripts/generate-redirects.mjs",
     "generate:tokens": "node scripts/generate-tokens.mjs",
     "generate:og": "node scripts/generate-og.mjs",
+    "generate:docs": "node scripts/generate-docs.mjs",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -6,7 +6,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 
 /* Tailwind palette scales that must not be used directly in tool code —
    use the semantic tokens from src/styles/globals.css instead
-   (bg-success-subtle, text-danger, border-info, …). See docs/DESIGN_SPEC.md. */
+   (bg-success-subtle, text-danger, border-info, …). See DESIGN.md in the repo root. */
 const PALETTE = 'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose'
 const UTILITY = 'bg|text|border|ring|from|via|to|fill|stroke|divide|outline|shadow|accent|caret|decoration|placeholder'
 const RAW_PALETTE_CLASS = String.raw`(^|[\s"'\`])(hover:|focus:|focus-visible:|active:|disabled:|group-hover:|dark:|sm:|md:|lg:|xl:|2xl:)*(${UTILITY})-(${PALETTE})-\d{2,3}\b`

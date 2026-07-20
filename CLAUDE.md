@@ -11,9 +11,10 @@ record across sessions).
 
 **Target architecture:** a static **Astro** shell with one **React island** per tool,
 everything derived from per-tool manifests. Phases 0 (stabilise) and 1 (design pass) are
-**complete**; **Phase 2 is in progress** — its shell, bridge and design-system work are
-done, and `core/`, the theme toggle, `/delete` and every gate that does not need a
-deploy have landed. **Only the Pages preview deploy + Playwright matrix remain.** The
+**complete**, as are **2 (shell + bridge)**, **3–5 (all fifteen tools ported)** and all
+three cutover gates — the preview deploy, the worker origin rotation and the Playwright
+matrix, proven against real Pages infrastructure. **Phase 6 (demolition) is in progress:**
+SEO has been reworked and the dead modules removed; the SPA itself is still here. The
 two-column control/result split was built, applied to ten tools, rejected as unbalanced
 and **fully withdrawn** — see `DESIGN.md`'s Layout section before proposing it again.
 
@@ -98,9 +99,9 @@ so the light remap carries through). To change a colour: edit `DESIGN.md`, regen
 `pnpm test`. `tokens.contrast.test.js` fails if the generated file has drifted from `DESIGN.md`,
 or if any pair drops below its WCAG floor — it has caught five real contrast faults so far.
 
-> **Remaining stale doc:** `docs/DESIGN_SPEC.md` still carries the abandoned **Solarized**
-> palette and is marked superseded. It is retired in Phase 6. `globals.css` and the contrast
-> test were reconciled in Phase 2 and no longer mention Solarized.
+> `docs/DESIGN_SPEC.md`, `docs/DESIGN_SYSTEM.md` and `docs/STYLE_GUIDE.md` carried the
+> abandoned **Solarized** palette and the Mantine-era component map. All three are
+> **deleted** — `DESIGN.md` is the only design authority.
 
 ### Trust caveats (this file used to lie — verify before relying)
 
@@ -131,12 +132,15 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
 - `pnpm dev:astro` / `pnpm build:astro` — the new Astro shell → `dist-astro/` (build also
   regenerates `_redirects` from the manifests)
 - `pnpm generate:tokens` — regenerate the token layer from `DESIGN.md` (needs network once)
-- `pnpm test` — Vitest (271 tests; **keep these green**) · `pnpm test:watch` to iterate
-- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 29 warnings remain (13
-  exhaustive-deps, 16 react-refresh) — the raw-palette and off-scale-type warnings are all
-  cleared. Don't add errors, and don't let the warning count climb.
+- `pnpm test` — Vitest (1015 tests; **keep these green**) · `pnpm test:watch` to iterate
+- `pnpm test:e2e` — Playwright deep-link matrix (22 tests) against `wrangler pages dev`
+- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 13 warnings remain
+  (exhaustive-deps and react-refresh) — the raw-palette and off-scale-type warnings are
+  all cleared. Don't add errors, and don't let the warning count climb.
 - `pnpm preview` — preview the production build
-- `pnpm generate:sitemap` — regenerate `public/sitemap.xml`
+- `pnpm generate:sitemap` — regenerate `public/sitemap.xml` **from the manifests**
+- `pnpm generate:og` — regenerate the Open Graph cards (Playwright; commits PNGs)
+- `pnpm generate:docs` — regenerate the tool tables in `README.md` and `docs/README.md`
 
 > If a bare `pnpm <script>` fails with a `runDepsStatusCheck` / ignored-builds error,
 > run the tool binary directly (`./node_modules/.bin/eslint .`) or `pnpm approve-builds`.
@@ -158,21 +162,23 @@ Each tool lives in `src/components/tools/<tool-name>/`:
   inconsistent: zustand in one tool, Context+reducer in another, ad-hoc hooks elsewhere;
   the redesign standardises on one zustand-per-tool recipe)
 
-Tool metadata (title, description, icon, SEO, category, routes) is centrally defined in
-`src/utils/toolsConfig.json` — this registry is genuinely good and is being kept.
+Tool metadata now lives in each tool's `src/tools/<id>/manifest.mjs`.
+`src/utils/toolsConfig.json` is the SPA's copy and is **retiring with the SPA** — nothing
+in the Astro build reads it any more.
 
-### The 15 tools
+### The tools
 
-Network: Network Designer & Subnet Calculator, DNS Lookup, WHOIS Lookup, SSL Checker ·
-Azure: Resource Naming (CAF), KQL Query Builder · Microsoft: Portals (GDAP), Tenant
-Lookup · Security: JWT Decoder/Validator, Password Generator · Developer: Base64,
-Data Converter (JSON/YAML/TOML), CRON Builder, Markdown Table · Utility: Buzzword Ipsum.
+**Don't keep a list here.** The inventory is generated from the registry into `README.md`
+and `docs/README.md` (`pnpm generate:docs`, pinned by `src/tools/docs.test.js`) precisely
+because every hand-maintained copy drifted: this file claimed 15 including a "Network
+Designer" that was retired and replaced by the Subnet Calculator, and filed SSL Checker
+under Network when its category is `security`.
 
 ## Frozen contracts (never break these — "keep the functionality" means these)
 
 1. **Deep-link routes** — every path in `src/App.jsx` is a compatibility contract
    (e.g. `/ssl-checker/:domain`, `/jwt/:token`, `/base64/:input`). Do not rename or drop.
-2. **Share-URL codec** (`src/utils/sharelink.js`) — the wire format is
+2. **Share-URL codec** (`src/core/sharelink.js`) — the wire format is
    `safeStringify → pako.deflate` (**raw zlib, NOT gzip**) `→ URL-safe base64`, plus a
    legacy uncompressed-`btoa` fallback. Changing it silently breaks every shared link.
    Preserve it byte-for-byte; test round-trips against captured fixtures.
@@ -243,14 +249,15 @@ Session Log for details.
 ## Documentation map
 
 - Redesign: `docs/plans/redesign-plan.md` (**authoritative, living**)
-- Design: **[`DESIGN.md`](DESIGN.md) in the repo root is the authority** for colour, type,
-  layout, shape and components. `docs/DESIGN_SPEC.md` is the **superseded** Phase 1
-  Solarized spec — do not follow it; it is retired in Phase 6.
+- Design: **[`DESIGN.md`](DESIGN.md) in the repo root is the sole authority** for colour,
+  type, layout, shape and components.
 - Behaviour ledger: `docs/BEHAVIOR_CHANGES.md` (every deliberate divergence from a
   characterization fixture is logged here, in the PR that makes it)
 - Audit inputs / knowledge graph: `graphify-out/` (gitignored)
-- Design system: `docs/DESIGN_SYSTEM.md`, `docs/STYLE_GUIDE.md` — **superseded by
-  `DESIGN.md`**; the rest is Mantine-era and still untrustworthy
-- Per-tool docs: `docs/tools/<tool-name>/` (some reference deleted pre-migration files)
+- Per-tool docs: `docs/tools/<id>/`, named by manifest id. The inventory tables in
+  `README.md` and `docs/README.md` are **generated** from the registry
+  (`pnpm generate:docs`) and pinned by `src/tools/docs.test.js` — don't hand-edit them.
+- `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, `docs/DEPLOYMENT.md` are still
+  **SPA-era and untrustworthy**; they are regenerated when the SPA is deleted.
 - Workers/API: `docs/cloudflare-workers/README.md`, `docs/api/API_CONFIG.md` (document
   infrastructure that partly does not exist — verify against code)
