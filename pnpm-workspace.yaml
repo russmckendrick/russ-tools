@@ -9,3 +9,19 @@ onlyBuiltDependencies:
   - esbuild
 ignoredBuiltDependencies:
   - msw
+
+# exceljs pins uuid ^8.3.2, which carries GHSA-w5hq-g745-h8pq — a missing
+# buffer bounds check in v3/v5/v6 when the caller supplies a `buf` argument.
+#
+# It is not reachable from this codebase: exceljs's only uuid call is
+# `uuidv4()` with no arguments, in cf-rule-ext-xform.js, and nothing here
+# imports uuid directly. The override is housekeeping, not a patch — it keeps
+# `pnpm audit` clean so a real advisory is not lost in the noise of a known
+# false positive.
+#
+# Safe because uuid 11 still exports `v4` and ships dual CJS/ESM with a
+# `require` condition, which is how exceljs consumes it. Pinned by
+# src/tools/markdown-table-tool/utils/exceljs.smoke.test.js, which
+# round-trips a real workbook through writeBuffer and load.
+overrides:
+  uuid: ^11.1.1
