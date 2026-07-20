@@ -66,5 +66,4 @@ export default {
   legacyKeys: [],
 
   island: () => import('./island.jsx'),
-  hydrate: 'load',
 };

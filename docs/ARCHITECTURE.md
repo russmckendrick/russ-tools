@@ -136,7 +136,6 @@ one drives:
 | `storageKeys` | The `rt:<id>:<slot>` slots the tool owns — enumerated and cleared by `/delete`. |
 | `legacyKeys` | Pre-rewrite localStorage keys the tool reads forward and `/delete` also clears. |
 | `island` | `() => import('./island.jsx')` — the lazy component `ToolIsland` mounts. |
-| `hydrate` | Declared as `load`, `idle` or `visible` and validated by `registry.test.js`. `[tool].astro` currently mounts every island with `client:only="react"`, so nothing reads it at build time. |
 
 Everything derived from that one object:
 

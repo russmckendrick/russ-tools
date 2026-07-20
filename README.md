@@ -66,14 +66,14 @@ Requires **Node ≥20** and **pnpm** (the lockfile is `pnpm-lock.yaml`).
 git clone https://github.com/russmckendrick/russ-tools.git
 cd russ-tools
 pnpm install
-pnpm dev:astro
+pnpm dev
 ```
 
 | Command | What it does |
 |---|---|
-| `pnpm dev:astro` | Development server |
-| `pnpm build:astro` | Production build → `dist-astro/` |
-| `pnpm preview:astro` | Serve the production build |
+| `pnpm dev` | Development server |
+| `pnpm build` | Production build → `dist/` |
+| `pnpm preview` | Serve the production build |
 | `pnpm test` | Vitest suite |
 | `pnpm test:e2e` | Playwright deep-link matrix |
 | `pnpm lint` | ESLint — zero errors is enforced in CI |

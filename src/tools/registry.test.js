@@ -40,7 +40,6 @@ describe('manifest contract', () => {
     expect(Array.isArray(tool.seo?.keywords), 'seo.keywords').toBe(true);
 
     expect(typeof tool.island, 'island').toBe('function');
-    expect(['load', 'idle', 'visible'], 'hydrate').toContain(tool.hydrate);
   });
 
   it('has unique ids and unique paths', () => {

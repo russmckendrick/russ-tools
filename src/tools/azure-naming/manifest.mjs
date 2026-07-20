@@ -69,5 +69,4 @@ export default {
   ],
 
   island: () => import('./island.jsx'),
-  hydrate: 'load',
 };

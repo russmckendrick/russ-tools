@@ -22,7 +22,7 @@ const RAW_PALETTE_MESSAGE =
 const OFF_SCALE_TYPE = String.raw`(^|[\s"'\`])(hover:|focus:|focus-visible:|active:|disabled:|group-hover:|dark:|sm:|md:|lg:|xl:|2xl:)*(text-(xs|sm|base|lg|xl|[2-9]xl)|font-(thin|extralight|light|normal|bold|extrabold|black))\b`
 
 const OFF_SCALE_TYPE_MESSAGE =
-  'Off-scale typography. DESIGN.md defines the type steps: text-display / text-headline-lg / text-headline-md / text-title-sm / text-body-lg / text-body-md / text-body-sm / text-label-caps / text-data-md / text-data-sm. Each carries its own weight, line-height and tracking, so it needs no font-* or tracking-* alongside it.'
+  'Off-scale typography. DESIGN.md defines the type steps: text-display / text-headline-lg / text-headline-md / text-title-sm / text-body-lg / text-body-md / text-body-sm / text-label-caps / text-data-lg / text-data-md / text-data-sm. Each carries its own weight, line-height and tracking, so it needs no font-* or tracking-* alongside it.'
 
 export default [
   // .wrangler holds scratch bundles that `wrangler pages dev` writes while

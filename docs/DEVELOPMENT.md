@@ -84,7 +84,6 @@ src/tools/<id>/
 | `storageKeys` | string[] | The `rt:<id>:<slot>` slots the tool owns. Enumerated and cleared by `/delete`. |
 | `legacyKeys` | string[] | Pre-rewrite localStorage keys read forward and also cleared by `/delete`. |
 | `island` | `() => import('./island.jsx')` | The lazily loaded component. |
-| `hydrate` | `'load' \| 'idle' \| 'visible'` | Validated by `registry.test.js`. `[tool].astro` currently mounts every island with `client:only="react"`, so nothing reads it at build time. |
 
 Copy an existing manifest as the starting point — `src/tools/dns-lookup/manifest.mjs` for
 a tool with no params, `src/tools/subnet-calculator/manifest.mjs` for one with two.
