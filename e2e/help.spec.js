@@ -8,7 +8,7 @@ for (const tool of tools) {
   test(`${tool.id} opens its documentation-backed help`, async ({ page }) => {
     await page.goto(tool.path);
 
-    const trigger = page.getByRole('button', { name: 'Help' });
+    const trigger = page.locator('[data-tool-actions]').getByRole('button', { name: 'Help' });
     await expect(trigger).toBeVisible();
     await trigger.click();
 
@@ -22,16 +22,25 @@ for (const tool of tools) {
   });
 }
 
-test('azure-kql keeps Share Configuration and Help in one action row', async ({ page }) => {
-  await page.goto('/azure-kql');
+for (const tool of [
+  { id: 'azure-kql', path: '/azure-kql', action: 'Share Configuration' },
+  {
+    id: 'azure-naming',
+    path: '/azure-naming',
+    action: 'Copy Configuration Share URL',
+  },
+]) {
+  test(`${tool.id} keeps its share action and Help in one row`, async ({ page }) => {
+    await page.goto(tool.path);
 
-  const share = page.getByRole('button', { name: 'Share Configuration' });
-  const help = page.getByRole('button', { name: 'Help' });
-  await expect(share).toBeVisible();
-  await expect(help).toBeVisible();
+    const share = page.getByRole('button', { name: tool.action });
+    const help = page.locator('[data-tool-actions]').getByRole('button', { name: 'Help' });
+    await expect(share).toBeVisible();
+    await expect(help).toBeVisible();
 
-  const [shareBox, helpBox] = await Promise.all([share.boundingBox(), help.boundingBox()]);
-  expect(shareBox).not.toBeNull();
-  expect(helpBox).not.toBeNull();
-  expect(Math.abs(shareBox.y - helpBox.y)).toBeLessThan(2);
-});
+    const [shareBox, helpBox] = await Promise.all([share.boundingBox(), help.boundingBox()]);
+    expect(shareBox).not.toBeNull();
+    expect(helpBox).not.toBeNull();
+    expect(Math.abs(shareBox.y - helpBox.y)).toBeLessThan(2);
+  });
+}

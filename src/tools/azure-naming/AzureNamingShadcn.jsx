@@ -4,6 +4,7 @@ import {
   CardContent 
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ToolAction } from '@/components/ui/tool-actions';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -72,7 +73,7 @@ const AzureNamingShadcn = () => {
 
   return (
     <>
-      <div className="flex justify-end">
+      <ToolAction>
         <Button
           variant="outline"
           size="sm"
@@ -82,7 +83,7 @@ const AzureNamingShadcn = () => {
           <Share size={16} className="mr-2" />
           Copy Configuration Share URL
         </Button>
-      </div>
+      </ToolAction>
 
       <Tabs defaultValue="builder" className="space-y-6">
             <TabsList className="grid w-full grid-cols-3">

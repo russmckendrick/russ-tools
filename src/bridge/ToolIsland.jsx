@@ -60,7 +60,7 @@ export default function ToolIsland({ toolId }) {
     <div className="rt-island" onClickCapture={interceptLinks}>
       <BrowserRouter>
         <ToolActionsProvider target={actionsTarget}>
-          <div className="mb-4 flex justify-end gap-2">
+          <div data-tool-actions className="mb-4 flex justify-end gap-2">
             <div ref={setActionsTarget} className="contents" />
             <ToolHelp tool={tool} />
           </div>

@@ -1944,5 +1944,13 @@ four sections. A Playwright matrix opens and closes the sheet on every tool and
 checks the tool-specific title plus rendered Quick start heading, which also
 guards against duplicate triggers and Markdown-loading failures.
 
-**State:** `pnpm test` **1021 / 32** · `pnpm test:e2e` **37/37** · `pnpm lint`
+The KQL follow-up exposed one composition edge: its existing Share Configuration
+button rendered in a second one-button row below the new shared Help row. A
+shared action portal now lets a tool contribute an action to the shell-owned row;
+KQL uses it for Share Configuration, preserving its state and handler while the
+two buttons render together. Azure CAF Naming now contributes its Copy
+Configuration Share URL action through the same slot. The browser matrix asserts
+both pages' button positions match, so the empty-row regression is pinned.
+
+**State:** `pnpm test` **1021 / 32** · `pnpm test:e2e` **39/39** · `pnpm lint`
 0 errors, 11 existing warnings · build green.
