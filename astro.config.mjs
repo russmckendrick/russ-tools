@@ -1,6 +1,5 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
-import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
 /**
@@ -29,15 +28,14 @@ export default defineConfig({
   integrations: [
     // No include/exclude filter: React is the only island framework, so it
     // claims every .jsx. A path-shaped filter here is a trap — `**/tools/**`
-    // also matches the stylesheets under src/components/tools/, and hands
+    // also matches the stylesheets that sit beside the islands, and hands
     // them to the JSX transform.
     react(),
-    sitemap({
-      // /delete is a per-browser control panel carrying `noindex`, and a
-      // sitemap entry for a noindex page is a contradiction Search Console
-      // reports as an error. 404 is excluded by Astro already.
-      filter: (page) => !page.endsWith('/delete/') && !page.endsWith('/delete'),
-    }),
+    // No @astrojs/sitemap. It emitted `sitemap-index.xml` + `sitemap-0.xml`
+    // carrying the identical URL set to the `/sitemap.xml` that robots.txt
+    // actually advertises — three files, one set, two sources to drift. The
+    // single generator is scripts/generate-sitemap.js, driven by the
+    // manifests and run at the head of `build:astro`.
   ],
 
   vite: {

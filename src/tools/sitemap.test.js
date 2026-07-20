@@ -1,23 +1,24 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { TOOLS } from './registry.mjs';
 
 /**
  * Frozen contract #4's sitemap half, made mechanical.
  *
- * The two apps build their sitemaps from different sources — the SPA's
- * `scripts/generate-sitemap.js` reads `toolsConfig.json`, and the shell's
- * `@astrojs/sitemap` reads the pages `getStaticPaths` produced from the
- * registry. While both are live that is two chances to drift, and the
- * failure is silent: a URL quietly leaves the sitemap and nobody notices
- * until traffic to it does.
+ * There is now exactly one sitemap and one source for it:
+ * `scripts/generate-sitemap.js`, reading the manifests. Until Phase 6 there
+ * were three files — that generator reading `toolsConfig.json`, plus
+ * `@astrojs/sitemap` emitting `sitemap-index.xml` and `sitemap-0.xml` from
+ * `getStaticPaths` — carrying the identical URL set from two sources, of
+ * which `robots.txt` advertised only the first. Two sources is two chances
+ * to drift, and the failure is silent: a URL quietly leaves the sitemap and
+ * nobody notices until the traffic to it does.
  *
- * This asserts the shell's registry covers exactly the generated
- * `public/sitemap.xml` — the file `robots.txt` points at. It is gitignored,
- * not committed: both `pnpm build` and `pnpm build:astro` regenerate it, and
- * CI builds the shell before testing, so the file always exists here. The
- * canonical sitemap URL stays `/sitemap.xml` through cutover; the
- * `@astrojs/sitemap` duplicate (`sitemap-index.xml`) retires in Phase 6.
+ * This asserts the registry covers exactly the generated `public/sitemap.xml`
+ * — the file `robots.txt` points at. It is gitignored, not committed:
+ * `build:astro` regenerates it, and CI builds the shell before testing, so
+ * the file always exists here. `/sitemap.xml` stays the canonical sitemap
+ * URL, which is what Search Console has been submitted.
  */
 
 const SITE = 'https://russ.tools';
@@ -57,5 +58,19 @@ describe('sitemap URL set', () => {
 
   it('lists every tool exactly once', () => {
     expect(committed.size).toBe(TOOLS.length + 1);
+  });
+
+  it('is the only sitemap the build ships', () => {
+    // Re-adding @astrojs/sitemap would silently reintroduce a second URL set
+    // at sitemap-index.xml that robots.txt does not advertise and nothing
+    // asserts. If a second sitemap is ever wanted, robots.txt has to change
+    // with it — this fails until it does.
+    const shipped = readdirSync('dist-astro').filter((f) => f.endsWith('.xml'));
+    expect(shipped).toEqual(['sitemap.xml']);
+  });
+
+  it('advertises itself in robots.txt', () => {
+    const robots = readFileSync('public/robots.txt', 'utf8');
+    expect(robots).toContain(`Sitemap: ${SITE}/sitemap.xml`);
   });
 });

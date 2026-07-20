@@ -47,6 +47,15 @@ export default {
     '/network-designer',
   ],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'IPv4 and IPv6',
+    'Netmask, wildcard, ranges, PTR',
+    'Visual split and join',
+    'Shareable deep links',
+  ],
+
   seo: {
     title: 'Subnet Calculator - IPv4 & IPv6 CIDR and Visual Splitter',
     keywords: [

@@ -33,6 +33,17 @@ export default {
   // rewrite onto the prerendered page, which then reads the param.
   params: [],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Corporate buzzword generation',
+    'Multiple output formats',
+    'Customizable length options',
+    'Professional placeholder text',
+    'Perfect for mockups',
+    'Client-side generation',
+  ],
+
   seo: {
     title: 'Buzzword Ipsum - Corporate Lorem Ipsum Generator & Alternative',
     keywords: [

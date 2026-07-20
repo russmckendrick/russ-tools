@@ -16,6 +16,7 @@
     "generate:sitemap": "node scripts/generate-sitemap.js",
     "generate:redirects": "node scripts/generate-redirects.mjs",
     "generate:tokens": "node scripts/generate-tokens.mjs",
+    "generate:og": "node scripts/generate-og.mjs",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -69,7 +70,6 @@
   },
   "devDependencies": {
     "@astrojs/react": "6.0.1",
-    "@astrojs/sitemap": "3.7.3",
     "@eslint/js": "^9.22.0",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.1.11",

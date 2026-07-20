@@ -37,6 +37,17 @@ export default {
     'query',
   ],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'RDAP protocol support',
+    'Domain registration data',
+    'IP geolocation information',
+    'Nameserver details',
+    'Registration history',
+    'Comprehensive domain analysis',
+  ],
+
   seo: {
     title: 'WHOIS Lookup Tool - Domain & IP Information Checker',
     keywords: [

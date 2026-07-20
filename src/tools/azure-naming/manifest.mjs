@@ -32,6 +32,17 @@ export default {
   // rewrite onto the prerendered page, which then reads the param.
   params: [],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Cloud Adoption Framework compliance',
+    'Bulk name generation',
+    'Custom naming patterns',
+    'Resource type validation',
+    'Export to multiple formats',
+    'Organizational conventions support',
+  ],
+
   seo: {
     title: 'Azure Resource Naming Tool - CAF Compliant Name Generator',
     keywords: [

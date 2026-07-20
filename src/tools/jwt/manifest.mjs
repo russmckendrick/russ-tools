@@ -37,6 +37,17 @@ export default {
     'token',
   ],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    '100% client-side processing',
+    'No data sent to servers',
+    'JWT signature validation',
+    'Claims analysis',
+    'Expiration checking',
+    'Token security analysis',
+  ],
+
   seo: {
     title: 'JWT Decoder/Validator - Secure Client-Side JWT Token Analysis',
     keywords: [

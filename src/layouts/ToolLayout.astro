@@ -23,24 +23,51 @@
  */
 import BaseLayout from './BaseLayout.astro';
 import ToolIcon from '../shell/ToolIcon.astro';
-import { categoryLabel } from '../shell/categories.mjs';
+import { categoryLabel, categorySchema } from '../shell/categories.mjs';
+import { PERSON_SCHEMA, SITE_NAME, SITE_URL, WEBSITE_SCHEMA } from '../shell/site.mjs';
 
 const { tool } = Astro.props;
 
-const seoTitle = tool.seo?.title ?? `${tool.title} — russ.tools`;
+const seoTitle = tool.seo?.title ?? `${tool.title} — ${SITE_NAME}`;
+const toolUrl = new URL(tool.path, Astro.site).href;
 
-// The description a crawler sees is the tool's real one-sentence summary,
-// not a site-wide boilerplate.
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: tool.title,
-  description: tool.description,
-  applicationCategory: 'DeveloperApplication',
-  operatingSystem: 'Any',
-  url: new URL(tool.path, Astro.site).href,
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-};
+/**
+ * Two graph nodes per tool page.
+ *
+ * The SoftwareApplication had regressed against what the SPA published: every
+ * one of the fifteen claimed `DeveloperApplication`, and `author`,
+ * `publisher`, `featureList`, `keywords` and `isPartOf` had all been dropped
+ * in the port. `featureList` is why `features` now lives in the manifest.
+ *
+ * The BreadcrumbList is new — the crumb was rendered for humans but never
+ * described, so the trail did not appear in results.
+ */
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.title,
+    description: tool.description,
+    applicationCategory: categorySchema(tool.category),
+    operatingSystem: 'Any',
+    url: toolUrl,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    author: PERSON_SCHEMA,
+    publisher: PERSON_SCHEMA,
+    isPartOf: WEBSITE_SCHEMA,
+    ...(tool.features?.length ? { featureList: tool.features } : {}),
+    ...(tool.seo?.keywords?.length ? { keywords: tool.seo.keywords.join(', ') } : {}),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Tools', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: categoryLabel(tool.category) },
+      { '@type': 'ListItem', position: 3, name: tool.title, item: toolUrl },
+    ],
+  },
+];
 
 ---
 
@@ -48,7 +75,8 @@ const schema = {
   title={seoTitle}
   description={tool.description}
   keywords={tool.seo?.keywords ?? []}
-  canonical={new URL(tool.path, Astro.site).href}
+  canonical={toolUrl}
+  image={`/og/${tool.id}.png`}
   schema={schema}
 >
   <!-- The hue is set once, here. Everything below inherits it. -->

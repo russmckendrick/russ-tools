@@ -33,6 +33,17 @@ export default {
   // rewrite onto the prerendered page, which then reads the param.
   params: [],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Visual cron builder',
+    'Expression validation',
+    'Human-readable descriptions',
+    'Common schedule presets',
+    'Real-time preview',
+    'Copy-paste ready output',
+  ],
+
   seo: {
     title: 'CRON Expression Builder - Free Cron Job Scheduler Tool',
     keywords: [

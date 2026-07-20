@@ -38,6 +38,17 @@ export default {
   // rewrite onto the prerendered page, which then reads the param.
   params: [],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Multiple DNS providers',
+    'All record types support',
+    'DNS over HTTPS',
+    'Query history tracking',
+    'Response caching',
+    'Detailed DNS analysis',
+  ],
+
   seo: {
     title: 'DNS Lookup Tool - Free DNS Record Checker & Analyzer',
     keywords: [

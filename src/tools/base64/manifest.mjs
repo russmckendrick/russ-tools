@@ -37,6 +37,17 @@ export default {
     'input',
   ],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Text and file encoding',
+    'Multiple Base64 variants',
+    'Batch processing',
+    'Auto-detection',
+    'Security-focused design',
+    'Download encoded files',
+  ],
+
   seo: {
     title: 'Base64 Encoder/Decoder - Free Online Base64 Tool',
     keywords: [

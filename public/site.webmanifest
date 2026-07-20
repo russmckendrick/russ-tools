@@ -1,1 +1,21 @@
-{"name":"russ.tools","short_name":"russ.tools","icons":[{"src":"/assets/logo.svg","sizes":"any","type":"image/svg+xml"},{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#1e1e2e","background_color":"#1e1e2e","display":"standalone"}
+{
+  "name": "russ.tools",
+  "short_name": "russ.tools",
+  "description": "Client-side network, cloud and developer utilities. No accounts, no analytics, nothing uploaded.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#1e1e2e",
+  "background_color": "#1e1e2e",
+  "icons": [
+    { "src": "/assets/logo.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

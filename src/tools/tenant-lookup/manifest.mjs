@@ -36,6 +36,17 @@ export default {
     'domain',
   ],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Domain to tenant mapping',
+    'Tenant ID discovery',
+    'Organization details',
+    'DNS configuration analysis',
+    'Authentication settings',
+    'Multi-API integration',
+  ],
+
   seo: {
     title: 'Microsoft Tenant Lookup - Domain to Tenant Discovery Tool',
     keywords: [

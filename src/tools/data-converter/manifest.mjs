@@ -35,6 +35,17 @@ export default {
   // rewrite onto the prerendered page, which then reads the param.
   params: [],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Multi-format support (JSON, YAML, TOML)',
+    'Auto-format detection',
+    'Syntax highlighting',
+    'Data validation',
+    'Structure analysis',
+    'Error highlighting',
+  ],
+
   seo: {
     title: 'Data Converter - JSON, YAML & TOML Format Converter',
     keywords: [

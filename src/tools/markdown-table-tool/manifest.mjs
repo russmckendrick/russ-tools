@@ -33,6 +33,19 @@ export default {
   // rewrite onto the prerendered page, which then reads the param.
   params: [],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Visual table editor with drag-and-drop',
+    'Real-time markdown preview',
+    'CSV/TSV import and export',
+    'Table validation and linting',
+    'Multiple alignment options',
+    'Bulk formatting and optimization',
+    'Copy to clipboard functionality',
+    'Template library for common tables',
+  ],
+
   seo: {
     title: 'Markdown Table Tool - Table Creator, Formatter & Generator',
     keywords: [

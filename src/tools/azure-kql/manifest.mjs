@@ -39,6 +39,17 @@ export default {
     'template',
   ],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Guided query building',
+    'Real-time query preview',
+    'Azure service templates',
+    'Performance optimization',
+    'Syntax highlighting',
+    'Query validation',
+  ],
+
   seo: {
     title: 'Azure KQL Query Builder - Kusto Query Language Generator',
     keywords: [

@@ -32,6 +32,17 @@ export default {
   // rewrite onto the prerendered page, which then reads the param.
   params: [],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Cryptographically secure generation',
+    'Customizable length and character sets',
+    'Password strength analysis',
+    'Bulk password generation',
+    'Secure download options',
+    'No server communication',
+  ],
+
   seo: {
     title: 'Password Generator - Secure Random Password Creator',
     keywords: [

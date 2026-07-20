@@ -37,6 +37,17 @@ export default {
     'domain',
   ],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'SSL Labs API integration',
+    'Comprehensive security analysis',
+    'Certificate chain validation',
+    'Vulnerability detection',
+    'Detailed SSL reports',
+    'Domain security scoring',
+  ],
+
   seo: {
     title: 'SSL Certificate Checker - Free SSL Analysis & Validation Tool',
     keywords: [

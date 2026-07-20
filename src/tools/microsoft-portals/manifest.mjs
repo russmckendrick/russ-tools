@@ -35,6 +35,17 @@ export default {
     'domain',
   ],
 
+  // Concrete capabilities, rendered into the page's schema.org
+  // `featureList`. Migrated off toolsConfig.json, which is retiring.
+  features: [
+    'Multi-portal deep linking',
+    'Tenant information discovery',
+    'GDAP partner support',
+    'Azure portal access',
+    'Microsoft 365 admin links',
+    'Power Platform navigation',
+  ],
+
   seo: {
     title: 'Microsoft Portals (GDAP) - Deep Link Generator & Tenant Access',
     keywords: [
