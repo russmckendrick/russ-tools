@@ -16,7 +16,7 @@ import { TOOLS } from './registry.mjs';
  *
  * This asserts the registry covers exactly the generated `public/sitemap.xml`
  * — the file `robots.txt` points at. It is gitignored, not committed:
- * `build:astro` regenerates it, and CI builds the shell before testing, so
+ * `build` regenerates it, and CI builds the shell before testing, so
  * the file always exists here. `/sitemap.xml` stays the canonical sitemap
  * URL, which is what Search Console has been submitted.
  */
@@ -65,7 +65,7 @@ describe('sitemap URL set', () => {
     // at sitemap-index.xml that robots.txt does not advertise and nothing
     // asserts. If a second sitemap is ever wanted, robots.txt has to change
     // with it — this fails until it does.
-    const shipped = readdirSync('dist-astro').filter((f) => f.endsWith('.xml'));
+    const shipped = readdirSync('dist').filter((f) => f.endsWith('.xml'));
     expect(shipped).toEqual(['sitemap.xml']);
   });
 

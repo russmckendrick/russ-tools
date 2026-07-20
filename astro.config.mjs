@@ -3,19 +3,21 @@ import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 
 /**
- * The Phase 2 shell, running alongside the existing Vite SPA rather than
- * replacing it. Nothing here touches vite.config.js — Astro carries its own
- * Vite config, so the two builds are independent until the cutover.
+ * The site. A static shell with one React island per tool.
  *
- *   pnpm dev    / pnpm build          the live React SPA (unchanged)
- *   pnpm dev:astro / pnpm build:astro the new shell, into dist-astro/
+ *   pnpm dev · pnpm build → dist/ · pnpm preview
  *
- * See docs/plans/redesign-plan.md, Phase 2.
+ * The React SPA this replaced is gone, and Astro now owns the plain `build`
+ * script and the `dist/` output the SPA used — so the hosting configuration
+ * is unchanged by the cutover and the merge is the deploy. Astro carries its
+ * own Vite config; there is no vite.config.js any more.
+ *
+ * See docs/plans/redesign-plan.md.
  */
 export default defineConfig({
   site: 'https://russ.tools',
   output: 'static',
-  outDir: './dist-astro',
+  outDir: './dist',
   srcDir: './src',
   publicDir: './public',
 
@@ -35,7 +37,7 @@ export default defineConfig({
     // carrying the identical URL set to the `/sitemap.xml` that robots.txt
     // actually advertises — three files, one set, two sources to drift. The
     // single generator is scripts/generate-sitemap.js, driven by the
-    // manifests and run at the head of `build:astro`.
+    // manifests and run at the head of `pnpm build`.
   ],
 
   vite: {

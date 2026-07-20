@@ -2,31 +2,30 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { TOOLS_BY_ID } from '../tools/registry.mjs';
-import { ShellContext } from './ShellContext.jsx';
 
 /**
- * The bridge: one island entry that mounts any tool's existing React
- * component inside `ToolLayout.astro`.
+ * One island entry that mounts any tool's React component inside
+ * `ToolLayout.astro`.
  *
- * The point of Phase 2 is that the shell reaches production with all fifteen
- * tools still working, so this wrapper's job is to supply the three things
- * the components expect from the SPA and Astro does not have:
+ * It supplies the two things the tools expect that a static Astro page does
+ * not have:
  *
- *  1. **A router.** Nine tools call `useParams`/`useSearchParams`, and
- *     `ToolHeader` calls `useLocation`. Rather than editing nine tools, the
- *     island mounts a real `BrowserRouter` whose routes are generated from
- *     the manifest's `params` — the same source the `_redirects` rewrites
- *     come from, so a deep link cannot match in one place and miss in the
- *     other. `useParams` then returns exactly what it returns today.
- *  2. **Toasts.** The SPA mounts the shared `<Toaster/>` once in `NewLayout`;
- *     here it belongs to the island, since there is one per page. Same
- *     component either side, so notifications cannot drift apart.
- *  3. **The shell marker**, so shared chrome can stand down (see
- *     ShellContext).
+ *  1. **A router.** Nine tools call `useParams`/`useSearchParams`. Rather
+ *     than editing nine tools, the island mounts a real `BrowserRouter` whose
+ *     routes are generated from the manifest's `params` — the same source the
+ *     `_redirects` rewrites come from, so a deep link cannot match in one
+ *     place and miss in the other.
+ *  2. **Toasts.** One `<Toaster/>` per page, belonging to the island.
  *
  * The theme needs nothing: it is a class on `<html>` written by BaseLayout's
- * pre-paint script, which reads the same `vite-ui-theme` key the SPA writes.
- * No `ThemeProvider` is required because no tool consumes `useTheme`.
+ * pre-paint script. No `ThemeProvider` is required because no tool consumes
+ * `useTheme`.
+ *
+ * This was Phase 2 scaffolding and the directory was meant to die at cutover.
+ * It did not: `ShellContext` went with the SPA — its only consumers were
+ * `SEOHead` and `ToolHeader`, whose job was to stand down under the shell, and
+ * they are gone — but the router and the toaster are load-bearing for every
+ * tool page. Folding this into `[tool].astro` would only move it.
  *
  * @param {{ toolId: string }} props
  */
@@ -55,22 +54,20 @@ export default function ToolIsland({ toolId }) {
   ];
 
   return (
-    <ShellContext.Provider value={{ toolId }}>
-      <div className="rt-island" onClickCapture={interceptLinks}>
-        <BrowserRouter>
-          <Suspense fallback={<IslandLoading title={tool.title} />}>
-            <IslandErrorBoundary title={tool.title}>
-              <Routes>
-                {patterns.map((pattern) => (
-                  <Route key={pattern} path={pattern} element={<Tool />} />
-                ))}
-              </Routes>
-            </IslandErrorBoundary>
-          </Suspense>
-        </BrowserRouter>
-        <Toaster />
-      </div>
-    </ShellContext.Provider>
+    <div className="rt-island" onClickCapture={interceptLinks}>
+      <BrowserRouter>
+        <Suspense fallback={<IslandLoading title={tool.title} />}>
+          <IslandErrorBoundary title={tool.title}>
+            <Routes>
+              {patterns.map((pattern) => (
+                <Route key={pattern} path={pattern} element={<Tool />} />
+              ))}
+            </Routes>
+          </IslandErrorBoundary>
+        </Suspense>
+      </BrowserRouter>
+      <Toaster />
+    </div>
   );
 }
 

@@ -13,8 +13,8 @@ import { defineConfig, devices } from '@playwright/test';
  *   - Deployed preview (the real gate):
  *       PW_BASE_URL=https://russ-tools-preview.pages.dev pnpm test:e2e
  *   - Local Cloudflare runtime (pre-flight; same engine wrangler ships):
- *       pnpm build:astro && pnpm test:e2e
- *     which auto-starts `wrangler pages dev dist-astro` on :8788.
+ *       pnpm build && pnpm test:e2e
+ *     which auto-starts `wrangler pages dev dist` on :8788.
  */
 const baseURL = process.env.PW_BASE_URL ?? 'http://127.0.0.1:8788';
 
@@ -34,7 +34,7 @@ export default defineConfig({
     ? undefined
     : {
         command:
-          'pnpm dlx wrangler pages dev dist-astro --port 8788 --compatibility-date 2025-05-05',
+          'pnpm dlx wrangler pages dev dist --port 8788 --compatibility-date 2025-05-05',
         url: 'http://127.0.0.1:8788',
         reuseExistingServer: true,
         timeout: 120_000,

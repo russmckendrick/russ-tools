@@ -17,7 +17,7 @@ import { AUTHOR, SITE_NAME, SITE_URL, THEME_COLOR } from '../shell/site.mjs';
  * this does.
  */
 
-const DIST = 'dist-astro';
+const DIST = 'dist';
 const built = existsSync(`${DIST}/index.html`);
 const html = (name) => readFileSync(`${DIST}/${name}.html`, 'utf8');
 

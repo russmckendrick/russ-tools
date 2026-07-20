@@ -15,11 +15,11 @@ import { TOOLS } from '../tools/registry.mjs';
  * explicitly and were never affected, which is why reading the layout would
  * not have shown it.
  *
- * The suite is skipped rather than failed when `dist-astro/` is absent, so
+ * The suite is skipped rather than failed when `dist/` is absent, so
  * `pnpm test` stays useful without a build; CI runs the build first.
  */
 
-const DIST = 'dist-astro';
+const DIST = 'dist';
 const built = existsSync(`${DIST}/index.html`);
 const html = (name) => readFileSync(`${DIST}/${name}.html`, 'utf8');
 const canonicalOf = (name) =>

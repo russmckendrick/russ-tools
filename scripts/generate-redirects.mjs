@@ -1,5 +1,5 @@
 /**
- * Generates dist-astro/_redirects from the tool manifests.
+ * Generates dist/_redirects from the tool manifests.
  *
  * Astro prerenders one HTML file per tool. The param deep links —
  * /ssl-checker/:domain, /jwt/:token, /base64/:input and friends — have no
@@ -19,11 +19,11 @@ import { fileURLToPath } from 'node:url';
 import { loadManifests } from '../src/tools/loadManifests.mjs';
 
 const root = new URL('../', import.meta.url);
-const outDir = fileURLToPath(new URL('dist-astro/', root));
+const outDir = fileURLToPath(new URL('dist/', root));
 const out = `${outDir}_redirects`;
 
 if (!existsSync(outDir)) {
-  console.error('dist-astro/ does not exist — run `astro build` first.');
+  console.error('dist/ does not exist — run `astro build` first.');
   process.exit(1);
 }
 
@@ -31,7 +31,7 @@ const tools = (await loadManifests()).sort((a, b) => a.path.localeCompare(b.path
 
 const lines = [
   '# GENERATED FILE — DO NOT EDIT. Source: src/tools/*/manifest.mjs',
-  '# Regenerate: pnpm generate:redirects (runs as part of `pnpm build:astro`)',
+  '# Regenerate: pnpm generate:redirects (runs as part of `pnpm build`)',
   '#',
   '# 200 = rewrite, not redirect. The visitor keeps the URL they arrived on;',
   '# Cloudflare serves the tool page underneath it. See frozen contract #1.',
@@ -67,4 +67,4 @@ for (const tool of tools) {
 }
 
 writeFileSync(out, lines.join('\n'));
-console.log(`wrote dist-astro/_redirects — ${count} param rewrites across ${tools.filter((t) => t.params.length).length} tools, ${redirects.length} retired paths`);
+console.log(`wrote dist/_redirects — ${count} param rewrites across ${tools.filter((t) => t.params.length).length} tools, ${redirects.length} retired paths`);

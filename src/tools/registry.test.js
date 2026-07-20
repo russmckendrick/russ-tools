@@ -1,6 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 
 import { TOOLS, TOOLS_BY_ID, allRoutes, groupedByCategory } from './registry.mjs';
 import { loadManifests } from './loadManifests.mjs';
@@ -16,8 +14,6 @@ import { ICON_NAMES } from '../shell/icons.mjs';
  * load-bearing: category picks the hue, shortDescription is what stops a
  * tool shipping as a bare icon and a name, icon names one of the bespoke set.
  */
-
-const app = readFileSync(fileURLToPath(new URL('../App.jsx', import.meta.url)), 'utf8');
 
 describe('manifest contract', () => {
   it('registers all fifteen tools', () => {
@@ -64,24 +60,61 @@ describe('manifest contract', () => {
 
 describe('frozen contract #1 — deep links', () => {
   /**
-   * Every param route in today's App.jsx has to survive as a route the
-   * registry knows how to serve. Read out of the live router rather than
-   * hand-listed, so the snapshot cannot rot away from the thing it guards.
+   * Every URL the React SPA served, frozen.
+   *
+   * This used to be read out of `src/App.jsx`'s live `<Route>` table, so the
+   * snapshot could not rot away from the thing it guarded. That file is gone,
+   * and with it the last machine-readable record of what the site promised —
+   * so the list is transcribed here verbatim, extracted from App.jsx at the
+   * commit that deleted it (`git show 9f683ce:src/App.jsx`).
+   *
+   * These are compatibility contracts, not preferences. Every one of them may
+   * be sitting in somebody's bookmarks, a wiki, or a shared link. **Nothing
+   * is ever removed from this list.** A tool that retires declares
+   * `redirectFrom` so its old path 301s; it does not drop out of here.
+   *
+   * `/` and `/delete` are excluded — they are shell pages, not tool routes.
    */
-  const routerPaths = [...app.matchAll(/<Route\s+path="([^"]+)"/g)]
-    .map((m) => m[1])
-    .filter((p) => p !== '/' && p !== 'delete')
-    .map((p) => `/${p}`);
+  const routerPaths = [
+    '/azure-kql',
+    '/azure-kql/:service',
+    '/azure-kql/:service/:template',
+    '/azure-naming',
+    '/base64',
+    '/base64/:input',
+    '/buzzword-ipsum',
+    '/cron',
+    '/data-converter',
+    '/dns-lookup',
+    '/jwt',
+    '/jwt/:token',
+    '/markdown-table-tool',
+    '/microsoft-portals',
+    '/microsoft-portals/:domain',
+    '/network-designer',
+    '/password-generator',
+    '/ssl-checker',
+    '/ssl-checker/:domain',
+    '/subnet-calculator',
+    '/subnet-calculator/:ip',
+    '/subnet-calculator/:ip/:prefix',
+    '/tenant-lookup',
+    '/tenant-lookup/:domain',
+    '/whois-lookup',
+    '/whois-lookup/:query',
+  ];
 
-  // Paths a manifest has explicitly retired: served as a 301 by _redirects
-  // and as a <Navigate> by the SPA, never as a page of their own.
+  // Paths a manifest has explicitly retired: served as a 301 by _redirects,
+  // never as a page of their own.
   const redirectSources = new Set(TOOLS.flatMap((t) => t.redirectFrom ?? []));
 
-  it('finds the current router table', () => {
+  it('still carries every route the SPA served', () => {
+    // Guards the list itself: a deletion here is a broken bookmark, and is
+    // never what someone meant to do.
     expect(routerPaths.length).toBe(26);
   });
 
-  it('serves every route the SPA serves today', () => {
+  it('serves every one of them', () => {
     const owned = new Set(allRoutes().map((r) => r.path));
     const missing = routerPaths.filter((p) => !owned.has(p) && !redirectSources.has(p));
     expect(missing, `routes the registry would drop: ${missing.join(', ')}`).toEqual([]);
@@ -94,11 +127,12 @@ describe('frozen contract #1 — deep links', () => {
     }
   });
 
-  it('adds no route the SPA does not already serve', () => {
-    // A new URL is not a compatibility break, but it is never accidental.
+  it('adds no route the SPA did not serve', () => {
+    // A new URL is not a compatibility break, but it is never accidental —
+    // adding one means adding it to the frozen list above, deliberately.
     const current = new Set(routerPaths);
     const added = allRoutes().map((r) => r.path).filter((p) => !current.has(p));
-    expect(added, `routes not in App.jsx: ${added.join(', ')}`).toEqual([]);
+    expect(added, `routes absent from the frozen list: ${added.join(', ')}`).toEqual([]);
   });
 
   it('derives param patterns from the manifest, in order', () => {
@@ -131,25 +165,6 @@ describe('titles', () => {
   it.each(TOOLS.map((t) => [t.id, t]))('%s: the SEO title fits a search result', (id, tool) => {
     // Google truncates around 60 characters; past that the tail is wasted.
     expect(tool.seo.title.length, `"${tool.seo.title}"`).toBeLessThanOrEqual(65);
-  });
-});
-
-describe('the manifests mirror toolsConfig.json', () => {
-  /**
-   * Both registries are live during the bridge: the SPA reads
-   * toolsConfig.json, the shell reads manifests. Two sources of truth for
-   * the same strings is exactly how the 13-vs-14-vs-15 tool-count drift
-   * happened, so they are pinned together until toolsConfig.json is
-   * retired in Phase 6.
-   */
-  it.each(TOOLS.map((t) => [t.id, t]))('%s matches its toolsConfig entry', async (id, tool) => {
-    const { default: config } = await import('../utils/toolsConfig.json', { with: { type: 'json' } });
-    const entry = config.find((t) => t.id === id);
-    expect(entry, `no toolsConfig entry for ${id}`).toBeDefined();
-    expect(tool.title).toBe(entry.title);
-    expect(tool.path).toBe(entry.path);
-    expect(tool.seo.title).toBe(entry.seoTitle);
-    expect(tool.seo.keywords).toEqual(entry.seoKeywords);
   });
 });
 

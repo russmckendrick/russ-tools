@@ -26,21 +26,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Before the tests, not after: `canonical.test.js` asserts the built
-      # HTML, because the canonical fault it guards against is invisible in
-      # the source — `Astro.url.pathname` is the output filename during a
-      # static build. Without this step that suite silently skips.
-      - name: Build the shell
-        run: pnpm build:astro
+      # Before the tests, not after: `canonical.test.js`, `seo.test.js` and
+      # the sitemap suite all assert the **built** output, because the faults
+      # they guard against are invisible in the source — `Astro.url.pathname`
+      # is the output filename during a static build, and a meta tag can name
+      # an asset the build does not ship. Without this step those suites
+      # silently skip.
+      - name: Build
+        run: pnpm build
 
       - name: Test
         run: pnpm test
 
-      - name: Build the SPA
-        run: pnpm build
-
       # Blocking as of Phase 1: the error count is zero and must stay there.
-      # Warnings are still permitted — 29 remain (exhaustive-deps and
+      # Warnings are still permitted — 11 remain (exhaustive-deps and
       # react-refresh); the raw-palette and off-scale-type warnings are
       # cleared. See DESIGN.md and docs/plans/redesign-plan.md.
       - name: Lint
