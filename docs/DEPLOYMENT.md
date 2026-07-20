@@ -1,489 +1,172 @@
-# RussTools - Deployment Guide
+# Deployment
 
-## Overview
+The site is a static Astro build served by Cloudflare Pages. The three lookups that need a
+server are separate Cloudflare Workers on their own subdomains, deployed by hand and on
+their own schedule — see [`cloudflare-workers/README.md`](cloudflare-workers/README.md).
 
-RussTools is deployed as a static web application with Cloudflare Workers handling API proxying and backend services. This guide covers the complete deployment process for both the frontend application and backend services.
+There is no server-side rendering, no adapter and no runtime configuration. A deploy is a
+directory of files.
 
-## Architecture
+## Requirements
 
-### Frontend Deployment
-- **Static Site**: Vite-built React SPA deployed to CDN
-- **Hosting**: Cloudflare Pages (recommended) or similar static hosting
-- **Domain**: Custom domain with SSL/TLS certificate
-- **CDN**: Global distribution for performance
+| | |
+|---|---|
+| Node | `>=20` (`engines` in `package.json`; CI uses 22) |
+| Package manager | pnpm, pinned by `packageManager: pnpm@11.14.0` |
+| Lockfile | `pnpm-lock.yaml` |
+| Wrangler | not a dependency — invoked with `pnpm dlx wrangler` |
 
-### Backend Services
-- **Cloudflare Workers**: Serverless functions for API proxying
-- **Worker Domains**: Dedicated subdomains for each service
-- **Environment Variables**: Secure configuration management
-- **CORS Handling**: Cross-origin request management
+## The build
 
-## Prerequisites
-
-### Required Accounts
-- Cloudflare account with Workers and Pages access
-- Domain name (optional, but recommended)
-- Git repository access
-
-### Development Environment
-- Node.js 18+ 
-- npm or yarn
-- Wrangler CLI for Cloudflare Workers
-- Git
-
-### Setup Wrangler CLI
 ```bash
-npm install -g wrangler
-wrangler login
+pnpm install --frozen-lockfile
+pnpm build
 ```
 
-## Frontend Deployment
+`pnpm build` is three steps, in this order:
 
-### 1. Build Configuration
+1. **`pnpm generate:sitemap`** — `scripts/generate-sitemap.js` writes `public/sitemap.xml`
+   from the tool manifests. It runs first because Astro copies `public/` into the output.
+   `lastmod` for each URL comes from that tool's last commit (`git log -1 --format=%cs`),
+   so the file is only correct when built from a real checkout with history.
+2. **`astro build`** — prerenders every page to `dist/`. `astro.config.mjs` sets
+   `output: 'static'`, `outDir: './dist'`, `trailingSlash: 'never'` and
+   `build.format: 'file'`, so each tool becomes `dist/<tool>.html` and the URLs stay
+   exactly as the previous site served them.
+3. **`pnpm generate:redirects`** — `scripts/generate-redirects.mjs` writes
+   `dist/_redirects` from the manifests. It exits non-zero if `dist/` does not exist, so it
+   cannot silently produce nothing.
 
-#### Environment Variables
-Create production environment file:
+`pnpm preview` serves the build with Astro's own preview server. It does not apply
+`_redirects`, so param deep links 404 there; use `wrangler pages dev dist` when that
+matters (below).
+
+## Cloudflare Pages configuration
+
+The production project is git-connected and builds `main`.
+
+| Setting | Value |
+|---|---|
+| Production branch | `main` |
+| Build command | `pnpm build` |
+| Build output directory | `dist` |
+| Root directory | `/` |
+
+If the Pages build image ships a Node older than the `engines` floor, set a `NODE_VERSION`
+environment variable of `20` or higher on the project; there is no other environment
+variable the build reads.
+
+Pushing to `main` triggers a build and deploys it. Branch pushes and pull requests produce
+preview deployments using the same settings.
+
+### `_redirects` and the param routes
+
+Astro prerenders one file per tool. The deep-link routes — `/ssl-checker/:domain`,
+`/jwt/:token`, `/base64/:input`, `/subnet-calculator/:ip/:prefix` and the rest — have no
+file of their own, because the value is user data and cannot be enumerated at build time.
+
+`dist/_redirects` handles them with a **200 rewrite**, not a redirect:
+
+```
+/ssl-checker/:domain                    /ssl-checker            200
+```
+
+The visitor keeps the URL they arrived on and Cloudflare serves the tool's page underneath
+it; the island then reads the segment off `location.pathname` when it mounts. A 301 or 302
+would rewrite the address bar and destroy the shareable-link property the whole site rests
+on — these URLs are frozen contract #1.
+
+Retired paths are the exception and are genuine 301s. They are emitted first in the file so
+they match before any rewrite can:
+
+```
+/network-designer                       /subnet-calculator      301
+/network-designer/*                     /subnet-calculator      301
+```
+
+Every line is derived from a manifest — the param patterns from `params`, the 301s from
+`redirectFrom` — so a route cannot be lost by forgetting to list it. The file carries a
+generated-file header; do not edit `dist/_redirects` by hand, and do not commit one.
+
+### Verifying a deployment
+
+`e2e/deeplinks.spec.js` is the browser-level gate for the routing above. It only means
+anything against something that applies `_redirects`, which `astro dev` does not.
+
+Against Cloudflare's runtime locally:
+
 ```bash
-# .env.production
-VITE_API_BASE_URL=https://api.yourdomain.com
-VITE_CLOUDFLARE_ZONE_ID=your-zone-id
-VITE_ENVIRONMENT=production
+pnpm build
+pnpm test:e2e     # auto-starts `wrangler pages dev dist` on :8788
 ```
 
-#### Build Settings
+Against a deployed target:
+
 ```bash
-# Build for production
-npm run build
-
-# Verify build output
-npm run preview
+PW_BASE_URL=https://russ.tools pnpm test:e2e
 ```
 
-### 2. Cloudflare Pages Deployment
+Worker-backed lookups are not asserted by the matrix — they depend on the target origin
+being in each worker's `ALLOWED_ORIGINS`, so a preview origin that has not been added will
+show failed lookups on an otherwise correct deployment.
 
-#### Automatic Deployment (Recommended)
-1. Connect Git repository to Cloudflare Pages
-2. Configure build settings:
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-   - Node.js version: `18`
+## Continuous integration
 
-#### Build Configuration
-```yaml
-# Build settings in Cloudflare Pages
-Build command: npm run build
-Build output directory: dist
-Root directory: /
-Environment variables:
-  NODE_VERSION: 18
-  VITE_API_BASE_URL: https://api.yourdomain.com
-```
+`.github/workflows/ci.yml` runs on pull requests and pushes to `main`: install, **build**,
+test, lint. The build step comes before the tests deliberately — `canonical.test.js`,
+`seo.test.js` and the sitemap suite assert the built output in `dist/`, and skip silently
+without it. Lint is blocking at zero errors.
 
-#### Manual Deployment
+CI does not deploy. Cloudflare Pages builds `main` itself from the git connection.
+
+## Workers
+
+The workers are not part of the site build and are not deployed by CI. Each has its own
+config under `cloudflare-worker/configs/` and is deployed individually:
+
 ```bash
-# Install Wrangler CLI
-npm install -g wrangler
-
-# Build and deploy
-npm run build
-wrangler pages deploy dist --project-name russ-tools
+pnpm dlx wrangler deploy --config cloudflare-worker/configs/wrangler-ssl.toml
 ```
 
-### 3. Custom Domain Setup
+### Rotating ALLOWED_ORIGINS
 
-#### DNS Configuration
+`ALLOWED_ORIGINS` is a comma-separated list of exact origins, held as a secret on each of
+the `ssl-checker`, `whois-lookup` and `microsoft-tenant-lookup` workers. It is read on
+every request, so a change takes effect on the next request with no redeploy. It is the
+only thing standing between these workers and open public use, so it needs pruning whenever
+a temporary origin — a preview deployment, a local port — stops being needed.
+
+Set it per worker; the value replaces the previous one in full:
+
 ```bash
-# Add CNAME record
-Type: CNAME
-Name: www
-Target: your-pages-domain.pages.dev
-
-# Add A record for apex domain
-Type: A
-Name: @
-Target: [Cloudflare IP addresses]
+echo 'https://russ.tools,https://www.russ.tools,http://localhost:4321' \
+  | pnpm dlx wrangler secret put ALLOWED_ORIGINS \
+      --config cloudflare-worker/configs/wrangler-ssl.toml
 ```
 
-#### SSL/TLS Configuration
-- Enable "Always Use HTTPS" in Cloudflare SSL/TLS settings
-- Set SSL/TLS encryption mode to "Full" or "Full (strict)"
-- Enable HTTP Strict Transport Security (HSTS)
+Repeat for `wrangler-whois.toml` and `wrangler-tenant.toml`. The three lists are set
+separately and can drift; check all three when auditing.
 
-## Backend Services Deployment
+Two things to know before editing the value. The origin check falls back to a `Referer`
+prefix match when there is no `Origin` header, so a trailing-slash-free entry such as
+`https://russ.tools` also matches a referer of `https://russ.tools.example.com/` — keep the
+list tight. And the first entry doubles as the default `Access-Control-Allow-Origin` for
+requests the workers do not recognise, so put the production origin first.
 
-### 1. Cloudflare Workers Setup
+`buzzword-generator` does not read this secret; its allowlist is compiled into
+`cloudflare-worker/buzzwords.js` and changing it requires an edit and a redeploy.
 
-#### Worker Configuration Structure
-```
-cloudflare-worker/
-├── ssl.js              # SSL Certificate Checker API
-├── tenant.js           # Microsoft Tenant Lookup API
-├── whois.js            # WHOIS Lookup API
-├── configs/
-│   ├── wrangler-ssl.toml
-│   ├── wrangler-tenant.toml
-│   └── wrangler-whois.toml
-```
+## Rolling back
 
-#### Deploy SSL Worker
-```bash
-cd cloudflare-worker
-wrangler deploy ssl.js --config configs/wrangler-ssl.toml
-```
+**The site.** In the Cloudflare Pages dashboard, open the project's Deployments list, find
+the last known-good deployment and roll back to it. That is instant and needs no build.
+Reverting the offending commit on `main` produces a fresh build and is the durable fix.
 
-#### Deploy Tenant Worker
-```bash
-wrangler deploy tenant.js --config configs/wrangler-tenant.toml
-```
+**A worker.** `pnpm dlx wrangler rollback --config cloudflare-worker/configs/<config>.toml`
+restores its previous version. Secrets are not versioned with the code — a bad
+`ALLOWED_ORIGINS` is fixed by setting it again, not by rolling back.
 
-#### Deploy WHOIS Worker
-```bash
-wrangler deploy whois.js --config configs/wrangler-whois.toml
-```
-
-### 2. Worker Configuration
-
-#### SSL Worker Configuration
-```toml
-# configs/wrangler-ssl.toml
-name = "ssl-russ-tools"
-main = "ssl.js"
-compatibility_date = "2024-01-01"
-
-[env.production]
-vars = { ENVIRONMENT = "production" }
-
-[[routes]]
-pattern = "ssl.yourdomain.com/*"
-zone_name = "yourdomain.com"
-```
-
-#### Environment Variables
-```bash
-# Set secrets for workers
-wrangler secret put SSL_LABS_API_KEY --config configs/wrangler-ssl.toml
-wrangler secret put MICROSOFT_API_KEY --config configs/wrangler-tenant.toml
-wrangler secret put WHOIS_API_KEY --config configs/wrangler-whois.toml
-```
-
-### 3. API Endpoint Configuration
-
-#### Update Frontend API Configuration
-Update `src/utils/api/apiConfig.json`:
-```json
-{
-  "endpoints": {
-    "ssl": {
-      "url": "https://ssl.yourdomain.com/",
-      "description": "SSL Certificate Checker API",
-      "timeout": 30000,
-      "retries": 2
-    },
-    "tenant": {
-      "url": "https://tenant.yourdomain.com/",
-      "description": "Microsoft Tenant Lookup API",
-      "timeout": 15000,
-      "retries": 2
-    },
-    "whois": {
-      "url": "https://whois.yourdomain.com/",
-      "description": "WHOIS Lookup API",
-      "timeout": 10000,
-      "retries": 2
-    }
-  }
-}
-```
-
-## Monitoring and Analytics
-
-### 1. Cloudflare Analytics
-- Enable Cloudflare Web Analytics
-- Configure Real User Monitoring (RUM)
-- Set up custom events for tool usage
-
-### 2. Performance Monitoring
-```javascript
-// Add to main.jsx
-if (import.meta.env.PROD) {
-  // Initialize performance monitoring
-  import('./utils/analytics').then(({ initAnalytics }) => {
-    initAnalytics();
-  });
-}
-```
-
-### 3. Error Tracking
-```javascript
-// Add global error handling
-window.addEventListener('error', (event) => {
-  // Log errors to monitoring service
-  console.error('Global error:', event.error);
-});
-```
-
-## Security Configuration
-
-### 1. Content Security Policy
-Add to `index.html`:
-```html
-<meta http-equiv="Content-Security-Policy" content="
-  default-src 'self';
-  script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  img-src 'self' data: blob:;
-  connect-src 'self' https://*.yourdomain.com https://dns.google https://cloudflare-dns.com;
-  font-src 'self' https://fonts.gstatic.com;
-">
-```
-
-### 2. Security Headers
-Configure in Cloudflare:
-```yaml
-# _headers file for Cloudflare Pages
-/*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: geolocation=(), microphone=(), camera=()
-```
-
-### 3. Rate Limiting
-Configure in Workers:
-```javascript
-// Add to worker code
-const rateLimiter = new Map();
-
-export default {
-  async fetch(request) {
-    const clientIP = request.headers.get('CF-Connecting-IP');
-    const key = `rate_limit:${clientIP}`;
-    
-    // Implement rate limiting logic
-    if (rateLimiter.has(key)) {
-      const requests = rateLimiter.get(key);
-      if (requests >= 100) {
-        return new Response('Rate limit exceeded', { status: 429 });
-      }
-    }
-    
-    // Continue with request processing
-  }
-};
-```
-
-## Performance Optimization
-
-### 1. Build Optimization
-```javascript
-// vite.config.js
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-         vendor: ['react', 'react-dom'],
-          networking: ['netmask'],
-          crypto: ['jose', 'jwt-decode'],
-          utils: ['js-yaml', '@iarna/toml']
-        }
-      }
-    }
-  }
-});
-```
-
-### 2. Caching Strategy
-```javascript
-// Add to worker configuration
-const cache = caches.default;
-
-export default {
-  async fetch(request) {
-    const cacheKey = new Request(request.url, request);
-    let response = await cache.match(cacheKey);
-    
-    if (!response) {
-      response = await fetch(request);
-      // Cache for 1 hour
-      response.headers.set('Cache-Control', 'public, max-age=3600');
-      await cache.put(cacheKey, response.clone());
-    }
-    
-    return response;
-  }
-};
-```
-
-### 3. Asset Optimization
-```bash
-# Optimize images
-npm install -g imagemin-cli
-imagemin public/assets/*.png --out-dir=public/assets/optimized
-
-# Compress assets
-gzip -k dist/assets/*.js
-gzip -k dist/assets/*.css
-```
-
-## Deployment Scripts
-
-### 1. Automated Deployment
-Create `scripts/deploy.sh`:
-```bash
-#!/bin/bash
-set -e
-
-echo "🚀 Starting deployment..."
-
-# Build frontend
-echo "📦 Building frontend..."
-npm run build
-
-# Deploy workers
-echo "☁️ Deploying workers..."
-cd cloudflare-worker
-wrangler deploy ssl.js --config configs/wrangler-ssl.toml
-wrangler deploy tenant.js --config configs/wrangler-tenant.toml
-wrangler deploy whois.js --config configs/wrangler-whois.toml
-cd ..
-
-# Deploy frontend
-echo "🌐 Deploying frontend..."
-wrangler pages deploy dist --project-name russ-tools
-
-echo "✅ Deployment completed!"
-```
-
-### 2. Staging Deployment
-```bash
-# Deploy to staging environment
-VITE_ENVIRONMENT=staging npm run build
-wrangler pages deploy dist --project-name russ-tools-staging
-```
-
-## Rollback Procedures
-
-### 1. Frontend Rollback
-```bash
-# Rollback to previous Pages deployment
-wrangler pages deployment list --project-name russ-tools
-wrangler pages deployment rollback [DEPLOYMENT_ID] --project-name russ-tools
-```
-
-### 2. Worker Rollback
-```bash
-# Deploy previous worker version
-wrangler rollback [WORKER_NAME] --version-id [VERSION_ID]
-```
-
-## Health Checks
-
-### 1. Automated Health Checks
-```javascript
-// Add to worker
-export default {
-  async fetch(request) {
-    if (request.url.endsWith('/health')) {
-      return new Response(JSON.stringify({
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        version: '1.0.0'
-      }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    
-    // Handle other requests
-  }
-};
-```
-
-### 2. Monitoring Setup
-```bash
-# Monitor endpoints
-curl -f https://ssl.yourdomain.com/health
-curl -f https://tenant.yourdomain.com/health
-curl -f https://whois.yourdomain.com/health
-```
-
-## Troubleshooting
-
-### Common Issues
-
-#### Build Failures
-```bash
-# Clear cache and rebuild
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-```
-
-#### Worker Deployment Issues
-```bash
-# Check worker logs
-wrangler tail [WORKER_NAME]
-
-# Debug worker locally
-wrangler dev [WORKER_FILE]
-```
-
-#### SSL/TLS Issues
-```bash
-# Check SSL configuration
-curl -I https://yourdomain.com
-openssl s_client -connect yourdomain.com:443
-```
-
-### Performance Issues
-```bash
-# Analyze bundle size
-npm run build -- --analyze
-
-# Check Core Web Vitals
-lighthouse https://yourdomain.com --only-categories=performance
-```
-
-## Maintenance
-
-### 1. Regular Updates
-- Update dependencies monthly
-- Monitor security advisories
-- Review and update CSP headers
-- Audit third-party integrations
-
-### 2. Backup Strategy
-- Git repository serves as source backup
-- Database exports (if applicable)
-- Configuration backups
-
-### 3. Documentation Updates
-- Keep deployment documentation current
-- Document configuration changes
-- Maintain runbooks for common procedures
-
-## Support and Monitoring
-
-### 1. Logging Strategy
-```javascript
-// Structured logging in workers
-console.log(JSON.stringify({
-  timestamp: new Date().toISOString(),
-  level: 'info',
-  message: 'API request processed',
-  requestId: request.headers.get('cf-ray'),
-  clientIP: request.headers.get('cf-connecting-ip')
-}));
-```
-
-### 2. Alerting Setup
-- Configure Cloudflare alerts for error rates
-- Set up uptime monitoring
-- Monitor performance metrics
-
-### 3. Incident Response
-- Establish escalation procedures
-- Document common resolution steps
-- Maintain emergency contact list
-
-This deployment guide provides a comprehensive framework for deploying and maintaining the RussTools application with high availability, security, and performance.
+**A build-settings change.** The Pages build command and output directory are dashboard
+settings, not repository files. Reverting them means editing them back and triggering a
+redeploy; nothing in the repository records what they were, so note the previous values
+before changing them.

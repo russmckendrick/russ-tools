@@ -40,22 +40,14 @@ drift from what actually ships.
 | [`DESIGN.md`](../DESIGN.md) *(repo root)* | **The design system.** Colour, type, layout, shape, components. Authoritative — read before touching styling. |
 | [`plans/redesign-plan.md`](plans/redesign-plan.md) | **The redesign plan and its session log.** The living record of how the current architecture came about. |
 | [`BEHAVIOR_CHANGES.md`](BEHAVIOR_CHANGES.md) | Every deliberate divergence from previously captured behaviour, logged in the PR that made it. |
+| [`DEPLOYMENT.md`](DEPLOYMENT.md) | The build, the Cloudflare Pages configuration, `_redirects`, worker deploys and rollback. |
+| [`cloudflare-workers/README.md`](cloudflare-workers/README.md) | The four Cloudflare Workers, written from their source. |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | How the site is put together — the shell, the island model, the manifest contract, the token pipeline. |
+| [`DEVELOPMENT.md`](DEVELOPMENT.md) | How to work on it — setup, scripts, adding a tool, testing, lint rules, conventions. |
 | [`api/API_CONFIG.md`](api/API_CONFIG.md) | The API endpoint configuration used by the proxied lookups. |
 | [`utils/sharelink.md`](utils/sharelink.md) | The `?config` share-link codec. |
 | [`utils/tld-utilities.md`](utils/tld-utilities.md) | TLD helper functions. |
 | [`design/`](design/) | The approved visual direction behind `DESIGN.md`. |
-
-### Being rewritten
-
-These predate the Astro rewrite and describe the retired React SPA. They are wrong in
-ways that matter — following them produces code that does not compile against the
-current tree — and are being regenerated as the last of the migration lands. Prefer the
-redesign plan and the code itself.
-
-- [`ARCHITECTURE.md`](ARCHITECTURE.md)
-- [`DEVELOPMENT.md`](DEVELOPMENT.md)
-- [`DEPLOYMENT.md`](DEPLOYMENT.md)
-- [`cloudflare-workers/README.md`](cloudflare-workers/README.md) — documents KV caching, rate limiting and API keys that do not exist in the deployed workers
 
 ## How it fits together
 
