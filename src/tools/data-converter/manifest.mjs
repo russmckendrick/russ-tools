@@ -24,7 +24,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'developer',
-  icon: 'swap',
+  icon: 'transform',
   badges: [
     'JSON',
     'YAML',

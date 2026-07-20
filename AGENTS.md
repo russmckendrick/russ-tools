@@ -47,7 +47,7 @@ rather than shadcn's stock values. Notably: the primary button, focus ring, acti
 default badge all take `var(--cat)`, which `ToolLayout` sets once per page from the
 manifest's `category` — a tool never names a colour. There is one `<Toaster/>`
 (`ui/toaster.jsx`, mounted by `ToolIsland`), one help affordance (`ui/help-dialog.jsx`), and
-one source for the bespoke tool icons (`src/shell/icons.mjs`, rendered by the Astro
+one source for the Material tool icons (`src/shell/icons.mjs`, rendered by the Astro
 `ToolIcon` and the React `ui/tool-icon.jsx`).
 
 **Shell CSS classes are `rt-`-prefixed** (`src/styles/shell.css`). They were bare before,
@@ -203,8 +203,9 @@ under Network when its category is `security`.
 `dayjs`, `framer-motion`, `d3-force`, `@svgdotjs/svg.js`, `next-themes`,
 `tailwindcss-animate`, `uuid` (use `crypto.randomUUID()`), `autoprefixer`,
 `@radix-ui/react-scroll-area`. Icons: **lucide-react is the only icon library for generic
-UI glyphs**, and per-tool icons come from the shared bespoke set in `src/shell/icons.mjs`
-(Astro `ToolIcon`, React `ui/tool-icon.jsx`) — one drawing, both renderers.
+UI glyphs**, and per-tool icons are selected filled Material Design glyphs vendored in
+`src/shell/icons.mjs` (Astro `ToolIcon`, React `ui/tool-icon.jsx`) — one drawing, both
+renderers, with no `react-icons` runtime dependency.
 `@tabler/icons-react` is **removed**; do not reintroduce it. Also removed at cutover:
 `postcss`, `@tailwindcss/postcss` (Tailwind arrives via `@tailwindcss/vite`),
 `@astrojs/sitemap`, `jwt-decode` (`jose` already exports `decodeJwt`), and

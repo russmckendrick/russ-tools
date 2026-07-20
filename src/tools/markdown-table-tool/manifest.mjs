@@ -22,7 +22,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'developer',
-  icon: 'table',
+  icon: 'table-view',
   badges: [
     'CSV',
     'Align',

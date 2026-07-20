@@ -1887,3 +1887,32 @@ index, a tool page and island hydration checked in the browser. Ten commits on
 hygiene (shared CORS module, the logging above, the false rate-limit claim),
 wrangler-action deploy CI, decommissioning `certificate.russ.tools`, and
 Search Console monitoring once the merge lands.
+
+### 2026-07-20 — Session 11: bespoke tool icons replaced with Material glyphs
+
+**Model:** GPT-5. **Branch:** `main`.
+
+The owner rejected the bespoke line icon set and chose the filled baseline
+Google Material Design family after reviewing the React Icons catalogue. All
+fifteen tools now have distinct, literal glyphs: manage-search, new-label,
+data-object, campaign, schedule, transform, DNS, token, table-view, apps,
+password, policy, LAN, corporate-fare and badge. The manifest keys changed with
+the drawings, including the password generator's in-island icon reference.
+
+**No icon dependency was added.** The selected Material paths are vendored in
+`src/shell/icons.mjs`, where the Astro shell and React islands already share one
+definition. Both renderers changed from stroked linework to filled
+`currentColor`, preserving category hues without creating an Astro/React split.
+The Material Icons Apache 2.0 licence now ships at
+`public/licenses/material-design-icons.txt`, and `DESIGN.md`, `AGENTS.md` and the
+architecture/design references describe the new source of truth.
+
+Every committed per-tool Open Graph card was regenerated because the icon is
+part of its artwork. Browser verification covered the index and password tool
+in both themes: the grid rendered 15 unique 25px glyphs with category-coloured
+fills and no strokes, and the password drawing was identical in the 34px Astro
+header and the 40px React island.
+
+**State:** `pnpm test` **1006 / 32** · `pnpm test:e2e` **22/22** · `pnpm lint`
+0 errors, 11 existing warnings · build green · Open Graph cards and dark/light
+rendering visually checked.

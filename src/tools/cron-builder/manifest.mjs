@@ -23,7 +23,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'developer',
-  icon: 'clock',
+  icon: 'schedule',
   badges: [
     '5-field',
     'Presets',

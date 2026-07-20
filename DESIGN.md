@@ -922,23 +922,21 @@ by exactly one tool.
 
 ## Iconography
 
-Icons are a **bespoke set**, one per tool, drawn on a 24px grid with a `1.75px`
-stroke, round caps and round joins. Small filled nodes and punctuation are
-allowed inside the drawing; the overall silhouette remains open linework. They
-inherit `currentColor` so the category hue applies automatically.
+Tool icons are selected from the filled baseline **Google Material Design Icons**
+set. Every glyph uses the Material 24px grid and inherits `currentColor`, so the
+category hue applies automatically. Do not mix filled and outline variants: the
+consistent solid silhouette is what keeps the set legible at card size.
 
-Each icon depicts what the tool operates on, not a generic abstraction: nested
-rectangles for subnet allocation, a three-segment bar for a JWT's header /
-payload / signature, a wrapped globe for DNS. Two tools should never share an
-icon.
+Each icon depicts the tool's subject or operation rather than its category: `dns`
+for DNS records, `token` for a JWT, `lan` for subnet topology, `policy` for SSL
+inspection. Two tools never share an icon, and generic category symbols such as a
+shield are not repeated across all security tools.
 
-The set is drawn for this project rather than taken from a library, and it is
-drawn **once**: `src/shell/icons.mjs` holds the paths, the Astro `ToolIcon`
-renders them into prerendered HTML and the React `ToolIcon`
-(`src/components/ui/tool-icon.jsx`) renders the same strings inside an island.
-Before this, each tool wrapped a third-party glyph, so the icon in the page
-header and the icon inside the tool were two different pictures of the same
-thing.
+The selected Material paths are vendored **once** in `src/shell/icons.mjs`; there
+is no `react-icons` runtime dependency. The Astro `ToolIcon` renders them into
+prerendered HTML and the React `ToolIcon` renders the same strings inside an
+island. The glyphs remain category-coloured in both places and their Apache 2.0
+licence ships with the site.
 
 The site mark is a solid toolbox silhouette. In the shell it takes
 `currentColor`, so the active palette's primary token controls it without a
@@ -959,8 +957,9 @@ shared, avoids adding an island or runtime to shell pages, and lets the global
 reduced-motion rule collapse every transition in one place.
 
 Where a generic UI icon is needed (chevron, close, copy, external link), use
-**lucide-react**, which is the project's only icon dependency. `@tabler/icons-react`
-is being removed and must not be used.
+**lucide-react**, which is the project's only icon dependency. The Material tool
+glyphs are vendored SVG paths, not a component library. `@tabler/icons-react` must
+not be used.
 
 ## Accessibility
 

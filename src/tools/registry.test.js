@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { TOOLS, TOOLS_BY_ID, allRoutes, groupedByCategory } from './registry.mjs';
 import { loadManifests } from './loadManifests.mjs';
 import { CATEGORY_IDS } from '../shell/categories.mjs';
-import { ICON_NAMES } from '../shell/icons.mjs';
+import { ICON_NAMES, TOOL_ICONS, iconSvg } from '../shell/icons.mjs';
 
 /**
  * The manifest contract.
@@ -12,7 +12,7 @@ import { ICON_NAMES } from '../shell/icons.mjs';
  * of a manifest has to be enforced rather than remembered. `category`,
  * `shortDescription` and `icon` are required because DESIGN.md makes them
  * load-bearing: category picks the hue, shortDescription is what stops a
- * tool shipping as a bare icon and a name, icon names one of the bespoke set.
+ * tool shipping as a bare icon and a name, icon names one of the shared set.
  */
 
 describe('manifest contract', () => {
@@ -50,6 +50,17 @@ describe('manifest contract', () => {
   it('gives every tool a distinct icon', () => {
     // DESIGN.md: two tools should never share an icon.
     expect(new Set(TOOLS.map((t) => t.icon)).size).toBe(TOOLS.length);
+  });
+
+  it('renders every tool icon as a filled current-color SVG', () => {
+    expect(ICON_NAMES).toHaveLength(TOOLS.length);
+    for (const name of ICON_NAMES) {
+      const svg = iconSvg(name, 25);
+      expect(svg).toContain('fill="currentColor"');
+      expect(svg).toContain('stroke="none"');
+      expect(svg).toContain(TOOL_ICONS[name]);
+      expect(svg).not.toContain('stroke-width');
+    }
   });
 
   it('uses every category', () => {

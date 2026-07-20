@@ -33,7 +33,7 @@ Commands: `pnpm dev`, `pnpm build` (output `dist/`), `pnpm preview`.
 | `astro.config.mjs` | The single build configuration. Astro carries its own Vite config; there is no `vite.config.js`. |
 | `src/pages/` | The four pages: `index.astro`, `[tool].astro`, `delete.astro`, `404.astro`. |
 | `src/layouts/` | `BaseLayout.astro` (head, theme, chrome) and `ToolLayout.astro` (the per-tool page furniture). |
-| `src/shell/` | Astro chrome and the plain-JS modules it reads: categories, palettes, site identity, the bespoke icon set. |
+| `src/shell/` | Astro chrome and the plain-JS modules it reads: categories, palettes, site identity, the shared Material icon set. |
 | `src/tools/<id>/` | One folder per tool: `manifest.mjs`, `island.jsx`, and whatever `lib/`, `components/` or `hooks/` that tool needs. |
 | `src/tools/registry.mjs` | The registry. `loadManifests.mjs` is its plain-Node twin. |
 | `src/bridge/ToolIsland.jsx` | The one island entry that mounts any tool's React component. |

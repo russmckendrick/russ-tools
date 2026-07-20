@@ -4,7 +4,7 @@ import { TOOL_ICONS } from '@/shell/icons.mjs';
 import { cn } from '@/lib/utils';
 
 /**
- * A tool's bespoke icon, in React.
+ * A tool's Material icon, in React.
  *
  * The paths come from `src/shell/icons.mjs` — the same module the prerendered
  * Astro `ToolIcon` renders from — so a tool's icon is drawn once and used in
@@ -12,8 +12,8 @@ import { cn } from '@/lib/utils';
  * @tabler glyph, which meant the icon in the page header and the icon inside
  * the tool were two different pictures of the same thing.
  *
- * `currentColor` and no fill, per DESIGN.md — so it takes the category hue
- * from `--cat` wherever one is in scope, and never picks its own.
+ * `currentColor`, per DESIGN.md, makes the filled glyph take the category hue
+ * from `--cat` wherever one is in scope without picking its own colour.
  *
  * @param {{ name: string, size?: number, className?: string }} props
  */
@@ -27,11 +27,8 @@ export const ToolIcon = React.forwardRef(({ name, size, className, ...props }, r
       viewBox="0 0 24 24"
       width={size}
       height={size}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
+      stroke="none"
       aria-hidden="true"
       className={cn(size ? undefined : 'size-6', className)}
       dangerouslySetInnerHTML={{ __html: paths }}

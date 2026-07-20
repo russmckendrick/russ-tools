@@ -9,7 +9,7 @@ self-contained file with no build step and no external requests.
 It shows two frames:
 
 1. **The tool index** — masthead, stat strip, category filter chips (interactive),
-   and the panelled tool grid with per-category colour and bespoke icons.
+   and the panelled tool grid with per-category colour and the original bespoke icons.
 2. **A tool page** — the same panel system one level down, with the category hue
    carried into the primary button and the record-type column. This is the layout
    `ToolLayout.astro` has to produce from a manifest.
@@ -25,6 +25,7 @@ corrects:
 - the light-theme teal is `#0d9488`, only 3.74:1 as text (corrected to `#0f766e`);
 - it uses one border token where two are needed — decorative `outline` and
   `outline-strong` for control boundaries, which must clear 3:1.
+- it predates the filled Material tool icon set now specified by `DESIGN.md`.
 
 Treat it as the intent, not the specification. It is kept because the composition
 — density, hierarchy, panel anatomy, how the six category hues are deployed — is
