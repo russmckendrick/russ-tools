@@ -42,7 +42,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
-    "exceljs": "^4.4.0",
     "jose": "^6.2.3",
     "js-yaml": "^4.3.0",
     "js-yaml-source-map": "^0.2.2",
@@ -54,8 +53,10 @@
     "react-dom": "^19.2.7",
     "react-dropzone": "^14.4.1",
     "react-router-dom": "^7.18.1",
+    "read-excel-file": "^9.3.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
+    "write-excel-file": "^4.1.1",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

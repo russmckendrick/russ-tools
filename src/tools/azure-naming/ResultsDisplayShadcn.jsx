@@ -118,9 +118,9 @@ const ResultsDisplayShadcn = ({ formState, validationState }) => {
         description: 'Preparing Excel export...'
       });
       
-      // Dynamically import ExcelJS only when needed
-      const ExcelJS = (await import('exceljs')).default;
-      
+      // Dynamically imported so the writer is only fetched on an export.
+      const writeXlsxFile = (await import('write-excel-file/browser')).default;
+
       const names = Array.isArray(validationState.generatedName)
         ? validationState.generatedName
         : [validationState.generatedName];
@@ -156,29 +156,21 @@ const ResultsDisplayShadcn = ({ formState, validationState }) => {
         return row;
       });
 
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Names');
-      
-      // Add headers
-      worksheet.columns = columns.map(key => ({
-        header: key,
-        key: key,
-        width: 20
-      }));
+      // A header row followed by one row per name, in column order. An empty
+      // cell is `null` rather than '' — that is what the writer treats as
+      // blank, and it keeps optional columns from writing empty strings.
+      const sheetData = [
+        columns,
+        ...rows.map(row => columns.map(key => (row[key] === undefined || row[key] === '' ? null : row[key]))),
+      ];
 
-      // Add rows
-      worksheet.addRows(rows);
+      // `toFile` performs the download itself, which is why the Blob,
+      // object URL and synthetic anchor this used to build are gone.
+      await writeXlsxFile(sheetData, {
+        sheet: 'Names',
+        columns: columns.map(() => ({ width: 20 })),
+      }).toFile('azure-resource-names.xlsx');
 
-      // Generate and download the file
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'azure-resource-names.xlsx';
-      a.click();
-      URL.revokeObjectURL(url);
-      
       // Dismiss loading and show success
       toast.dismiss('excel-loading');
       toast.success('Excel Export Complete', {

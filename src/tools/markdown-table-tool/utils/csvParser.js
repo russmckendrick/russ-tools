@@ -92,44 +92,46 @@ export const convertToTSV = (data) => {
   return convertToCSV(data, '\t');
 };
 
+/**
+ * One spreadsheet cell as table text.
+ *
+ * read-excel-file returns *typed* values — `Date`, `boolean`, `number`,
+ * `null` — where exceljs handed back `cell.text`, a pre-formatted string.
+ * That is the one real behaviour difference in the swap, and it needs
+ * deciding rather than defaulting: `String(someDate)` yields
+ * "Mon Jan 01 1995 00:00:00 GMT+0000 (…)", which is not what anyone wants
+ * in a Markdown table.
+ *
+ * `String()` on the rest is deliberate and preserves falsy values — `0` and
+ * `false` become "0" and "false" rather than empty cells.
+ */
+export const excelCellToText = (value) => {
+  if (value === null || value === undefined) return '';
+  if (value instanceof Date) {
+    // Excel date-only values arrive at UTC midnight; render those as a plain
+    // date and keep the full timestamp for anything carrying a time.
+    const iso = value.toISOString();
+    return iso.endsWith('T00:00:00.000Z') ? iso.slice(0, 10) : iso;
+  }
+  return String(value);
+};
+
 export const parseExcelData = async (file) => {
   try {
-    // `.default`, not the namespace. exceljs is a UMD bundle, so what a
-    // dynamic import yields depends on the bundler: the Vite SPA build emits
-    // Rollup's `_mergeNamespaces` helper, which copies the CJS exports onto
-    // the namespace and makes bare `ExcelJS.Workbook` work — the Astro build
-    // does not, and neither does Node. This line read `await import('exceljs')`
-    // and worked in exactly one of the three, which is why dropping an .xlsx
-    // on the import dialog threw `Workbook is not a constructor` under the new
-    // shell. Pinned by exceljs.smoke.test.js.
-    const ExcelJS = (await import('exceljs')).default;
-    const workbook = new ExcelJS.Workbook();
-    
-    const arrayBuffer = await file.arrayBuffer();
-    await workbook.xlsx.load(arrayBuffer);
-    
-    const worksheet = workbook.getWorksheet(1);
-    if (!worksheet) {
-      throw new Error('No worksheet found in Excel file');
-    }
-    
-    const data = [];
-    worksheet.eachRow((row) => {
-      const rowData = [];
-      row.eachCell((cell, colNumber) => {
-        rowData[colNumber - 1] = cell.text || cell.value || '';
-      });
-      
-      while (rowData.length > 0 && (rowData[rowData.length - 1] === '' || rowData[rowData.length - 1] === null || rowData[rowData.length - 1] === undefined)) {
-        rowData.pop();
-      }
-      
-      if (rowData.length > 0) {
-        data.push(rowData);
-      }
-    });
-    
-    return data;
+    const { readSheet } = await import('read-excel-file/browser');
+
+    // Reads the first sheet by default, and returns an array of rows.
+    const rows = await readSheet(file);
+
+    return rows
+      .map((row) => {
+        const cells = row.map(excelCellToText);
+        // Trailing empties are padding, not data — a sheet whose used range
+        // is wider than its content produces them on every row.
+        while (cells.length > 0 && cells[cells.length - 1] === '') cells.pop();
+        return cells;
+      })
+      .filter((cells) => cells.length > 0);
   } catch (error) {
     throw new Error(`Failed to parse Excel file: ${error.message}`);
   }

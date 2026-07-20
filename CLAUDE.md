@@ -206,8 +206,24 @@ under Network when its category is `security`.
 UI glyphs**, and per-tool icons come from the shared bespoke set in `src/shell/icons.mjs`
 (Astro `ToolIcon`, React `ui/tool-icon.jsx`) — one drawing, both renderers.
 `@tabler/icons-react` is **removed**; do not reintroduce it. Also removed at cutover:
-`postcss`, `@tailwindcss/postcss` (Tailwind arrives via `@tailwindcss/vite`) and
-`@astrojs/sitemap`.
+`postcss`, `@tailwindcss/postcss` (Tailwind arrives via `@tailwindcss/vite`),
+`@astrojs/sitemap`, `jwt-decode` (`jose` already exports `decodeJwt`), and
+**`exceljs`**.
+
+> **xlsx is `write-excel-file` + `read-excel-file`, not exceljs or SheetJS.**
+> exceljs last shipped in October 2023, weighed 20.8 MB with nine dependencies,
+> and was the sole source of every deprecation warning in the tree — *and of
+> `dayjs`, which is on the list above and had been back transitively the whole
+> time*. Its CommonJS/UMD packaging also produced a genuine bug: what
+> `await import('exceljs')` yielded differed between Node, the Vite build and
+> the Astro build, so `.default` was load-bearing.
+> The replacements are real ESM with `/browser` and `/node` entry points, so
+> that class of fault is gone. **Not SheetJS (`xlsx`):** its npm copy is
+> 0.18.5 from March 2022 — distribution moved to the vendor's own CDN — and
+> carries two advisories with no fix available on npm.
+> The reader returns *typed* values (`Date`, `boolean`, `number`, `null`)
+> rather than pre-formatted text; `excelCellToText` in `csvParser.js` owns
+> that conversion and `xlsx.test.js` pins it.
 
 > This used to be riskier: `vite.config.js` listed vendor chunks by name, so removing a
 > package turned a stale entry into a hard "Could not resolve entry module" failure. That
