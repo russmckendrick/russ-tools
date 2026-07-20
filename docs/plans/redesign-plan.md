@@ -1802,7 +1802,88 @@ left** for the commit that deletes the SPA, rather than written twice.
 0 errors, 13 warnings · both builds green. Four commits on
 `redesign/phase-0`, not pushed.
 
-**What remains in Phase 6**, gated on the owner's flip: delete the SPA tree and
-`toolsConfig.json`, collapse `src/bridge/` to `ToolIsland.jsx`, drop CI's SPA
-build step and the stale `src/components/tools/**` globs, alias `build` to
-`build:astro`, and regenerate the four SPA-era documents from the final tree.
+**What remains in Phase 6** was, at the time of writing this entry, gated on
+the owner's flip: delete the SPA tree and `toolsConfig.json`, collapse
+`src/bridge/` to `ToolIsland.jsx`, drop CI's SPA build step and the stale
+`src/components/tools/**` globs, alias `build` to `build:astro`, and regenerate
+the four SPA-era documents. The owner then declined the two-step and it was all
+done in the same session — see the entry below.
+
+### 2026-07-20 — Session 10 (continued): the cutover, done in one step
+
+**The owner asked why the flip had to be a separate event, and was right.**
+The two-step sequence — merge as a no-op, then flip the Pages dashboard —
+existed as insurance against the Astro build behaving differently on
+Cloudflare than locally. **Gate 2 had already bought that risk down:**
+`dist-astro` was deployed to real Pages infrastructure in session 8 and the
+full matrix ran green against it. What remained was the ordinary risk of any
+deploy, which Pages' one-click deployment rollback covers better than editing
+build settings under pressure.
+
+So Astro took the SPA's names. `pnpm dev` / `pnpm build` / `pnpm preview`,
+output to `dist/`. **The hosting configuration does not change**, which makes
+merging the cutover and rollback a Pages rollback. The `:astro` suffixed
+scripts are gone. One caveat handed back to the owner: the Pages project's
+build command and output directory need to read `pnpm build` and `dist` —
+unverifiable from here.
+
+**Deleted:** `index.html`, `main.jsx`, `App.jsx`, `vite.config.js`,
+`postcss.config.js`, `src/components/layout/`, `SpaToolPage`, `SEOHead`,
+`ToolHeader`, `toolIconMap`, `theme-provider`, `ui/theme-toggle`,
+`seoUtils.js`, `toolsConfig.json`, and the two SPA-only favicons.
+Dependencies: `@tabler/icons-react` (the two layout files were its last
+callers — the `IconBrandTerraform` CLAUDE.md said had no lucide equivalent is
+not in the tree at all), plus `postcss` and `@tailwindcss/postcss`, since
+Tailwind arrives through `@tailwindcss/vite`. Styling was checked in a browser
+afterwards, not just the build.
+
+**`src/bridge/` did not die at cutover, contrary to its own docblock.**
+`ShellContext` did — its only consumers were `SEOHead` and `ToolHeader`, whose
+job was to stand down under the shell — but `ToolIsland` supplies the router
+nine tools call `useParams` from, plus the toaster and the link interception
+that stops a react-router `Link` swallowing a cross-tool navigation. Folding
+it into `[tool].astro` would only move it. The docblock now says so.
+
+**Frozen contract #1 nearly died quietly.** `registry.test.js` proved every
+legacy route still resolved by parsing `App.jsx`'s live `<Route>` table —
+deleting that file would have deleted the proof along with it, and the suite
+would have gone green on nothing. The 26 routes are transcribed into the test,
+extracted from `App.jsx` at the commit that removed it, with the rule written
+next to them: **nothing comes off the list**; a retiring tool declares
+`redirectFrom`.
+
+**Two latent faults surfaced while regenerating the docs from source.**
+
+- **`cloudflare-worker/buzzwords.js` would not have deployed.** It imported
+  `../src/components/tools/buzzword-ipsum/data/buzzwords.json`, a path deleted
+  when the tools moved. `wrangler deploy` would have failed to bundle. Fixed;
+  the running worker predates the move and is unaffected until redeployed.
+- The same worker advertises rate limiting in its file header and reports
+  `services.rateLimit: "operational"` from `/health`, with no counter, binding
+  or storage behind it. **Left as-is and documented** — it is a false claim in
+  a public health endpoint, so it is the owner's call, not a drive-by.
+
+Also recorded, not fixed: `ssl.js` logs `Object.keys(env)`, the SSL Labs
+credentials and the whole upstream response, and returns `error.stack` in 500
+bodies; `tenant.js` logs its full origin list. Worker hygiene has its own pass.
+
+**`hydrate` was removed from the manifest.** All fifteen declared it and
+`registry.test.js` validated it, but `[tool].astro` hard-codes
+`client:only="react"` — so it was config shaped like a switch, wired to
+nothing. The same trap as the `iconColor` prop fourteen tools passed to a
+component that never read it.
+
+**The four SPA-era documents were rewritten from source.** The workers README
+was the worst: KV caching, TTL and invalidation, rate limiting with backoff,
+`SSL_LABS_API_KEY`, `CACHE_TTL`, `DEBUG_MODE`, a `POST /analyze` endpoint and
+separate dev/staging environments — none of which exist.
+
+**State:** `pnpm test` **1000 / 32** · `pnpm test:e2e` **22/22** against
+`dist` · `pnpm lint` 0 errors, 11 warnings (down from 13) · build green ·
+index, a tool page and island hydration checked in the browser. Ten commits on
+`redesign/phase-0`, not pushed.
+
+**Phase 6 is complete bar the follow-ups it always listed as optional:** worker
+hygiene (shared CORS module, the logging above, the false rate-limit claim),
+wrangler-action deploy CI, decommissioning `certificate.russ.tools`, and
+Search Console monitoring once the merge lands.
