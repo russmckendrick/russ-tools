@@ -6,7 +6,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../shell/ToolCard.astro';
 import { TOOLS, groupedByCategory } from '../tools/registry.mjs';
-import { PERSON_SCHEMA, SITE_NAME, SITE_URL } from '../shell/site.mjs';
+import { PERSON_SCHEMA, SITE_DESCRIPTION, SITE_NAME, SITE_URL, WEBSITE_ID } from '../shell/site.mjs';
 
 /**
  * The index published no structured data at all, so nothing tied the fifteen
@@ -18,8 +18,13 @@ const schema = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
+    // Same id the tool pages' `isPartOf` names, so the sixteen documents
+    // describe one site rather than sixteen sites with identical names.
+    '@id': WEBSITE_ID,
     name: SITE_NAME,
     url: SITE_URL,
+    description: SITE_DESCRIPTION,
+    inLanguage: 'en',
     author: PERSON_SCHEMA,
     publisher: PERSON_SCHEMA,
   },
@@ -96,7 +101,7 @@ const groups = categoryGroups.flatMap((group) => {
   <div class="rt-board" id="board">
     {
       groups.map((g) => (
-        <section class="rt-group" data-category={g.id} style={`--cat: ${g.accent}`}>
+        <section class="rt-group" id={g.id} data-category={g.id} style={`--cat: ${g.accent}`}>
           <div class="rt-group-head">
             <b>{g.label}</b>
             <hr />
@@ -118,16 +123,30 @@ const groups = categoryGroups.flatMap((group) => {
   const filters = document.getElementById('filters');
   const groups = [...document.querySelectorAll('#board .rt-group')];
 
-  filters?.addEventListener('click', (event) => {
-    const chip = event.target instanceof Element ? event.target.closest('.rt-chip') : null;
-    if (!chip) return;
-
-    const active = chip.dataset.filter;
+  const apply = (active) => {
     for (const c of filters.querySelectorAll('.rt-chip')) {
       c.setAttribute('aria-pressed', String(c.dataset.filter === active));
     }
     for (const group of groups) {
       group.hidden = active !== 'all' && group.dataset.category !== active;
     }
+  };
+
+  // Each board group is also an anchor, so a tool page's breadcrumb can link
+  // its category at something real — /#network shows the network tools.
+  // Without the script the fragment still scrolls to the section, because the
+  // id is on the prerendered element.
+  const fromHash = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (id && groups.some((g) => g.dataset.category === id)) apply(id);
+  };
+  fromHash();
+  window.addEventListener('hashchange', fromHash);
+
+  filters?.addEventListener('click', (event) => {
+    const chip = event.target instanceof Element ? event.target.closest('.rt-chip') : null;
+    if (!chip) return;
+
+    apply(chip.dataset.filter);
   });
 </script>

@@ -40,9 +40,18 @@ export const PERSON_SCHEMA = {
   url: AUTHOR.url,
 };
 
-/** The site, as a schema.org WebSite. Tool pages reference it via isPartOf. */
+/**
+ * The site, as a schema.org WebSite. Tool pages reference it via isPartOf.
+ *
+ * The `@id` is what makes that reference a reference rather than a second,
+ * unrelated WebSite that happens to share a name: the index publishes a node
+ * under the same id, so a crawler joins the two into one graph.
+ */
+export const WEBSITE_ID = `${SITE_URL}/#website`;
+
 export const WEBSITE_SCHEMA = {
   '@type': 'WebSite',
+  '@id': WEBSITE_ID,
   name: SITE_NAME,
   url: SITE_URL,
 };

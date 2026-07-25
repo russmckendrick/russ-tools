@@ -135,6 +135,47 @@ describe.runIf(built)('structured data', () => {
     }
   });
 
+  it('every breadcrumb item names a page, and that page exists', () => {
+    // Search Console reported "Missing field 'item' (in 'itemListElement')"
+    // across the site: the category crumb was a label with no page behind it.
+    // Google requires `item` on every ListItem but the last, and a single
+    // missing one suppresses the entire trail — so this asserts all of them,
+    // and asserts each URL resolves to something the build actually ships
+    // rather than merely being present.
+    const offenders = [];
+    for (const tool of TOOLS) {
+      const items = nodeOfType(tool.path.slice(1), 'BreadcrumbList')?.itemListElement ?? [];
+      expect(items.length, tool.id).toBeGreaterThan(0);
+
+      for (const item of items) {
+        if (!item.item) {
+          offenders.push(`${tool.id} → position ${item.position} has no item`);
+          continue;
+        }
+        if (!item.item.startsWith(`${SITE_URL}/`)) {
+          offenders.push(`${tool.id} → ${item.item} is not an absolute on-site URL`);
+          continue;
+        }
+        // Fragment and all: /#network only names a page if the index really
+        // renders an element with that id.
+        const [path, hash] = item.item.slice(SITE_URL.length).split('#');
+        const page = path === '/' ? 'index' : path.replace(/^\//, '');
+        if (!existsSync(`${DIST}/${page === 'index' ? 'index' : page}.html`)) {
+          offenders.push(`${tool.id} → ${item.item} has no built page`);
+        } else if (hash && !html(page).includes(`id="${hash}"`)) {
+          offenders.push(`${tool.id} → ${item.item} points at an anchor ${page} does not render`);
+        }
+      }
+
+      // Positions must be 1..n in order, or Google reads the trail out of turn.
+      expect(
+        items.map((i) => i.position),
+        tool.id
+      ).toEqual(items.map((_, i) => i + 1));
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it('the index publishes the site and its catalogue', () => {
     expect(nodeOfType('index', 'WebSite')?.name).toBe(SITE_NAME);
 

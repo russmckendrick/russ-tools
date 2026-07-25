@@ -23,13 +23,18 @@
  */
 import BaseLayout from './BaseLayout.astro';
 import ToolIcon from '../shell/ToolIcon.astro';
-import { categoryLabel, categorySchema } from '../shell/categories.mjs';
+import { categoryGroupId, categoryLabel, categorySchema } from '../shell/categories.mjs';
 import { PERSON_SCHEMA, SITE_NAME, SITE_URL, WEBSITE_SCHEMA } from '../shell/site.mjs';
 
 const { tool } = Astro.props;
 
 const seoTitle = tool.seo?.title ?? `${tool.title} — ${SITE_NAME}`;
 const toolUrl = new URL(tool.path, Astro.site).href;
+
+// The index's anchor for this tool's category. It is a real destination —
+// the index gives every board group an id and activates the matching filter
+// from the fragment — which is what lets the middle crumb carry an `item`.
+const categoryHref = `/#${categoryGroupId(tool.category)}`;
 
 /**
  * Two graph nodes per tool page.
@@ -41,6 +46,11 @@ const toolUrl = new URL(tool.path, Astro.site).href;
  *
  * The BreadcrumbList is new — the crumb was rendered for humans but never
  * described, so the trail did not appear in results.
+ *
+ * Every ListItem carries an `item`. Google requires it on all but the last,
+ * and the category crumb shipped without one — it was a label with no page
+ * behind it — which Search Console reported as "Missing field 'item'" and
+ * which suppresses the whole trail, not just that level.
  */
 const schema = [
   {
@@ -62,8 +72,13 @@ const schema = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Tools', item: SITE_URL },
-      { '@type': 'ListItem', position: 2, name: categoryLabel(tool.category) },
+      { '@type': 'ListItem', position: 1, name: 'Tools', item: `${SITE_URL}/` },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: categoryLabel(tool.category),
+        item: `${SITE_URL}${categoryHref}`,
+      },
       { '@type': 'ListItem', position: 3, name: tool.title, item: toolUrl },
     ],
   },
@@ -83,7 +98,7 @@ const schema = [
   <div style={`--cat: var(--color-category-${tool.category})`}>
     <div class="rt-tool-head">
       <nav class="rt-crumb" aria-label="Breadcrumb">
-        <a href="/">Tools</a> / <b>{categoryLabel(tool.category)}</b>
+        <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a>
       </nav>
 
       <div class="rt-tool-id">

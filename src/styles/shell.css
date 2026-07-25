@@ -967,6 +967,13 @@ body > main {
   color: var(--cat);
   font-weight: 500;
 }
+/* The category crumb is a link to its group on the index, so it needs its own
+   hover: the rule above paints the `b` inside it and would otherwise swallow
+   the anchor's. */
+.rt-crumb a:hover b {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .rt-tool-id {
   display: flex;
   align-items: center;

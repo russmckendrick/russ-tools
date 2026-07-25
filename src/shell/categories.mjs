@@ -34,6 +34,17 @@ export const categorySchema = (id) =>
   CATEGORIES.find((c) => c.id === id)?.schema ?? 'DeveloperApplication';
 
 /**
+ * The id of the *board group* a category renders into on the index.
+ *
+ * Azure and Microsoft share one group there ("Microsoft & Azure"), so a
+ * category's anchor on the index is not always its own id. The index's
+ * section ids and the tool breadcrumb's category link both read this, so the
+ * link cannot point at an anchor the index does not render.
+ * @param {CategoryId} id
+ */
+export const categoryGroupId = (id) => (id === 'azure' || id === 'microsoft' ? 'microsoft-azure' : id);
+
+/**
  * Every surface that needs a category hue reads it from one custom property,
  * so the hue is set once on a container and inherited by everything inside.
  * @param {CategoryId} id

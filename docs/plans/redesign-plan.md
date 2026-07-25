@@ -1954,3 +1954,41 @@ both pages' button positions match, so the empty-row regression is pinned.
 
 **State:** `pnpm test` **1021 / 32** · `pnpm test:e2e` **39/39** · `pnpm lint`
 0 errors, 11 existing warnings · build green.
+
+### 2026-07-25 — Session 13: the breadcrumb Google could not read
+
+**Model:** Opus 5. **Branch:** `main`.
+
+Search Console reported *"Missing field 'item' (in 'itemListElement')"* against
+the whole site. The cause was in `ToolLayout`'s `BreadcrumbList`: position 2, the
+category, was a name with no `item`, because the category was a label with no
+page behind it. Google requires `item` on every `ListItem` but the last, and one
+missing value suppresses the entire trail rather than that one level — so no
+tool page has ever shown a breadcrumb in results.
+
+The fix gives the category a real destination instead of deleting the level. The
+index already rendered a section per board group; each now carries an `id`, and
+its filter script reads the fragment on load and on `hashchange`, so
+`/#network` genuinely shows the network tools and degrades to an anchor scroll
+without JavaScript. The visible crumb became a link to the same place, so the
+rendered trail and the structured data now agree exactly. `categoryGroupId()` in
+`categories.mjs` owns the one wrinkle — Azure and Microsoft share the
+`microsoft-azure` group on the index — so the crumb cannot point at an anchor the
+index does not render.
+
+The new `seo.test.js` case is the durable part: it asserts every emitted
+breadcrumb item has an `item`, that the URL is on-site and resolves to a built
+page, that any fragment matches an `id` the page actually renders, and that
+positions run 1..n. Verified by deleting one `item` from the built output — the
+test reproduces Search Console's message.
+
+Three smaller SEO faults went with it. The sitemap nominated
+`https://russ.tools` while the index's canonical says `https://russ.tools/`.
+The tool pages' `isPartOf` and the index's `WebSite` node shared a name but no
+`@id`, so a crawler read sixteen unrelated sites rather than one — both now
+carry `WEBSITE_ID`, and the index node gained the site description and
+`inLanguage`. `og:locale` was absent.
+
+**State:** `pnpm test` **1022 / 32** · `pnpm lint` 0 errors, 11 existing
+warnings · build green · breadcrumb link and `/#network` filtering checked in
+the browser.

@@ -61,7 +61,10 @@ const urlXml = ({ loc, lastmod }) =>
 const tools = (await loadManifests()).sort((a, b) => a.path.localeCompare(b.path));
 
 const entries = [
-  { loc: SITE, lastmod: lastCommitDate('src/pages/index.astro') },
+  // Trailing slash: the index's canonical is `https://russ.tools/`, and a
+  // sitemap that lists the unslashed form is nominating a URL the page itself
+  // says is not the canonical one.
+  { loc: `${SITE}/`, lastmod: lastCommitDate('src/pages/index.astro') },
   ...tools.map((tool) => ({
     loc: `${SITE}${tool.path}`,
     lastmod: lastCommitDate(`src/tools/${tool.id}`),
