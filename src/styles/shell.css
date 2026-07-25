@@ -723,6 +723,40 @@ body > main {
   font-size: var(--text-body-md);
 }
 
+/* --- Shell a11y utilities ------------------------------------------------- */
+
+.rt-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Off-screen until focused, then a real control at the top-left of the page. */
+.rt-skip {
+  position: fixed;
+  top: var(--rt-space-sm);
+  left: var(--rt-space-sm);
+  z-index: 60;
+  transform: translateY(calc(-100% - var(--rt-space-xl)));
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-outline-strong);
+  background: var(--color-surface-raised);
+  color: var(--color-on-surface);
+  font-size: var(--text-body-sm);
+  text-decoration: none;
+  transition: transform 0.13s ease;
+}
+.rt-skip:focus-visible {
+  transform: none;
+}
+
 .rt-index-title {
   position: relative;
   margin: 0;
@@ -733,6 +767,38 @@ body > main {
   animation: rt-content-enter 180ms ease-out both;
 }
 
+/* --- Name filter ---------------------------------------------------------- */
+
+.rt-find {
+  position: relative;
+  animation: rt-content-enter 200ms 20ms ease-out both;
+}
+.rt-find-input {
+  width: 100%;
+  max-width: 340px;
+  font-family: var(--font-mono);
+  font-size: var(--text-data-md);
+  line-height: 1.5;
+  padding: 8px 11px;
+  border-radius: var(--radius-sm);
+  /* The Input contract: darker than the panel, on the control boundary. */
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-strong);
+  color: var(--color-on-surface);
+  transition: border-color 0.13s ease, box-shadow 0.13s ease;
+}
+.rt-find-input::placeholder {
+  color: var(--color-on-surface-faint);
+}
+.rt-find-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-primary) 35%, transparent);
+}
+.rt-find-input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
 /* --- Category filter chips ------------------------------------------------ */
 
 .rt-filters {
@@ -740,7 +806,7 @@ body > main {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  padding-block: var(--rt-space-xs) var(--rt-space-xl);
+  padding-block: var(--rt-space-md) var(--rt-space-xl);
   animation: rt-content-enter 220ms 35ms ease-out both;
 }
 .rt-chip {
@@ -758,14 +824,15 @@ body > main {
   cursor: pointer;
   transition: color 0.13s ease, border-color 0.13s ease, background 0.13s ease;
 }
-.rt-chip i {
+.rt-chip-dot {
+  flex: none;
   width: 6px;
   height: 6px;
   border-radius: var(--radius-full);
   background: var(--cat, var(--color-on-surface-faint));
+  transition: box-shadow 0.13s ease;
 }
-.rt-chip em {
-  font-style: normal;
+.rt-chip-count {
   font-family: var(--font-mono);
   font-size: var(--text-data-sm);
   color: var(--color-on-surface-faint);
@@ -775,10 +842,25 @@ body > main {
   color: var(--color-on-surface);
   border-color: var(--color-outline-strong);
 }
-.rt-chip[aria-pressed="true"] {
+/*
+  Selected reads as *selected*, not as recessed. The old treatment dropped the
+  chip to `surface-inset`, which in dark is darker than the page ground while
+  every unselected chip sits above it — so the active chip was the least
+  prominent chip on the row, at roughly 1.2:1 against its peers in light.
+  State now rides the category hue: a 12% tint over the raised surface and the
+  hue at full strength on the border. Small element, so still a label and not
+  a livery.
+*/
+.rt-chip[aria-checked="true"] {
   color: var(--color-on-surface);
-  background: var(--color-surface-inset);
-  border-color: color-mix(in oklab, var(--cat, var(--color-primary)) 55%, var(--color-outline));
+  background: color-mix(in oklab, var(--cat, var(--color-outline-strong)) 12%, var(--color-surface-raised));
+  border-color: var(--cat, var(--color-outline-strong));
+}
+.rt-chip[aria-checked="true"] .rt-chip-dot {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--cat, var(--color-outline-strong)) 25%, transparent);
+}
+.rt-chip[aria-checked="true"] .rt-chip-count {
+  color: var(--color-on-surface-muted);
 }
 
 /* --- Category groups + the tool grid -------------------------------------- */
@@ -798,11 +880,51 @@ body > main {
   align-items: center;
   gap: 10px;
 }
-.rt-group-head b {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+/*
+  These five labels are the page's navigational scaffolding. As 12px semibold
+  Inter they sat *below* the card titles (15px) and descriptions (13.5px) they
+  organise — a heading that had lost an argument with its own content. As
+  label-caps they change register instead of competing on size: uppercase
+  tracked mono is how every panel header in the system announces structure.
+*/
+.rt-group-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  line-height: 1;
+  letter-spacing: var(--tracking-label-caps);
+  text-transform: uppercase;
   color: var(--cat);
+}
+.rt-group-label a {
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.rt-group-label a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rt-group-label a:focus-visible {
+  outline: 2px solid var(--cat);
+  outline-offset: 3px;
+}
+/*
+  DESIGN.md, Layout: "Category filter chips sit above the grid and carry the
+  only index counts." So the group head keeps no count in the default view —
+  it appears only once a group is demoted to the strip, where the count is the
+  affordance rather than a duplicate of the chip above it.
+*/
+.rt-group-count {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  color: var(--color-on-surface-faint);
+  font-variant-numeric: tabular-nums;
+}
+.rt-group[data-demoted] .rt-group-count {
+  display: inline;
 }
 .rt-group-head hr {
   flex: 1;
@@ -810,6 +932,87 @@ body > main {
   border: 0;
   margin: 0;
   background: var(--color-outline);
+}
+
+/* --- Filtered board: promote one group, demote the rest ------------------- */
+
+/*
+  Filtering used to hide the other four groups, which on `/#content` left a
+  single card in the corner of an otherwise empty viewport — the No Void Rule
+  failing on the page's own primary interaction. The selected group is
+  promoted to full width and the rest collapse to their counted headings,
+  which stay clickable. The page keeps its height and the rack stays visible
+  behind the instrument you pulled forward.
+*/
+.rt-board.is-filtered {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--rt-space-xl) var(--rt-space-md);
+  /*
+    Filtering fifteen tools down to one necessarily shortens the page, and a
+    bottom-pinned footer turns the difference into trapped space. Holding a
+    floor and pushing the demoted row to the end of it spends that space
+    instead of leaving it: the filtered group sits at the top, the rest of the
+    rack sits above the footer, and the gap between them reads as the
+    separation it is. Only a floor, so a tall filtered group still grows.
+  */
+  min-height: 46vh;
+  align-content: space-between;
+}
+.rt-board.is-filtered .rt-group {
+  flex: 1 0 100%;
+  order: 1;
+}
+.rt-board.is-filtered .rt-group.is-active {
+  order: 0;
+}
+.rt-board.is-filtered .rt-group[data-demoted] {
+  flex: 0 0 auto;
+  gap: 0;
+}
+.rt-board.is-filtered .rt-group[data-demoted] .rt-grid,
+.rt-board.is-filtered .rt-group[data-demoted] .rt-group-head hr {
+  display: none;
+}
+.rt-board.is-filtered .rt-group[data-demoted] .rt-group-head {
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  transition: border-color 0.13s ease;
+}
+.rt-board.is-filtered .rt-group[data-demoted] .rt-group-head:hover {
+  border-color: color-mix(in oklab, var(--cat) 55%, var(--color-outline));
+}
+
+/* Searching flattens the board back to a plain stack of matching groups. */
+.rt-board.is-searching .rt-group[data-demoted] {
+  order: 0;
+}
+
+.rt-empty {
+  margin: 0;
+  padding: var(--rt-space-xl) 0;
+  color: var(--color-on-surface-muted);
+  font-size: var(--text-body-md);
+}
+.rt-empty b {
+  color: var(--color-on-surface);
+  font-family: var(--font-mono);
+  font-size: var(--text-data-md);
+  font-weight: 400;
+}
+.rt-empty button {
+  font: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .rt-grid {
   display: grid;
@@ -836,25 +1039,35 @@ body > main {
   padding: 15px var(--rt-space-lg) 14px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-outline);
-  /* Depth is tonal, not cast: a flat panel with a lit top edge. */
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, var(--color-surface-inset) 70%, var(--color-surface-raised)),
-    var(--color-surface-raised)
-  );
-  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--color-on-surface) 5%, transparent);
+  /*
+    Depth is tonal, not cast: a flat panel with a lit top edge and a soft
+    tonal wash at the top. The wash used to be a `linear-gradient`, i.e. a
+    `background-image`, which cannot be transitioned — so on a theme change
+    the cards snapped instantly while `body` crossfaded over 240ms and the
+    page spent a quarter of a second as dark cards on a light ground. An
+    inset shadow paints the same wash and does transition.
+  */
+  background-color: var(--color-surface-raised);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--color-on-surface) 5%, transparent),
+    inset 0 42px 42px -42px color-mix(in oklab, var(--color-surface-inset) 78%, transparent);
   color: inherit;
   text-decoration: none;
   animation: rt-surface-enter 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
   transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease,
-    background-color 0.2s ease;
+    background-color 0.24s ease;
 }
-.rt-card:nth-child(2) {
-  animation-delay: 35ms;
-}
-.rt-card:nth-child(3) {
-  animation-delay: 70ms;
-}
+/*
+  The stagger reached `nth-child(3)`, so at three columns exactly one row
+  moved and everything below arrived at once. Two rows now carry it, which is
+  as far as an entrance should reach before it becomes a queue.
+*/
+.rt-card:nth-child(2) { animation-delay: 30ms; }
+.rt-card:nth-child(3) { animation-delay: 60ms; }
+.rt-card:nth-child(4) { animation-delay: 90ms; }
+.rt-card:nth-child(5) { animation-delay: 120ms; }
+.rt-card:nth-child(6) { animation-delay: 150ms; }
+
 .rt-card:hover {
   border-color: color-mix(in oklab, var(--cat) 45%, var(--color-outline));
   transform: translateY(-1px);
@@ -942,6 +1155,61 @@ body > main {
   filter: drop-shadow(0 4px 5px color-mix(in oklab, var(--cat) 24%, transparent));
 }
 
+/* --- Index on a phone ----------------------------------------------------- */
+
+/*
+  The route path is a hover affordance, and on a touch device it never
+  reveals — but it still reserved its width in the footer flex row, which is
+  why the badge line clipped to "IPv4 · IPv6 · Visual sp…" at 375px. The one
+  line that lets someone judge a tool without opening it was being truncated
+  by an element they can never see.
+*/
+@media (hover: none), (max-width: 600px) {
+  .rt-card-foot .rt-go {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  /*
+    The chip row wrapped to three rows and 129px — a third of the viewport
+    before the first card, on the control whose whole job is to shorten the
+    page. One scroll-snapped line instead, stuck under the header so it is
+    still reachable three screens down.
+  */
+  .rt-filters {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    margin-inline: calc(var(--rt-space-md) * -1);
+    padding-inline: var(--rt-space-md);
+    padding-block: var(--rt-space-md);
+    background: color-mix(in oklab, var(--color-surface) 88%, transparent);
+    backdrop-filter: blur(8px);
+  }
+  .rt-filters::-webkit-scrollbar {
+    display: none;
+  }
+  .rt-chip {
+    flex: none;
+    /* A moving thumb needs more than the 29px this used to be. */
+    min-height: 44px;
+    padding-inline: 14px;
+    scroll-snap-align: start;
+  }
+  .rt-find-input {
+    max-width: none;
+    min-height: 44px;
+  }
+  .rt-board.is-filtered {
+    gap: var(--rt-space-lg) var(--rt-space-sm);
+  }
+}
+
 /* --- Tool page ------------------------------------------------------------ */
 
 .rt-tool-head {
@@ -986,7 +1254,9 @@ body > main {
 }
 .rt-tool-id h1 {
   margin: 0;
-  font-size: clamp(22px, 3vw, var(--text-headline-lg));
+  /* The floor is the headline-md step, not a 22px literal a hair above it.
+     Both ends of the clamp are now on the ten-step scale. */
+  font-size: clamp(var(--text-headline-md), 3vw, var(--text-headline-lg));
   font-weight: var(--font-weight-headline-lg);
   letter-spacing: var(--tracking-headline-lg);
   line-height: 1.12;

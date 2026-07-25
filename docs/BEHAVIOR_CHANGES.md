@@ -153,6 +153,44 @@ param behaves exactly as before.
 
 ---
 
+### The index filter promotes one group instead of hiding the other four
+
+| | |
+|---|---|
+| **Where** | `src/pages/index.astro`, `src/styles/shell.css` |
+| **Pinned by** | `e2e/deeplinks.spec.js` (three index tests), `src/styles/category-accent.test.js` |
+| **Landed** | Post-cutover, index critique follow-up |
+
+Clicking a category chip used to set `hidden` on every other group. On
+`/#content` — one tool of fifteen — that left a single card in the top-left
+corner of an otherwise empty viewport, about 85% of the page blank under a
+full-width hairline rule that drew attention to it. That is precisely the
+failure DESIGN.md's **No Void Rule** names, occurring on the page's own
+primary interaction, and it also worked against the index's job of showing a
+visitor that the other fourteen tools exist.
+
+The selected group is now promoted and the rest are demoted to a row of
+counted, clickable group headings (`[data-demoted]`). Measured at 1280×800,
+the gap above the footer went from ~85% of the viewport to 16.7%, and the
+remaining space now sits *between* the promoted group and the demoted strip
+rather than trailing below everything.
+
+Three further changes ride with it, each observable:
+
+- **The filter writes the URL.** `#category` via `pushState`, and the name
+  filter rides in `?q=` via `replaceState` so a search is shareable without a
+  history entry per keystroke. Back now clears the filter instead of leaving
+  the site. The `hashchange` listener and the breadcrumb links that point at
+  `/#microsoft-azure` already existed; only the control was silent.
+- **The chips are a radio group**, not six `aria-pressed` toggles, with
+  roving tabindex and arrow/Home/End keys. Six mutually exclusive filters
+  were being announced as six independent switches.
+- **Group counts moved conditionally.** DESIGN.md says the chips "carry the
+  only index counts", so the group head shows a count *only* while demoted,
+  where it is the affordance rather than a duplicate.
+
+---
+
 ## Planned, deliberate, not yet made
 
 Called out in the plan so they are not mistaken for regressions when they land:

@@ -56,7 +56,13 @@ const groups = categoryGroups.flatMap((group) => {
     {
       id: 'microsoft-azure',
       label: 'Microsoft & Azure',
-      accent: 'var(--color-primary)',
+      // A category hue, not `--color-primary`. The accent is engineered as an
+      // *action* colour and does not clear 4.5:1 as text on the light ground
+      // in Tokyo Night (3.59:1), Nord (4.05:1) or Catppuccin (4.34:1) — the
+      // palette that ships by default. `tokens.contrast.test.js` validates
+      // token pairs, so it could not see a page putting an action colour into
+      // a text slot; `category-accent.test.js` now guards that.
+      accent: 'var(--color-category-azure)',
       tools: [...azure.tools, ...microsoft.tools].sort((a, b) => a.title.localeCompare(b.title)),
     },
   ];
@@ -78,32 +84,82 @@ const groups = categoryGroups.flatMap((group) => {
   -->
   <h1 class="rt-index-title">Tools</h1>
 
-  <div class="rt-filters" id="filters" role="group" aria-label="Filter tools by category">
-    <button class="rt-chip" type="button" data-filter="all" aria-pressed="true">
-      All <em>{TOOLS.length}</em>
+  <div class="rt-find">
+    <!--
+      Hidden in the prerendered HTML and unhidden on init, so the no-JS
+      fallback is the full catalogue rather than a filter that does nothing.
+    -->
+    <input
+      class="rt-find-input"
+      id="rt-find"
+      type="search"
+      hidden
+      autocomplete="off"
+      spellcheck="false"
+      placeholder="Filter by name — press /"
+      aria-label="Filter tools by name"
+      aria-describedby="rt-find-hint"
+    />
+    <p class="rt-visually-hidden" id="rt-find-hint">
+      Typing searches every tool and clears the selected category.
+    </p>
+  </div>
+
+  <!--
+    A radio group, not six toggles. The categories are mutually exclusive, so
+    `aria-pressed` on six buttons was describing six independent switches; a
+    radiogroup announces "3 of 6" and costs one tab stop rather than six.
+  -->
+  <div class="rt-filters" id="filters" role="radiogroup" aria-label="Filter tools by category">
+    <button class="rt-chip" type="button" role="radio" data-filter="all" aria-checked="true">
+      <span class="rt-chip-dot" aria-hidden="true"></span>
+      All <span class="rt-chip-count">{TOOLS.length}</span>
     </button>
     {
       groups.map((g) => (
         <button
           class="rt-chip"
           type="button"
+          role="radio"
           data-filter={g.id}
-          aria-pressed="false"
+          aria-checked="false"
+          tabindex="-1"
           style={`--cat: ${g.accent}`}
         >
-          <i aria-hidden="true" />
-          {g.label} <em>{g.tools.length}</em>
+          <span class="rt-chip-dot" aria-hidden="true" />
+          {g.label} <span class="rt-chip-count">{g.tools.length}</span>
         </button>
       ))
     }
   </div>
 
+  <p class="rt-visually-hidden" id="rt-status" role="status" aria-live="polite"></p>
+
   <div class="rt-board" id="board">
     {
       groups.map((g) => (
-        <section class="rt-group" id={g.id} data-category={g.id} style={`--cat: ${g.accent}`}>
+        <section
+          class="rt-group"
+          id={g.id}
+          data-category={g.id}
+          data-count={g.tools.length}
+          aria-labelledby={`${g.id}-label`}
+          style={`--cat: ${g.accent}`}
+        >
           <div class="rt-group-head">
-            <b>{g.label}</b>
+            {/*
+              A real heading. These five labels are the only structural
+              navigation the page has, and as `<b>` they were invisible to a
+              heading rotor — one h1 for a fifteen-item catalogue. The link
+              makes a demoted group head clickable in filtered view without
+              needing separate markup for it.
+            */}
+            <h2 class="rt-group-label" id={`${g.id}-label`}>
+              <a href={`#${g.id}`}>{g.label}</a>
+            </h2>
+            <span class="rt-group-count" aria-hidden="true">
+              {g.tools.length}
+            </span>
             <hr />
           </div>
           <div class="rt-grid">
@@ -114,39 +170,212 @@ const groups = categoryGroups.flatMap((group) => {
         </section>
       ))
     }
+    <p class="rt-empty" id="rt-empty" hidden>
+      No tool matches <b id="rt-empty-q"></b>. <button type="button" id="rt-empty-clear">Clear the filter</button>
+    </p>
   </div>
 </BaseLayout>
 
 <script>
-  // Filtering is a show/hide over prerendered groups — no framework, and it
-  // degrades to "all tools visible" if the script never runs.
+  /**
+   * The index filter. Two controls over one prerendered catalogue: a category
+   * radio group and a name filter. Neither hides anything the user cannot get
+   * back to in one click, and both are readable off the URL.
+   *
+   * Without this script the page is the full catalogue — the search input
+   * stays `hidden`, every group renders, and `/#network` still scrolls to the
+   * network section because the id is on the prerendered element.
+   */
+  const board = document.getElementById('board');
   const filters = document.getElementById('filters');
-  const groups = [...document.querySelectorAll('#board .rt-group')];
+  const chips = [...filters.querySelectorAll('.rt-chip')];
+  const groups = [...board.querySelectorAll('.rt-group')];
+  const cards = [...board.querySelectorAll('.rt-card')];
+  const status = document.getElementById('rt-status');
+  const empty = document.getElementById('rt-empty');
+  const emptyQ = document.getElementById('rt-empty-q');
+  const find = document.getElementById('rt-find');
 
-  const apply = (active) => {
-    for (const c of filters.querySelectorAll('.rt-chip')) {
-      c.setAttribute('aria-pressed', String(c.dataset.filter === active));
+  const CATEGORIES = new Set(groups.map((g) => g.dataset.category));
+  const TOTAL = cards.length;
+
+  let category = 'all';
+  let query = '';
+
+  const plural = (n) => `${n} ${n === 1 ? 'tool' : 'tools'}`;
+
+  /**
+   * Filtering used to hide the other four groups outright, which on
+   * `/#content` left one card in the corner of an otherwise empty page —
+   * the void DESIGN.md's own No Void Rule calls a bug. The selected group is
+   * promoted instead, and the rest stay on the page as a row of counted
+   * headings: the page keeps its height, and the other fourteen tools are
+   * one click away rather than gone.
+   */
+  const render = () => {
+    const q = query.trim().toLowerCase();
+    const searching = q !== '';
+    let visible = 0;
+
+    for (const card of cards) {
+      const hit = !searching || card.dataset.search.includes(q);
+      card.hidden = !hit;
+      if (hit) visible += 1;
     }
+
+    board.classList.toggle('is-filtered', !searching && category !== 'all');
+    board.classList.toggle('is-searching', searching);
+
     for (const group of groups) {
-      group.hidden = active !== 'all' && group.dataset.category !== active;
+      const isActive = group.dataset.category === category;
+      const matches = [...group.querySelectorAll('.rt-card')].filter((c) => !c.hidden).length;
+
+      // Searching flattens the board: every group that still has a hit shows
+      // its cards, so a name filter never depends on guessing the category.
+      group.hidden = searching && matches === 0;
+      group.toggleAttribute('data-demoted', !searching && category !== 'all' && !isActive);
+      group.classList.toggle('is-active', !searching && isActive);
+    }
+
+    empty.hidden = !(searching && visible === 0);
+    if (!empty.hidden) emptyQ.textContent = `“${query.trim()}”`;
+
+    for (const chip of chips) {
+      const on = chip.dataset.filter === category;
+      chip.setAttribute('aria-checked', String(on));
+      chip.tabIndex = on ? 0 : -1;
+    }
+
+    status.textContent = searching
+      ? visible === 0
+        ? `No tool matches “${query.trim()}”`
+        : `${plural(visible)} ${visible === 1 ? 'matches' : 'match'} “${query.trim()}”`
+      : category === 'all'
+        ? `Showing all ${plural(TOTAL)}`
+        : `Showing ${plural(Number(document.getElementById(category).dataset.count))} in ${
+            document.getElementById(`${category}-label`).textContent.trim()
+          }`;
+  };
+
+  /**
+   * The filtered view is a real destination — every tool page's breadcrumb
+   * already links `/#network` and the listener below already honours it — so
+   * the control that produces it writes it. Back then clears the filter
+   * instead of leaving the site. The query rides in `?q=` on replaceState so
+   * a search is shareable without putting a history entry per keystroke.
+   */
+  const writeUrl = (push) => {
+    const url = new URL(location.href);
+    url.hash = !query.trim() && category !== 'all' ? category : '';
+    if (query.trim()) url.searchParams.set('q', query.trim());
+    else url.searchParams.delete('q');
+    const next = url.pathname + url.search + url.hash;
+    if (next === location.pathname + location.search + location.hash) return;
+    history[push ? 'pushState' : 'replaceState'](null, '', next);
+  };
+
+  const setCategory = (next, push = true) => {
+    category = CATEGORIES.has(next) ? next : 'all';
+    if (query) {
+      query = '';
+      find.value = '';
+    }
+    render();
+    writeUrl(push);
+    restage();
+  };
+
+  const readUrl = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const q = new URL(location.href).searchParams.get('q') ?? '';
+    query = q;
+    find.value = q;
+    category = !q && CATEGORIES.has(id) ? id : 'all';
+    render();
+  };
+
+  /**
+   * Re-run the card entrance on the group that just moved to the top. The
+   * stagger fired on load and never again, so the same cards arrived with
+   * motion once and without it on every filter. Motion here marks what
+   * changed; the global reduced-motion rule still collapses it.
+   */
+  const restage = () => {
+    const active = board.querySelector('.rt-group.is-active');
+    if (!active) return;
+    for (const card of active.querySelectorAll('.rt-card')) {
+      for (const animation of card.getAnimations()) {
+        if (animation instanceof CSSAnimation && animation.animationName === 'rt-surface-enter') {
+          animation.cancel();
+          animation.play();
+        }
+      }
     }
   };
 
-  // Each board group is also an anchor, so a tool page's breadcrumb can link
-  // its category at something real — /#network shows the network tools.
-  // Without the script the fragment still scrolls to the section, because the
-  // id is on the prerendered element.
-  const fromHash = () => {
-    const id = decodeURIComponent(location.hash.slice(1));
-    if (id && groups.some((g) => g.dataset.category === id)) apply(id);
-  };
-  fromHash();
-  window.addEventListener('hashchange', fromHash);
-
-  filters?.addEventListener('click', (event) => {
+  filters.addEventListener('click', (event) => {
     const chip = event.target instanceof Element ? event.target.closest('.rt-chip') : null;
-    if (!chip) return;
-
-    apply(chip.dataset.filter);
+    if (chip) setCategory(chip.dataset.filter);
   });
+
+  // Roving tabindex: one tab stop for the group, arrows to move within it.
+  filters.addEventListener('keydown', (event) => {
+    const dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    const jump = event.key === 'Home' ? 0 : event.key === 'End' ? chips.length - 1 : null;
+    if (dir === undefined && jump === null) return;
+    event.preventDefault();
+    const i = chips.findIndex((c) => c.dataset.filter === category);
+    const next = jump ?? (i + dir + chips.length) % chips.length;
+    setCategory(chips[next].dataset.filter);
+    chips[next].focus();
+  });
+
+  // The board is one anchor per category, so a heading link filters to it.
+  board.addEventListener('click', (event) => {
+    const link = event.target instanceof Element ? event.target.closest('.rt-group-label a') : null;
+    if (!link) return;
+    event.preventDefault();
+    setCategory(new URL(link.href).hash.slice(1));
+  });
+
+  document.getElementById('rt-empty-clear').addEventListener('click', () => {
+    query = '';
+    find.value = '';
+    render();
+    writeUrl(false);
+    find.focus();
+  });
+
+  let pending;
+  find.addEventListener('input', () => {
+    query = find.value;
+    if (query.trim()) category = 'all';
+    render();
+    clearTimeout(pending);
+    pending = setTimeout(() => writeUrl(false), 250);
+  });
+
+  find.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !find.value) return;
+    query = '';
+    find.value = '';
+    render();
+    writeUrl(false);
+  });
+
+  // `/` is the convention for "filter this list" and costs nothing to learn.
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+    const el = document.activeElement;
+    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) return;
+    event.preventDefault();
+    find.focus();
+    find.select();
+  });
+
+  window.addEventListener('hashchange', readUrl);
+  window.addEventListener('popstate', readUrl);
+
+  find.hidden = false;
+  readUrl();
 </script>

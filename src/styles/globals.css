@@ -622,47 +622,22 @@
 }
 
 /* =============================================================================
-   Legacy utilities — the un-ported React tree still renders against these.
-   DESIGN.md bans ambient motion and decorative gradients, so none of this
-   survives into the new shell; it is kept only so the bridge does not
-   regress un-ported pages, and dies with the old tree in Phase 6.
+   Legacy utilities — what is left of the pre-Astro tree's shared classes.
+
+   This block used to carry about 240 lines: ambient gradient washes
+   (`.surface-bg`), a decorative blueprint grid (`.grid-overlay`), a second
+   card implementation with its own hover shadow (`.tool-card`), a rails and
+   blueprint-corner kit, floating icon tokens on infinite `floaty`/`idleDrift`
+   loops, keycaps, and a timeline. Every one of them was verified unreferenced
+   — zero usages outside this file and zero matching elements in the rendered
+   DOM — and every one of them contradicted DESIGN.md, which bans ambient
+   motion, decorative gradients and a second card. They also accounted for
+   most of the design detector's standing findings, so the noise was hiding
+   whatever real finding might land next.
+
+   The two that are genuinely still used stay.
    ========================================================================== */
 @layer utilities {
-  .surface-bg {
-    position: relative;
-  }
-  .surface-bg::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      radial-gradient(600px 300px at 10% -10%, color-mix(in oklch, var(--color-primary) 12%, transparent), transparent 60%),
-      radial-gradient(600px 300px at 110% 110%, color-mix(in oklch, var(--color-accent) 12%, transparent), transparent 60%);
-    opacity: 0.28;
-  }
-  .light .surface-bg::before {
-    opacity: 0.6;
-  }
-  .grid-overlay {
-    position: relative;
-  }
-  .grid-overlay::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-      linear-gradient(var(--color-border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
-    background-size: 28px 28px, 28px 28px;
-    mask: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
-    opacity: 0.1;
-  }
-  .light .grid-overlay::after {
-    opacity: 0.25;
-  }
-
   .interactive {
     @apply transition-all duration-150 ease-out;
   }
@@ -671,191 +646,6 @@
   }
   .interactive:active {
     transform: scale(0.98);
-  }
-
-  .tool-card {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .tool-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px color-mix(in oklch, #000 45%, transparent);
-  }
-  .light .tool-card:hover {
-    box-shadow: 0 10px 25px color-mix(in oklch, #000 12%, transparent);
-  }
-
-  .tools-canvas {
-    min-height: 28rem;
-  }
-  .tools-rows {
-    grid-auto-rows: 110px;
-  }
-  @media (min-width: 640px) {
-    .tools-rows {
-      grid-auto-rows: 120px;
-    }
-  }
-  @media (min-width: 1024px) {
-    .tools-rows {
-      grid-auto-rows: 126px;
-    }
-  }
-  .rails-grid {
-    position: relative;
-  }
-
-  .blueprint-card {
-    background: linear-gradient(
-      to bottom right,
-      color-mix(in oklch, var(--color-card) 90%, transparent),
-      color-mix(in oklch, var(--color-secondary) 30%, transparent)
-    );
-    border: 1px solid color-mix(in oklch, var(--color-border) 90%, transparent);
-  }
-  .blueprint-dots {
-    background-image: radial-gradient(color-mix(in oklch, var(--color-border) 60%, transparent) 1px, transparent 1px);
-    background-size: 10px 10px;
-    mask: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
-    opacity: 0.35;
-    pointer-events: none;
-  }
-  .bp-corner {
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border: 1.5px solid color-mix(in oklch, var(--color-primary) 50%, var(--color-border));
-    opacity: 0.55;
-  }
-  .bp-tl { top: 6px; left: 6px; border-right: 0; border-bottom: 0; border-radius: 3px 0 0 0; }
-  .bp-tr { top: 6px; right: 6px; border-left: 0; border-bottom: 0; border-radius: 0 3px 0 0; }
-  .bp-bl { bottom: 6px; left: 6px; border-right: 0; border-top: 0; border-radius: 0 0 0 3px; }
-  .bp-br { bottom: 6px; right: 6px; border-left: 0; border-top: 0; border-radius: 0 0 3px 0; }
-  .blueprint-label {
-    border-color: color-mix(in oklch, var(--color-primary) 30%, var(--color-border));
-    background-color: color-mix(in oklch, var(--color-secondary) 40%, transparent);
-  }
-
-  .rail-port {
-    position: absolute;
-    left: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 10px;
-    height: 10px;
-    border-radius: 9999px;
-    background: color-mix(in oklch, var(--color-primary) 45%, var(--color-secondary));
-    box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-border) 80%, transparent);
-  }
-  .rail-connector {
-    position: absolute;
-    left: -1px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 2px;
-    background: color-mix(in oklch, var(--color-primary) 60%, var(--color-border));
-    transition: width 0.18s ease;
-  }
-  .interactive:hover .rail-connector {
-    width: 20px;
-  }
-
-  .icon-grid {
-    padding: 8px 8px 0;
-  }
-  .icon-token {
-    width: 88px;
-    height: 88px;
-    display: grid;
-    place-items: center;
-    border-radius: 14px;
-    transition: transform 0.2s ease, filter 0.2s ease, background-color 0.2s ease;
-    text-decoration: none;
-    transform: rotate(var(--base-rot, 0deg)) scale(var(--base-scale, 1));
-  }
-  .icon-el {
-    width: 64px;
-    height: 64px;
-    color: var(--color-primary);
-  }
-  .icon-token:hover {
-    transform: translateY(-3px) scale(1.05);
-    background: color-mix(in oklch, var(--color-secondary) 20%, transparent);
-  }
-
-  @keyframes floaty {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-    100% { transform: translateY(0); }
-  }
-  .icon-token:hover .icon-el {
-    animation: floaty 1.8s ease-in-out infinite;
-    filter: none;
-  }
-
-  @keyframes idleDrift {
-    0% { transform: translate(0, 0) rotate(0); }
-    50% { transform: translate(var(--idle-dx, 0), var(--idle-dy, 0)) rotate(var(--idle-rot, 0)); }
-    100% { transform: translate(0, 0) rotate(0); }
-  }
-  .icon-token .icon-el {
-    animation: idleDrift var(--idle-dur, 6s) ease-in-out var(--idle-delay, 0s) infinite;
-    will-change: transform;
-  }
-
-  .keycap {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    padding: 8px 10px;
-    border-radius: 10px;
-    background: color-mix(in oklch, var(--color-secondary) 25%, transparent);
-    border: 1px solid color-mix(in oklch, var(--color-border) 85%, transparent);
-    box-shadow: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    animation: idleDrift var(--idle-dur, 5s) ease-in-out var(--idle-delay, 0s) infinite;
-  }
-  .keycap:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 12px color-mix(in oklch, var(--color-primary) 16%, transparent);
-  }
-  .toggle-on {
-    background: color-mix(in oklch, var(--color-primary) 16%, transparent);
-  }
-
-  .timeline {
-    position: relative;
-  }
-  .timeline::before {
-    content: "";
-    position: absolute;
-    left: 16px;
-    top: 6px;
-    bottom: 6px;
-    width: 2px;
-    background: color-mix(in oklch, var(--color-border) 90%, transparent);
-  }
-  .timeline-item {
-    position: relative;
-    padding-left: 36px;
-  }
-  .timeline-bullet {
-    position: absolute;
-    left: 10px;
-    top: 8px;
-    width: 10px;
-    height: 10px;
-    border-radius: 9999px;
-    background: var(--color-primary);
-  }
-
-  @keyframes drift {
-    0% { transform: translate(0, 0) rotate(0); }
-    50% { transform: translate(var(--dx), var(--dy)) rotate(var(--drot)); }
-    100% { transform: translate(0, 0) rotate(0); }
-  }
-  .drift {
-    animation: drift var(--dur) ease-in-out var(--delay) infinite;
-    will-change: transform;
   }
 
   @keyframes spin-ccw {
@@ -885,19 +675,16 @@
     scroll-behavior: auto !important;
   }
 
-  /* Ambient decoration stops entirely rather than snapping to its end frame. */
-  .icon-token .icon-el,
-  .icon-token:hover .icon-el,
-  .keycap,
-  .drift {
-    animation: none !important;
-    transform: none !important;
-  }
-
+  /*
+    Hover lifts are the only remaining transform, now that the ambient
+    `floaty` / `idleDrift` decoration this used to also silence has been
+    deleted rather than merely disabled.
+  */
   .interactive:hover,
-  .tool-card:hover,
-  .icon-token:hover,
-  .card:hover {
+  .card:hover,
+  .rt-card:hover,
+  .rt-card:hover .rt-ico svg,
+  .rt-card:focus-visible .rt-ico svg {
     transform: none !important;
   }
 

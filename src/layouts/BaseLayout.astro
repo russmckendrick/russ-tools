@@ -132,6 +132,13 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
   <body>
     <div class="rt-ambient" aria-hidden="true"></div>
 
+    <!--
+      First tab stop on every page. The index is a fifteen-card catalogue and
+      the tool pages carry a header toolbar before their content, so without
+      this a keyboard user tabs the whole shell on every navigation.
+    -->
+    <a class="rt-skip" href="#main">Skip to content</a>
+
     <header class="rt-site-header">
       <div class="rt-shell">
         <div class="rt-topbar">
@@ -144,7 +151,7 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
       </div>
     </header>
 
-    <main class="rt-shell">
+    <main class="rt-shell" id="main" tabindex="-1">
       <slot />
     </main>
 
@@ -167,5 +174,8 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
       </div>
     </footer>
 
-  </body>
+  <!-- impeccable-live-start -->
+<script is:inline src="http://localhost:8400/live.js?token=31e534f3-acd9-4dc7-8096-0e5e54d715bd"></script>
+<!-- impeccable-live-end -->
+</body>
 </html>

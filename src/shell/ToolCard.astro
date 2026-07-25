@@ -7,9 +7,28 @@
 import ToolIcon from './ToolIcon.astro';
 
 const { tool } = Astro.props;
+
+/**
+ * The link's accessible name. Without this the name is the whole card
+ * concatenated — "DNS Lookup Tool Query any record type against Google or
+ * Cloudflare DNS over HTTPS. A · AAAA · MX · TXT · NS" — and a links-list
+ * rotor of fifteen of those is unusable for the one thing it is for.
+ * The visible text still starts with the title, so the accessible name
+ * remains contained in it.
+ */
+const label = tool.title;
+
+/** Pre-lowercased haystack so the index filter never rebuilds it per keystroke. */
+const haystack = [tool.title, tool.shortDescription, ...tool.badges].join(' ').toLowerCase();
 ---
 
-<a class="rt-card" href={tool.path} style={`--cat: var(--color-category-${tool.category})`}>
+<a
+  class="rt-card"
+  href={tool.path}
+  aria-label={label}
+  data-search={haystack}
+  style={`--cat: var(--color-category-${tool.category})`}
+>
   <span class="rt-card-top">
     <ToolIcon icon={tool.icon} size={25} />
     <span class="rt-card-name">{tool.title}</span>

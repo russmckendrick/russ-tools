@@ -51,16 +51,66 @@ test.describe('home and shell pages', () => {
   }) => {
     await page.goto('/');
 
-    const platformFilter = page.getByRole('button', { name: 'Microsoft & Azure 4' });
+    const platformFilter = page.getByRole('radio', { name: 'Microsoft & Azure 4' });
     await expect(platformFilter).toBeVisible();
     await expect(page.locator('.rt-group-head', { hasText: 'Microsoft & Azure' })).toBeVisible();
-    await expect(page.locator('.rt-group-head em')).toHaveCount(0);
     await expect(page.locator('.rt-group[data-category="azure"]')).toHaveCount(0);
     await expect(page.locator('.rt-group[data-category="microsoft"]')).toHaveCount(0);
 
+    // DESIGN.md: the chips carry the only index counts. The group heads show
+    // one only once demoted, where it is the affordance rather than a repeat.
+    for (const count of await page.locator('.rt-group-count').all()) {
+      await expect(count).not.toBeVisible();
+    }
+
     await platformFilter.click();
-    await expect(page.locator('.rt-group:not([hidden])')).toHaveCount(1);
+    await expect(platformFilter).toHaveAttribute('aria-checked', 'true');
+    await expect(page).toHaveURL(/#microsoft-azure$/);
+
+    // Filtering promotes one group and demotes the rest to a counted strip
+    // rather than hiding them — see docs/BEHAVIOR_CHANGES.md.
     await expect(page.locator('.rt-group[data-category="microsoft-azure"]')).toBeVisible();
+    await expect(page.locator('.rt-group[data-demoted]')).toHaveCount(4);
+    await expect(page.locator('.rt-group[data-demoted] .rt-grid').first()).not.toBeVisible();
+    await expect(page.locator('.rt-group[data-demoted] .rt-group-count').first()).toBeVisible();
+
+    // Back clears the filter instead of leaving the site.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator('.rt-group[data-demoted]')).toHaveCount(0);
+  });
+
+  test('the name filter narrows the index and is readable off the URL', async ({ page }) => {
+    await page.goto('/');
+
+    const find = page.getByRole('searchbox', { name: 'Filter tools by name' });
+    await expect(find).toBeVisible();
+
+    await find.fill('subnet');
+    await expect(page.locator('.rt-card:visible')).toHaveCount(1);
+    await expect(page.locator('a[href="/subnet-calculator"]')).toBeVisible();
+    await expect(page).toHaveURL(/\?q=subnet/);
+
+    await find.fill('zzzz');
+    await expect(page.locator('.rt-card:visible')).toHaveCount(0);
+    await expect(page.locator('#rt-empty')).toBeVisible();
+    await expect(page.locator('#rt-empty')).toContainText('No tool matches “zzzz”');
+    // The same fact reaches a screen reader through the live region.
+    await expect(page.locator('#rt-status')).toHaveText('No tool matches “zzzz”');
+
+    await page.getByRole('button', { name: 'Clear the filter' }).click();
+    await expect(page.locator('.rt-card:visible')).toHaveCount(15);
+  });
+
+  test('a shared category link arrives filtered', async ({ page }) => {
+    await page.goto('/#security');
+
+    await expect(page.getByRole('radio', { name: 'Security 3' })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
+    await expect(page.locator('.rt-group[data-demoted]')).toHaveCount(4);
+    await expect(page.locator('#security .rt-card')).toHaveCount(3);
   });
 
   test('the mobile burger exposes navigation and appearance controls', async ({ page }) => {
