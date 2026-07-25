@@ -17,6 +17,8 @@ package-lock.json
 # AI
 .claude
 graphify-out
+.impeccable/
+.cursor
 
 # Generated files
 public/sitemap.xml
