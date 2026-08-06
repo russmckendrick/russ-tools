@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for Codex (Codex.ai/code) when working in this repository.
+Guidance for Claude Code when working in this repository.
 
 ## ⚠️ Read this first
 
@@ -9,13 +9,6 @@ island** per tool, everything derived from per-tool manifests. The React SPA tha
 preceded it has been **deleted** — if you find a document describing `src/App.jsx`,
 `src/components/tools/`, Vite as the build, or two apps side by side, that document is
 stale and the code wins.
-
-| | |
-|---|---|
-| Stack | Astro 7 static · React 19 islands · Tailwind 4 |
-| Commands | `pnpm dev` · `pnpm build` · `pnpm preview` |
-| Output | `dist/` |
-| Source | `src/pages/`, `src/layouts/`, `src/shell/`, `src/tools/`, `src/core/` |
 
 The redesign that got here is recorded in
 [`docs/plans/redesign-plan.md`](docs/plans/redesign-plan.md) — read it for the *why*
@@ -124,9 +117,6 @@ A prior version of this file misdescribed the codebase. Corrected facts:
 lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger — ignore it.
 
 - `pnpm install` — install deps (esbuild is the one approved build script, see `pnpm.onlyBuiltDependencies`)
-- `pnpm dev` — Astro dev server
-- `pnpm build` — sitemap + `astro build` → `dist/` + generated `_redirects`
-- `pnpm preview` — serve the production build
 - `pnpm generate:tokens` — regenerate the token layer from `DESIGN.md` (needs network once)
 - `pnpm test` — Vitest (1000 tests; **keep these green**) · `pnpm test:watch` to iterate
 - `pnpm test:e2e` — Playwright deep-link matrix (22 tests) against `wrangler pages dev`
@@ -149,17 +139,9 @@ config in `src/utils/api/apiConfig.json`, accessed via `src/core/api.js`).
 
 ### Tool structure
 
-Each tool is one folder, `src/tools/<id>/`:
-- `manifest.mjs` — the contract: path, category, icon, params, storageKeys, seo, features
-- `island.jsx` — the entry component the manifest lazy-loads
-- `components/`, `lib/`, `hooks/`, `store/` — as the tool needs
-
 A few files still carry a `Shadcn` suffix (`AzureNamingShadcn.jsx`,
 `AzureKQLTool.jsx`'s neighbours) — that is **migration residue**, not a convention to
 copy.
-
-Tool metadata lives in each tool's `src/tools/<id>/manifest.mjs`. The SPA's
-`src/utils/toolsConfig.json` copy is **deleted**.
 
 ### The tools
 
@@ -211,25 +193,9 @@ renderers, with no `react-icons` runtime dependency.
 `@astrojs/sitemap`, `jwt-decode` (`jose` already exports `decodeJwt`), and
 **`exceljs`**.
 
-> **xlsx is `write-excel-file` + `read-excel-file`, not exceljs or SheetJS.**
-> exceljs last shipped in October 2023, weighed 20.8 MB with nine dependencies,
-> and was the sole source of every deprecation warning in the tree — *and of
-> `dayjs`, which is on the list above and had been back transitively the whole
-> time*. Its CommonJS/UMD packaging also produced a genuine bug: what
-> `await import('exceljs')` yielded differed between Node, the Vite build and
-> the Astro build, so `.default` was load-bearing.
-> The replacements are real ESM with `/browser` and `/node` entry points, so
-> that class of fault is gone. **Not SheetJS (`xlsx`):** its npm copy is
-> 0.18.5 from March 2022 — distribution moved to the vendor's own CDN — and
-> carries two advisories with no fix available on npm.
-> The reader returns *typed* values (`Date`, `boolean`, `number`, `null`)
-> rather than pre-formatted text; `excelCellToText` in `csvParser.js` owns
-> that conversion and `xlsx.test.js` pins it.
-
-> This used to be riskier: `vite.config.js` listed vendor chunks by name, so removing a
-> package turned a stale entry into a hard "Could not resolve entry module" failure. That
-> file is gone — Astro chunks automatically — so a removal now fails, if at all, at the
-> import site.
+> The *why* behind the xlsx choice (`write-excel-file` + `read-excel-file`, **not**
+> exceljs or SheetJS) and the removal history lives in the `dependency-policy` skill —
+> read it before swapping or removing a package.
 
 ## Traps and open issues
 
