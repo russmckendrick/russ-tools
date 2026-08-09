@@ -120,25 +120,23 @@ body > main {
 }
 .rt-topnav a {
   position: relative;
-  display: inline-flex;
+  display: inline-grid;
+  grid-template-columns: auto 0fr;
   align-items: center;
   justify-content: center;
-  width: auto;
   min-width: 34px;
   height: 34px;
-  gap: 0;
-  padding: 0;
+  padding-inline: 8px;
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   color: var(--color-on-surface-muted);
   text-decoration: none;
-  transition: color 150ms ease, background-color 150ms ease, transform 150ms ease, padding 180ms ease, gap 180ms ease;
+  transition: color 150ms ease, background-color 150ms ease, transform 150ms ease, grid-template-columns 180ms ease;
 }
 .rt-topnav a:hover,
 .rt-topnav a:focus-visible {
-  gap: 7px;
-  padding-inline: 8px;
+  grid-template-columns: auto 1fr;
   color: var(--color-on-surface);
   background: color-mix(in oklab, var(--color-surface-inset) 76%, transparent);
   transform: translateY(-1px);
@@ -187,40 +185,48 @@ body > main {
 
 .rt-palette-toggle,
 .rt-theme-toggle {
-  display: inline-flex;
+  display: inline-grid;
+  grid-template-columns: auto 0fr;
   align-items: center;
   justify-content: center;
   min-height: 34px;
-  gap: 0;
-  padding: 0;
+  padding-block: 0;
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: none;
   color: var(--color-on-surface-muted);
   cursor: pointer;
-  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease, padding 180ms ease, gap 180ms ease;
+  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease, grid-template-columns 180ms ease;
 }
 .rt-palette-toggle {
+  grid-template-columns: auto 0fr auto;
   min-width: 38px;
   padding-inline: 6px;
   font: inherit;
   font-size: var(--text-body-sm);
 }
 .rt-theme-toggle {
-  width: auto;
   min-width: 34px;
+  padding-inline: 7px;
 }
 .rt-palette-toggle:hover,
 .rt-palette-toggle[aria-expanded="true"],
 .rt-palette-toggle:focus-visible,
 .rt-theme-toggle:hover,
 .rt-theme-toggle:focus-visible {
-  gap: 6px;
-  padding-inline: 7px;
   color: var(--color-on-surface);
   border-color: var(--color-outline);
   background: var(--color-surface-inset);
+}
+.rt-palette-toggle:hover,
+.rt-palette-toggle[aria-expanded="true"],
+.rt-palette-toggle:focus-visible {
+  grid-template-columns: auto 1fr auto;
+}
+.rt-theme-toggle:hover,
+.rt-theme-toggle:focus-visible {
+  grid-template-columns: auto 1fr;
 }
 .rt-palette-toggle:focus-visible,
 .rt-theme-toggle:focus-visible {
@@ -240,14 +246,26 @@ body > main {
 .rt-toolbar-label,
 .rt-mode-name {
   display: block;
-  max-width: 0;
+  min-width: 0;
   overflow: hidden;
   opacity: 0;
   color: currentColor;
   font-size: var(--text-body-sm);
   line-height: 1;
   white-space: nowrap;
-  transition: max-width 190ms ease, opacity 120ms ease;
+  transition: opacity 120ms ease;
+}
+.rt-nav-label {
+  text-indent: 7px;
+}
+.rt-toolbar-label,
+.rt-mode-name {
+  text-indent: 6px;
+}
+.rt-toolbar-label::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
 }
 .rt-topnav a:hover .rt-nav-label,
 .rt-topnav a:focus-visible .rt-nav-label,
@@ -256,7 +274,6 @@ body > main {
 .rt-palette-toggle[aria-expanded="true"] .rt-toolbar-label,
 .rt-theme-toggle:hover .rt-mode-name,
 .rt-theme-toggle:focus-visible .rt-mode-name {
-  max-width: 90px;
   opacity: 1;
 }
 
@@ -605,7 +622,8 @@ body > main {
   .rt-topnav a:hover,
   .rt-topnav a:focus-visible {
     width: 100%;
-    justify-content: flex-start;
+    grid-template-columns: auto max-content;
+    justify-content: start;
     gap: 9px;
     padding-inline: 10px;
     transform: none;
@@ -633,15 +651,29 @@ body > main {
   .rt-theme-toggle:hover,
   .rt-theme-toggle:focus-visible {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: start;
     gap: 9px;
     padding-inline: 10px;
+  }
+  .rt-palette-toggle,
+  .rt-palette-toggle:hover,
+  .rt-palette-toggle:focus-visible,
+  .rt-palette-toggle[aria-expanded="true"] {
+    grid-template-columns: auto max-content auto;
+  }
+  .rt-theme-toggle,
+  .rt-theme-toggle:hover,
+  .rt-theme-toggle:focus-visible {
+    grid-template-columns: auto max-content;
   }
   .rt-header-actions .rt-nav-label,
   .rt-header-actions .rt-toolbar-label,
   .rt-header-actions .rt-mode-name {
-    max-width: 120px;
+    text-indent: 0;
     opacity: 1;
+  }
+  .rt-header-actions .rt-toolbar-label::after {
+    width: 0;
   }
   .rt-palette-menu {
     top: calc(100% + 7px);
