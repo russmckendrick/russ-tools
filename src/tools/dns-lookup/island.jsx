@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Ghost } from "@/components/ui/ghost";
 import { AlertCircle, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiFetch, buildUrl } from '@/core';
@@ -41,6 +42,27 @@ async function fetchDns(domain, { signal, context }) {
   data.timestamp = Date.now();
   return data;
 }
+
+/**
+ * The shape of a DNS answer, for the ghost above.
+ *
+ * CNAME rather than A on purpose: `DNSRecordDisplay` renders a react-router
+ * `<Link>` for values that parse as IP addresses. Not for want of a Router —
+ * `ToolIsland` mounts one for every tool — but because a link is a focusable
+ * anchor that `ToolIsland`'s click capture would navigate on, and a ghost must
+ * contain nothing anyone can reach. Two records, because that is what a
+ * typical answer looks like and the ghost should be the typical size.
+ */
+const GHOST_RESULTS = {
+  Status: 0,
+  TC: false,
+  RA: true,
+  Question: [{ name: 'example.com.', type: 5 }],
+  Answer: [
+    { name: 'example.com.', type: 5, TTL: 300, data: 'edge.example-cdn.net.' },
+    { name: 'edge.example-cdn.net.', type: 5, TTL: 300, data: 'origin.example-cdn.net.' },
+  ],
+};
 
 const DnsLookupTool = () => {
   const [recordType, setRecordType] = React.useState('A');
@@ -155,13 +177,28 @@ const DnsLookupTool = () => {
           </Alert>
         )}
 
+        {/*
+          Nothing looked up yet: draw the answer's own shape rather than leave
+          a screenful of empty page under the form. This is the real
+          `DNSResultsDisplay` — tab bar, query card, records card — rendered
+          with a sample response and redacted by `.rt-ghosted`, so it cannot
+          drift from the panel that replaces it.
+        */}
+        {!lookupResults && !loading && !error && (
+          <Ghost>
+            <DNSResultsDisplay results={GHOST_RESULTS} domain="example.com" recordType="CNAME" />
+          </Ghost>
+        )}
+
         {/* Results */}
         {lookupResults && !loading && (
-          <DNSResultsDisplay
-            results={lookupResults}
-            domain={domain}
-            recordType={recordType}
-          />
+          <div className="rt-arrive">
+            <DNSResultsDisplay
+              results={lookupResults}
+              domain={domain}
+              recordType={recordType}
+            />
+          </div>
         )}
 
         {/* History */}

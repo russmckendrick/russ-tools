@@ -413,6 +413,7 @@ components:
 motion:
   duration-fast: 90ms
   duration-base: 140ms
+  duration-settle: 240ms
   easing: ease-out
 ---
 
@@ -568,9 +569,18 @@ import '@fontsource/space-mono/700.css';
 ## Layout
 
 - One content column, `max-width: 1200px`, `32px` gutters.
-- **The tool index** is a 3-column grid of separated tiles with a real `gap`
-  (16–22px). Signal's shared-edge idiom is retired: the border belongs to
-  the tile again, because the tile is a pressable object.
+- **The tool index** is one flowing stream of separated tiles — `flex-wrap`
+  with a `12px` gap, not a fixed track count. Each tile carries its own
+  `flex-basis` in three distinct steps (`235 / 315 / 400px`, chosen from title
+  and description length), so rows break at 3, 2, 3, 3 and 4 rather than
+  snapping to a grid. A continuous curve over the same inputs was tried first
+  and repacked into a uniform 3×5; the steps have to be distinct to do
+  anything. The index carries **no category headings** — the filter chips name
+  the categories and the icon tile carries the hue — and tools stay in category
+  order so the hues cluster and drift down the page. /404 keeps the 3-column
+  grid, which is right for three suggestions under one heading.
+  Signal's shared-edge idiom is retired: the border belongs to the tile again,
+  because the tile is a pressable object.
 - **Controls above results, stacked.** The two-column control/result split
   was tried and withdrawn (Session 6); Stacks does not resurrect it. A tool
   page is: head, input band, result panels, in one column.
@@ -637,13 +647,20 @@ colour never carries the state alone.
 
 ### The tool tile
 
-A bordered card: icon in a small `category-fill` tile (2px border,
-`rounded.sm`) and the category badge on the first line, opposed; title at
-`title-sm`; description at `body-sm` in `on-surface-muted`; the route path
-at `data-sm` in `primary-text`, pinned to the bottom. Hover lifts nothing
-and tints nothing: the tile gains the `press` shadow (category-hued in dark
-mode) and moves up-left by 2px, exactly as if it had risen under the finger.
-Reduced motion: shadow only, no translate.
+A bordered card, laid out horizontally: the icon in a small `category-fill`
+tile (2px border, `rounded.sm`) beside a column of title at `title-sm`,
+description at `body-sm` in `on-surface-muted`, and the route path at
+`data-sm`. Hover lifts nothing and tints nothing: the tile gains the `press`
+shadow and moves up-left by 2px, exactly as if it had risen under the finger,
+and the route path turns `primary-text`. Reduced motion: shadow only, no
+translate.
+
+**No category badge.** With the index's section headings gone the icon tile is
+where the category is stated, once. The badge restated it — and fifteen solid
+`category-fill` pills were the loudest thing on the page, worst in dark where
+they floated on espresso. The route path is `on-surface-dim` at rest for the
+same reason: in `primary-text` it put the accent on fifteen things nobody had
+touched, and the accent marks what you are about to press.
 
 ### Inputs
 
@@ -663,7 +680,9 @@ join the field and its submit button flush, sharing the border.
 
 ### Chips (the index category filter)
 
-Bordered pills with `press-sm` shadows — they read as keyboard keys. The
+Bordered pills with `press-sm` shadows — they read as keyboard keys. With the
+section headings gone they are the only place the category names appear, which
+is also the only place the counts appear. The
 active chip inverts to `on-surface` (ink chip on paper, cream chip on
 espresso) with the page ground as its text — the theme's strongest
 contrast, which the demoted taupe rule no longer provides in dark. Counts ride inside the chip in
@@ -684,6 +703,26 @@ progress line. An error is a `panel` with its border swapped to `error` and
 the word ERROR at `label-caps`. Empty states keep their copy and take
 `on-surface-muted`.
 
+**The ghost** is the other kind of empty state, for a tool that rests as a
+small control panel over a screenful of nothing. It is not a drawn skeleton:
+it renders the tool's *real* result component with a small sample, and a
+redaction layer turns every run of text into a bar. So the shape is never
+described twice, and cannot drift from the panel that replaces it.
+
+Three rules govern it. It carries **no copy** — the shape is the whole
+message, and a caption would be a second statement of it. It carries **no
+colour that states anything**: category hues and status tints are neutralised
+at the wrapper, because a green grade badge above an empty form claims a
+certificate passed. And it **never animates** — unlike a loading skeleton this
+is not temporary, it sits on screen for as long as someone reads the form
+above it, and a rectangle that throbs indefinitely is an irritation rather
+than a signal.
+
+Its size comes from the sample data rather than from a reserved height: the
+ghost fills the empty region, it does not reserve the whole result. Two tools
+whose answers run past 1200px pass deliberately less data, because a
+full-height ghost would make the empty page longer than the gap it replaces.
+
 ## Iconography
 
 One library for everything: **Lucide**, stroke-based on the 24px grid with a
@@ -702,9 +741,39 @@ category *text* hue, no tile.
 
 Snappy and physical, still minimal: hover and ground changes at
 `90–140ms ease-out`; the press (translate + shadow removal) is instant on
-`:active`. No entrance animations, no ambient motion, no parallax, no glow.
+`:active`. No ambient motion, no parallax, no glow — nothing loops, and
+nothing moves that the reader did not touch.
+
+Motion is **the object behaving like an object**, never decoration laid over
+one. That admits exactly three things beyond hover and press, all at
+`duration-settle` (240ms) or faster:
+
+1. **Reflow settles; it does not cut.** When a filter changes which tiles are
+   on screen, the survivors *travel* to their new positions — they are the
+   same pieces of paper being resorted, and teleporting them denies that.
+   Implemented as a same-document view transition, so a browser without one
+   falls back to the instant reflow and loses nothing but the continuity.
+   Only discrete choices earn it: a category chip transitions, a keystroke in
+   a search field does not, because a transition per character is a stutter,
+   not a settle.
+2. **First paint sets the tiles down.** A catalogue may deal itself in once
+   per load: each tile starts 3px raised carrying the `press` shadow and
+   lands flat and shadowless, which is the press vocabulary run backwards —
+   the page assembles out of things that are visibly pressable. Strictly
+   bounded: 240ms per tile, an 18ms stagger capped at ten steps, so the last
+   tile has landed inside 420ms. It is pure CSS on prerendered markup, so it
+   delays no content and survives with JavaScript off. Nothing else on the
+   site animates on entry.
+3. **A swapped value fades in.** Where text is replaced under the reader —
+   a live count, a list of matches recomputed as they type — the new value
+   arrives over `duration-fast` instead of blinking. 90ms, opacity only.
+
 `prefers-reduced-motion` removes the hover translate and keeps the shadow
-change, which conveys the same state without movement.
+change, which conveys the same state without movement. It also removes all
+three of the above outright: no view transition, no entrance, no fade. Every
+one of them is continuity for people who track movement, and for the people
+who asked us to stop moving things, the instant result was never the worse
+outcome.
 
 ## Accessibility
 

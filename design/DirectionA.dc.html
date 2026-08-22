@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Space+Grotesk:wght@400..700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; font-family: "Space Grotesk", system-ui, sans-serif; }
+    a { color: #1b7038; } a:hover { color: #17150f; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 720px; height: 640px; background: #faf4e8; display: flex; flex-direction: column;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px; padding: 18px 24px 14px; border-bottom: 2px solid #17150f; background: #fffdf7;">
+    <div style="display: flex; align-items: baseline; gap: 10px;">
+      <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 17px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; color: #17150f;">A — Empty frames</span>
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; line-height: 1.4; color: #6e6855;">most orthodox</span>
+    </div>
+    <span style="font-size: 13px; font-weight: 400; line-height: 1.45; color: #4d493e; text-wrap: pretty;">Only the bordered rectangles, at the sizes the real panels will take. Stacks says the border is the structure — so the ghost is the structure with the content removed, and nothing more.</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+
+    <div style="display: flex; justify-content: flex-end;">
+      <div style="width: 78px; height: 34px; border: 2px solid #17150f; border-radius: 10px; background: #fffdf7;"></div>
+    </div>
+
+    <div style="height: 76px; border: 2px solid #17150f; border-radius: 14px; background: #fffdf7;"></div>
+    <div style="height: 212px; border: 2px solid #17150f; border-radius: 14px; background: #fffdf7;"></div>
+    <div style="height: 112px; border: 2px solid #17150f; border-radius: 14px; background: #fffdf7;"></div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

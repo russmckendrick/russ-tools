@@ -1,0 +1,48 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "As built" },
+    { "id": "page-2", "name": "Directions not chosen" }
+  ],
+  "artboards": [
+    { "file": "Sequence.dc.html", "page": "page-1", "x": 0, "y": 0, "w": 1180, "h": 470 },
+    { "file": "Main.dc.html", "page": "page-1", "x": 0, "y": 620, "w": 720, "h": 640 },
+    { "file": "DirectionA.dc.html", "page": "page-2", "x": 0, "y": 0, "w": 720, "h": 640 },
+    { "file": "DirectionB.dc.html", "page": "page-2", "x": 820, "y": 0, "w": 720, "h": 640 },
+    { "file": "DirectionD.dc.html", "page": "page-2", "x": 1640, "y": 0, "w": 720, "h": 640 }
+  ],
+  "annotations": [
+    {
+      "id": "shipped",
+      "page": "page-1",
+      "x": 820,
+      "y": 620,
+      "w": 330,
+      "text": "Shipped.\n\nEach tool declares a `skeleton` in its manifest and ToolSkeleton.astro renders it into Astro's fallback slot — so the ghost is in the prerendered HTML, paints with the head, and needs no JavaScript at all. Astro discards it when the island mounts.\n\nShapes came from measuring all fifteen tools at rest, not from guessing: six are a single control panel, cron-builder rests at 702px and password-generator at 753px in two columns."
+    },
+    {
+      "id": "result",
+      "page": "page-1",
+      "x": 1280,
+      "y": 0,
+      "w": 300,
+      "text": "Layout shift after\n\nworst   24px\nmean    11px\n\nBefore, the shift was the whole content height — 149px on the subnet calculator, 975px on azure-naming — because nothing was reserved at all."
+    },
+    {
+      "id": "changed",
+      "page": "page-1",
+      "x": 820,
+      "y": 960,
+      "w": 330,
+      "text": "What the build changed\n\n1. Control panels gained optional `+head` and `+hint` lines. ssl-checker's heading was the worst single reserve error on the site at 75px.\n\n2. Only the first six rows of a panel carry blocks. Drawing all of them turned password-generator into forty-two stripes and claimed 'data table' for a body that is a form — the ghost is confident at the top of a panel and says less the further down it guesses."
+    },
+    {
+      "id": "archive",
+      "page": "page-2",
+      "x": 0,
+      "y": -140,
+      "w": 420,
+      "text": "The three directions not taken, kept for the record. C won: blocks at real text metrics in surface-inset — never grey, never shimmering."
+    }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

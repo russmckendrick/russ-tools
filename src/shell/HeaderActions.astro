@@ -12,8 +12,45 @@
  * the same row and inherits the cell rules.
  */
 import AppearanceControls from './AppearanceControls.astro';
+import { TOOLS } from '../tools/registry.mjs';
 
 const { currentPath } = Astro.props;
+
+/**
+ * Which tab is open.
+ *
+ * The nav is drawn as folder tabs, and on every tool page and every help page
+ * no tab was open at all — fifteen tools plus their help pages, the bulk of
+ * the site, rendering a header that claimed the reader was nowhere. Only the
+ * index matched, because the test was `currentPath === '/'`.
+ *
+ * Matched on the first path segment against the registry rather than on a
+ * prefix, so it covers a tool (`/dns-lookup`), its help page
+ * (`/dns-lookup/help`) and its deep links (`/ssl-checker/example.com`) with
+ * one rule, and does not quietly claim /404 for the Tools tab.
+ *
+ * `currentPath` is normalised first, and this is the whole reason the index
+ * was rendering with no tab open on the deployed site while looking correct
+ * under `pnpm dev`. `Astro.url.pathname` is the **output file** during a
+ * static build and `build.format` is `'file'`, so the index arrives here as
+ * `/index.html` and a tool page as `/dns-lookup.html` — `=== '/'` was false
+ * in every build that has ever shipped. /delete only escaped because
+ * `startsWith('/delete')` happens to survive a `.html` suffix; it is an exact
+ * match now, on the normalised path, rather than a prefix that would also
+ * claim a hypothetical `/deleted-things`. `canonical.test.js` documents the
+ * same trap biting the canonical tag.
+ *
+ * Two ARIA values, and the distinction is load-bearing. `page` is a promise
+ * that this link points at the document you are reading; on /dns-lookup the
+ * Tools link points at /, so saying `page` there would be a lie a screen
+ * reader repeats. `true` is the same attribute's "current item of the set",
+ * which is exactly what an open section tab means. Both are styled; only one
+ * is claimed.
+ */
+const path = currentPath.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+const section = `/${path.split('/').filter(Boolean)[0] ?? ''}`;
+const inTools = TOOLS.some((tool) => tool.path === section);
+const toolsCurrent = path === '/' ? 'page' : inTools ? 'true' : undefined;
 ---
 
 <div class="rt-header-actions-wrap">
@@ -32,7 +69,7 @@ const { currentPath } = Astro.props;
 
   <div class="rt-header-actions" id="rt-header-menu" data-header-menu>
     <nav class="rt-topnav" aria-label="Primary">
-      <a href="/" aria-current={currentPath === '/' ? 'page' : undefined}>
+      <a href="/" aria-current={toolsCurrent}>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" />
         </svg>
@@ -40,7 +77,7 @@ const { currentPath } = Astro.props;
       </a>
       <a
         href="/delete"
-        aria-current={currentPath.startsWith('/delete') ? 'page' : undefined}
+        aria-current={path === '/delete' ? 'page' : undefined}
       >
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />

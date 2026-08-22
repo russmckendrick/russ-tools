@@ -108,8 +108,10 @@ describe('frozen contract #1 — deep links', () => {
     '/base64/:input',
     '/buzzword-ipsum',
     '/cron',
+    '/cron/:expression',
     '/data-converter',
     '/dns-lookup',
+    '/dns-lookup/:domain',
     '/jwt',
     '/jwt/:token',
     '/markdown-table-tool',
@@ -135,7 +137,7 @@ describe('frozen contract #1 — deep links', () => {
   it('still carries every route the SPA served', () => {
     // Guards the list itself: a deletion here is a broken bookmark, and is
     // never what someone meant to do.
-    expect(routerPaths.length).toBe(26);
+    expect(routerPaths.length).toBe(28);
   });
 
   it('serves every one of them', () => {

@@ -175,8 +175,14 @@ body > main {
 
 /* The open tab: page ground, and its own bottom edge overwrites the header
    rule (2px taller, pulled 2px below the bar) so the tab and the page read
-   as one surface. Ink text, not accent — the opening IS the signal. */
-.rt-topnav a[aria-current='page'] {
+   as one surface. Ink text, not accent — the opening IS the signal.
+
+   Bare `[aria-current]`, not `[aria-current='page']`. A tool page and its
+   help page set `true` rather than `page` — the Tools link points at the
+   index, not at the document being read, so `page` there would be a lie
+   (see `HeaderActions.astro`) — and keying on the exact value left the tab
+   shut on every page but three. */
+.rt-topnav a[aria-current] {
   background: var(--color-surface);
   border-bottom: var(--border-structural) solid var(--color-surface);
   margin-bottom: calc(-1 * var(--border-structural));
@@ -250,7 +256,7 @@ body > main {
     background: var(--color-surface-raised);
     padding: 13px 16px;
   }
-  .rt-topnav a[aria-current='page'] {
+  .rt-topnav a[aria-current] {
     margin-bottom: 0;
     background: var(--color-nav-active);
     border-bottom: var(--border-structural) solid var(--color-rule);
@@ -286,10 +292,8 @@ body > main {
    left the bug: the pair was. Do not add `z-index` back to a page section. */
 
 
-/* --- Index title ---------------------------------------------------------
-   Was a hero and a four-tile stat strip. Both were selling the site to
-   someone already standing on it, so the page now opens on the filters and
-   the grid, with an h1 that names the page and nothing else. */
+/* --- The 404 head ---------------------------------------------------------
+   Three lines: what happened, where everything is, and the path that failed. */
 
 .rt-notfound {
   position: relative;
@@ -308,6 +312,17 @@ body > main {
   margin: 0;
   color: var(--color-on-surface-muted);
   font-size: var(--text-body-md);
+}
+/* The URL that failed, set as data because it is data. Worth drawing: on a
+   soft 404 in an in-app browser, or on a phone that has scrolled the bar
+   away, this is the only place the visitor can see what was actually
+   requested. It wraps rather than ellipsises — a truncated path answers
+   nothing. */
+.rt-notfound-path {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  color: var(--color-on-surface-dim);
+  overflow-wrap: anywhere;
 }
 
 /* --- Shell a11y utilities ------------------------------------------------- */
@@ -346,13 +361,17 @@ body > main {
 }
 
 /* --- Index head -----------------------------------------------------------
-   `Tools` at the display step, alone. The count line went the way of the
-   hero and the stat strip — all three were selling the site to someone
-   already standing on it (the chips carry the counts). */
+   `Tools` at the display step, sharing its band with one mono line. The h1
+   used to sit alone above 90px of nothing; the line beside it is orientation,
+   not a subtitle, so it is set as data on the same baseline. */
 
 .rt-index-head {
   position: relative;
-  padding-block: var(--rt-space-4xl) var(--rt-space-3xl);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--rt-space-gutter);
+  padding: 44px 0 var(--rt-space-xl);
 }
 
 .rt-index-title {
@@ -361,6 +380,176 @@ body > main {
   font-weight: var(--font-weight-display);
   letter-spacing: var(--tracking-display);
   line-height: 1;
+}
+
+.rt-index-note {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  color: var(--color-on-surface-dim);
+  padding-bottom: var(--rt-space-sm);
+}
+
+/* The count was the one number on the page that never moved while the page
+   moved constantly — fifteen tiles filtered down to three and the line still
+   read `15 tools`. It ticks now, and `tabular-nums` is what stops the tick
+   from shoving `tools · nothing leaves the browser` sideways by a glyph.
+
+   Not a live region: `#rt-status` already announces the filter, and a second
+   one would say the same thing twice into the same ear. This is the sighted
+   half of an announcement that was already being made. */
+.rt-index-count {
+  font-variant-numeric: tabular-nums;
+}
+/* Filtered, so the count is no longer the whole catalogue and says so. */
+.rt-index-count[data-filtered] {
+  color: var(--color-on-surface-muted);
+}
+
+/* --- The paste panel ------------------------------------------------------
+   DESIGN.md allows one `panel-emphasis` per page and the index used to spend
+   none, which is most of why it sat flat. It is spent on a control rather
+   than a banner: paste what you already have and it opens the tool that reads
+   it. `press-lg`, and nothing else on this page carries a shadow at rest. */
+
+.rt-jump {
+  display: block;
+  border: var(--border-structural) solid var(--color-rule);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-press-lg);
+  padding: var(--rt-space-xl) 22px 18px;
+  margin: var(--rt-space-xs) 0 var(--rt-space-md);
+}
+
+.rt-jump-label {
+  display: block;
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  letter-spacing: var(--tracking-label-caps);
+  text-transform: uppercase;
+  color: var(--color-on-surface-muted);
+}
+
+.rt-jump-row {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--rt-space-md);
+}
+
+.rt-jump-field {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-data-md);
+  padding: var(--rt-space-md) 14px;
+  border: var(--border-structural) solid var(--color-rule);
+  border-radius: var(--radius-md);
+  /* The page ground, not the panel ground: the field is a well cut into the
+     panel rather than another card sitting on it. */
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+.rt-jump-field::placeholder {
+  color: var(--color-on-surface-faint);
+}
+.rt-jump-field:focus {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* The one accent fill on the page — an action, which is the only thing the
+   accent is ever allowed to be. */
+.rt-jump-go {
+  flex: none;
+  font-family: inherit;
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  line-height: 1;
+  padding: var(--rt-space-md) var(--rt-space-xl);
+  border: var(--border-structural) solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-press-sm);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-signal),
+    box-shadow var(--duration-fast) var(--ease-signal),
+    transform var(--duration-fast) var(--ease-signal);
+}
+.rt-jump-go:hover {
+  background: var(--color-primary-hover);
+}
+.rt-jump-go:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+.rt-jump-go:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+/* Empty field, nothing to open. The panel keeps its shape rather than the
+   button disappearing out of the row. */
+.rt-jump-go:disabled {
+  background: var(--color-surface-inset);
+  color: var(--color-on-surface-dim);
+  box-shadow: none;
+  cursor: default;
+}
+
+.rt-jump-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--rt-space-md);
+}
+.rt-jump-hint b {
+  font-size: var(--text-body-md);
+  font-weight: 400;
+  color: var(--color-on-surface-dim);
+  margin-right: 2px;
+}
+
+/* A keycap, not a chip: hairline and shadowless, because these are examples
+   and matches rather than controls. As matches they become links, and the
+   first one is what Enter follows. */
+.rt-kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  line-height: 1;
+  color: var(--color-on-surface-muted);
+  padding: var(--rt-space-xs) var(--rt-space-sm);
+  border: var(--border-hairline) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-inset);
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.rt-kbd:hover {
+  color: var(--color-on-surface);
+  border-color: var(--color-rule);
+}
+a.rt-kbd:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+a.rt-kbd[data-first] {
+  color: var(--color-primary-text);
+  border-color: var(--color-primary-text);
+}
+
+/* The hint row is rebuilt on every keystroke, so each keycap here is a brand
+   new node and starts this on insertion — no re-trigger dance needed.
+
+   Scoped off `data-resting` so it is matches only. The resting examples are
+   the prerendered markup restored, and the panel is `hidden` until its script
+   runs: fading those would mean the paste panel dealing itself in on load
+   beside the tiles, which is one entrance more than the page has earned.
+
+   Opacity only, 90ms — the row answers faster than the reader can type, and
+   anything that moved here would read as lag. */
+.rt-jump-hint:not([data-resting]) a.rt-kbd {
+  animation: rt-fade-in var(--duration-fast) var(--ease-signal);
 }
 
 /* --- The filter row -------------------------------------------------------
@@ -375,7 +564,7 @@ body > main {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--rt-space-md);
-  padding-block: var(--rt-space-xs) var(--rt-space-md);
+  padding-block: var(--rt-space-2xl) 0;
 }
 
 .rt-chips {
@@ -476,140 +665,38 @@ body > main {
   cursor: pointer;
 }
 
-/* --- Category groups + the tool grid -------------------------------------- */
+/* --- The stream -----------------------------------------------------------
+   One flow of fifteen tiles, not five sections of three.
 
-.rt-board {
+   The category headings are gone: the chips name the categories and the icon
+   tile carries the hue, so a heading above each run stated the same fact a
+   third time — and the bands it created were what made a catalogue of fifteen
+   read as five stacked tables. Tools stay in category order, so the hues
+   cluster and drift teal → blue → purple → amber → orange → pink down the
+   page. The grouping is drawn rather than labelled.
+
+   Tiles carry their own `flex-basis` in three distinct steps (see
+   `index.astro`'s `widthStep`), so rows break at 3, 2, 3, 3 and 4 rather than
+   snapping to three tracks — which is also what removed the three holes the
+   fixed grid used to manufacture at the tail of every short category. */
+
+.rt-stream {
   position: relative;
-  display: grid;
-  gap: var(--rt-space-3xl);
-  /* The filter row above closes on a hairline, and the first group label sat
-     straight on it with nothing between the two. */
-  padding-block: var(--rt-space-3xl) var(--rt-space-4xl);
-}
-.rt-group {
-  display: grid;
-  gap: 11px;
-}
-.rt-group-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-/*
-  These five labels are the page's navigational scaffolding. As 12px semibold
-  Inter they sat *below* the card titles (15px) and descriptions (13.5px) they
-  organise — a heading that had lost an argument with its own content. As
-  label-caps they change register instead of competing on size: uppercase
-  tracked mono is how every panel header in the system announces structure.
-*/
-.rt-group-label {
-  margin: 0;
-  font-family: inherit;
-  font-size: var(--text-label-caps);
-  font-weight: var(--font-weight-label-caps);
-  line-height: 1;
-  letter-spacing: var(--tracking-label-caps);
-  text-transform: uppercase;
-  /* The fallback is for /404, whose one group spans three categories and so
-     has no hue of its own. `--cat` may only ever carry a category token, so
-     the neutral lives here rather than being assigned there. */
-  color: var(--cat, var(--color-on-surface-muted));
-}
-.rt-group-label a {
-  color: inherit;
-  text-decoration: none;
-}
-.rt-group-label a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.rt-group-label a:focus-visible {
-  outline: 2px solid var(--cat);
-  outline-offset: 3px;
-}
-/*
-  DESIGN.md, Layout: "Category filter chips sit above the grid and carry the
-  only index counts." So the group head keeps no count in the default view —
-  it appears only once a group is demoted to the strip, where the count is the
-  affordance rather than a duplicate of the chip above it.
-*/
-.rt-group-count {
-  display: none;
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  color: var(--color-on-surface-faint);
-  font-variant-numeric: tabular-nums;
-}
-.rt-group[data-demoted] .rt-group-count {
-  display: inline;
-}
-.rt-group-head hr {
-  flex: 1;
-  height: 1px;
-  border: 0;
-  margin: 0;
-  background: var(--color-outline);
-}
-
-/* --- Filtered board: promote one group, demote the rest ------------------- */
-
-/*
-  Filtering used to hide the other four groups, which on `/#content` left a
-  single card in the corner of an otherwise empty viewport — the No Void Rule
-  failing on the page's own primary interaction. The selected group is
-  promoted to full width and the rest collapse to their counted headings,
-  which stay clickable. The page keeps its height and the rack stays visible
-  behind the instrument you pulled forward.
-*/
-.rt-board.is-filtered {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--rt-space-xl) var(--rt-space-md);
+  gap: 12px;
+  padding-block: var(--rt-space-2xl) var(--rt-space-4xl);
   /*
-    Filtering fifteen tools down to one necessarily shortens the page, and a
-    bottom-pinned footer turns the difference into trapped space. Holding a
-    floor and pushing the demoted row to the end of it spends that space
-    instead of leaving it: the filtered group sits at the top, the rest of the
-    rack sits above the footer, and the gap between them reads as the
-    separation it is. Only a floor, so a tall filtered group still grows.
+    Filtering fifteen tools down to three necessarily shortens the page, and a
+    bottom-pinned footer turns the difference into trapped space. Only a floor,
+    so a full catalogue still grows past it.
   */
   min-height: 46vh;
-  align-content: space-between;
-}
-.rt-board.is-filtered .rt-group {
-  flex: 1 0 100%;
-  order: 1;
-}
-.rt-board.is-filtered .rt-group.is-active {
-  order: 0;
-}
-.rt-board.is-filtered .rt-group[data-demoted] {
-  flex: 0 0 auto;
-  gap: 0;
-}
-.rt-board.is-filtered .rt-group[data-demoted] .rt-grid,
-.rt-board.is-filtered .rt-group[data-demoted] .rt-group-head hr {
-  display: none;
-}
-.rt-board.is-filtered .rt-group[data-demoted] .rt-group-head {
-  gap: 8px;
-  padding: 8px 13px;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  transition: background-color var(--duration-base) var(--ease-signal);
-}
-.rt-board.is-filtered .rt-group[data-demoted] .rt-group-head:hover {
-  background: var(--color-surface-inset);
-}
-
-/* Searching flattens the board back to a plain stack of matching groups. */
-.rt-board.is-searching .rt-group[data-demoted] {
-  order: 0;
+  align-content: flex-start;
 }
 
 .rt-empty {
+  flex: 1 0 100%;
   margin: 0;
   padding: var(--rt-space-xl) 0;
   color: var(--color-on-surface-muted);
@@ -633,11 +720,119 @@ body > main {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-/* --- The grid -------------------------------------------------------------
-   Separated tiles with a real gap. Signal's shared-edge idiom is retired:
-   the border belongs to the tile again, because the tile is a pressable
-   object — a bordered card that gains its shadow under the pointer. */
 
+/* --- The stream settles ---------------------------------------------------
+   Three behaviours, all of them the catalogue behaving like objects rather
+   than like a slideshow. DESIGN.md's Motion section is the authority; this is
+   where they are drawn.
+
+   1. THE DEAL-IN. Each tile starts 3px raised carrying the `press` shadow and
+      lands flat and shadowless — the press vocabulary run backwards, so the
+      page assembles out of visibly pressable things instead of fading up like
+      any other card grid. Pure CSS on prerendered markup: it blocks no
+      content, needs no JavaScript, and cannot leave a tile stuck invisible if
+      a script fails, because there is no script.
+
+      `backwards` fill is what holds the first frame during the stagger delay.
+      Without it every tile paints flat, then jumps back up to start.
+
+   2. THE STAGGER, capped. `--rt-i` is the tile's index; `min()` stops the
+      ramp at ten steps, so tiles 11–15 land together and the last tile is
+      down inside 420ms however long the catalogue grows. An uncapped ramp is
+      how a sixteenth tool would have made the page feel slower than a
+      fifteenth.
+
+   3. THE EMPTY STATE fades rather than blinks — it replaces fifteen tiles
+      with one sentence, which is a big enough change to deserve the 90ms. */
+
+@keyframes rt-card-in {
+  from {
+    opacity: 0;
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-press);
+  }
+}
+
+.rt-stream .rt-card {
+  animation: rt-card-in var(--duration-settle) var(--ease-signal) backwards;
+  animation-delay: calc(min(var(--rt-i, 0), 10) * 18ms);
+}
+
+.rt-empty {
+  animation: rt-fade-in var(--duration-fast) var(--ease-signal);
+}
+
+@keyframes rt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* --- The refilter travels -------------------------------------------------
+   A category chip rearranges the stream, and until now the survivors
+   teleported: `hidden` toggles, flex re-wraps, done. Each tile carries a
+   `view-transition-name` (see `ToolCard.astro`), so the browser FLIPs the
+   reflow for us — the tiles that stay slide to their new rows, the ones that
+   leave fade out where they stood.
+
+   The root group is silenced deliberately. Its default is a full-page
+   cross-fade, which would dissolve the header, the paste panel and the chip
+   row — none of which changed — and turn a precise rearrangement into a
+   wash. Only the named tiles animate; everything else is simply repainted.
+
+   `index.astro` starts these for chip presses alone. A transition per
+   keystroke in the name filter is a stutter, not a settle. */
+
+::view-transition-group(*) {
+  animation-duration: var(--duration-settle);
+  animation-timing-function: var(--ease-signal);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* --- The 404 grid ---------------------------------------------------------
+   /404 still renders the index's old group markup for its "Popular tools"
+   block — one heading over a fixed grid, which is right for three suggestions
+   and wrong for a catalogue. These rules exist for that page alone; the
+   `--cat` fallback on the label is there because its one group spans three
+   categories and so has no hue of its own. */
+
+.rt-board {
+  position: relative;
+  display: grid;
+  gap: var(--rt-space-3xl);
+  padding-block: var(--rt-space-3xl) var(--rt-space-4xl);
+}
+.rt-group {
+  display: grid;
+  gap: 11px;
+}
+.rt-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rt-group-label {
+  margin: 0;
+  font-family: inherit;
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  line-height: 1;
+  letter-spacing: var(--tracking-label-caps);
+  text-transform: uppercase;
+  color: var(--cat, var(--color-on-surface-muted));
+}
+.rt-group-head hr {
+  flex: 1;
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--color-outline);
+}
 .rt-grid {
   display: grid;
   gap: 18px;
@@ -652,27 +847,38 @@ body > main {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+/* The stream sizes its own tiles; inside the 404 grid the track does it. */
+.rt-grid .rt-card {
+  flex-basis: auto;
+  max-width: none;
+}
 
 /* --- Card: the tool tile, and the workhorse -------------------------------
-   A bordered card on the raised ground. Hover is the press affordance
-   arriving: the tile gains the `press` shadow and moves up-left by the same
-   2px, exactly as if it had risen under the finger. The shadow is
-   `shadow-ink` in both themes — the Espresso rework retired the dark
-   theme's category-hued hover shadow, because a coloured shadow undermined
-   the press metaphor.
+   A bordered card on the raised ground, laid out horizontally: the icon tile
+   beside a column of title, description and route.
 
-   The entrance stagger stays gone. */
+   The category badge is gone with the section headings. It restated what the
+   heading above it already said and what the icon tile still says, and
+   fifteen bright pastel slabs were the loudest thing on the page — worst in
+   dark, where they floated on espresso.
+
+   Hover is the press affordance arriving: the tile gains the `press` shadow
+   and moves up-left by the same 2px, exactly as if it had risen under the
+   finger. */
 
 .rt-card {
   position: relative;
+  flex: 1 1 auto;
+  max-width: 500px;
+  min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: var(--rt-space-sm);
-  padding: 18px 20px 16px;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 15px 17px 14px;
   border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-lg);
   background-color: var(--color-surface-raised);
-  color: inherit;
+  color: var(--color-on-surface);
   text-decoration: none;
   transition: box-shadow var(--duration-base) var(--ease-signal),
     transform var(--duration-base) var(--ease-signal);
@@ -683,35 +889,25 @@ body > main {
   box-shadow: var(--shadow-press);
   transform: translate(-2px, -2px);
 }
+/* The tile is the page's primary pressable and it was the one pressable on
+   the site that did not press: it rose on hover and then absorbed the click
+   without moving. Same sink as `.rt-chip:active`, one step past the hover
+   lift, and the shadow goes with it — DESIGN.md's second rule, which the
+   tile was quietly exempt from. */
+.rt-card:active {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
 .rt-card:focus-visible {
   outline: 2px solid var(--color-ring);
   outline-offset: 3px;
 }
 
-/* Icon and category badge on the first line, opposed. */
-.rt-card-top {
+.rt-card-text {
+  min-width: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--rt-space-sm);
-}
-
-/* The solid category block. `category-fill-*` is theme-independent and always
-   takes graphite ink — it is NOT `--cat`, which is the text hue and would be
-   1.6:1 as a fill behind this ink. `ToolCard.astro` sets `--cat-fill`. */
-.rt-card-badge {
-  flex: none;
-  padding: 4px 8px;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-label-caps-sm);
-  font-weight: var(--font-weight-label-caps-sm);
-  line-height: 1;
-  letter-spacing: var(--tracking-label-caps-sm);
-  text-transform: uppercase;
-  white-space: nowrap;
-  background: var(--cat-fill);
-  color: var(--color-on-category-fill);
+  flex-direction: column;
+  gap: 3px;
 }
 
 .rt-card-name {
@@ -721,51 +917,39 @@ body > main {
   letter-spacing: var(--tracking-title-sm);
   line-height: 1.2;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .rt-card p {
   margin: 0;
   font-size: var(--text-body-sm);
   line-height: 1.45;
   color: var(--color-on-surface-muted);
-  /* Clamp rather than reflow, so the grid stays even. */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-/* The route path, pinned to the bottom of the cell so every tile's last line
-   sits on the same baseline however long its description ran. It is always
-   visible now — it used to fade in on hover, which meant the tile's one piece
-   of mono detail was missing until you touched it. */
+/* The route path. It sat in `primary-text` at rest, which put the accent on
+   fifteen things you had not touched; it is dim until the tile is hovered,
+   and the accent then marks the one you are about to open. */
 .rt-card-foot {
-  display: flex;
-  align-items: center;
-  gap: var(--rt-space-sm);
-  margin-top: auto;
-  padding-top: var(--rt-space-sm);
   font-family: var(--font-mono);
   font-size: var(--text-data-sm);
-  color: var(--color-primary-text);
+  color: var(--color-on-surface-dim);
+  margin-top: 3px;
   min-width: 0;
-}
-.rt-card-foot span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--duration-base) var(--ease-signal);
 }
-.rt-card-foot .rt-go {
-  flex: none;
+.rt-card:hover .rt-card-foot,
+.rt-card:focus-visible .rt-card-foot {
+  color: var(--color-primary-text);
 }
 
 /* --- Tool icon ------------------------------------------------------------
    In a tile the glyph sits in a small solid `category-fill` icon tile with
-   graphite ink and the 2px border — the tile is the category's swatch. In
-   the tool-page head (below) the glyph stands alone in the category TEXT
-   hue. Nothing animates on hover: the card's own shadow is the response. */
+   graphite ink and the 2px border — the tile is the category's swatch, and
+   with the badge gone it is the only place the category is drawn. In the
+   tool-page head (below) the glyph stands alone in the category TEXT hue.
+   Nothing animates on hover: the card's own shadow is the response. */
 
 .rt-ico {
   flex: none;
@@ -781,8 +965,8 @@ body > main {
 /* The tile treatment applies only where a category fill is guaranteed —
    inside a tool card. Everywhere else the glyph stands alone. */
 .rt-card .rt-ico {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-sm);
@@ -814,6 +998,7 @@ body > main {
     top: 0;
     z-index: 20;
     background: var(--color-surface);
+    padding-block: var(--rt-space-md);
   }
   .rt-chips {
     flex-wrap: nowrap;
@@ -842,15 +1027,44 @@ body > main {
     min-height: 44px;
   }
   .rt-index-head {
-    padding-block: var(--rt-space-3xl) var(--rt-space-xl);
+    flex-wrap: wrap;
+    gap: var(--rt-space-sm);
+    padding-block: var(--rt-space-3xl) var(--rt-space-lg);
   }
   /* 64px is a desktop step. Below 600px it eats the fold on its own. */
   .rt-index-title {
     font-size: var(--text-headline-lg);
     letter-spacing: var(--tracking-headline-lg);
   }
-  .rt-board.is-filtered {
-    gap: var(--rt-space-lg) var(--rt-space-sm);
+  .rt-index-note {
+    padding-bottom: 0;
+  }
+  /* The paste row stacks: a field and a button sharing a 390px line crushes
+     the field to a few characters, which is the same bug the tool pages'
+     lookup rows already fixed by stacking. */
+  .rt-jump-row {
+    flex-wrap: wrap;
+  }
+  .rt-jump-field,
+  .rt-jump-go {
+    flex: 1 0 100%;
+    min-height: 44px;
+  }
+  .rt-jump-go {
+    justify-content: center;
+  }
+  /* The resting examples cost three wrapped rows on a 390px screen, in front
+     of the catalogue — the opposite of what the band above them is for. They
+     come back the moment they are real matches, which is when they are worth
+     the space. */
+  .rt-jump-hint[data-resting] {
+    display: none;
+  }
+  /* The three width steps are a desktop composition. At 390px they would
+     produce two cramped columns instead of one readable one. */
+  .rt-stream .rt-card {
+    flex-basis: 100%;
+    max-width: none;
   }
 }
 
@@ -1181,4 +1395,197 @@ body > main {
 .rt-help-back a:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+
+/* --- Ghost: the redaction layer -------------------------------------------
+   Turns a real result component into a picture of itself.
+
+   `ui/ghost.jsx` renders the *actual* result component with small sample data;
+   this is what removes the words. Structure survives untouched — panel
+   borders, the tab tray, table rules, column widths, the lot — and every run
+   of text becomes a bar. So the ghost is the real layout with nothing written
+   in it, and it cannot drift, because it is not a second description of the
+   shape.
+
+   ## Why this is here, in plain CSS, rather than in the component
+
+   `shell.css` is imported unlayered by `BaseLayout.astro`, while Tailwind
+   emits `@layer theme, base, components, utilities`. Unlayered rules beat
+   every layer regardless of specificity, so `color: transparent` here wins
+   over a `text-on-surface` utility on the same element — and over an
+   arbitrary-value one like `text-[var(--cat)]` — with no `!important`
+   anywhere. `globals.css` relies on the same mechanic and says so. Written as
+   Tailwind classes on a wrapper this would have to fight the utilities it is
+   trying to cover. */
+
+.rt-ghosted {
+  /*
+    The ink every bar is drawn in. `outline`, not `surface-inset`: a result
+    puts rows on both grounds — dns-lookup's answer records sit on the inset —
+    and an inset-coloured bar on an inset row is invisible. The hairline tint
+    is the one neutral that reads on the raised ground and on the inset one,
+    in both themes, without a per-row flip.
+  */
+  --rt-ghost-ink: var(--color-outline);
+
+  /*
+    The bar's weight, kept as a lever because it is the one value here that is
+    a judgement rather than a consequence: the strike sits on the font's own
+    strikeout metric, and Bricolage, Space Grotesk and Space Mono do not agree
+    on where that is.
+  */
+  --rt-ghost-bar: 0.92em;
+
+  /*
+    A ghost states nothing, and a category hue states something. The record
+    type badge on dns-lookup tints itself teal for CNAME before a single
+    lookup has run. Every hue in every tool arrives through these two custom
+    properties, set once per page by `ToolLayout` — so neutralising them here
+    reaches all fifteen tools without this file knowing what any of them
+    render.
+
+    DESIGN.md's rule is that `--cat` always carries a category hue, and
+    `category-accent.test.js` guards it — but its search does not cover
+    `styles/`, so this override is unwitnessed rather than blessed. It is
+    deliberate: that invariant exists to keep a hue legible as text, and there
+    is no legible text in here.
+  */
+  --cat: var(--color-on-surface-muted);
+  --cat-fill: var(--color-surface-inset);
+
+  pointer-events: none;
+  user-select: none;
+}
+
+/*
+  Blanket the text first. This is what guarantees no word survives, whatever a
+  component nests — including elements with mixed content, which every
+  `<Button>` has. Transparent text still occupies its space, so every line
+  box, row height and intrinsic width is exactly what the real result
+  produces. That is the whole advantage over a drawn skeleton, which had to
+  guess a row height and a row count per tool and was wrong the moment either
+  changed.
+*/
+.rt-ghosted,
+.rt-ghosted * {
+  color: transparent;
+}
+
+/*
+  Then the bars — a strike, not a background.
+
+  A background paints the element's BOX, and a box is the wrong shape for a
+  word. A `<p>` fills its column, so every value in a grid becomes an
+  identical full-width band; the `width: fit-content` that fixes that then
+  breaks centred text, right-aligned text, a `<td>` that owes its width to its
+  column, and any line that wraps. A strike paints the TEXT RUN: it hugs the
+  glyphs, follows the paragraph's alignment, and breaks into one bar per line
+  exactly as the text does. The shape comes from the type — which is the whole
+  reason for rendering the real component.
+
+  It also dissolves the nesting problem rather than working around it. Two
+  overlapping opaque strikes are one strike, so a rule that fires on a wrapper
+  and again on the span inside it costs nothing. That is why this needs no
+  leaf test: an earlier pass spent an element allowlist, a `:has(> *:not(svg))`
+  exemption and a `fit-content` rule on a problem this primitive does not
+  have, and still left bare `<div>` text undrawn.
+
+  The thickness is relative, so a bar grows with the heading it redacts and
+  stays a hairline on a `label-caps`, with no scale to maintain.
+*/
+.rt-ghosted,
+.rt-ghosted * {
+  text-decoration-line: line-through;
+  text-decoration-color: var(--rt-ghost-ink);
+  text-decoration-style: solid;
+  text-decoration-thickness: var(--rt-ghost-bar);
+}
+
+/*
+  Controls keep their shape and lose their colour.
+
+  This is the one that matters most. ssl-checker's grade badge is
+  `bg-success-subtle` — a green pill reading A — and drawn in an empty state
+  it says the certificate passed before anything was checked. A ghost must not
+  make a claim. The border goes with the ground, because the status variants
+  tint that too.
+
+  Scoped to the things that draw their own coloured box, never to `*`:
+  flattening every background would take the panel grounds, the header bars
+  and the table stripes with it, and those ARE the shape.
+*/
+.rt-ghosted :is(button, [role='tab'], [role='alert'], [data-slot='badge']) {
+  background-color: var(--color-surface-raised);
+  border-color: var(--color-outline);
+}
+.rt-ghosted [role='progressbar'] > * {
+  background-color: var(--rt-ghost-ink);
+}
+
+/*
+  Icons are drawings, and a ghost has nothing to draw. `visibility` rather
+  than `display` so they keep their footprint — an icon is usually what sets
+  the height of the row it sits in.
+*/
+.rt-ghosted svg {
+  visibility: hidden;
+}
+
+/*
+  Shadow means pressable, and nothing in a ghost can be pressed — including
+  the one `emphasis` panel a result is allowed to carry. DESIGN.md spends
+  `press-lg` on "the result you came for", and until the button is pressed
+  there isn't one.
+*/
+.rt-ghosted * {
+  box-shadow: none;
+}
+
+/* A field with no value in it still shows its own prompt otherwise. */
+.rt-ghosted ::placeholder {
+  color: transparent;
+}
+
+/*
+  The one place the redaction cannot hold. Forced colours replace both halves
+  of it — the bars lose their ink to a system colour and `transparent` text is
+  repainted as CanvasText — so the sample data would come back fully legible,
+  which is the single failure this must not have. Print is the same trade for
+  a different reason: a page of empty boxes is not worth the toner. In both, a
+  picture of a layout is worth nothing, so there is nothing to salvage.
+*/
+@media print, (forced-colors: active) {
+  .rt-ghosted {
+    display: none;
+  }
+}
+
+/* --- A result arriving -----------------------------------------------------
+   The ghost is replaced, not redrawn.
+
+   Swapping a redacted panel for the real one in a single frame reads as a
+   flicker: the layout is already correct — that is the ghost's whole job — so
+   the only thing that changes is the ink, and an instant ink change over an
+   unchanged shape looks like a glitch rather than an answer. Fading the words
+   up over the shape they were already occupying reads as the page filling in.
+
+   Opacity only, and only on the way in. Nothing moves, because nothing needs
+   to: the ghost put every panel where the result was going to be. And there is
+   no matching fade-out, because the ghost is gone the moment React swaps it —
+   holding both would mean two copies of the same layout on screen, which is
+   the flicker again with extra steps.
+
+   The reduced-motion floor in `globals.css` already collapses this to nothing;
+   an instant result was never the worse outcome for someone who asked us to
+   stop moving things. */
+
+@keyframes rt-arrive {
+  from {
+    opacity: 0;
+  }
+}
+
+.rt-arrive {
+  animation: rt-arrive var(--duration-settle) var(--ease-signal);
 }

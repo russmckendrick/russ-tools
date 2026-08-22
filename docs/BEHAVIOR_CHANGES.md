@@ -24,6 +24,76 @@ Two rules:
 
 ## Landed
 
+### The index became one stream, and grew a paste dispatcher
+
+| | |
+|---|---|
+| **Where** | `src/pages/index.astro`, `src/pages/404.astro`, `src/shell/ToolCard.astro`, `src/styles/shell.css`; `src/shell/PastePanel.astro`, `src/lib/paste.js`, `src/lib/pastePanel.js`, `src/lib/hostname.js`, `src/lib/nearestTool.js`, `src/tools/cron-builder/lib/cron.js` (new); `src/tools/dns-lookup/manifest.mjs`, `src/tools/cron-builder/manifest.mjs`, `src/tools/cron-builder/island.jsx` |
+| **Pinned by** | `src/lib/paste.test.js`, `src/lib/hostname.test.js`, `src/lib/nearestTool.test.js`, `src/tools/cron-builder/lib/cron.test.js` (all new); `src/tools/registry.test.js` (route count 26 → 28); `e2e/deeplinks.spec.js` (index block rewritten, two routes and a /404 test added) |
+| **Landed** | owner decision, 2026-08-22 |
+
+Five deliberate divergences.
+
+**The five category sections are gone.** The index is one `flex-wrap` stream
+of fifteen tiles whose widths come in three steps, so rows break 3/2/3/3/4
+instead of snapping to three tracks. Why: the category was stated three times
+per card — the section heading, the icon tile and the `rt-card-badge` — on a
+row where every card shared it, and the fixed grid manufactured a hole at the
+tail of every short category. The badge is deleted; the chips and the icon hue
+carry the category now. `/#network` and its four peers survive as ids on the
+first tile of each run, with a visually-hidden `h2` beside each so the heading
+rotor keeps more than one entry. /404 still renders the old group markup, so
+`.rt-board` / `.rt-group*` / `.rt-grid` stay in `shell.css`.
+
+**Filtering no longer promotes one group and demotes the rest.** There are no
+groups left to promote: a category chip hides the tiles that do not carry its
+`data-category`. The `is-filtered` and `[data-demoted]` rules are deleted; the
+`min-height` floor that stopped a short filter trapping space above the footer
+moved to `.rt-stream`. The `?q=` and `#category` URL contracts are unchanged.
+
+**Two new deep-link routes**, `/dns-lookup/:domain` and `/cron/:expression`,
+added deliberately to the frozen list in `registry.test.js` (26 → 28) so the
+paste panel can reach six tools rather than four. DNS Lookup needed only the
+manifest — its island already passed `urlParam: 'domain'` to `useLookupTool`.
+The cron route also proves, end-to-end, that a `%2F` survives the Pages
+rewrite intact; nothing had tested that before.
+
+**/404 reads the URL that failed.** It used to show a standing list of three
+popular tools, which threw away the one piece of information the page has that
+the index does not. It now shows the failed path, ranks the catalogue against
+its first segment (`/subnet-calcualtor` → Subnet Calculator, `/dns` → DNS
+Lookup) and seeds the paste panel from any value riding on the path
+(`/whois/example.com` arrives with the domain already in the field). The
+popular-tools list and the "URL may be mistyped…" paragraph are **removed**
+(owner decision) — the header's own nav is the way out, and a dead-end page
+does not need a second catalogue. Consequence worth knowing: without
+JavaScript /404 is now the headline and nothing else, where it used to carry
+three cards.
+
+**The homepage gained a dispatching control** — the page's one
+`panel-emphasis`, spent on a control rather than a banner. `suggest()` ranks
+tools by what the pasted value is; five tools accept a bare hostname, so it
+returns all five as chips rather than choosing one silently. It ships no React:
+the detectors come from `subnet-calculator/lib/ipv4.js`, `ipv6.js`,
+`cron-builder/lib/cron.js` and the new `hostname.js`, all dependency-free.
+
+Two smaller notes recorded rather than hidden:
+
+- `validateCronExpression` moved out of `cron-builder/island.jsx` into
+  `lib/cron.js` **verbatim**, quirks included (`parseInt` reads `5x` as 5; a
+  step's base is bounds-checked but the step is not; `L` is day-of-month only).
+  `cron.test.js` pins those as quirks. `looksLikeCron` is new, and exists
+  because the quirks make the validator too generous to sniff arbitrary text
+  with.
+- `translateCronExpression` splits on a single space where
+  `validateCronExpression` splits on any run of whitespace, so `'  0 0 * * *'`
+  validates and then translates to "Invalid CRON expression". Unreachable
+  until `/cron/:expression` existed. Fixed at the param boundary — the island
+  collapses whitespace before parsing, and `paste.js` emits normalised
+  expressions — rather than in the extracted function, so the extraction stays
+  behaviour-preserving. The underlying divergence is still there for anyone
+  who types two spaces into the manual box.
+
 ### The site grew an AI-agent surface
 
 | | |
