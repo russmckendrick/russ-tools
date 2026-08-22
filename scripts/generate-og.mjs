@@ -55,9 +55,7 @@ const C = {
   onFill: token('color-on-category-fill'),
 };
 
-/** The TEXT hue (light-mode deep value), for the category-tinted icon. */
-const hue = (category) => token(`color-category-${category}-light`);
-/** The FILL hue, for the solid badge block — always with graphite ink. */
+/** The FILL hue, for the badge block and icon tile — always with graphite ink. */
 const fillHue = (category) => token(`color-category-fill-${category}`);
 
 /**
@@ -75,15 +73,15 @@ const monoData = readFileSync(
   'node_modules/@fontsource/space-mono/files/space-mono-latin-400-normal.woff2'
 ).toString('base64');
 
-// The toolbox silhouette, lifted from SiteMark.astro. Only the outer body is
-// needed at this size — the drawer detail disappears below about 40px.
-const siteMarkPaths = readFileSync('src/shell/SiteMark.astro', 'utf8')
-  .match(/<path d="[^"]*"\/>/g)
-  .join('');
+// The toolbox mark, lifted from SiteMark.astro: the inner markup of its one
+// <svg>. The drawing is two-tone — accent fill via a var() with a literal
+// fallback (which is what resolves here, outside the token layer) and a
+// currentColor stroke the card sets to ink.
+const siteMark = readFileSync('src/shell/SiteMark.astro', 'utf8')
+  .match(/<svg[^>]*>([\s\S]*?)<\/svg>/)[1];
 
 /** @param {{title: string, sub: string, icon: string|null, category: string|null}} card */
 const cardHtml = ({ title, sub, icon, category }) => {
-  const accent = category ? hue(category) : token('color-primary-text-light');
   const fill = category ? fillHue(category) : token('color-primary');
   return `<!doctype html>
 <meta charset="utf-8">
@@ -135,7 +133,7 @@ const cardHtml = ({ title, sub, icon, category }) => {
     color: ${C.text}; font-size: 27px; font-weight: 600; letter-spacing: -0.01em;
     font-family: 'Bricolage Grotesque Variable', sans-serif;
   }
-  header svg { width: 32px; height: 32px; color: ${accent}; }
+  header svg { width: 32px; height: 32px; color: ${C.text}; }
   main { margin-top: auto; }
   .mark { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; }
   .tile {
@@ -167,7 +165,7 @@ const cardHtml = ({ title, sub, icon, category }) => {
 </style>
 <div class="frame">
   <header>
-    <svg viewBox="0 0 950 950" fill="currentColor">${siteMarkPaths}</svg>
+    <svg viewBox="0 0 24 24" fill="none">${siteMark}</svg>
     <span>${SITE_NAME}</span>
   </header>
   <main>

@@ -131,7 +131,7 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
         <div class="rt-topbar">
           <a class="rt-brand" href="/">
             <SiteMark class="rt-site-mark" />
-            <span>russ.tools</span>
+            <span>russ<b class="rt-brand-dot">.</b>tools</span>
           </a>
           <HeaderActions currentPath={Astro.url.pathname} />
         </div>
@@ -146,18 +146,8 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
       <div class="rt-shell rt-footer-inner">
         <a class="rt-footer-brand" href="/">
           <SiteMark size={19} />
-          <span>russ.tools</span>
+          <span>russ<b class="rt-brand-dot">.</b>tools</span>
         </a>
-        <!--
-          Sentence case in the DOM, uppercased by CSS. A screen reader should
-          not have to spell out "NO ANALYTICS", and `text-transform` keeps the
-          mono strip's shouty look where it belongs — in the stylesheet.
-        -->
-        <div class="rt-shell-foot">
-          <span>Client-side only</span>
-          <span>No analytics</span>
-          <span>No accounts</span>
-        </div>
         <nav class="rt-footnav" aria-label="Footer">
           <a href="/">Tools</a>
           <a href="/delete">Saved data</a>

@@ -76,10 +76,17 @@ body > main {
   text-decoration: none;
 }
 
-/* The mark carries the accent. `primary-text`, not `primary`: the raw green
-   is ~1.6:1 on paper and the mark is the only colour in the signage. */
+/* The mark is two-tone: its body fill is the accent token, and its stroke is
+   `currentColor` — set here to the structural `rule` so the toolbox is drawn
+   with the same ink as every border on the page. The wordmark's dot takes
+   the accent's TEXT role (`primary-text`, never raw `primary`, which is
+   ~1.6:1 on paper). */
 .rt-site-mark {
+  color: var(--color-rule);
+}
+.rt-brand-dot {
   color: var(--color-primary-text);
+  font-weight: inherit;
 }
 
 .rt-header-actions-wrap {
@@ -1005,7 +1012,7 @@ body > main {
 }
 .rt-footer-inner {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--rt-space-lg);
   padding-block: var(--rt-space-2xl) 44px;
@@ -1022,25 +1029,9 @@ body > main {
   letter-spacing: -0.02em;
 }
 .rt-footer-brand svg {
-  /* Matches the header signage: `primary-text`, because the light footer is
-     now paper-family and the raw green would wash out on it. */
-  color: var(--color-primary-text);
-}
-.rt-shell-foot {
-  justify-self: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--rt-space-sm) var(--rt-space-lg);
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-on-footer-muted);
-}
-.rt-shell-foot span + span::before {
-  content: "·";
-  margin-right: var(--rt-space-lg);
-  color: var(--color-on-footer-muted);
+  /* Same two-tone mark as the header: the stroke follows the structural
+     rule, which clears both footer grounds. */
+  color: var(--color-rule);
 }
 .rt-footnav {
   justify-self: end;
@@ -1061,16 +1052,6 @@ body > main {
 .rt-footer-brand:focus-visible {
   outline: 2px solid var(--color-ring);
   outline-offset: 3px;
-}
-@media (max-width: 760px) {
-  .rt-footer-inner {
-    grid-template-columns: 1fr auto;
-  }
-  .rt-shell-foot {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    justify-self: start;
-  }
 }
 
 /* --- Bridge island --------------------------------------------------------
