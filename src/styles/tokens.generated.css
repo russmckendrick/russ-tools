@@ -12,29 +12,29 @@
    ========================================================================== */
 
 @theme static {
-  --color-surface: #1a1812;
-  --color-surface-raised: #221f17;
-  --color-surface-inset: #282419;
-  --color-outline: #38342a;
-  --color-outline-strong: #837b64;
+  --color-surface: #241f18;
+  --color-surface-raised: #2e2820;
+  --color-surface-inset: #383025;
+  --color-outline: #453c2c;
+  --color-outline-strong: #8f8670;
   --color-rule: #f5efe0;
   --color-on-surface: #f5efe0;
-  --color-on-surface-muted: #b5ad99;
-  --color-on-surface-faint: #9d947e;
-  --color-on-surface-dim: #7d755f;
+  --color-on-surface-muted: #bab19c;
+  --color-on-surface-faint: #a59c86;
+  --color-on-surface-dim: #877e66;
   --color-primary: #6ee787;
   --color-primary-hover: #8bf09e;
   --color-on-primary: #17150f;
-  --color-nav-active: #2a2620;
-  --color-footer: #14120e;
+  --color-nav-active: #332c22;
+  --color-footer: #191510;
   --color-success: #6ee787;
   --color-warning: #ffc857;
   --color-error: #ff6b6b;
   --color-info: #5aa7ff;
-  --color-success-subtle: #24331f;
-  --color-warning-subtle: #3a3220;
-  --color-info-subtle: #232c3f;
-  --color-error-subtle: #3a2420;
+  --color-success-subtle: #2b3b26;
+  --color-warning-subtle: #423a28;
+  --color-info-subtle: #2b3547;
+  --color-error-subtle: #422b26;
   --color-category-network: #2dd4bf;
   --color-category-azure: #5aa7ff;
   --color-category-microsoft: #b393ff;
@@ -81,6 +81,8 @@
   --color-primary-text-light: #1b7038;
   --color-on-status: #17150f;
   --color-on-status-light: #ffffff;
+  --color-shadow-ink: #0f0c07;
+  --color-shadow-ink-light: #17150f;
   --color-on-footer: #f5efe0;
   --color-on-footer-muted: #b5ad99;
   --color-on-footer-light: #17150f;

@@ -6,7 +6,9 @@ description: >-
   from a 2px ink border and a hard offset shadow — nothing blurs, nothing
   floats, and the shadow is a statement of pressability, not of elevation.
   One green accent does every action; six candy category hues label and never
-  fill large areas. Paper light is the house ground, with an ink-dark peer.
+  fill large areas. Paper light is the house ground; the dark peer is a warm
+  espresso that keeps the same physics — cards lighter than the page, shadows
+  darker — rather than an inversion into cream-on-black.
 
 # ---------------------------------------------------------------------------
 # COLOURS
@@ -19,31 +21,35 @@ description: >-
 # light text hues are so much deeper than the fills.
 # ---------------------------------------------------------------------------
 colors:
-  # ---- Ink dark (peer values, unsuffixed because dark stays the CSS default
-  #      theme; see "Which theme is the house" in the prose) ----
-  surface: "#1a1812"
-  surface-raised: "#221f17"
-  surface-inset: "#282419"
-  outline: "#38342a"
-  outline-strong: "#837b64"  # a control boundary needs 3:1 on every ground
-  rule: "#f5efe0"            # the 2px structural border is cream on ink
+  # ---- Espresso dark (peer values, unsuffixed because dark stays the CSS
+  #      default theme; see "Which theme is the house" in the prose).
+  #      The dark theme keeps the LIGHT theme's physics: the page is a warm
+  #      cocoa, cards sit visibly LIGHTER on it, and the press shadow is
+  #      darker than the page — not an inversion into cream-on-black, which
+  #      collapsed every card into a wire outline. ----
+  surface: "#241f18"
+  surface-raised: "#2e2820"
+  surface-inset: "#383025"
+  outline: "#453c2c"
+  outline-strong: "#8f8670"  # a control boundary needs 3:1 on every ground
+  rule: "#f5efe0"            # the 2px structural border is cream on cocoa
   on-surface: "#f5efe0"
-  on-surface-muted: "#b5ad99"
-  on-surface-faint: "#9d947e"
-  on-surface-dim: "#7d755f"  # non-text metadata only — held to 3:1, never 4.5:1
+  on-surface-muted: "#bab19c"
+  on-surface-faint: "#a59c86"
+  on-surface-dim: "#877e66"  # non-text metadata only — held to 3:1, never 4.5:1
   primary: "#6ee787"
   primary-hover: "#8bf09e"
   on-primary: "#17150f"
-  nav-active: "#2a2620"
-  footer: "#14120e"
+  nav-active: "#332c22"
+  footer: "#191510"
   success: "#6ee787"
   warning: "#ffc857"
   error: "#ff6b6b"
   info: "#5aa7ff"
-  success-subtle: "#24331f"
-  warning-subtle: "#3a3220"
-  info-subtle: "#232c3f"
-  error-subtle: "#3a2420"
+  success-subtle: "#2b3b26"
+  warning-subtle: "#423a28"
+  info-subtle: "#2b3547"
+  error-subtle: "#422b26"
   category-network: "#2dd4bf"
   category-azure: "#5aa7ff"
   category-microsoft: "#b393ff"
@@ -109,6 +115,15 @@ colors:
   # so their ink has to flip.
   on-status: "#17150f"
   on-status-light: "#ffffff"
+
+  # ---- The press shadow ---------------------------------------------------
+  # The offset shadow's colour, distinct from `rule` on purpose: the border
+  # inverts with the theme (ink on paper, cream on cocoa) but a shadow is
+  # always DARKER than the ground it falls on. In light it is the ink; in
+  # dark it is a near-black deeper than the cocoa page. A cream shadow on a
+  # dark ground reads as a glow, not a press.
+  shadow-ink: "#0f0c07"
+  shadow-ink-light: "#17150f"
 
   # ---- Ink on the footer --------------------------------------------------
   # The footer ground follows the theme (a deepened step of each theme's own
@@ -238,8 +253,9 @@ borderWidth:
   structural: 2px
 
 # The offset shadow is hard-edged (no blur) and its colour is always the
-# structural `rule` token — ink in light, cream in dark — never grey and
-# never translucent black. It means exactly one thing: THIS IS PRESSABLE.
+# `shadow-ink` token — the ink in light, a near-black deeper than the cocoa
+# page in dark; never grey, never translucent, never a light colour (a pale
+# shadow reads as a glow). It means exactly one thing: THIS IS PRESSABLE.
 # Pressing an element sinks it: translate by the offset, shadow to none.
 # The one exception is `press-lg`, which also marks the page's one emphasis
 # panel (the result you came for), because that panel is the page's object.
@@ -484,10 +500,10 @@ A category hue is still never a button, a large panel fill, or a page ground.
 `--cat` carries a `category-*` **text** hue and never a `category-fill-*`
 value. `category-accent.test.js` enforces both directions.
 
-The dark theme grants tool tiles one flourish: the tile's offset shadow may
-take the **category fill hue** instead of cream, making the shadow itself the
-category signal. This is legal because a tile is a link (pressable) and the
-shadow is not text; it is the one place a category hue exceeds badge size.
+(An earlier dark theme let tool tiles cast category-hued hover shadows.
+That flourish is retired with the Espresso rework: the shadow is `shadow-ink`
+in both themes, because a coloured shadow undermined the press metaphor the
+whole elevation story rests on.)
 
 ### Status colour has three roles, not one
 
@@ -507,7 +523,7 @@ the status fill with `on-status` ink), never with a tinted left border.
 ### The footer follows the theme
 
 The footer is a deepened band of the theme's own ground (`#efe7d3` on paper,
-`#14120e` on ink), closed above by the 2px rule — a step down, not a slab.
+`#191510` on espresso), closed above by the 2px rule — a step down, not a slab.
 An ink footer on the paper page was tried and read as jarring. Because the
 ground now flips, its ink flips with it: `on-footer` / `on-footer-muted`
 carry `-light` peers like every other surface role.
@@ -573,7 +589,8 @@ knob, status dots, keycap hints.
 ## Elevation
 
 There is no elevation. The offset shadow is not "height"; it is
-**pressability**, drawn flat in the structural colour with zero blur:
+**pressability**, drawn flat in `shadow-ink` with zero blur — darker than
+the ground in both themes, exactly like the light theme's ink shadow:
 
 - `press-sm` (3px) — buttons, chips, small controls.
 - `press` (4px) — a hovered/focused tool tile.

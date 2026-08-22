@@ -2126,3 +2126,24 @@ that remap lives in TWO blocks with different indentation (`.light` at 4
 spaces, the media fallback at 6) and the sync test catches a one-sided edit.
 DESIGN.md's Navigation and footer sections, the component entries and the
 contrast-test comment were updated to match. 514 unit + 41 e2e green.
+
+### 2026-08-22 — Session 8c (Espresso: the dark theme rework)
+
+The first Stacks dark was rejected: it inverted the materials (cream borders,
+cream shadows on near-black) but kept card and page at almost the same value,
+so every card collapsed into a wire outline. Three rethinks went on the design
+canvas (K1 Espresso / K2 Toast / K3 Neon board); the user picked **K1**, whose
+thesis is that dark should keep the LIGHT theme's physics: page lifts to warm
+cocoa (`#241f18`), cards sit visibly lighter (`#2e2820`), and the press shadow
+goes back to being darker than the ground.
+
+That last point forced a new token pair: the shadow colour was `rule`, which
+is cream in dark — a glow, not a press. `shadow-ink` / `shadow-ink-light`
+(`#0f0c07` / `#17150f`) now feed the three `--shadow-press*` values, joined
+the light remap (both blocks), and the contrast test asserts shadow-ink is
+strictly darker than both grounds in both themes. The dark category-hued card
+hover shadow is retired with the rework — the shadow is `shadow-ink`
+everywhere. The whole dark neutral ramp, subtle tints, nav-active and footer
+were retuned for the lifted grounds (faint and dim both needed lightening to
+clear their floors on the new inset), and `THEME_COLOR` follows the new
+surface. 514 unit + 41 e2e green.

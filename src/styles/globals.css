@@ -93,15 +93,17 @@
      and drops them silently. They are transcribed here by hand; keep them in
      step with DESIGN.md's front matter.
 
-     The offset shadow is hard-edged, in the structural `rule` colour, and it
+     The offset shadow is hard-edged, in the `shadow-ink` colour — the ink in
+     light, a near-black deeper than the cocoa page in dark; never the cream
+     rule, because a pale shadow on a dark ground reads as a glow — and it
      means exactly one thing: this is pressable. Pressing sinks the element
      (translate by the offset, shadow to none). `press-lg` additionally marks
      the one emphasis panel per page. Panels at rest carry no shadow. */
   --border-hairline: 1px;
   --border-structural: 2px;
-  --shadow-press-sm: 3px 3px 0 var(--color-rule);
-  --shadow-press: 4px 4px 0 var(--color-rule);
-  --shadow-press-lg: 5px 5px 0 var(--color-rule);
+  --shadow-press-sm: 3px 3px 0 var(--color-shadow-ink);
+  --shadow-press: 4px 4px 0 var(--color-shadow-ink);
+  --shadow-press-lg: 5px 5px 0 var(--color-shadow-ink);
   --duration-fast: 90ms;
   --duration-base: 140ms;
   --ease-signal: ease-out;
@@ -145,6 +147,7 @@
     --color-footer: var(--color-footer-light);
     --color-on-footer: var(--color-on-footer-light);
     --color-on-footer-muted: var(--color-on-footer-muted-light);
+    --color-shadow-ink: var(--color-shadow-ink-light);
     --color-on-status: var(--color-on-status-light);
     --color-success: var(--color-success-light);
     --color-warning: var(--color-warning-light);
@@ -188,6 +191,7 @@
       --color-footer: var(--color-footer-light);
       --color-on-footer: var(--color-on-footer-light);
       --color-on-footer-muted: var(--color-on-footer-muted-light);
+      --color-shadow-ink: var(--color-shadow-ink-light);
       --color-on-status: var(--color-on-status-light);
       --color-success: var(--color-success-light);
       --color-warning: var(--color-warning-light);

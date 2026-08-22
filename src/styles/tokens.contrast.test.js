@@ -320,11 +320,23 @@ describe('token layer integrity', () => {
     // always in the structural `rule` colour. The exporter drops `shadow`, so
     // the three steps are hand-transcribed into globals.css — and there is
     // still no shadow scale in the generated file to drift against.
-    expect(generated, 'the exporter emits no shadow scale').not.toMatch(/--shadow-/);
+    expect(generated, 'the exporter emits no shadow scale').not.toMatch(/--shadow-press/);
     for (const step of ['press-sm', 'press', 'press-lg']) {
       expect(css, `--shadow-${step}`).toMatch(
-        new RegExp(`--shadow-${step}:\\s*\\d+px \\d+px 0 var\\(--color-rule\\);`)
+        new RegExp(`--shadow-${step}:\\s*\\d+px \\d+px 0 var\\(--color-shadow-ink\\);`)
       );
+    }
+
+    // And the shadow colour is genuinely darker than every ground it falls
+    // on, in both themes — a pale shadow reads as a glow, which is the fault
+    // the Espresso dark rework fixed.
+    for (const [mode, tokens] of themes) {
+      for (const ground of ['surface', 'surface-raised']) {
+        expect(
+          luminance(tokens['shadow-ink']),
+          `shadow-ink is darker than ${ground} in ${mode}`
+        ).toBeLessThan(luminance(tokens[ground]));
+      }
     }
   });
 

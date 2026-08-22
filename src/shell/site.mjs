@@ -32,7 +32,7 @@ export const AUTHOR = {
  * `public/site.webmanifest` carries the same value twice, and
  * `src/layouts/seo.test.js` fails if the three ever disagree.
  */
-export const THEME_COLOR = '#1a1812';
+export const THEME_COLOR = '#241f18';
 
 /** @param {string} path @returns {string} absolute, no trailing slash */
 export const absolute = (path) => new URL(path, SITE_URL).href.replace(/\/$/, '');

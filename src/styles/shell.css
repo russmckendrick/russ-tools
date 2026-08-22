@@ -655,11 +655,10 @@ body > main {
 /* --- Card: the tool tile, and the workhorse -------------------------------
    A bordered card on the raised ground. Hover is the press affordance
    arriving: the tile gains the `press` shadow and moves up-left by the same
-   2px, exactly as if it had risen under the finger. In dark mode the shadow
-   takes the tile's own category FILL hue — the one place a category hue
-   exceeds badge size, legal because a tile is a link and the shadow is not
-   text. Light mode keeps the ink shadow (a pale category shadow on paper
-   would fail 3:1 as a boundary and read as a smear).
+   2px, exactly as if it had risen under the finger. The shadow is
+   `shadow-ink` in both themes — the Espresso rework retired the dark
+   theme's category-hued hover shadow, because a coloured shadow undermined
+   the press metaphor.
 
    The entrance stagger stays gone. */
 
@@ -682,16 +681,6 @@ body > main {
 .rt-card:focus-visible {
   box-shadow: var(--shadow-press);
   transform: translate(-2px, -2px);
-}
-:root:not(.light) .rt-card:hover,
-:root:not(.light) .rt-card:focus-visible {
-  box-shadow: 4px 4px 0 var(--cat-fill, var(--color-rule));
-}
-@media (prefers-color-scheme: light) {
-  :root:not(.dark) .rt-card:hover,
-  :root:not(.dark) .rt-card:focus-visible {
-    box-shadow: var(--shadow-press);
-  }
 }
 .rt-card:focus-visible {
   outline: 2px solid var(--color-ring);
