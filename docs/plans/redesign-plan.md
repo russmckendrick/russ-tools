@@ -2369,3 +2369,250 @@ the owner's request. Without JavaScript /404 is therefore the headline alone;
 the header nav is the way out.
 
 660 unit + 46 e2e green, lint 0 errors / the same 11 warnings.
+
+### 2026-08-22 — Session 12: the index learns to move
+
+The stream shipped static, and it read static. Not for want of animation —
+for want of motion on the two things you actually *do* on the page:
+
+1. **Filtering was a hard cut.** `card.hidden = !hit`, flex re-wraps, done.
+   Fifteen tiles teleported into a new arrangement, which is the page's
+   central interaction and had no continuity at all.
+2. **The tool tile did not press.** `.rt-card` lifted on hover and then
+   absorbed the click without moving. DESIGN.md's second rule is "shadow means
+   pressable; pressing sinks it", and the homepage's primary pressable was the
+   one pressable on the site exempt from it. Chips obeyed. The paste button
+   obeyed. The tile did not.
+
+**DESIGN.md's Motion section was amended**, deliberately and with the owner's
+sign-off, having selected the entrance against a recommendation not to. It
+said "no entrance animations, no ambient motion, no parallax, no glow"; it now
+keeps the ambient/parallax/glow ban and admits three bounded exceptions, all
+framed as *the object behaving like an object*: animated reflow, one entrance
+per load, and a 90ms fade on a value swapped under the reader. `duration-settle`
+(240ms) joins the front matter and `globals.css`, pinned by the same drift loop
+in `tokens.contrast.test.js` that already guards `duration-fast`/`-base`.
+
+**The refilter travels.** Each tile carries `view-transition-name: t-<id>`
+(`ToolCard.astro`, only when `order` is passed — /404 renders without it and
+gets neither hook). `setCategory` runs `render` inside
+`document.startViewTransition`, so the browser FLIPs the reflow: survivors
+slide to their new rows, leavers fade out where they stood. Measured, not
+assumed — pressing "Microsoft & Azure" moves the surviving Azure tile 129px.
+
+Three things it declines on, all landing on the old instant reflow: reduced
+motion, no `startViewTransition`, and **every path that is not a discrete
+choice**. Typing calls `render()` directly — a transition per keystroke
+queues, skips and stutters. Verified: a chip press starts exactly 1, typing
+"dns" starts 0. Chip presses, back/forward, Escape and "clear the filter" all
+settle; keystrokes never do.
+
+`shell.css` silences `::view-transition-*(root)`. Its default is a full-page
+cross-fade that would dissolve the header, paste panel and chip row — none of
+which changed — turning a precise rearrangement into a wash.
+
+**The deal-in.** `@keyframes rt-card-in` starts each tile 3px raised carrying
+the `press` shadow and lands it flat and shadowless — the press vocabulary run
+backwards, so the page assembles out of visibly pressable things rather than
+fading up like any other card grid. Pure CSS on prerendered markup: blocks no
+content, needs no JS, cannot strand a tile invisible. `backwards` fill holds
+the first frame through the stagger delay; without it every tile paints flat
+then jumps back up to start. The 18ms stagger is capped at ten steps in CSS
+(`min(var(--rt-i,0), 10)`), so tiles 11–15 land together and the last tile is
+down inside 420ms however far the catalogue grows — verified, indices 10 and
+14 both compute `0.18s`. An uncapped ramp is how tool #16 would have made the
+page feel slower than #15.
+
+**The count ticks.** `15 tools · nothing leaves the browser` never changed
+while the page showed three; `#rt-status` was carrying the whole announcement
+and only screen readers heard it. `#rt-count` now reads `4 / 15` when
+filtered, `tabular-nums` so the tick does not shove the rest of the line
+sideways. WAAPI rather than CSS — the element persists and only its text
+changes, which re-triggers no keyframe — and therefore `matchMedia` is checked
+in JS, since `globals.css`'s reduced-motion block cannot reach a script-driven
+animation. Not a live region: `#rt-status` already says it, and two would say
+it twice into the same ear.
+
+**Two 90ms opacity fades.** The empty state (fifteen tiles replaced by one
+sentence). And the paste panel's matches, which rebuild on every keystroke —
+each keycap is a new node, so it starts on insertion with no re-trigger dance.
+Scoped off `data-resting` so it is matches only: the resting examples are
+prerendered markup restored into a panel that is `hidden` until its script
+runs, and fading those would be a second entrance the page has not earned.
+
+Reduced motion removes all of it — entrance, transition, both fades — rather
+than shortening it. `globals.css` gained `.rt-card:active` to its `transform:
+none` list and an `::view-transition-*` `animation: none` clause, because view
+transition pseudo-elements live outside this document's cascade and the
+blanket `animation-duration` override does not reach them. Verified under
+Playwright's `reducedMotion: 'reduce'`: entrance duration `1e-05s`, 0
+transitions started, count still updating.
+
+Every claim above was checked against computed styles and instrumented
+behaviour in Chromium, not against the source — this file's own standing
+warning is that lint proves a class was written and only the DOM proves it was
+applied.
+
+660 unit + 46 e2e green, lint 0 errors / the same 11 warnings.
+
+### 2026-08-22 — Session 12b: the header tab nobody was standing on
+
+Reported from a tool page: the nav is drawn as folder tabs and none of them
+was open. Confirmed and then found to be worse than reported.
+
+**The reported half.** `HeaderActions` tested `currentPath === '/'` for the
+Tools tab, so a tool page, its help page and every deep link opened nothing —
+the bulk of the site rendering a header that said the reader was nowhere. Now
+matched on the first path segment against the registry, which covers
+`/dns-lookup`, `/dns-lookup/help` and `/ssl-checker/example.com` with one rule
+and does not quietly claim /404.
+
+**The half nobody could see.** The built site never opened the Tools tab *at
+all*, including on the index. `Astro.url.pathname` is the **output file**
+during a static build and `build.format` is `'file'`, so the index arrives as
+`/index.html` and a tool as `/dns-lookup.html`: `=== '/'` has been false in
+every build that ever shipped, and the tab only looked right under `pnpm dev`.
+/delete escaped by luck — `startsWith('/delete')` survives a `.html` suffix.
+Exactly the trap `canonical.test.js` was written for, biting a second time in
+a different file. The path is normalised now, and /delete is an exact match
+rather than a prefix that would also claim `/deleted-things`.
+
+**Two ARIA values, deliberately.** `/` and `/delete` set `aria-current="page"`;
+a tool page sets `aria-current="true"`. The Tools link points at the index, so
+`page` on /dns-lookup would be a lie a screen reader repeats — `true` is the
+same attribute's "current item of the set", which is what an open section tab
+means. `shell.css` therefore keys the open-tab treatment on bare
+`[aria-current]`, desktop and mobile; keying on the exact value is what would
+have left the tab shut again.
+
+`src/shell/nav-active.test.js` pins all of it against **built** HTML (33
+tests): one tab open per page and never more, the right one, the right value,
+every tool and every help page, and no tab on /404. Source-level tests would
+have passed throughout the shipped-broken period, which is the point.
+
+693 unit + 46 e2e green, lint 0 errors / the same 11 warnings.
+
+### 2026-08-22 — Session 12c: ghost empty states, by rendering the real result
+
+Six tools rest as a small control panel over a screenful of nothing. The
+panels that fill it only exist after you press the button, so until then the
+page gives no sign of what is coming or what shape it takes.
+
+**Three attempts, and the first two failed the same way** — each invented a
+second description of a shape the code already knew.
+
+1. A prerendered Astro skeleton in the island's `fallback` slot. It answered
+   the wrong question: hydration takes 82ms, while the dead space lasts until
+   you press the button. Worse, it *jumped* — a hand-sized ghost never matches
+   the real content, so it swapped 82ms after load with no user action to
+   explain the movement. Owner: "it currently makes the screen jump around —
+   so lose it." A jump nobody asked for is worse than a gap.
+2. A generic `<ResultGhost rows={11} />`, with the row counts hand-measured
+   per tool in a browser. dns-lookup's real result is a tab bar, a
+   three-column query card and a records card; it got one striped box. Owner:
+   "there are three boxes and you know the shape of them — so why is there a
+   single ghost box?" The counting was the tell.
+
+**What shipped.** `ui/ghost.jsx` wraps the tool's *real* result component,
+rendered with a small sample, and `.rt-ghosted` in `shell.css` removes the
+words. `<Ghost><DNSResultsDisplay results={GHOST_RESULTS} …/></Ghost>` — the
+tab bar, the query card, the records card all come from the component that
+replaces them, so the ghost cannot drift. No row counts, no manifest field, no
+skeleton vocabulary, no prerender machinery. `result-ghost.jsx`, `skeleton.mjs`
+and 225 lines of dead `rt-ghost-*` CSS were deleted.
+
+**The redaction is a strike, not a background** — the one decision worth
+recording. A background paints the element's *box*, and a box is the wrong
+shape for a word: a `<p>` fills its column, so every value in a grid becomes an
+identical full-width band; the `width: fit-content` that fixes that then breaks
+centred text, right-aligned text, a `<td>` that owes its width to its column,
+and any line that wraps. `text-decoration: line-through` at `1em` paints the
+*text run* — it hugs the glyphs, follows the alignment, and breaks into one bar
+per line as the text does.
+
+It also dissolves the nesting problem instead of working around it: two
+overlapping opaque strikes are one strike, so the rule can fire on a wrapper
+*and* the span inside it at no cost. The box version needed an element
+allowlist, a `:has(> *:not(svg))` leaf test and a `fit-content` rule — and
+still left bare `<div>` text undrawn, which is how dns-lookup's answer records
+came out blank. The strike needs none of them.
+
+**The honesty bug this caught.** ssl-checker's grade badge is
+`bg-success-subtle` — drawn in an empty state, the ghost showed **a green
+grade A before any certificate had been checked**. dns-lookup tinted its record
+badge teal for CNAME before a lookup. Both fixed at the wrapper: `--cat` and
+`--cat-fill` are neutralised there, which reaches all fifteen tools without
+this file knowing what any of them render, and status-tinted controls
+(`button`, `[role=tab]`, `[role=alert]`, `[data-slot=badge]`) are flattened to
+the raised ground. `badge.jsx` gained `data-slot="badge"` as the only stable
+hook on a component that is otherwise pure cva output.
+
+**Height comes from the data, not a number.** Rendering a real component with
+real-shaped data reproduces the real height, which is right for four tools and
+wrong for two. The rule stays: *the ghost fills the empty region; it does not
+reserve the whole result.*
+
+| tool | ghost | real | note |
+|---|---|---|---|
+| dns-lookup | 422px | 422px | exact |
+| ssl-checker | 405px | 405px | exact |
+| tenant-lookup | 448px | 448px | exact, after trimming the sample's optional fields |
+| subnet-calculator | 771px | 755px | sample computed by `ipv4Details` |
+| whois-lookup | 483px | 1268px | **capped** — fewer nameservers and dates |
+| microsoft-portals | 430px | 5922px | **capped** — six portals of thirty-one |
+
+**Three refactors came with it**, each an improvement on its own:
+
+- `subnet-calculator` — details and divide panels extracted to
+  `components/`, `FAMILIES`/`formatTotal`/`formatCount` and the 13-row
+  `detailRowsFor` moved to `lib/format.js`. The ghost calls `detailRowsFor`
+  and `ipv4Details`, so its labels *are* the tool's labels.
+- `whois-lookup` — `WHOISInfoDisplay` was declared **inside** the tool's
+  function body. That is a real bug independent of the ghost: a component
+  redeclared each render is a new type each render, so React threw away and
+  rebuilt the whole result subtree on every keystroke. Now a file, with its
+  presenters in `lib/present.jsx`.
+- `microsoft-portals` — the one place this departs from "render the real
+  component": its result block takes eleven props from tool state, and a
+  contract that size existing only to serve a placeholder is the worse trade.
+  The wrapper is three lines of layout; the cards inside are real
+  `PortalCard`s from `generateAllPortalLinks(null)`, which handles a null
+  tenant by design and needs no network.
+
+**Verified in the browser, all six, both themes:** ghost present, **zero**
+text leaked past the redaction, **zero** focusable elements inside it. That
+last one was a real bug — `inert=""` is falsy in React 19, so `removeAttribute`
+ran and the ghost was `aria-hidden` with seven reachable controls inside it,
+which is the axe `aria-hidden-focus` violation. `inert={true}` fixed it and
+`ghost.test.jsx` pins it.
+
+Two more traps worth remembering. `:has()` matches **descendants**, so an
+icon's own `<rect>` and `<line>` children disqualified the heading containing
+it — the child combinator was required. And **ESLint did not catch
+`ReferenceError: Server is not defined`** after an over-trimmed icon import;
+only loading the page did. Same lesson as the type-scale collisions: lint
+proves a class or symbol was written, only the rendered DOM proves it works.
+
+`DESIGN.md`'s "Loading, error and empty" section gained the ghost: no copy, no
+colour that states anything, no animation, size from the sample.
+
+**Two follow-ups from the owner's review.**
+
+The whois and tenant ghosts were missing their tab tray. Both tools wrap their
+result in a `Tabs` shell that lives in the *island*, not in the display
+component, so ghosting the display alone drew the panels and not the row above
+them — the one case where "render the real component" was not enough on its
+own, because the component was not the whole result. whois now ghosts the real
+two-tab tray; tenant ghosts the two tabs every lookup returns, the other three
+being conditional on what came back.
+
+And results **fade in** rather than being redrawn. `.rt-arrive` — opacity only,
+`duration-settle`, on the way in only. Swapping a redacted panel for the real
+one in a single frame reads as a flicker precisely *because* the ghost worked:
+the layout is already correct, so the only thing that changes is the ink, and
+an instant ink change over an unchanged shape looks like a glitch rather than
+an answer. Nothing moves, because the ghost already put every panel where the
+result was going. No fade-out to match it: the ghost is gone the moment React
+swaps it, and holding both would put two copies of one layout on screen.
+
+697 unit + 46 e2e green, lint 0 errors / the same 11 warnings.
