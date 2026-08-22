@@ -2105,3 +2105,24 @@ dark-mode tiles get category-hued hover shadows); all of `src/components/ui/` mo
 `border-2 border-rule` + radius + press shadows. Verified in a real browser via
 Playwright against `pnpm dev` (port 4321): computed styles and screenshots in both
 themes. Note `pnpm dev:astro`/port 5173 no longer exists — the script is `pnpm dev`.
+
+### 2026-08-22 — Session 8b (header and footer rework)
+
+The Stacks header was rejected as timid — a lone boxed brand chip next to naked
+text links. Four header treatments were mocked on the design canvas; the user
+chose **H3's signage combined with H4's folder tabs**: the brand is now the
+toolbox mark (`primary-text`) plus `russ.tools` in Bricolage 800 with no box,
+and the nav items are folder tabs standing on the header's 2px rule — bordered
+three sides, top corners rounded, `nav-active` ground — with the active tab
+taking the page ground and erasing the rule beneath itself (`margin-bottom:
+-2px` + a surface-coloured bottom border). On tool pages every tab sits closed.
+In the mobile dropdown the tab shape reverts to bordered rows. The Source link
+carries a `</>` code glyph (the ↗ arrow was rejected).
+
+The footer stopped being an ink slab: it is now a deepened band of each theme's
+own ground (`footer-light #efe7d3`, `footer #14120e`), so `on-footer` /
+`on-footer-muted` gained `-light` peers and joined the light remap — remember
+that remap lives in TWO blocks with different indentation (`.light` at 4
+spaces, the media fallback at 6) and the sync test catches a one-sided edit.
+DESIGN.md's Navigation and footer sections, the component entries and the
+contrast-test comment were updated to match. 514 unit + 41 e2e green.

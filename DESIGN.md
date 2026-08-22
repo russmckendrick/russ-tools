@@ -35,7 +35,7 @@ colors:
   primary-hover: "#8bf09e"
   on-primary: "#17150f"
   nav-active: "#2a2620"
-  footer: "#12100b"
+  footer: "#14120e"
   success: "#6ee787"
   warning: "#ffc857"
   error: "#ff6b6b"
@@ -66,7 +66,7 @@ colors:
   primary-hover-light: "#4fd96f"
   on-primary-light: "#17150f"
   nav-active-light: "#eee5d0"
-  footer-light: "#17150f"            # the footer stays ink in both themes
+  footer-light: "#efe7d3"            # a deepened paper band, not an ink slab
   success-light: "#14793a"           # 4.58:1 on the inset
   warning-light: "#975c07"           # 4.55:1 on the inset
   error-light: "#ce2121"             # 4.53:1 on the inset
@@ -111,9 +111,13 @@ colors:
   on-status-light: "#ffffff"
 
   # ---- Ink on the footer --------------------------------------------------
-  # Theme-independent, because the footer ground is ink in both themes.
+  # The footer ground follows the theme (a deepened step of each theme's own
+  # ground), so its ink follows too. The ink-slab footer was tried and read
+  # as jarring against the paper page.
   on-footer: "#f5efe0"
   on-footer-muted: "#b5ad99"
+  on-footer-light: "#17150f"
+  on-footer-muted-light: "#4d493e"
 
 # ---------------------------------------------------------------------------
 # TYPOGRAPHY
@@ -265,16 +269,21 @@ components:
     borderBottomColor: "{colors.rule}"
     borderBottomWidth: 2px
     padding: 0
+  # Nav items are folder TABS standing on the header's bottom rule: bordered
+  # on three sides, top corners rounded, no bottom border. The active tab
+  # opens into the page — its ground and bottom edge are the page surface.
   nav-item:
     typography: "{typography.body-sm}"
     textColor: "{colors.on-surface-muted}"
-    rounded: "{rounded.full}"
-    borderColor: "{colors.outline}"
-    padding: 7px 16px
-  nav-item-active:
     backgroundColor: "{colors.nav-active}"
     borderColor: "{colors.rule}"
-    textColor: "{colors.primary-text}"
+    borderWidth: 2px
+    rounded: 10px 10px 0 0
+    padding: 10px 17px
+  nav-item-active:
+    backgroundColor: "{colors.surface}"
+    borderColor: "{colors.rule}"
+    textColor: "{colors.on-surface}"
   site-footer:
     backgroundColor: "{colors.footer}"
     textColor: "{colors.on-footer}"
@@ -495,11 +504,13 @@ Colour is never the sole carrier of a status — the literal word goes with it.
 An alert marks itself with a solid status icon block (2px-bordered square of
 the status fill with `on-status` ink), never with a tinted left border.
 
-### The footer is ink in both themes
+### The footer follows the theme
 
-`footer-light: #17150f` — the footer closes the page with the same weight in
-both themes. Its ink is therefore theme-independent: `on-footer` /
-`on-footer-muted`.
+The footer is a deepened band of the theme's own ground (`#efe7d3` on paper,
+`#14120e` on ink), closed above by the 2px rule — a step down, not a slab.
+An ink footer on the paper page was tried and read as jarring. Because the
+ground now flips, its ink flips with it: `on-footer` / `on-footer-muted`
+carry `-light` peers like every other surface role.
 
 ### The dim step is not body text
 
@@ -577,11 +588,21 @@ frame and the controls.
 
 ### Navigation
 
-The header is a full-width bar closed by a 2px `rule`. The brand is a
-bordered, shadowed chip — the one permanent pressable that links home. Nav
-items are bordered pills; the active item takes the `nav-active` ground and
-`primary-text`. The theme control keeps its three-state
-system → light → dark cycle button with `aria-live` labelling.
+The header is a full-width bar closed by a 2px `rule`, and the rule is a
+**shelf**: the nav items are folder tabs standing on it. A tab is bordered
+on three sides with rounded top corners and the `nav-active` ground; the
+active tab takes the page ground and erases the rule beneath itself, so it
+reads as open into the page. On a page none of the tabs own (a tool page),
+every tab sits closed. The theme control renders as the last tab and keeps
+its three-state system → light → dark cycle button with `aria-live`
+labelling.
+
+The brand is **signage, not a chip**: the toolbox mark in `primary-text`
+beside `russ.tools` set in the display face at 800 — no box, no border, no
+shadow. The wordmark competes with nothing because it is the only display
+type in the bar.
+
+External links (Source) carry a small code glyph (`</>`), not an arrow.
 
 ### Panels
 

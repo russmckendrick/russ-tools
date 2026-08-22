@@ -37,10 +37,12 @@ body > main {
 }
 
 /* --- Topbar ---------------------------------------------------------------
-   Stacks' header is a full-width bar closed by the 2px rule. The brand is a
-   bordered, shadowed chip — the one permanent pressable that links home —
-   and the nav items are bordered pills with real gaps between them. The bar
-   is opaque: no translucency and no blur anywhere in the language. */
+   Stacks' header is a full-width bar closed by the 2px rule, and the rule is
+   a SHELF: the nav items are folder tabs standing on it, and the active tab
+   opens into the page by erasing the rule beneath itself. The brand is
+   signage — the toolbox mark plus the wordmark in display type, no box —
+   because a boxed chip next to naked links used half the page's chunk
+   vocabulary on one corner. The bar is opaque: no translucency, no blur. */
 
 .rt-site-header {
   position: sticky;
@@ -53,51 +55,43 @@ body > main {
 .rt-topbar {
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: center;
-  min-height: 64px;
-  padding-block: 12px;
+  align-items: stretch;
+  min-height: 62px;
 }
 
 .rt-brand {
   display: inline-flex;
   align-items: center;
+  align-self: center;
   justify-self: start;
-  gap: 9px;
-  padding: 7px 14px;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-press-sm);
+  gap: 10px;
+  padding-block: 12px;
   font-family: var(--font-display);
-  font-size: var(--text-title-sm);
-  font-weight: var(--font-weight-title-sm);
-  letter-spacing: var(--tracking-title-sm);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--color-on-surface);
   text-decoration: none;
-  transition: box-shadow var(--duration-fast) var(--ease-signal),
-    transform var(--duration-fast) var(--ease-signal);
-}
-.rt-brand:active {
-  transform: translate(3px, 3px);
-  box-shadow: none;
 }
 
-/* The mark is the brand, so it stays — rendered in the accent inside the
-   chip's own ink border. */
+/* The mark carries the accent. `primary-text`, not `primary`: the raw green
+   is ~1.6:1 on paper and the mark is the only colour in the signage. */
 .rt-site-mark {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 .rt-header-actions-wrap {
   position: relative;
   justify-self: end;
   display: flex;
+  align-items: flex-end;
 }
 
 .rt-menu-toggle {
   display: none;
   width: 40px;
   height: 40px;
+  align-self: center;
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -122,29 +116,30 @@ body > main {
 .rt-header-actions {
   justify-self: end;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 6px;
 }
 
 .rt-topnav {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 6px;
 }
 
-/* One rule for every pill in the row — nav links and the theme button alike,
-   which is why the theme button is a sibling of the links rather than sitting
-   inside a wrapper of its own. The border is transparent until the pill is
-   active, so the row stays quiet next to the chunky brand chip. */
+/* One rule for every tab in the row — nav links and the theme button alike,
+   which is why the theme button is a sibling of the links rather than
+   sitting inside a wrapper of its own. A tab is bordered on three sides,
+   top corners rounded, standing on the header's bottom rule. */
 .rt-topnav a,
 .rt-theme-toggle {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 15px;
-  border: var(--border-structural) solid transparent;
-  border-radius: var(--radius-full);
-  background: none;
+  padding: 11px 17px 12px;
+  border: var(--border-structural) solid var(--color-rule);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: var(--color-nav-active);
   font-family: inherit;
   font-size: var(--text-body-sm);
   font-weight: 500;
@@ -154,30 +149,29 @@ body > main {
   cursor: pointer;
   white-space: nowrap;
   transition: color var(--duration-fast) var(--ease-signal),
-    background-color var(--duration-fast) var(--ease-signal),
-    border-color var(--duration-fast) var(--ease-signal);
+    background-color var(--duration-fast) var(--ease-signal);
 }
 
 .rt-topnav a:hover,
 .rt-theme-toggle:hover {
   color: var(--color-on-surface);
-  background: var(--color-surface-inset);
+  background: var(--color-surface-raised);
 }
 
 .rt-topnav a:focus-visible,
 .rt-theme-toggle:focus-visible {
   outline: 2px solid var(--color-ring);
-  outline-offset: 1px;
+  outline-offset: -3px;
 }
 
-/* The active pill takes the nav-active ground, the rule border and accent
-   text. `primary-text` rather than `primary`: the raw accent is ~1.6:1 on
-   paper, and nav-active is one of the grounds tokens.contrast.test.js
-   measures accent text against. */
+/* The open tab: page ground, and its own bottom edge overwrites the header
+   rule (2px taller, pulled 2px below the bar) so the tab and the page read
+   as one surface. Ink text, not accent — the opening IS the signal. */
 .rt-topnav a[aria-current='page'] {
-  background: var(--color-nav-active);
-  border-color: var(--color-rule);
-  color: var(--color-primary-text);
+  background: var(--color-surface);
+  border-bottom: var(--border-structural) solid var(--color-surface);
+  margin-bottom: calc(-1 * var(--border-structural));
+  color: var(--color-on-surface);
   font-weight: 600;
 }
 
@@ -238,10 +232,20 @@ body > main {
     align-items: stretch;
     gap: 4px;
   }
+  /* Inside the dropdown card the folder-tab shape makes no sense — the rows
+     revert to bordered list items, and the open tab becomes a marked row. */
   .rt-topnav a,
   .rt-theme-toggle {
+    border: var(--border-structural) solid var(--color-rule);
     border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
     padding: 13px 16px;
+  }
+  .rt-topnav a[aria-current='page'] {
+    margin-bottom: 0;
+    background: var(--color-nav-active);
+    border-bottom: var(--border-structural) solid var(--color-rule);
+    color: var(--color-on-surface);
   }
 }
 
@@ -986,10 +990,10 @@ body > main {
 }
 
 /* --- Footer ---------------------------------------------------------------
-   Dark in BOTH themes, closed by a 3px rule. Because the ground does not
-   change with the theme, the ink does not either: `on-footer` and
-   `on-footer-muted` are theme-independent tokens that exist precisely so
-   light mode does not render #16171b text on a #16171b footer. */
+   A deepened band of the theme's own ground, closed by the 2px rule — a
+   step down, not a slab. The ink-slab footer was tried under Stacks and the
+   hard black band read as jarring against the paper page; `on-footer` and
+   `on-footer-muted` now remap per theme like every other surface role. */
 
 .rt-site-footer {
   margin-top: var(--rt-space-4xl);
@@ -1016,7 +1020,9 @@ body > main {
   letter-spacing: -0.02em;
 }
 .rt-footer-brand svg {
-  color: var(--color-primary);
+  /* Matches the header signage: `primary-text`, because the light footer is
+     now paper-family and the raw green would wash out on it. */
+  color: var(--color-primary-text);
 }
 .rt-shell-foot {
   justify-self: center;
@@ -1051,7 +1057,7 @@ body > main {
 }
 .rt-footnav a:focus-visible,
 .rt-footer-brand:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-ring);
   outline-offset: 3px;
 }
 @media (max-width: 760px) {

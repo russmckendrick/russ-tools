@@ -26,7 +26,7 @@
   --color-primary-hover: #8bf09e;
   --color-on-primary: #17150f;
   --color-nav-active: #2a2620;
-  --color-footer: #12100b;
+  --color-footer: #14120e;
   --color-success: #6ee787;
   --color-warning: #ffc857;
   --color-error: #ff6b6b;
@@ -55,7 +55,7 @@
   --color-primary-hover-light: #4fd96f;
   --color-on-primary-light: #17150f;
   --color-nav-active-light: #eee5d0;
-  --color-footer-light: #17150f;
+  --color-footer-light: #efe7d3;
   --color-success-light: #14793a;
   --color-warning-light: #975c07;
   --color-error-light: #ce2121;
@@ -83,6 +83,8 @@
   --color-on-status-light: #ffffff;
   --color-on-footer: #f5efe0;
   --color-on-footer-muted: #b5ad99;
+  --color-on-footer-light: #17150f;
+  --color-on-footer-muted-light: #4d493e;
   --text-display: 56px;
   --text-display--font-weight: 800;
   --text-display--line-height: 1;

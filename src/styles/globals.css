@@ -120,12 +120,10 @@
      peer is repointed at it. The shadcn aliases in the @theme block above
      follow automatically, because they reference rather than copy.
 
-     Two groups deliberately do NOT appear here — their ground does not change
-     with the theme, so neither does their ink:
-       - `category-fill-*` / `on-category-fill`, because a category badge is
-         always graphite ink on the bright hue, in both themes;
-       - `on-footer` / `on-footer-muted`, because the footer is dark in both
-         themes (`footer-light` is #16171b).
+     One group deliberately does NOT appear here — `category-fill-*` /
+     `on-category-fill` — because a category badge is always graphite ink on
+     the bright hue, in both themes. The footer DOES remap: it is a deepened
+     band of each theme's own ground, so its ink flips with it.
      `danger-subtle` is absent for the opposite reason: it is an alias of
      `error-subtle`, which IS remapped here, so it carries through by itself. */
   .light {
@@ -145,6 +143,8 @@
     --color-primary-text: var(--color-primary-text-light);
     --color-nav-active: var(--color-nav-active-light);
     --color-footer: var(--color-footer-light);
+    --color-on-footer: var(--color-on-footer-light);
+    --color-on-footer-muted: var(--color-on-footer-muted-light);
     --color-on-status: var(--color-on-status-light);
     --color-success: var(--color-success-light);
     --color-warning: var(--color-warning-light);
@@ -186,6 +186,8 @@
       --color-primary-text: var(--color-primary-text-light);
       --color-nav-active: var(--color-nav-active-light);
       --color-footer: var(--color-footer-light);
+      --color-on-footer: var(--color-on-footer-light);
+      --color-on-footer-muted: var(--color-on-footer-muted-light);
       --color-on-status: var(--color-on-status-light);
       --color-success: var(--color-success-light);
       --color-warning: var(--color-warning-light);

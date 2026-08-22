@@ -133,10 +133,9 @@ const PAIRS = [
   // DESIGN.md's text ramp and the category hues are generated over GROUNDS
   // below, rather than transcribed here.
 
-  // --- the footer, which is dark in BOTH themes ---------------------------
-  // `footer-light` is #16171b, so the theme's own `on-surface` would be
-  // #16171b on #16171b. These two roles exist because of that, and they are
-  // theme-independent for the same reason.
+  // --- the footer ----------------------------------------------------------
+  // A deepened band of each theme's own ground, so `on-footer` and
+  // `on-footer-muted` remap per theme like every other surface role.
   ['on-footer', 'footer', 4.5, 'footer text'],
   ['on-footer-muted', 'footer', 4.5, 'the footer mono strip'],
 
