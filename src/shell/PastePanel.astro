@@ -1,0 +1,50 @@
+---
+/**
+ * The paste panel — the site's one dispatching control, shared by the index
+ * and /404.
+ *
+ * Hidden in the prerendered HTML and unhidden by `wirePastePanel` on init,
+ * exactly as the index's name filter is: a static site cannot dispatch without
+ * JS, and a dead control is worse than an absent one.
+ *
+ * It is a `panel-emphasis`, and DESIGN.md allows exactly one per page — so a
+ * page that renders this must not also emphasise something else.
+ *
+ * `label` differs between the two pages because the question differs. The
+ * index asks what you arrived with; /404 already knows the URL failed and is
+ * asking what you were actually after.
+ */
+const {
+  label = 'Start with what you have',
+  hint = 'Paste anything and it opens the tool that reads it —',
+  value = '',
+} = Astro.props;
+---
+
+<form class="rt-jump" id="rt-jump" hidden>
+  <label class="rt-jump-label" for="rt-jump-input">{label}</label>
+  <div class="rt-jump-row">
+    <input
+      class="rt-jump-field"
+      id="rt-jump-input"
+      type="text"
+      autocomplete="off"
+      spellcheck="false"
+      value={value}
+      placeholder="example.com  ·  10.0.0.0/22  ·  eyJhbGciOi…  ·  */15 * * * *"
+      aria-describedby="rt-jump-desc"
+    />
+    <button class="rt-jump-go" type="submit">Open &rarr;</button>
+  </div>
+  <p class="rt-visually-hidden" id="rt-jump-desc">
+    Paste a domain, IP address, CIDR, JWT or cron expression. The tools that
+    can read it are listed below the field; Enter opens the first.
+  </p>
+  <div class="rt-jump-hint" id="rt-jump-hint" data-resting>
+    <b>{hint}</b>
+    <span class="rt-kbd">domain &rarr; /whois-lookup</span>
+    <span class="rt-kbd">CIDR &rarr; /subnet-calculator</span>
+    <span class="rt-kbd">JWT &rarr; /jwt</span>
+    <span class="rt-kbd">host &rarr; /ssl-checker</span>
+  </div>
+</form>

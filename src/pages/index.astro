@@ -4,8 +4,10 @@
  * changes nothing in this file.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PastePanel from '../shell/PastePanel.astro';
 import ToolCard from '../shell/ToolCard.astro';
-import { TOOLS, groupedByCategory } from '../tools/registry.mjs';
+import { TOOLS } from '../tools/registry.mjs';
+import { categoryGroupId, categoryLabel } from '../shell/categories.mjs';
 import { PERSON_SCHEMA, SITE_DESCRIPTION, SITE_NAME, SITE_URL, WEBSITE_ID } from '../shell/site.mjs';
 
 /**
@@ -43,36 +45,54 @@ const schema = [
   },
 ];
 
-const categoryGroups = groupedByCategory();
-const azure = categoryGroups.find((group) => group.id === 'azure');
-const microsoft = categoryGroups.find((group) => group.id === 'microsoft');
-const groups = categoryGroups.flatMap((group) => {
-  if (group.id === 'microsoft') return [];
-  if (group.id !== 'azure') {
-    return [
-      {
-        ...group,
-        accent: `var(--color-category-${group.id})`,
-        accentFill: `var(--color-category-fill-${group.id})`,
-      },
-    ];
-  }
+/**
+ * The chips, and only the chips, carry the category names now.
+ *
+ * The merge lives in `categoryGroupId` — azure and microsoft answer
+ * "microsoft-azure" — and this page reads it rather than restating it. It used
+ * to restate it, in a second form, and the tool breadcrumbs link
+ * `/#microsoft-azure` off the shared helper: if the two ever disagreed, every
+ * Microsoft and Azure breadcrumb would point at an anchor the index does not
+ * render.
+ */
+const groups = [];
+for (const tool of TOOLS) {
+  const id = categoryGroupId(tool.category);
+  const group = groups.find((g) => g.id === id);
+  if (group) group.count += 1;
+  else groups.push({ id, label: id === 'microsoft-azure' ? 'Microsoft & Azure' : categoryLabel(tool.category), count: 1 });
+}
 
-  return [
-    {
-      id: 'microsoft-azure',
-      label: 'Microsoft & Azure',
-      // A category hue, not `--color-primary`. The accent is engineered as an
-      // *action* colour and does not clear 4.5:1 as text on the light ground
-      // in Tokyo Night (3.59:1), Nord (4.05:1) or Catppuccin (4.34:1) — the
-      // palette that ships by default. `tokens.contrast.test.js` validates
-      // token pairs, so it could not see a page putting an action colour into
-      // a text slot; `category-accent.test.js` now guards that.
-      accent: 'var(--color-category-azure)',
-      accentFill: 'var(--color-category-fill-azure)',
-      tools: [...azure.tools, ...microsoft.tools].sort((a, b) => a.title.localeCompare(b.title)),
-    },
-  ];
+/**
+ * The tile's width, and the reason the stream is a stream.
+ *
+ * Three steps, not a curve. The first attempt scaled width continuously off
+ * the same two lengths and produced fifteen widths inside a 55px band, which
+ * packed straight back into a perfect 3×5 — the grid this replaces, minus the
+ * headings. Distinct steps are what make rows break at 3, 2, 3, 3 and 4.
+ *
+ * Title outweighs description because a wrapped title is what actually makes a
+ * tile look cramped.
+ */
+const widthStep = (tool) => {
+  const weight = tool.title.length + tool.shortDescription.length / 3;
+  return weight <= 36 ? 235 : weight <= 41 ? 315 : 400;
+};
+
+/**
+ * `/#network` is a compatibility contract: every tool page's breadcrumb links
+ * it, `seo.test.js` walks those links against the built HTML, and the id has
+ * to be on something the browser can scroll to. With the sections gone it goes
+ * on the first tile of each run — which lands the reader on the tool rather
+ * than on a heading above it — and a visually-hidden h2 goes beside it so a
+ * heading rotor still has more than one entry.
+ */
+const seen = new Set();
+const cards = TOOLS.map((tool) => {
+  const id = categoryGroupId(tool.category);
+  const first = !seen.has(id);
+  seen.add(id);
+  return { tool, anchor: first ? id : null, label: groups.find((g) => g.id === id).label };
 });
 ---
 
@@ -84,25 +104,26 @@ const groups = categoryGroups.flatMap((group) => {
 >
   <!--
     No hero and no stat strip. Both were selling the site to someone already
-    on it: a headline that repeated the footer's claim, a subtitle that
-    repeated the headline, and four tiles of which two ("100% client-side",
-    "0 trackers") were slogans wearing a number's clothes. The h1 stays
-    because the page needs one; it says what the page is and stops.
-
-    The count beside it is the one piece of orientation that earns its place,
-    and it is set mono on the same baseline rather than as a second heading.
+    on it. The h1 stays because the page needs one; it says what the page is
+    and stops, and it shares its band with one mono line so the head does work
+    instead of floating over 90px of nothing.
   -->
   <div class="rt-index-head">
     <h1 class="rt-index-title">Tools</h1>
+    <span class="rt-index-note">{TOOLS.length} tools · nothing leaves the browser</span>
   </div>
+
+  <!--
+    The page's one emphasis panel, and it is a control rather than a slogan:
+    paste what you already have and it opens the tool that reads it. Shared
+    with /404, which asks the same question from the other end.
+  -->
+  <PastePanel />
 
   <!--
     A radio group, not six toggles. The categories are mutually exclusive, so
     `aria-pressed` on six buttons was describing six independent switches; a
     radiogroup announces "3 of 6" and costs one tab stop rather than six.
-
-    The name filter now sits at the end of this same row rather than above it,
-    so the whole filtering affordance is one ruled band.
   -->
   <div class="rt-filters">
     <div id="filters" class="rt-chips" role="radiogroup" aria-label="Filter tools by category">
@@ -119,7 +140,7 @@ const groups = categoryGroups.flatMap((group) => {
             aria-checked="false"
             tabindex="-1"
           >
-            {g.label} <span class="rt-chip-count">{g.tools.length}</span>
+            {g.label} <span class="rt-chip-count">{g.count}</span>
           </button>
         ))
       }
@@ -149,39 +170,20 @@ const groups = categoryGroups.flatMap((group) => {
 
   <p class="rt-visually-hidden" id="rt-status" role="status" aria-live="polite"></p>
 
-  <div class="rt-board" id="board">
+  <!--
+    One stream, no sections. The chips name the categories and the icon tile
+    carries the hue, so a heading above each run was the third statement of the
+    same fact — and the bands it created were what made a catalogue of fifteen
+    read as five stacked tables. Tools stay in category order, so the hues
+    cluster and drift down the page: the grouping is drawn, not labelled.
+  -->
+  <div class="rt-stream" id="board">
     {
-      groups.map((g) => (
-        <section
-          class="rt-group"
-          id={g.id}
-          data-category={g.id}
-          data-count={g.tools.length}
-          aria-labelledby={`${g.id}-label`}
-          style={`--cat: ${g.accent}; --cat-fill: ${g.accentFill}`}
-        >
-          <div class="rt-group-head">
-            {/*
-              A real heading. These five labels are the only structural
-              navigation the page has, and as `<b>` they were invisible to a
-              heading rotor — one h1 for a fifteen-item catalogue. The link
-              makes a demoted group head clickable in filtered view without
-              needing separate markup for it.
-            */}
-            <h2 class="rt-group-label" id={`${g.id}-label`}>
-              <a href={`#${g.id}`}>{g.label}</a>
-            </h2>
-            <span class="rt-group-count" aria-hidden="true">
-              {g.tools.length}
-            </span>
-            <hr />
-          </div>
-          <div class="rt-grid">
-            {g.tools.map((tool) => (
-              <ToolCard tool={tool} />
-            ))}
-          </div>
-        </section>
+      cards.map(({ tool, anchor, label }) => (
+        <>
+          {anchor && <h2 class="rt-visually-hidden">{label}</h2>}
+          <ToolCard tool={tool} widthStep={widthStep(tool)} anchor={anchor} />
+        </>
       ))
     }
     <p class="rt-empty" id="rt-empty" hidden>
@@ -192,63 +194,54 @@ const groups = categoryGroups.flatMap((group) => {
 
 <script>
   /**
-   * The index filter. Two controls over one prerendered catalogue: a category
-   * radio group and a name filter. Neither hides anything the user cannot get
-   * back to in one click, and both are readable off the URL.
+   * The index's client behaviour: a paste dispatcher and two filters over one
+   * prerendered catalogue.
    *
-   * Without this script the page is the full catalogue — the search input
-   * stays `hidden`, every group renders, and `/#network` still scrolls to the
-   * network section because the id is on the prerendered element.
+   * Filtering no longer promotes one group and demotes the rest — there are no
+   * groups on the page to promote. A category chip hides the tiles that do not
+   * carry its `data-category`, which is the whole of it.
+   *
+   * Without this script the page is the full catalogue: the search input and
+   * the paste panel stay `hidden`, every tile renders, and `/#network` still
+   * scrolls to the first network tool because the id is on the prerendered
+   * tile.
    */
+  import { wirePastePanel } from '../lib/pastePanel.js';
+
   const board = document.getElementById('board');
   const filters = document.getElementById('filters');
   const chips = [...filters.querySelectorAll('.rt-chip')];
-  const groups = [...board.querySelectorAll('.rt-group')];
   const cards = [...board.querySelectorAll('.rt-card')];
   const status = document.getElementById('rt-status');
   const empty = document.getElementById('rt-empty');
   const emptyQ = document.getElementById('rt-empty-q');
   const find = document.getElementById('rt-find');
 
-  const CATEGORIES = new Set(groups.map((g) => g.dataset.category));
+  const CATEGORIES = new Set(cards.map((c) => c.dataset.category));
   const TOTAL = cards.length;
+  const COUNTS = Object.fromEntries(
+    chips.map((chip) => [chip.dataset.filter, Number(chip.querySelector('.rt-chip-count').textContent)])
+  );
+  const LABELS = Object.fromEntries(
+    chips.map((chip) => [chip.dataset.filter, chip.textContent.replace(/\s*\d+\s*$/, '').trim()])
+  );
 
   let category = 'all';
   let query = '';
 
   const plural = (n) => `${n} ${n === 1 ? 'tool' : 'tools'}`;
 
-  /**
-   * Filtering used to hide the other four groups outright, which on
-   * `/#content` left one card in the corner of an otherwise empty page —
-   * the void DESIGN.md's own No Void Rule calls a bug. The selected group is
-   * promoted instead, and the rest stay on the page as a row of counted
-   * headings: the page keeps its height, and the other fourteen tools are
-   * one click away rather than gone.
-   */
   const render = () => {
     const q = query.trim().toLowerCase();
     const searching = q !== '';
     let visible = 0;
 
     for (const card of cards) {
-      const hit = !searching || card.dataset.search.includes(q);
+      const matchesName = !searching || card.dataset.search.includes(q);
+      const matchesCategory = searching || category === 'all' || card.dataset.category === category;
+      const hit = matchesName && matchesCategory;
       card.hidden = !hit;
       if (hit) visible += 1;
-    }
-
-    board.classList.toggle('is-filtered', !searching && category !== 'all');
-    board.classList.toggle('is-searching', searching);
-
-    for (const group of groups) {
-      const isActive = group.dataset.category === category;
-      const matches = [...group.querySelectorAll('.rt-card')].filter((c) => !c.hidden).length;
-
-      // Searching flattens the board: every group that still has a hit shows
-      // its cards, so a name filter never depends on guessing the category.
-      group.hidden = searching && matches === 0;
-      group.toggleAttribute('data-demoted', !searching && category !== 'all' && !isActive);
-      group.classList.toggle('is-active', !searching && isActive);
     }
 
     empty.hidden = !(searching && visible === 0);
@@ -266,9 +259,7 @@ const groups = categoryGroups.flatMap((group) => {
         : `${plural(visible)} ${visible === 1 ? 'matches' : 'match'} “${query.trim()}”`
       : category === 'all'
         ? `Showing all ${plural(TOTAL)}`
-        : `Showing ${plural(Number(document.getElementById(category).dataset.count))} in ${
-            document.getElementById(`${category}-label`).textContent.trim()
-          }`;
+        : `Showing ${plural(COUNTS[category])} in ${LABELS[category]}`;
   };
 
   /**
@@ -315,21 +306,13 @@ const groups = categoryGroups.flatMap((group) => {
   // Roving tabindex: one tab stop for the group, arrows to move within it.
   filters.addEventListener('keydown', (event) => {
     const dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
-    const jump = event.key === 'Home' ? 0 : event.key === 'End' ? chips.length - 1 : null;
-    if (dir === undefined && jump === null) return;
+    const jumpTo = event.key === 'Home' ? 0 : event.key === 'End' ? chips.length - 1 : null;
+    if (dir === undefined && jumpTo === null) return;
     event.preventDefault();
     const i = chips.findIndex((c) => c.dataset.filter === category);
-    const next = jump ?? (i + dir + chips.length) % chips.length;
+    const next = jumpTo ?? (i + dir + chips.length) % chips.length;
     setCategory(chips[next].dataset.filter);
     chips[next].focus();
-  });
-
-  // The board is one anchor per category, so a heading link filters to it.
-  board.addEventListener('click', (event) => {
-    const link = event.target instanceof Element ? event.target.closest('.rt-group-label a') : null;
-    if (!link) return;
-    event.preventDefault();
-    setCategory(new URL(link.href).hash.slice(1));
   });
 
   document.getElementById('rt-empty-clear').addEventListener('click', () => {
@@ -372,4 +355,8 @@ const groups = categoryGroups.flatMap((group) => {
 
   find.hidden = false;
   readUrl();
+
+  // No autofocus: stealing focus on a catalogue would hijack the scroll
+  // position and pop a keyboard on every phone that opens the site.
+  wirePastePanel();
 </script>

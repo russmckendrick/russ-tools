@@ -286,10 +286,8 @@ body > main {
    left the bug: the pair was. Do not add `z-index` back to a page section. */
 
 
-/* --- Index title ---------------------------------------------------------
-   Was a hero and a four-tile stat strip. Both were selling the site to
-   someone already standing on it, so the page now opens on the filters and
-   the grid, with an h1 that names the page and nothing else. */
+/* --- The 404 head ---------------------------------------------------------
+   Three lines: what happened, where everything is, and the path that failed. */
 
 .rt-notfound {
   position: relative;
@@ -308,6 +306,17 @@ body > main {
   margin: 0;
   color: var(--color-on-surface-muted);
   font-size: var(--text-body-md);
+}
+/* The URL that failed, set as data because it is data. Worth drawing: on a
+   soft 404 in an in-app browser, or on a phone that has scrolled the bar
+   away, this is the only place the visitor can see what was actually
+   requested. It wraps rather than ellipsises — a truncated path answers
+   nothing. */
+.rt-notfound-path {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  color: var(--color-on-surface-dim);
+  overflow-wrap: anywhere;
 }
 
 /* --- Shell a11y utilities ------------------------------------------------- */
@@ -346,13 +355,17 @@ body > main {
 }
 
 /* --- Index head -----------------------------------------------------------
-   `Tools` at the display step, alone. The count line went the way of the
-   hero and the stat strip — all three were selling the site to someone
-   already standing on it (the chips carry the counts). */
+   `Tools` at the display step, sharing its band with one mono line. The h1
+   used to sit alone above 90px of nothing; the line beside it is orientation,
+   not a subtitle, so it is set as data on the same baseline. */
 
 .rt-index-head {
   position: relative;
-  padding-block: var(--rt-space-4xl) var(--rt-space-3xl);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--rt-space-gutter);
+  padding: 44px 0 var(--rt-space-xl);
 }
 
 .rt-index-title {
@@ -361,6 +374,146 @@ body > main {
   font-weight: var(--font-weight-display);
   letter-spacing: var(--tracking-display);
   line-height: 1;
+}
+
+.rt-index-note {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  color: var(--color-on-surface-dim);
+  padding-bottom: var(--rt-space-sm);
+}
+
+/* --- The paste panel ------------------------------------------------------
+   DESIGN.md allows one `panel-emphasis` per page and the index used to spend
+   none, which is most of why it sat flat. It is spent on a control rather
+   than a banner: paste what you already have and it opens the tool that reads
+   it. `press-lg`, and nothing else on this page carries a shadow at rest. */
+
+.rt-jump {
+  display: block;
+  border: var(--border-structural) solid var(--color-rule);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-press-lg);
+  padding: var(--rt-space-xl) 22px 18px;
+  margin: var(--rt-space-xs) 0 var(--rt-space-md);
+}
+
+.rt-jump-label {
+  display: block;
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  letter-spacing: var(--tracking-label-caps);
+  text-transform: uppercase;
+  color: var(--color-on-surface-muted);
+}
+
+.rt-jump-row {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--rt-space-md);
+}
+
+.rt-jump-field {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-data-md);
+  padding: var(--rt-space-md) 14px;
+  border: var(--border-structural) solid var(--color-rule);
+  border-radius: var(--radius-md);
+  /* The page ground, not the panel ground: the field is a well cut into the
+     panel rather than another card sitting on it. */
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+.rt-jump-field::placeholder {
+  color: var(--color-on-surface-faint);
+}
+.rt-jump-field:focus {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* The one accent fill on the page — an action, which is the only thing the
+   accent is ever allowed to be. */
+.rt-jump-go {
+  flex: none;
+  font-family: inherit;
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  line-height: 1;
+  padding: var(--rt-space-md) var(--rt-space-xl);
+  border: var(--border-structural) solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-press-sm);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-signal),
+    box-shadow var(--duration-fast) var(--ease-signal),
+    transform var(--duration-fast) var(--ease-signal);
+}
+.rt-jump-go:hover {
+  background: var(--color-primary-hover);
+}
+.rt-jump-go:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+.rt-jump-go:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+/* Empty field, nothing to open. The panel keeps its shape rather than the
+   button disappearing out of the row. */
+.rt-jump-go:disabled {
+  background: var(--color-surface-inset);
+  color: var(--color-on-surface-dim);
+  box-shadow: none;
+  cursor: default;
+}
+
+.rt-jump-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--rt-space-md);
+}
+.rt-jump-hint b {
+  font-size: var(--text-body-md);
+  font-weight: 400;
+  color: var(--color-on-surface-dim);
+  margin-right: 2px;
+}
+
+/* A keycap, not a chip: hairline and shadowless, because these are examples
+   and matches rather than controls. As matches they become links, and the
+   first one is what Enter follows. */
+.rt-kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  line-height: 1;
+  color: var(--color-on-surface-muted);
+  padding: var(--rt-space-xs) var(--rt-space-sm);
+  border: var(--border-hairline) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-inset);
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.rt-kbd:hover {
+  color: var(--color-on-surface);
+  border-color: var(--color-rule);
+}
+a.rt-kbd:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+a.rt-kbd[data-first] {
+  color: var(--color-primary-text);
+  border-color: var(--color-primary-text);
 }
 
 /* --- The filter row -------------------------------------------------------
@@ -375,7 +528,7 @@ body > main {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--rt-space-md);
-  padding-block: var(--rt-space-xs) var(--rt-space-md);
+  padding-block: var(--rt-space-2xl) 0;
 }
 
 .rt-chips {
@@ -476,140 +629,38 @@ body > main {
   cursor: pointer;
 }
 
-/* --- Category groups + the tool grid -------------------------------------- */
+/* --- The stream -----------------------------------------------------------
+   One flow of fifteen tiles, not five sections of three.
 
-.rt-board {
+   The category headings are gone: the chips name the categories and the icon
+   tile carries the hue, so a heading above each run stated the same fact a
+   third time — and the bands it created were what made a catalogue of fifteen
+   read as five stacked tables. Tools stay in category order, so the hues
+   cluster and drift teal → blue → purple → amber → orange → pink down the
+   page. The grouping is drawn rather than labelled.
+
+   Tiles carry their own `flex-basis` in three distinct steps (see
+   `index.astro`'s `widthStep`), so rows break at 3, 2, 3, 3 and 4 rather than
+   snapping to three tracks — which is also what removed the three holes the
+   fixed grid used to manufacture at the tail of every short category. */
+
+.rt-stream {
   position: relative;
-  display: grid;
-  gap: var(--rt-space-3xl);
-  /* The filter row above closes on a hairline, and the first group label sat
-     straight on it with nothing between the two. */
-  padding-block: var(--rt-space-3xl) var(--rt-space-4xl);
-}
-.rt-group {
-  display: grid;
-  gap: 11px;
-}
-.rt-group-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-/*
-  These five labels are the page's navigational scaffolding. As 12px semibold
-  Inter they sat *below* the card titles (15px) and descriptions (13.5px) they
-  organise — a heading that had lost an argument with its own content. As
-  label-caps they change register instead of competing on size: uppercase
-  tracked mono is how every panel header in the system announces structure.
-*/
-.rt-group-label {
-  margin: 0;
-  font-family: inherit;
-  font-size: var(--text-label-caps);
-  font-weight: var(--font-weight-label-caps);
-  line-height: 1;
-  letter-spacing: var(--tracking-label-caps);
-  text-transform: uppercase;
-  /* The fallback is for /404, whose one group spans three categories and so
-     has no hue of its own. `--cat` may only ever carry a category token, so
-     the neutral lives here rather than being assigned there. */
-  color: var(--cat, var(--color-on-surface-muted));
-}
-.rt-group-label a {
-  color: inherit;
-  text-decoration: none;
-}
-.rt-group-label a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.rt-group-label a:focus-visible {
-  outline: 2px solid var(--cat);
-  outline-offset: 3px;
-}
-/*
-  DESIGN.md, Layout: "Category filter chips sit above the grid and carry the
-  only index counts." So the group head keeps no count in the default view —
-  it appears only once a group is demoted to the strip, where the count is the
-  affordance rather than a duplicate of the chip above it.
-*/
-.rt-group-count {
-  display: none;
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  color: var(--color-on-surface-faint);
-  font-variant-numeric: tabular-nums;
-}
-.rt-group[data-demoted] .rt-group-count {
-  display: inline;
-}
-.rt-group-head hr {
-  flex: 1;
-  height: 1px;
-  border: 0;
-  margin: 0;
-  background: var(--color-outline);
-}
-
-/* --- Filtered board: promote one group, demote the rest ------------------- */
-
-/*
-  Filtering used to hide the other four groups, which on `/#content` left a
-  single card in the corner of an otherwise empty viewport — the No Void Rule
-  failing on the page's own primary interaction. The selected group is
-  promoted to full width and the rest collapse to their counted headings,
-  which stay clickable. The page keeps its height and the rack stays visible
-  behind the instrument you pulled forward.
-*/
-.rt-board.is-filtered {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--rt-space-xl) var(--rt-space-md);
+  gap: 12px;
+  padding-block: var(--rt-space-2xl) var(--rt-space-4xl);
   /*
-    Filtering fifteen tools down to one necessarily shortens the page, and a
-    bottom-pinned footer turns the difference into trapped space. Holding a
-    floor and pushing the demoted row to the end of it spends that space
-    instead of leaving it: the filtered group sits at the top, the rest of the
-    rack sits above the footer, and the gap between them reads as the
-    separation it is. Only a floor, so a tall filtered group still grows.
+    Filtering fifteen tools down to three necessarily shortens the page, and a
+    bottom-pinned footer turns the difference into trapped space. Only a floor,
+    so a full catalogue still grows past it.
   */
   min-height: 46vh;
-  align-content: space-between;
-}
-.rt-board.is-filtered .rt-group {
-  flex: 1 0 100%;
-  order: 1;
-}
-.rt-board.is-filtered .rt-group.is-active {
-  order: 0;
-}
-.rt-board.is-filtered .rt-group[data-demoted] {
-  flex: 0 0 auto;
-  gap: 0;
-}
-.rt-board.is-filtered .rt-group[data-demoted] .rt-grid,
-.rt-board.is-filtered .rt-group[data-demoted] .rt-group-head hr {
-  display: none;
-}
-.rt-board.is-filtered .rt-group[data-demoted] .rt-group-head {
-  gap: 8px;
-  padding: 8px 13px;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  transition: background-color var(--duration-base) var(--ease-signal);
-}
-.rt-board.is-filtered .rt-group[data-demoted] .rt-group-head:hover {
-  background: var(--color-surface-inset);
-}
-
-/* Searching flattens the board back to a plain stack of matching groups. */
-.rt-board.is-searching .rt-group[data-demoted] {
-  order: 0;
+  align-content: flex-start;
 }
 
 .rt-empty {
+  flex: 1 0 100%;
   margin: 0;
   padding: var(--rt-space-xl) 0;
   color: var(--color-on-surface-muted);
@@ -633,11 +684,46 @@ body > main {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-/* --- The grid -------------------------------------------------------------
-   Separated tiles with a real gap. Signal's shared-edge idiom is retired:
-   the border belongs to the tile again, because the tile is a pressable
-   object — a bordered card that gains its shadow under the pointer. */
 
+/* --- The 404 grid ---------------------------------------------------------
+   /404 still renders the index's old group markup for its "Popular tools"
+   block — one heading over a fixed grid, which is right for three suggestions
+   and wrong for a catalogue. These rules exist for that page alone; the
+   `--cat` fallback on the label is there because its one group spans three
+   categories and so has no hue of its own. */
+
+.rt-board {
+  position: relative;
+  display: grid;
+  gap: var(--rt-space-3xl);
+  padding-block: var(--rt-space-3xl) var(--rt-space-4xl);
+}
+.rt-group {
+  display: grid;
+  gap: 11px;
+}
+.rt-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rt-group-label {
+  margin: 0;
+  font-family: inherit;
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  line-height: 1;
+  letter-spacing: var(--tracking-label-caps);
+  text-transform: uppercase;
+  color: var(--cat, var(--color-on-surface-muted));
+}
+.rt-group-head hr {
+  flex: 1;
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--color-outline);
+}
 .rt-grid {
   display: grid;
   gap: 18px;
@@ -652,27 +738,38 @@ body > main {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+/* The stream sizes its own tiles; inside the 404 grid the track does it. */
+.rt-grid .rt-card {
+  flex-basis: auto;
+  max-width: none;
+}
 
 /* --- Card: the tool tile, and the workhorse -------------------------------
-   A bordered card on the raised ground. Hover is the press affordance
-   arriving: the tile gains the `press` shadow and moves up-left by the same
-   2px, exactly as if it had risen under the finger. The shadow is
-   `shadow-ink` in both themes — the Espresso rework retired the dark
-   theme's category-hued hover shadow, because a coloured shadow undermined
-   the press metaphor.
+   A bordered card on the raised ground, laid out horizontally: the icon tile
+   beside a column of title, description and route.
 
-   The entrance stagger stays gone. */
+   The category badge is gone with the section headings. It restated what the
+   heading above it already said and what the icon tile still says, and
+   fifteen bright pastel slabs were the loudest thing on the page — worst in
+   dark, where they floated on espresso.
+
+   Hover is the press affordance arriving: the tile gains the `press` shadow
+   and moves up-left by the same 2px, exactly as if it had risen under the
+   finger. */
 
 .rt-card {
   position: relative;
+  flex: 1 1 auto;
+  max-width: 500px;
+  min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: var(--rt-space-sm);
-  padding: 18px 20px 16px;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 15px 17px 14px;
   border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-lg);
   background-color: var(--color-surface-raised);
-  color: inherit;
+  color: var(--color-on-surface);
   text-decoration: none;
   transition: box-shadow var(--duration-base) var(--ease-signal),
     transform var(--duration-base) var(--ease-signal);
@@ -688,30 +785,11 @@ body > main {
   outline-offset: 3px;
 }
 
-/* Icon and category badge on the first line, opposed. */
-.rt-card-top {
+.rt-card-text {
+  min-width: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--rt-space-sm);
-}
-
-/* The solid category block. `category-fill-*` is theme-independent and always
-   takes graphite ink — it is NOT `--cat`, which is the text hue and would be
-   1.6:1 as a fill behind this ink. `ToolCard.astro` sets `--cat-fill`. */
-.rt-card-badge {
-  flex: none;
-  padding: 4px 8px;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-label-caps-sm);
-  font-weight: var(--font-weight-label-caps-sm);
-  line-height: 1;
-  letter-spacing: var(--tracking-label-caps-sm);
-  text-transform: uppercase;
-  white-space: nowrap;
-  background: var(--cat-fill);
-  color: var(--color-on-category-fill);
+  flex-direction: column;
+  gap: 3px;
 }
 
 .rt-card-name {
@@ -721,51 +799,39 @@ body > main {
   letter-spacing: var(--tracking-title-sm);
   line-height: 1.2;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .rt-card p {
   margin: 0;
   font-size: var(--text-body-sm);
   line-height: 1.45;
   color: var(--color-on-surface-muted);
-  /* Clamp rather than reflow, so the grid stays even. */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-/* The route path, pinned to the bottom of the cell so every tile's last line
-   sits on the same baseline however long its description ran. It is always
-   visible now — it used to fade in on hover, which meant the tile's one piece
-   of mono detail was missing until you touched it. */
+/* The route path. It sat in `primary-text` at rest, which put the accent on
+   fifteen things you had not touched; it is dim until the tile is hovered,
+   and the accent then marks the one you are about to open. */
 .rt-card-foot {
-  display: flex;
-  align-items: center;
-  gap: var(--rt-space-sm);
-  margin-top: auto;
-  padding-top: var(--rt-space-sm);
   font-family: var(--font-mono);
   font-size: var(--text-data-sm);
-  color: var(--color-primary-text);
+  color: var(--color-on-surface-dim);
+  margin-top: 3px;
   min-width: 0;
-}
-.rt-card-foot span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--duration-base) var(--ease-signal);
 }
-.rt-card-foot .rt-go {
-  flex: none;
+.rt-card:hover .rt-card-foot,
+.rt-card:focus-visible .rt-card-foot {
+  color: var(--color-primary-text);
 }
 
 /* --- Tool icon ------------------------------------------------------------
    In a tile the glyph sits in a small solid `category-fill` icon tile with
-   graphite ink and the 2px border — the tile is the category's swatch. In
-   the tool-page head (below) the glyph stands alone in the category TEXT
-   hue. Nothing animates on hover: the card's own shadow is the response. */
+   graphite ink and the 2px border — the tile is the category's swatch, and
+   with the badge gone it is the only place the category is drawn. In the
+   tool-page head (below) the glyph stands alone in the category TEXT hue.
+   Nothing animates on hover: the card's own shadow is the response. */
 
 .rt-ico {
   flex: none;
@@ -781,8 +847,8 @@ body > main {
 /* The tile treatment applies only where a category fill is guaranteed —
    inside a tool card. Everywhere else the glyph stands alone. */
 .rt-card .rt-ico {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-sm);
@@ -814,6 +880,7 @@ body > main {
     top: 0;
     z-index: 20;
     background: var(--color-surface);
+    padding-block: var(--rt-space-md);
   }
   .rt-chips {
     flex-wrap: nowrap;
@@ -842,15 +909,44 @@ body > main {
     min-height: 44px;
   }
   .rt-index-head {
-    padding-block: var(--rt-space-3xl) var(--rt-space-xl);
+    flex-wrap: wrap;
+    gap: var(--rt-space-sm);
+    padding-block: var(--rt-space-3xl) var(--rt-space-lg);
   }
   /* 64px is a desktop step. Below 600px it eats the fold on its own. */
   .rt-index-title {
     font-size: var(--text-headline-lg);
     letter-spacing: var(--tracking-headline-lg);
   }
-  .rt-board.is-filtered {
-    gap: var(--rt-space-lg) var(--rt-space-sm);
+  .rt-index-note {
+    padding-bottom: 0;
+  }
+  /* The paste row stacks: a field and a button sharing a 390px line crushes
+     the field to a few characters, which is the same bug the tool pages'
+     lookup rows already fixed by stacking. */
+  .rt-jump-row {
+    flex-wrap: wrap;
+  }
+  .rt-jump-field,
+  .rt-jump-go {
+    flex: 1 0 100%;
+    min-height: 44px;
+  }
+  .rt-jump-go {
+    justify-content: center;
+  }
+  /* The resting examples cost three wrapped rows on a 390px screen, in front
+     of the catalogue — the opposite of what the band above them is for. They
+     come back the moment they are real matches, which is when they are worth
+     the space. */
+  .rt-jump-hint[data-resting] {
+    display: none;
+  }
+  /* The three width steps are a desktop composition. At 390px they would
+     produce two cramped columns instead of one readable one. */
+  .rt-stream .rt-card {
+    flex-basis: 100%;
+    max-width: none;
   }
 }
 

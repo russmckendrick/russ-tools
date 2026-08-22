@@ -46,38 +46,53 @@ test.describe('home and shell pages', () => {
     }
   });
 
-  test('the index presents Microsoft and Azure together without divider counts', async ({
-    page,
-  }) => {
+  test('the index presents Microsoft and Azure together in one stream', async ({ page }) => {
     await page.goto('/');
+
+    // One stream, no sections: the chips name the categories and the icon tile
+    // carries the hue, so there are no group heads left to assert on.
+    await expect(page.locator('.rt-stream')).toBeVisible();
+    await expect(page.locator('.rt-group')).toHaveCount(0);
+    await expect(page.locator('.rt-card-badge')).toHaveCount(0);
 
     const platformFilter = page.getByRole('radio', { name: 'Microsoft & Azure 4' });
     await expect(platformFilter).toBeVisible();
-    await expect(page.locator('.rt-group-head', { hasText: 'Microsoft & Azure' })).toBeVisible();
-    await expect(page.locator('.rt-group[data-category="azure"]')).toHaveCount(0);
-    await expect(page.locator('.rt-group[data-category="microsoft"]')).toHaveCount(0);
-
-    // DESIGN.md: the chips carry the only index counts. The group heads show
-    // one only once demoted, where it is the affordance rather than a repeat.
-    for (const count of await page.locator('.rt-group-count').all()) {
-      await expect(count).not.toBeVisible();
-    }
+    await expect(page.locator('.rt-card[data-category="azure"]')).toHaveCount(0);
+    await expect(page.locator('.rt-card[data-category="microsoft"]')).toHaveCount(0);
+    await expect(page.locator('.rt-card[data-category="microsoft-azure"]')).toHaveCount(4);
 
     await platformFilter.click();
     await expect(platformFilter).toHaveAttribute('aria-checked', 'true');
     await expect(page).toHaveURL(/#microsoft-azure$/);
 
-    // Filtering promotes one group and demotes the rest to a counted strip
-    // rather than hiding them — see docs/BEHAVIOR_CHANGES.md.
-    await expect(page.locator('.rt-group[data-category="microsoft-azure"]')).toBeVisible();
-    await expect(page.locator('.rt-group[data-demoted]')).toHaveCount(4);
-    await expect(page.locator('.rt-group[data-demoted] .rt-grid').first()).not.toBeVisible();
-    await expect(page.locator('.rt-group[data-demoted] .rt-group-count').first()).toBeVisible();
+    // Filtering is now "hide what does not match" — the promote-one-group,
+    // demote-the-rest model went with the sections.
+    await expect(page.locator('.rt-card:visible')).toHaveCount(4);
 
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-group[data-demoted]')).toHaveCount(0);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(15);
+  });
+
+  test('the tiles vary in width so the rows break unevenly', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+
+    // The three width steps are what make this a stream rather than a grid.
+    // A regression to one width would repack it into a uniform 3xN and every
+    // other assertion here would still pass.
+    const rows = await page.evaluate(() => {
+      const counts = new Map();
+      for (const card of document.querySelectorAll('.rt-stream .rt-card')) {
+        const top = Math.round(card.getBoundingClientRect().top);
+        counts.set(top, (counts.get(top) ?? 0) + 1);
+      }
+      return [...counts.entries()].sort((a, b) => a[0] - b[0]).map(([, n]) => n);
+    });
+
+    expect(rows.reduce((a, b) => a + b, 0)).toBe(15);
+    expect(new Set(rows).size, `every row held the same count: ${rows}`).toBeGreaterThan(1);
   });
 
   test('the name filter narrows the index and is readable off the URL', async ({ page }) => {
@@ -94,9 +109,9 @@ test.describe('home and shell pages', () => {
     await find.fill('zzzz');
     await expect(page.locator('.rt-card:visible')).toHaveCount(0);
     await expect(page.locator('#rt-empty')).toBeVisible();
-    await expect(page.locator('#rt-empty')).toContainText('No tool matches “zzzz”');
+    await expect(page.locator('#rt-empty')).toContainText('No tool matches \u201Czzzz\u201D');
     // The same fact reaches a screen reader through the live region.
-    await expect(page.locator('#rt-status')).toHaveText('No tool matches “zzzz”');
+    await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
     await expect(page.locator('.rt-card:visible')).toHaveCount(15);
@@ -109,8 +124,56 @@ test.describe('home and shell pages', () => {
       'aria-checked',
       'true'
     );
-    await expect(page.locator('.rt-group[data-demoted]')).toHaveCount(4);
-    await expect(page.locator('#security .rt-card')).toHaveCount(3);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(3);
+    // The anchor rides on the first tile of the run, so the breadcrumb link
+    // every tool page carries still has something to scroll to.
+    await expect(page.locator('#security')).toHaveClass(/rt-card/);
+  });
+
+  test('the paste panel dispatches to the tool that reads the value', async ({ page }) => {
+    await page.goto('/');
+
+    const input = page.locator('#rt-jump-input');
+    await expect(input).toBeVisible();
+
+    // Five tools take a bare hostname, so the panel offers all five rather
+    // than silently choosing one.
+    await input.fill('example.com');
+    const chips = page.locator('#rt-jump-hint a');
+    await expect(chips).toHaveCount(5);
+    await expect(chips.first()).toHaveText('DNS Lookup \u2192 /dns-lookup');
+
+    // A CIDR is unambiguous, and its slash is a real segment boundary.
+    await input.fill('10.0.0.0/22');
+    await expect(chips).toHaveCount(1);
+    await expect(chips.first()).toHaveAttribute('href', '/subnet-calculator/10.0.0.0/22');
+
+    await input.press('Enter');
+    await expect(page).toHaveURL(/\/subnet-calculator\/10\.0\.0\.0\/22$/);
+    await expect(page.locator('h1')).toHaveText('Subnet Calculator');
+  });
+
+  test('/404 reads the failed URL rather than dead-ending', async ({ page }) => {
+    // The page knows the one thing the index does not: the URL that failed.
+    await page.goto('/subnet-calcualtor');
+    await expect(page.locator('h1')).toHaveText('That page does not exist.');
+    await expect(page.locator('#rt-404-path')).toHaveText('/subnet-calcualtor');
+    await expect(page.locator('#rt-404-guess')).toBeVisible();
+    await expect(page.locator('#rt-404-grid .rt-card:visible')).toHaveCount(1);
+    await expect(page.locator('#rt-404-grid .rt-card:visible')).toHaveAttribute(
+      'href',
+      '/subnet-calculator'
+    );
+
+    // A wrong tool name carrying a right value: the domain lands in the panel.
+    await page.goto('/whois/example.com');
+    await expect(page.locator('#rt-jump-input')).toHaveValue('example.com');
+    await expect(page.locator('#rt-jump-hint a')).toHaveCount(5);
+
+    // A guess nobody could act on is worse than silence.
+    await page.goto('/sdfsdfsdf');
+    await expect(page.locator('#rt-404-guess')).not.toBeVisible();
+    await expect(page.locator('#rt-jump')).toBeVisible();
   });
 
   test('the mobile burger exposes navigation and appearance controls', async ({ page }) => {
@@ -288,6 +351,20 @@ test.describe('param deep links — rewrite + island application', () => {
     await expectRewrite(page, '/subnet-calculator/2001:db8:abcd::/48', 'Subnet Calculator');
     await expect(page.getByText('2001:db8:abcd::/48').first()).toBeVisible();
     await expect(page.getByText('IPv6', { exact: true }).first()).toBeVisible();
+  });
+
+  test('/dns-lookup/:domain runs the lookup', async ({ page }) => {
+    // Added with the paste panel: the island already read a `domain` param
+    // through useLookupTool, only the manifest was missing it.
+    await expectRewrite(page, '/dns-lookup/example.com', 'DNS Lookup Tool');
+    await expect(page.locator('#domain')).toHaveValue('example.com');
+  });
+
+  test('/cron/:expression seeds the builder', async ({ page }) => {
+    // The one deep link whose value carries both spaces and a slash, so it is
+    // also the proof that a %2F survives the Pages rewrite intact.
+    await expectRewrite(page, '/cron/*%2F5%20*%20*%20*%20*', 'CRON Expression Builder');
+    await expect(page.getByText('*/5 * * * *').first()).toBeVisible();
   });
 });
 

@@ -2289,3 +2289,83 @@ flagged elements are deliberate scrollers (index chips, column-alignment
 row) and sonner's fixed-position mobile wrapper (its toast compensates;
 fixed elements don't scroll the document). 542 unit + 41 e2e green, lint
 0 errors / the same 11 warnings.
+
+### Session 11 — the index becomes a stream, and the front door grows a control
+
+The homepage was reviewed as "too rigid and card based". The diagnosis was
+repetition rather than the grid: the category was stated three times per card
+(section heading, `category-fill` icon tile, `rt-card-badge`) on a row where
+every card shared it; fifteen identically-sized tiles meant nothing was the
+front door; and the fixed 3-track grid manufactured a hole at the tail of
+Microsoft & Azure, Developer and Content. The page also spent none of the one
+`panel-emphasis` DESIGN.md allows it.
+
+Three directions were drawn on a Claude Design canvas — Ledger (no cards at
+all, a hairline index), Shelf (tools standing on a rule, extending the nav's
+own idiom) and Workbench. Workbench was chosen, then taken further: **lose the
+sections entirely**, since the chips already name the categories and the icon
+tile already carries the hue.
+
+**The load-bearing detail is that the width steps are discrete.** The first
+attempt scaled tile width continuously off title and description length. It
+produced fifteen widths inside a 55px band, which packed straight back into a
+perfect 3×5 — the grid, minus the headings. Three distinct steps
+(`235 / 315 / 400px`) are what make rows break 3/2/3/3/4. There is an e2e test
+whose only job is to fail if every row holds the same count, because every
+other assertion about the index passes either way.
+
+Tools stay in category order, so the hues cluster and drift teal → blue →
+purple → amber → orange → pink down the stream: the grouping is drawn rather
+than labelled. 1286px tall against 1612px before, at the same width.
+
+The emphasis panel is spent on a **control, not a banner**: paste a domain,
+IP, CIDR, JWT or cron expression and it opens the tool that reads it.
+`src/lib/paste.js` ranks rather than routes — five tools accept a bare
+hostname, so it returns five chips and Enter takes the first. It ships no
+React; the detectors are the existing dependency-free `ipv4.js`/`ipv6.js`, the
+newly-extracted `cron-builder/lib/cron.js`, and a new `src/lib/hostname.js`.
+
+`hostname.js` exists because the repo already had **three** divergent domain
+regexes (`sslUtils.js`, `tenantLookup.js`, and a third inlined in
+`getTenantId`) and none of them can be used here: two drag `@/core` onto a page
+that ships nothing, and all three call a bare word like `test` a domain — which
+`detectBase64` also calls base64. Requiring a real dotted name is the tie-break
+that lets `test` fall to the encoder. Consolidating the other three onto it is
+left as a follow-up.
+
+Traps hit and worth remembering:
+
+- **`seo.test.js` walks every tool's BreadcrumbList against the built HTML**
+  and fails unless `dist/index.html` carries a literal `id="<hash>"` for each
+  `/#<group>`. The anchors moved onto the first tile of each run — which lands
+  the reader on the tool rather than a heading — with a visually-hidden `h2`
+  beside each so the rotor keeps more than one entry.
+- **/404 reuses the index's old group markup.** `.rt-board`, `.rt-group*` and
+  `.rt-grid` stay in `shell.css` and are not dead code; only the `is-filtered`
+  and `[data-demoted]` machinery was deleted.
+- **`.rt-card` must keep its class name.** `globals.css` pins
+  `.rt-card:hover` to `transform: none` under `prefers-reduced-motion`, so
+  renaming it to `.rt-tile` would have dropped the reduced-motion contract
+  with clean lint.
+- **`/cron/*%2F5%20*%20*%20*%20*` proves Pages preserves `%2F` through the
+  rewrite.** Nothing had tested that; `/base64/:input` had been relying on it
+  untested since it shipped.
+- The e2e suite ran green against a stale `dist/` after an `index.astro` edit.
+  `pnpm test:e2e` serves the build, not the source — rebuild first.
+
+**/404 got the same panel, and a use for the URL that failed.** The panel is
+now `shell/PastePanel.astro` + `lib/pastePanel.js`, shared by both pages so
+they cannot drift. On /404 it asks a different question ("What were you
+looking for?") and is seeded from the path: `/whois/example.com` arrives with
+the domain in the field. `lib/nearestTool.js` ranks the catalogue against the
+failed segment — containment scored separately from edit distance, because
+`subnet` vs `subnetcalculator` is a terrible edit distance and an unambiguous
+prefix, and "I typed the first word only" is the commonest way a tool URL is
+got wrong. Below a 0.55 threshold it says nothing: a confident wrong guess on
+a 404 is worse than silence.
+
+The popular-tools list and the "URL may be mistyped" paragraph were removed at
+the owner's request. Without JavaScript /404 is therefore the headline alone;
+the header nav is the way out.
+
+660 unit + 46 e2e green, lint 0 errors / the same 11 warnings.

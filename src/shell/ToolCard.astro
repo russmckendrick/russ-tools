@@ -1,27 +1,41 @@
 ---
 /**
- * The tool tile — one cell of the index's shared-edge grid.
+ * The tool tile — one item of the index's flowing stream.
  *
- * Four things, in order: the icon and the category badge opposed on the first
- * line, the title, a two-line clamped description, and the route path pinned
- * to the bottom. Everything comes from the manifest.
+ * Icon in a `category-fill` tile beside a text column: title, one-line
+ * description, route path. Everything comes from the manifest.
  *
- * The tile used to carry `tool.badges` ("A · AAAA · MX · TXT") along the
- * bottom. Signal's tile has no room for it and the category block does the
- * marking now — but the badges stay in the search haystack below, so filtering
- * by "MX" still finds the DNS tool even though the string is no longer drawn.
+ * The category badge is gone. The stream has no section headings any more, so
+ * the category is stated once — by the hue of the icon tile — instead of three
+ * times. `tool.badges` ("A · AAAA · MX · TXT") stays in the search haystack
+ * below, so filtering by "MX" still finds the DNS tool even though neither
+ * string is drawn.
+ *
+ * `widthStep` is the tile's `flex-basis`, and it is what makes the stream a
+ * stream: three distinct steps, so rows break at different counts. The index
+ * computes it; /404 renders without it and takes the middle step.
+ *
+ * `hidden` lets a page prerender the whole catalogue and reveal a subset —
+ * /404 does, so its "did you mean" guess can pick any tool without building
+ * card markup a second time in JavaScript.
+ *
+ * `anchor` puts a category id on the first tile of each run. `/#network` is a
+ * compatibility contract — every tool breadcrumb links it and `seo.test.js`
+ * checks the built HTML for it — and with the section headings gone the tile
+ * is what the browser scrolls to, which lands the reader on the tool rather
+ * than on a heading above it.
  */
 import ToolIcon from './ToolIcon.astro';
-import { categoryLabel } from './categories.mjs';
+import { categoryGroupId, categoryVar } from './categories.mjs';
 
-const { tool } = Astro.props;
+const { tool, widthStep = 315, anchor = null, hidden = false } = Astro.props;
 
 /**
  * The link's accessible name. Without this the name is the whole card
  * concatenated — "DNS Lookup Tool Query any record type against Google or
- * Cloudflare DNS over HTTPS. Network /dns-lookup" — and a links-list rotor of
- * fifteen of those is unusable for the one thing it is for. The visible text
- * still starts with the title, so the accessible name remains contained in it.
+ * Cloudflare DNS over HTTPS. /dns-lookup" — and a links-list rotor of fifteen
+ * of those is unusable for the one thing it is for. The visible text still
+ * starts with the title, so the accessible name remains contained in it.
  */
 const label = tool.title;
 
@@ -30,26 +44,30 @@ const haystack = [tool.title, tool.shortDescription, ...tool.badges].join(' ').t
 ---
 
 <!--
-  Two hues, and they are not interchangeable. `--cat` is the category TEXT hue
-  and colours the icon; it is deepened in light mode to clear 4.5:1 on bone.
-  `--cat-fill` is the badge block, which is the same bright value in both
+  `categoryVar` sets both hues at once. Two, and they are not interchangeable:
+  `--cat` is the TEXT hue, deepened in light mode to clear 4.5:1 on bone;
+  `--cat-fill` is the icon tile's solid block, the same bright value in both
   themes because the ink on it is always graphite. Swapping them puts a light
   hue behind graphite text at 1.6:1.
+
+  `data-category` is the group id, not the raw category: filtering has no
+  sections left to read, so the card carries its own answer, and azure and
+  microsoft both answer "microsoft-azure" exactly as the chips do.
 -->
 <a
   class="rt-card"
+  id={anchor}
+  hidden={hidden}
   href={tool.path}
   aria-label={label}
   data-search={haystack}
-  style={`--cat: var(--color-category-${tool.category}); --cat-fill: var(--color-category-fill-${tool.category})`}
+  data-category={categoryGroupId(tool.category)}
+  style={`${categoryVar(tool.category)}; flex-basis: ${widthStep}px`}
 >
-  <span class="rt-card-top">
-    <ToolIcon icon={tool.icon} size={20} />
-    <span class="rt-card-badge">{categoryLabel(tool.category)}</span>
-  </span>
-  <span class="rt-card-name">{tool.title}</span>
-  <p>{tool.shortDescription}</p>
-  <span class="rt-card-foot">
-    <span class="rt-go">{tool.path} &rarr;</span>
+  <ToolIcon icon={tool.icon} size={19} />
+  <span class="rt-card-text">
+    <span class="rt-card-name">{tool.title}</span>
+    <p>{tool.shortDescription}</p>
+    <span class="rt-card-foot">{tool.path}</span>
   </span>
 </a>

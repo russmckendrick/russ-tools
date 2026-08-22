@@ -568,9 +568,18 @@ import '@fontsource/space-mono/700.css';
 ## Layout
 
 - One content column, `max-width: 1200px`, `32px` gutters.
-- **The tool index** is a 3-column grid of separated tiles with a real `gap`
-  (16–22px). Signal's shared-edge idiom is retired: the border belongs to
-  the tile again, because the tile is a pressable object.
+- **The tool index** is one flowing stream of separated tiles — `flex-wrap`
+  with a `12px` gap, not a fixed track count. Each tile carries its own
+  `flex-basis` in three distinct steps (`235 / 315 / 400px`, chosen from title
+  and description length), so rows break at 3, 2, 3, 3 and 4 rather than
+  snapping to a grid. A continuous curve over the same inputs was tried first
+  and repacked into a uniform 3×5; the steps have to be distinct to do
+  anything. The index carries **no category headings** — the filter chips name
+  the categories and the icon tile carries the hue — and tools stay in category
+  order so the hues cluster and drift down the page. /404 keeps the 3-column
+  grid, which is right for three suggestions under one heading.
+  Signal's shared-edge idiom is retired: the border belongs to the tile again,
+  because the tile is a pressable object.
 - **Controls above results, stacked.** The two-column control/result split
   was tried and withdrawn (Session 6); Stacks does not resurrect it. A tool
   page is: head, input band, result panels, in one column.
@@ -637,13 +646,20 @@ colour never carries the state alone.
 
 ### The tool tile
 
-A bordered card: icon in a small `category-fill` tile (2px border,
-`rounded.sm`) and the category badge on the first line, opposed; title at
-`title-sm`; description at `body-sm` in `on-surface-muted`; the route path
-at `data-sm` in `primary-text`, pinned to the bottom. Hover lifts nothing
-and tints nothing: the tile gains the `press` shadow (category-hued in dark
-mode) and moves up-left by 2px, exactly as if it had risen under the finger.
-Reduced motion: shadow only, no translate.
+A bordered card, laid out horizontally: the icon in a small `category-fill`
+tile (2px border, `rounded.sm`) beside a column of title at `title-sm`,
+description at `body-sm` in `on-surface-muted`, and the route path at
+`data-sm`. Hover lifts nothing and tints nothing: the tile gains the `press`
+shadow and moves up-left by 2px, exactly as if it had risen under the finger,
+and the route path turns `primary-text`. Reduced motion: shadow only, no
+translate.
+
+**No category badge.** With the index's section headings gone the icon tile is
+where the category is stated, once. The badge restated it — and fifteen solid
+`category-fill` pills were the loudest thing on the page, worst in dark where
+they floated on espresso. The route path is `on-surface-dim` at rest for the
+same reason: in `primary-text` it put the accent on fifteen things nobody had
+touched, and the accent marks what you are about to press.
 
 ### Inputs
 
@@ -663,7 +679,9 @@ join the field and its submit button flush, sharing the border.
 
 ### Chips (the index category filter)
 
-Bordered pills with `press-sm` shadows — they read as keyboard keys. The
+Bordered pills with `press-sm` shadows — they read as keyboard keys. With the
+section headings gone they are the only place the category names appear, which
+is also the only place the counts appear. The
 active chip inverts to `on-surface` (ink chip on paper, cream chip on
 espresso) with the page ground as its text — the theme's strongest
 contrast, which the demoted taupe rule no longer provides in dark. Counts ride inside the chip in

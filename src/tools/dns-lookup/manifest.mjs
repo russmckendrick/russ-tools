@@ -36,7 +36,9 @@ export default {
 
   // Deep-link segments. The generated _redirects turns each into a 200
   // rewrite onto the prerendered page, which then reads the param.
-  params: [],
+  params: [
+    'domain',
+  ],
 
   // Concrete capabilities, rendered into the page's schema.org
   // `featureList`. Migrated off toolsConfig.json, which is retiring.

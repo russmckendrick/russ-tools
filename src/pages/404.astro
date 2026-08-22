@@ -4,15 +4,26 @@
  * path, and a mistyped URL soft-404s into the index — a real page, status
  * 200, wrong content. That is the shape of thing frozen contract #4 exists
  * to catch, so the shell ships with a genuine 404 from the start.
+ *
+ * The page knows the one thing the index does not: the URL that failed. It
+ * used to throw that away and show three popular tools. Now the failed path
+ * is read for two things — a misspelled tool name, and a value that was
+ * riding on it — so `/subnet-calcualtor` names the tool that was meant and
+ * `/whois/example.com` arrives with the domain already in the dispatcher.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PastePanel from '../shell/PastePanel.astro';
 import ToolCard from '../shell/ToolCard.astro';
 import { TOOLS } from '../tools/registry.mjs';
 
-// Rather than a dead end, offer the tools most likely to have been meant.
-const suggestions = TOOLS.filter((t) =>
-  ['subnet-calculator', 'dns-lookup', 'ssl-checker'].includes(t.id)
-);
+/**
+ * The catalogue the client-side matcher ranks. Ids and titles both, because
+ * `/cron-builder` and `/CRON Expression Builder` are the same mistake about
+ * a tool whose route is neither. Fifteen small objects — cheaper than
+ * importing the registry into a browser script, which would drag every
+ * manifest and its dynamic-import stub onto the page.
+ */
+const catalogue = TOOLS.map((t) => ({ id: t.id, path: t.path, title: t.title }));
 ---
 
 <!--
@@ -28,31 +39,97 @@ const suggestions = TOOLS.filter((t) =>
 >
   <div class="rt-notfound">
     <h1>That page does not exist.</h1>
-    <p>
-      The URL may be mistyped, or the tool may have moved. Every tool is listed on
-      <a href="/">the index</a>.
-    </p>
+    <p class="rt-notfound-path" id="rt-404-path" hidden></p>
   </div>
 
   <!--
-    The same group markup the index uses. This used to hand-roll the heading
-    as a raw `<b style="color:…">`, which meant a page that looked almost but
-    not quite like the catalogue and carried an inline colour nothing else in
-    the shell does.
-
-    No `--cat` here: the group spans three categories, so it has no hue of its
-    own, and `--cat` may only ever carry a `--color-category-*` token
-    (`category-accent.test.js`). `.rt-group-label` falls back to the neutral.
+    The page's one emphasis panel. The index asks what you arrived with; here
+    the URL has already failed, so it asks what you were actually after — and
+    if the failed path carried a value, that value is already in the field.
   -->
-  <div class="rt-board">
+  <PastePanel
+    label="What were you looking for?"
+    hint="Paste a domain, IP, CIDR, JWT or cron expression —"
+  />
+
+  <script type="application/json" id="rt-404-catalogue" set:html={JSON.stringify(catalogue)} />
+
+  <!--
+    The guess, and only the guess. There is no standing list of popular tools:
+    a dead-end page does not need a second catalogue when the header already
+    links to the real one, and three tools nobody asked for are not a reason
+    to keep reading.
+
+    All fifteen cards are prerendered and hidden so the guess can name any tool
+    without building card markup a second time in JavaScript. The section stays
+    hidden until the failed path actually resembles something.
+
+    No `--cat` on the heading: the guess can span any category, so it has no
+    hue of its own, and `--cat` may only ever carry a `--color-category-*`
+    token (`category-accent.test.js`). `.rt-group-label` falls back to the
+    neutral.
+  -->
+  <div class="rt-board" id="rt-404-guess" hidden>
     <section class="rt-group">
       <div class="rt-group-head">
-        <h2 class="rt-group-label" id="popular-label">Popular tools</h2>
+        <h2 class="rt-group-label" id="guess-label">Did you mean</h2>
         <hr />
       </div>
-      <div class="rt-grid" aria-labelledby="popular-label">
-        {suggestions.map((tool) => <ToolCard tool={tool} />)}
+      <div class="rt-grid" id="rt-404-grid" aria-labelledby="guess-label">
+        {TOOLS.map((tool) => <ToolCard tool={tool} hidden />)}
       </div>
     </section>
   </div>
 </BaseLayout>
+
+<script>
+  /**
+   * Read the failed URL and turn it into two useful things: the tool that was
+   * probably meant, and any value that was riding on the path.
+   *
+   * Without JavaScript this page is the headline alone — the paste panel and
+   * the guess both need a browser, and the standing list of popular tools that
+   * used to be the no-JS floor was removed deliberately. The header's own nav
+   * is the way out in that case, so it is a thin page rather than a trap.
+   */
+  import { nearestTools, trailingValue } from '../lib/nearestTool.js';
+  import { wirePastePanel } from '../lib/pastePanel.js';
+
+  const catalogue = JSON.parse(document.getElementById('rt-404-catalogue').textContent);
+  const grid = document.getElementById('rt-404-grid');
+  const guess = document.getElementById('rt-404-guess');
+  const heading = document.getElementById('guess-label');
+  const pathLine = document.getElementById('rt-404-path');
+  const cards = [...grid.querySelectorAll('.rt-card')];
+
+  const { pathname } = location;
+  const segment = pathname.split('/').filter(Boolean)[0] ?? '';
+
+  // Say what failed. On a soft 404 the visitor often cannot see the URL bar —
+  // in an in-app browser, or on a phone that has scrolled it away.
+  if (pathname !== '/' && pathname !== '/404') {
+    pathLine.textContent = pathname;
+    pathLine.hidden = false;
+  }
+
+  // Shown only when the path resembles something. A guess nobody can act on
+  // is worse than silence on a page whose whole job is to get someone unstuck.
+  const matches = nearestTools(segment, catalogue);
+  if (matches.length) {
+    const wanted = new Set(matches.map((m) => m.path));
+    for (const card of cards) {
+      card.hidden = !wanted.has(new URL(card.href).pathname);
+    }
+    heading.textContent = matches.length === 1 ? 'Did you mean' : 'Did you mean one of these';
+    guess.hidden = false;
+  }
+
+  // A wrong tool name carrying a right value — /whois/example.com. The route
+  // was off, the domain was not, so it goes straight into the dispatcher.
+  const value = trailingValue(pathname);
+  if (value) document.getElementById('rt-jump-input').value = value;
+
+  // Focus the way out, but not on a phone: the field is near the top, and a
+  // keyboard sliding up over the suggestions helps nobody.
+  wirePastePanel({ autofocus: window.matchMedia('(min-width: 600px)').matches });
+</script>

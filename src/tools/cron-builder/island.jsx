@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyText } from '@/core';
+import { validateCronExpression } from './lib/cron.js';
 
 const defaultFields = {
   minute: '*',
@@ -189,62 +191,6 @@ const translateCronExpression = (cronString) => {
   }
 };
 
-// CRON validation function
-const validateCronExpression = (cronString) => {
-  try {
-    const parts = cronString.trim().split(/\s+/);
-    if (parts.length !== 5) {
-      return { valid: false, error: "CRON expression must have exactly 5 fields" };
-    }
-    
-    const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
-    
-    // Basic validation rules
-    const validateRange = (value, min, max, _name) => {
-      if (value === '*') return true;
-      if (value.includes(',')) {
-        return value.split(',').every(v => {
-          const num = parseInt(v);
-          return !isNaN(num) && num >= min && num <= max;
-        });
-      }
-      if (value.includes('/')) {
-        const [base, step] = value.split('/');
-        if (base === '*' || (parseInt(base) >= min && parseInt(base) <= max)) {
-          return parseInt(step) > 0;
-        }
-        return false;
-      }
-      if (value.includes('-')) {
-        const [start, end] = value.split('-');
-        return parseInt(start) >= min && parseInt(end) <= max && parseInt(start) <= parseInt(end);
-      }
-      const num = parseInt(value);
-      return !isNaN(num) && num >= min && num <= max;
-    };
-    
-    if (!validateRange(minute, 0, 59, 'minute')) {
-      return { valid: false, error: "Invalid minute value (0-59)" };
-    }
-    if (!validateRange(hour, 0, 23, 'hour')) {
-      return { valid: false, error: "Invalid hour value (0-23)" };
-    }
-    if (!validateRange(dayOfMonth, 1, 31, 'day of month') && dayOfMonth !== 'L') {
-      return { valid: false, error: "Invalid day of month value (1-31 or L)" };
-    }
-    if (!validateRange(month, 1, 12, 'month')) {
-      return { valid: false, error: "Invalid month value (1-12)" };
-    }
-    if (!validateRange(dayOfWeek, 0, 7, 'day of week')) {
-      return { valid: false, error: "Invalid day of week value (0-7)" };
-    }
-    
-    return { valid: true };
-  } catch (error) {
-    return { valid: false, error: "Invalid CRON expression format" };
-  }
-};
-
 const CronFieldSelector = ({ field, value, onChange }) => {
   const [customValue, setCustomValue] = useState('');
   const [showCustom, setShowCustom] = useState(false);
@@ -361,6 +307,29 @@ const CronBuilderTool = () => {
       toast.error('Invalid CRON expression format');
     }
   };
+
+  // Deep link: /cron/:expression seeds the builder from the URL. The
+  // expression's spaces survive a path segment once encoded, and the manual
+  // box is filled too so the round trip is visible rather than magic.
+  //
+  // Two guards. `decodeURIComponent` throws on a lone `%`, and a URL is the
+  // one input nobody validated on the way in. And the whitespace is collapsed
+  // because `translateCronExpression` splits on a single space where
+  // `validateCronExpression` splits on any run of it — a link carrying two
+  // spaces would validate and then fail to translate.
+  const { expression: urlExpression } = useParams();
+  useEffect(() => {
+    if (!urlExpression) return;
+    let decoded;
+    try {
+      decoded = decodeURIComponent(urlExpression);
+    } catch {
+      return;
+    }
+    const normalised = decoded.trim().replace(/\s+/g, ' ');
+    setManualInput(normalised);
+    parseCronExpression(normalised);
+  }, [urlExpression]);
 
   const validation = validateCronExpression(cronString);
   const translation = translateCronExpression(cronString);
