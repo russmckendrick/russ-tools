@@ -118,21 +118,35 @@ const SslCheckerTool = () => {
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="domain">Domain Name</Label>
-                <div className="flex gap-2 mt-1">
+                {/*
+                  DESIGN.md, Inputs: the primary input on a tool page is a
+                  single 3px-bordered row — the field and the submit button are
+                  one object, flush, with no gap and no radius between them.
+                  The border lives on the wrapper, so the two controls drop
+                  their own and the seam is the button's own edge.
+                */}
+                <div className="mt-2 flex items-stretch border-[3px] border-rule bg-surface-raised">
                   <div className="relative flex-1">
-                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Globe className="pointer-events-none absolute left-[22px] top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-faint" />
                     <Input
                       id="domain"
                       type="text"
                       placeholder="example.com"
                       value={domain}
                       onChange={(e) => setDomain(e.target.value)}
-                      className="pl-9"
+                      className="h-auto border-0 bg-transparent py-[18px] pl-[52px] pr-[22px] text-data-lg focus-visible:ring-inset focus-visible:ring-offset-0"
                     />
                   </div>
+                  {/*
+                    `title-sm` rather than `body-lg` + `font-bold`: the handoff
+                    asks for 15px/700, and here one class applies one step —
+                    so the on-scale 17px/700 step is the honest choice, and
+                    nothing goes beside a type step.
+                  */}
                   <Button
                     type="submit"
                     disabled={loading}
+                    className="h-auto shrink-0 px-9 text-title-sm focus-visible:ring-inset focus-visible:ring-offset-0"
                   >
                     {loading ? (
                       <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />

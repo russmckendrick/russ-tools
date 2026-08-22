@@ -94,8 +94,9 @@ const schema = [
   image={`/og/${tool.id}.png`}
   schema={schema}
 >
-  <!-- The hue is set once, here. Everything below inherits it. -->
-  <div style={`--cat: var(--color-category-${tool.category})`}>
+  <!-- The hue is set once, here. Everything below inherits it. Both roles:
+       `--cat` is the text hue, `--cat-fill` the solid badge block. -->
+  <div style={`--cat: var(--color-category-${tool.category}); --cat-fill: var(--color-category-fill-${tool.category})`}>
     <div class="rt-tool-head">
       <nav class="rt-crumb" aria-label="Breadcrumb">
         <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a>

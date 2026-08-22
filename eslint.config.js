@@ -14,20 +14,40 @@ const RAW_PALETTE_CLASS = String.raw`(^|[\s"'\`])(hover:|focus:|focus-visible:|a
 const RAW_PALETTE_MESSAGE =
   'Raw Tailwind palette class. Use a semantic token instead — bg-success-subtle / text-danger / border-info / text-muted-foreground. See DESIGN.md.'
 
-// DESIGN.md defines exactly ten typography steps. Tailwind's stock sizes are
-// not on that scale, and because a call-site class wins over the shared
+// DESIGN.md defines exactly fourteen typography steps. Tailwind's stock sizes
+// are not on that scale, and because a call-site class wins over the shared
 // component's, one `text-lg` on a CardTitle silently opts that heading out of
-// the design system. Weights above 660 are banned outright: DESIGN.md's
-// Typography section says weights stay in the 400-660 range.
+// the design system. Stock font-weight utilities are banned outright: under
+// Signal every step carries its own weight (400-700), so a `font-*` beside a
+// step is either a no-op or an override of the design system.
 const OFF_SCALE_TYPE = String.raw`(^|[\s"'\`])(hover:|focus:|focus-visible:|active:|disabled:|group-hover:|dark:|sm:|md:|lg:|xl:|2xl:)*(text-(xs|sm|base|lg|xl|[2-9]xl)|font-(thin|extralight|light|normal|bold|extrabold|black))\b`
 
 const OFF_SCALE_TYPE_MESSAGE =
-  'Off-scale typography. DESIGN.md defines the type steps: text-display / text-headline-lg / text-headline-md / text-title-sm / text-body-lg / text-body-md / text-body-sm / text-label-caps / text-data-lg / text-data-md / text-data-sm. Each carries its own weight, line-height and tracking, so it needs no font-* or tracking-* alongside it.'
+  'Off-scale typography. DESIGN.md defines the type steps: text-display / text-headline-lg / text-headline-md / text-title-sm / text-body-lg / text-body-md / text-body-sm / text-label-caps / text-label-caps-sm / text-data-xl / text-data-lg / text-data-md / text-data-sm / text-verdict. Each carries its own weight, line-height and tracking, so it needs no font-* or tracking-* alongside it.'
 
 export default [
   // .wrangler holds scratch bundles that `wrangler pages dev` writes while
   // the _redirects behaviour is being tested.
-  { ignores: ['dist', '.astro', '.wrangler', 'coverage'] },
+  //
+  // ds-bundle / .ds-sync / .design-sync are the claude.ai/design sync's build
+  // output and vendored tooling (see .design-sync/NOTES.md). ds-bundle alone
+  // carries a bundled copy of React, which is 239 lint errors of someone
+  // else's minified code — enough to fail CI on a directory git does not even
+  // track. They are gitignored; they should be lint-ignored too.
+  {
+    ignores: [
+      'dist',
+      '.astro',
+      '.wrangler',
+      'coverage',
+      'ds-bundle',
+      '.ds-sync',
+      '.design-sync',
+      // The Signal handoff: a reference prototype and its runtime, kept as the
+      // record of what this design was specified from. Not source.
+      'design_handoff_signal',
+    ],
+  },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

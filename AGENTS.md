@@ -28,17 +28,28 @@ it) plus the shared `<Toaster/>`. Only `ShellContext` died at cutover.
 **The design system is [`DESIGN.md`](DESIGN.md) in the repo root — read it before touching
 any styling.** It follows the [Stitch DESIGN.md spec](https://stitch.withgoogle.com/docs/design-md/specification)
 (YAML token front matter + prose rationale) and is the single source of truth for colour,
-type, layout, shape and components. Short version: **dark-first**, panelled, six category
-hues driven by each tool's `category`, Inter for prose and JetBrains Mono for data only,
-no serif. Use semantic tokens, never raw Tailwind palette classes (`bg-green-50`) —
+type, layout, shape and components.
+
+Short version — the language is **Stacks** (it replaced Signal in August 2026; the
+token *names* survived, every value changed): **chunky rounded** (8/10/14/18px, always
+paired with a 2px `rule` border — ink on paper, cream on ink), a hard **offset shadow**
+that appears only on pressables and the one `panel-emphasis` per page (`:active` sinks
+the element and removes it), **paper light** as the house ground with an **ink dark**
+peer and *no other palettes*, one green accent (`#6ee787`) that only ever appears on
+something you can press (as text/ring it is `primary-text`, a deep green in light mode),
+six candy category hues that label and never fill, **Bricolage Grotesque** for display
+and headings, **Space Grotesk** for body and every small label, **Space Mono** for data
+and only data. Use semantic tokens, never raw Tailwind palette classes (`bg-green-50`) —
 ESLint **errors** on those across `src/tools/` and `src/components/ui/`.
 
 **`src/components/ui/` is the design surface — change the component, not the call site.**
 Every tool renders through it (48 files use the card, 47 the button), so it is the one
 place a change reaches all fifteen tools at once, and it is now written against DESIGN.md
-rather than shadcn's stock values. Notably: the primary button, focus ring, active tab and
-default badge all take `var(--cat)`, which `ToolLayout` sets once per page from the
-manifest's `category` — a tool never names a colour. There is one `<Toaster/>`
+rather than shadcn's stock values. Notably: the default badge takes `var(--cat)` and the
+`category` badge `var(--cat-fill)`, both set once per page by `ToolLayout` from the
+manifest's `category` — a tool never names a colour. The focus ring is `--color-ring`,
+which resolves to `primary-text` (the accent in dark, a deep green in light);
+the raw accent is ~1.6:1 on paper and cannot be a ring or text there. There is one `<Toaster/>`
 (`ui/toaster.jsx`, mounted by `ToolIsland`), one help affordance (`ui/help-dialog.jsx`), and
 one source for the Material tool icons (`src/shell/icons.mjs`, rendered by the Astro
 `ToolIcon` and the React `ui/tool-icon.jsx`).
@@ -58,7 +69,7 @@ tests; the pattern is the thing to remember:
 | Collision | Symptom | Fixed in |
 |---|---|---|
 | `--spacing-lg` vs the *container* scale | `max-w-lg` = 16px, `max-w-3xl` = 48px — every dialog a sliver | `scripts/generate-tokens.mjs` (emits `--rt-space-*`) |
-| `--font-title-sm` vs the font **family** namespace | `font-title-sm` set `font-family: "Inter"` (not the self-hosted `"Inter Variable"`) → headings fell back to **serif** | same script strips per-step family tokens; each step folds into one `--text-*` carrying weight/line-height/tracking |
+| `--font-title-sm` vs the font **family** namespace | `font-title-sm` set `font-family: "Instrument Sans"` (not the self-hosted `"Instrument Sans Variable"`) → headings fell back to **serif** | same script strips per-step family tokens; each step folds into one `--text-*` carrying weight/line-height/tracking |
 | `text-body-sm` looks like a colour to tailwind-merge | `cn()` **deleted** the size class; the scale was in the source, absent from the DOM | `src/lib/utils.js` (`extendTailwindMerge`), pinned by `src/lib/utils.test.js` |
 
 **Fix collisions in the generator or in `cn()`, never by renaming things in `DESIGN.md`.**
@@ -84,9 +95,9 @@ so the light remap carries through). To change a colour: edit `DESIGN.md`, regen
 `pnpm test`. `tokens.contrast.test.js` fails if the generated file has drifted from `DESIGN.md`,
 or if any pair drops below its WCAG floor — it has caught five real contrast faults so far.
 
-> `docs/DESIGN_SPEC.md`, `docs/DESIGN_SYSTEM.md` and `docs/STYLE_GUIDE.md` carried the
-> abandoned **Solarized** palette and the Mantine-era component map. All three are
-> **deleted** — `DESIGN.md` is the only design authority.
+> `docs/DESIGN_SPEC.md`, `docs/DESIGN_SYSTEM.md` and `docs/STYLE_GUIDE.md` carried an
+> abandoned palette and the Mantine-era component map. All three are **deleted** —
+> `DESIGN.md` is the only design authority.
 
 ### Trust caveats (this file used to lie — verify before relying)
 
@@ -95,8 +106,9 @@ A prior version of this file misdescribed the codebase. Corrected facts:
 - There are **15 tools**. Don't take a count from prose anywhere — the generated tables
   in the READMEs are the only inventory that is checked (`src/tools/docs.test.js`).
 - Theming is a **pre-paint inline script** in `BaseLayout.astro` reading `vite-ui-theme`
-  and `russ-tools-palette` from localStorage, plus `src/shell/appearance-controls.js`.
-  There is no React theme provider and no `next-themes`.
+  from localStorage, plus `src/shell/appearance-controls.js`. There is no React theme
+  provider and no `next-themes`. The six alternate palettes and `russ-tools-palette` were
+  retired with Signal; the key is deliberately left in localStorage but nothing reads it.
 - Routes are **generated from manifests** (`allRoutes()` in `src/tools/registry.mjs` →
   `scripts/generate-redirects.mjs`). The legacy route list is frozen in
   `registry.test.js`.
@@ -116,10 +128,26 @@ A prior version of this file misdescribed the codebase. Corrected facts:
 **This project uses `pnpm`** (this machine blocks `npm`; `pnpm@11` + Node ≥20). The
 lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger — ignore it.
 
+> **If `pnpm build` dies in `generatePages` with `Named export 'parseCookie' not found`**,
+> look for a real `node_modules/cookie` directory. An old npm install left `cookie@1.0.2`
+> there as a plain folder — pnpm owns neither it nor the two versions it *does* manage
+> (1.1.1 for msw, 2.0.1 for astro), and Node resolves the orphan when it imports the built
+> prerender entry from `dist/`. `rm -rf node_modules/cookie` fixes it; pnpm restores
+> anything it actually owns on the next install. This is environment state, not a repo
+> change, so it can come back with another stray npm install.
+
 - `pnpm install` — install deps (esbuild is the one approved build script, see `pnpm.onlyBuiltDependencies`)
-- `pnpm generate:tokens` — regenerate the token layer from `DESIGN.md` (needs network once)
-- `pnpm test` — Vitest (1000 tests; **keep these green**) · `pnpm test:watch` to iterate
-- `pnpm test:e2e` — Playwright deep-link matrix (22 tests) against `wrangler pages dev`
+- `pnpm generate:tokens` — regenerate the token layer from `DESIGN.md` (needs network once).
+  The exporter is **pinned** (`@google/design.md@0.3.0`) because its output shape is not a
+  stable contract and an unpinned upgrade would fail the drift test on an untouched file.
+  It reads only `colors`, `typography`, `rounded` and `spacing`; `borderWidth`, `shadow`,
+  `motion` and `components` are documentation, transcribed by hand into `globals.css`.
+- `pnpm test` — Vitest (514 tests; **keep these green**) · `pnpm test:watch` to iterate.
+  The count dropped from ~1000 when the palettes were retired: `tokens.contrast.test.js`
+  ran its pair list over 12 palette/mode combinations and now runs it over 2. It measures
+  *more* roles than before, against fewer themes.
+- `pnpm test:e2e` — Playwright deep-link and help matrix (41 tests) against
+  `wrangler pages dev`
 - `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 11 warnings remain
   (exhaustive-deps and react-refresh) — the raw-palette and off-scale-type warnings are
   all cleared. Don't add errors, and don't let the warning count climb.
@@ -205,13 +233,19 @@ renderers, with no `react-icons` runtime dependency.
   objects, so `toEqual` against a plain object fails — compare structurally.
 - **Gotcha:** JSX attribute string literals do **not** process escapes — `value="\t"` is a
   backslash and a `t`, not a tab. Use `value={'\t'}`.
-- **Gotcha:** a raw palette ramp is **not** usable as text — Solarized green is 2.97:1 on
-  the light card. The semantic tokens are derived, accessible variants; `--color-solar-*`
-  and the other raw ramps are for decoration only. `src/styles/tokens.contrast.test.js`
-  enforces this across all twelve palette/mode combinations (694 assertions), so a
+- **Gotcha:** each category has **two** hues and they are not interchangeable.
+  `--cat` / `--color-category-*` is the TEXT hue, deepened in light mode to clear 4.5:1 on
+  bone. `--cat-fill` / `--color-category-fill-*` is the solid badge block, identical in
+  both themes because the ink on it is always graphite. Putting a text hue behind that ink
+  measures 1.6:1. `category-accent.test.js` guards both slots, in both directions.
+- **Gotcha:** ink on a solid *status* fill is `on-status`, not `on-primary`. The accent is
+  bright in both themes and takes graphite ink; the status hues flip, so their ink flips
+  too. `src/styles/tokens.contrast.test.js` measures every pair in both themes, so a
   hand-tuned hex in `globals.css` will fail `pnpm test`.
-- **Gotcha:** `--color-ring` is legitimately different in light and dark. No single blue
-  clears 3:1 against both a light and a dark card. Don't "simplify" it to one value.
+- **Gotcha:** `--color-ring` is legitimately different in light and dark, and now points at
+  `primary-text` rather than `primary`. No single value clears 3:1 against both a light and
+  a dark card, and the chartreuse accent is 1.18:1 on bone. Don't "simplify" it to one value
+  and don't point it back at `primary`.
 
 All six bugs found in the Phase 0 audit are **fixed** (Microsoft Portals `undefined/…` URLs,
 azure-kql missing `persist`, markdown-table undo/redo + tab delimiter, sharelink

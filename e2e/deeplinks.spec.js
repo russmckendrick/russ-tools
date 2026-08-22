@@ -126,14 +126,11 @@ test.describe('home and shell pages', () => {
     await expect(
       page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Saved data' })
     ).toBeVisible();
-    await expect(page.getByRole('group', { name: 'Appearance' })).toBeVisible();
-
-    const paletteToggle = page.locator('[data-palette-toggle]');
-    await paletteToggle.click();
-    await expect(page.getByRole('menu', { name: 'Color palette' })).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(paletteToggle).toHaveAttribute('aria-expanded', 'false');
-    await expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
+    // The palette picker is gone: Signal ships two themes, so the appearance
+    // controls collapsed from a group (picker + mode cycle) to the single
+    // theme cell, which is a sibling of the nav links rather than a wrapper.
+    await expect(page.locator('[data-theme-toggle]')).toBeVisible();
+    await expect(page.locator('[data-palette-toggle]')).toHaveCount(0);
 
     await page.keyboard.press('Escape');
     await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
@@ -160,6 +157,11 @@ test.describe('home and shell pages', () => {
     );
   });
 
+  // `russ-tools-palette` is a retired key — the six alternate palettes went
+  // with the Signal redesign and nothing reads it any more. It stays here on
+  // purpose: an orphaned site-preference key is exactly what "Clear all tool
+  // data" must leave alone, and a stored value has to degrade to a valid
+  // theme rather than throw on the pre-paint path.
   test('/delete hides and preserves storage not owned by a tool', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('russ-tools-palette', 'nord');

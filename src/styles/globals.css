@@ -35,9 +35,15 @@
   --color-accent: var(--color-surface-inset);
   --color-accent-foreground: var(--color-on-surface);
   --color-destructive: var(--color-error);
-  --color-destructive-foreground: var(--color-on-primary);
+  --color-destructive-foreground: var(--color-on-status);
   --color-border: var(--color-outline);
-  --color-ring: var(--color-primary);
+
+  /* The focus ring takes the accent's TEXT role, not the accent itself.
+     `primary` is #c6f232 in both themes, which is 1.18:1 on the bone ground —
+     an invisible focus ring. `primary-text` is the accent in dark and the
+     olive derivative in light, so the ring clears 3:1 in both. DESIGN.md's
+     Accessibility section: primary is validated as a fill, never as text. */
+  --color-ring: var(--color-primary-text);
 
   /* `input` is a control boundary, so it takes outline-strong (>= 3:1) and
      never the decorative outline hairline. */
@@ -46,10 +52,15 @@
   /* --- semantic status ----------------------------------------------------
      `danger` is DESIGN.md's `error` under the name the components use. */
   --color-danger: var(--color-error);
-  --color-success-foreground: var(--color-on-primary);
-  --color-warning-foreground: var(--color-on-primary);
-  --color-info-foreground: var(--color-on-primary);
-  --color-danger-foreground: var(--color-on-primary);
+
+  /* Ink on a SOLID status fill is `on-status`, not `on-primary`. The accent is
+     bright in both themes and always takes graphite ink; the status hues are
+     bright in dark and deep in light, so their ink has to flip. Pointing these
+     at `on-primary` put #16171b on #14793a — 3.26:1. */
+  --color-success-foreground: var(--color-on-status);
+  --color-warning-foreground: var(--color-on-status);
+  --color-info-foreground: var(--color-on-status);
+  --color-danger-foreground: var(--color-on-status);
 
   /* `-subtle` is the status hue laid over the panel at DESIGN.md's 13% tint
      — stepped down in light mode, where 13% is already dark enough to drop
@@ -58,17 +69,42 @@
   --color-danger-subtle: var(--color-error-subtle);
 
   /* --- typography ---------------------------------------------------------
-     Two families, strictly separated jobs: Inter for prose and UI, JetBrains
-     Mono for data only. Both self-hosted — a font-CDN request on first paint
-     would contradict the site's privacy claim. */
-  --font-sans: "Inter Variable", Inter, system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", SFMono-Regular,
-    Menlo, Consolas, monospace;
+     Three families, strictly separated jobs: Bricolage Grotesque for display
+     and headings, Space Grotesk for body and every small label, Space Mono
+     for data and only data. All self-hosted — a font-CDN request on first
+     paint would contradict the site's privacy claim. */
+  --font-sans: "Space Grotesk Variable", "Space Grotesk", system-ui,
+    -apple-system, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque",
+    "Space Grotesk Variable", system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo,
+    Consolas, monospace;
 
   /* --- radius -------------------------------------------------------------
-     DESIGN.md's scale arrives generated as --radius-sm..xl; this is the
-     unsuffixed default shadcn components reach for. */
+     DESIGN.md's scale arrives generated as --radius-sm..xl: 8/10/14/18px
+     under Stacks — badge, control, panel, sheet. This is the unsuffixed
+     default shadcn components reach for; it stays wired up so the scale
+     remains the single lever. */
   --radius: var(--radius-lg);
+
+  /* --- rule weight, the press shadow and motion ----------------------------
+     DESIGN.md declares `borderWidth`, `shadow` and `motion`, but the exporter
+     behind `pnpm generate:tokens` reads only colors/typography/rounded/spacing
+     and drops them silently. They are transcribed here by hand; keep them in
+     step with DESIGN.md's front matter.
+
+     The offset shadow is hard-edged, in the structural `rule` colour, and it
+     means exactly one thing: this is pressable. Pressing sinks the element
+     (translate by the offset, shadow to none). `press-lg` additionally marks
+     the one emphasis panel per page. Panels at rest carry no shadow. */
+  --border-hairline: 1px;
+  --border-structural: 2px;
+  --shadow-press-sm: 3px 3px 0 var(--color-rule);
+  --shadow-press: 4px 4px 0 var(--color-rule);
+  --shadow-press-lg: 5px 5px 0 var(--color-rule);
+  --duration-fast: 90ms;
+  --duration-base: 140ms;
+  --ease-signal: ease-out;
 }
 
 /* --- Light theme ----------------------------------------------------------
@@ -80,21 +116,44 @@
     color-scheme: dark;
   }
 
+  /* Dark is the default, so light is the override: every token with a `-light`
+     peer is repointed at it. The shadcn aliases in the @theme block above
+     follow automatically, because they reference rather than copy.
+
+     Two groups deliberately do NOT appear here — their ground does not change
+     with the theme, so neither does their ink:
+       - `category-fill-*` / `on-category-fill`, because a category badge is
+         always graphite ink on the bright hue, in both themes;
+       - `on-footer` / `on-footer-muted`, because the footer is dark in both
+         themes (`footer-light` is #16171b).
+     `danger-subtle` is absent for the opposite reason: it is an alias of
+     `error-subtle`, which IS remapped here, so it carries through by itself. */
   .light {
     --color-surface: var(--color-surface-light);
     --color-surface-raised: var(--color-surface-raised-light);
     --color-surface-inset: var(--color-surface-inset-light);
     --color-outline: var(--color-outline-light);
     --color-outline-strong: var(--color-outline-strong-light);
+    --color-rule: var(--color-rule-light);
     --color-on-surface: var(--color-on-surface-light);
     --color-on-surface-muted: var(--color-on-surface-muted-light);
     --color-on-surface-faint: var(--color-on-surface-faint-light);
+    --color-on-surface-dim: var(--color-on-surface-dim-light);
     --color-primary: var(--color-primary-light);
+    --color-primary-hover: var(--color-primary-hover-light);
     --color-on-primary: var(--color-on-primary-light);
+    --color-primary-text: var(--color-primary-text-light);
+    --color-nav-active: var(--color-nav-active-light);
+    --color-footer: var(--color-footer-light);
+    --color-on-status: var(--color-on-status-light);
     --color-success: var(--color-success-light);
     --color-warning: var(--color-warning-light);
     --color-error: var(--color-error-light);
     --color-info: var(--color-info-light);
+    --color-success-subtle: var(--color-success-subtle-light);
+    --color-warning-subtle: var(--color-warning-subtle-light);
+    --color-info-subtle: var(--color-info-subtle-light);
+    --color-error-subtle: var(--color-error-subtle-light);
     --color-category-network: var(--color-category-network-light);
     --color-category-azure: var(--color-category-azure-light);
     --color-category-microsoft: var(--color-category-microsoft-light);
@@ -102,16 +161,13 @@
     --color-category-developer: var(--color-category-developer-light);
     --color-category-content: var(--color-category-content-light);
 
-    --color-success-subtle: var(--color-success-subtle-light);
-    --color-warning-subtle: var(--color-warning-subtle-light);
-    --color-info-subtle: var(--color-info-subtle-light);
-    --color-danger-subtle: var(--color-error-subtle-light);
-
     color-scheme: light;
   }
 
   /* Match the OS before the theme script has run, so first paint is not the
-     wrong theme. An explicit .light/.dark class always wins over this. */
+     wrong theme. An explicit .light/.dark class always wins over this.
+     A media query cannot reuse a class block, so this is duplicated by
+     necessity — `tokens.contrast.test.js` asserts the two stay identical. */
   @media (prefers-color-scheme: light) {
     :root:not(.dark) {
       --color-surface: var(--color-surface-light);
@@ -119,15 +175,26 @@
       --color-surface-inset: var(--color-surface-inset-light);
       --color-outline: var(--color-outline-light);
       --color-outline-strong: var(--color-outline-strong-light);
+      --color-rule: var(--color-rule-light);
       --color-on-surface: var(--color-on-surface-light);
       --color-on-surface-muted: var(--color-on-surface-muted-light);
       --color-on-surface-faint: var(--color-on-surface-faint-light);
+      --color-on-surface-dim: var(--color-on-surface-dim-light);
       --color-primary: var(--color-primary-light);
+      --color-primary-hover: var(--color-primary-hover-light);
       --color-on-primary: var(--color-on-primary-light);
+      --color-primary-text: var(--color-primary-text-light);
+      --color-nav-active: var(--color-nav-active-light);
+      --color-footer: var(--color-footer-light);
+      --color-on-status: var(--color-on-status-light);
       --color-success: var(--color-success-light);
       --color-warning: var(--color-warning-light);
       --color-error: var(--color-error-light);
       --color-info: var(--color-info-light);
+      --color-success-subtle: var(--color-success-subtle-light);
+      --color-warning-subtle: var(--color-warning-subtle-light);
+      --color-info-subtle: var(--color-info-subtle-light);
+      --color-error-subtle: var(--color-error-subtle-light);
       --color-category-network: var(--color-category-network-light);
       --color-category-azure: var(--color-category-azure-light);
       --color-category-microsoft: var(--color-category-microsoft-light);
@@ -135,343 +202,8 @@
       --color-category-developer: var(--color-category-developer-light);
       --color-category-content: var(--color-category-content-light);
 
-      --color-success-subtle: var(--color-success-subtle-light);
-      --color-warning-subtle: var(--color-warning-subtle-light);
-      --color-info-subtle: var(--color-info-subtle-light);
-      --color-danger-subtle: var(--color-error-subtle-light);
-
       color-scheme: light;
     }
-  }
-
-  :root[data-palette="solarized"] {
-    --color-surface: var(--color-solarized-surface);
-    --color-surface-raised: var(--color-solarized-surface-raised);
-    --color-surface-inset: var(--color-solarized-surface-inset);
-    --color-outline: var(--color-solarized-outline);
-    --color-outline-strong: var(--color-solarized-outline-strong);
-    --color-on-surface: var(--color-solarized-on-surface);
-    --color-on-surface-muted: var(--color-solarized-on-surface-muted);
-    --color-on-surface-faint: var(--color-solarized-on-surface-faint);
-    --color-primary: var(--color-solarized-primary);
-    --color-on-primary: var(--color-solarized-on-primary);
-    --color-success: var(--color-solarized-success);
-    --color-warning: var(--color-solarized-warning);
-    --color-error: var(--color-solarized-error);
-    --color-info: var(--color-solarized-info);
-    --color-category-network: var(--color-solarized-category-network);
-    --color-category-azure: var(--color-solarized-category-azure);
-    --color-category-microsoft: var(--color-solarized-category-microsoft);
-    --color-category-security: var(--color-solarized-category-security);
-    --color-category-developer: var(--color-solarized-category-developer);
-    --color-category-content: var(--color-solarized-category-content);
-    --color-success-subtle: var(--color-solarized-success-subtle);
-    --color-warning-subtle: var(--color-solarized-warning-subtle);
-    --color-info-subtle: var(--color-solarized-info-subtle);
-    --color-danger-subtle: var(--color-solarized-error-subtle);
-  }
-
-  :root.light[data-palette="solarized"] {
-    --color-surface: var(--color-solarized-surface-light);
-    --color-surface-raised: var(--color-solarized-surface-raised-light);
-    --color-surface-inset: var(--color-solarized-surface-inset-light);
-    --color-outline: var(--color-solarized-outline-light);
-    --color-outline-strong: var(--color-solarized-outline-strong-light);
-    --color-on-surface: var(--color-solarized-on-surface-light);
-    --color-on-surface-muted: var(--color-solarized-on-surface-muted-light);
-    --color-on-surface-faint: var(--color-solarized-on-surface-faint-light);
-    --color-primary: var(--color-solarized-primary-light);
-    --color-on-primary: var(--color-solarized-on-primary-light);
-    --color-success: var(--color-solarized-success-light);
-    --color-warning: var(--color-solarized-warning-light);
-    --color-error: var(--color-solarized-error-light);
-    --color-info: var(--color-solarized-info-light);
-    --color-category-network: var(--color-solarized-category-network-light);
-    --color-category-azure: var(--color-solarized-category-azure-light);
-    --color-category-microsoft: var(--color-solarized-category-microsoft-light);
-    --color-category-security: var(--color-solarized-category-security-light);
-    --color-category-developer: var(--color-solarized-category-developer-light);
-    --color-category-content: var(--color-solarized-category-content-light);
-    --color-success-subtle: var(--color-solarized-success-subtle-light);
-    --color-warning-subtle: var(--color-solarized-warning-subtle-light);
-    --color-info-subtle: var(--color-solarized-info-subtle-light);
-    --color-danger-subtle: var(--color-solarized-error-subtle-light);
-    color-scheme: light;
-  }
-
-  :root[data-palette="catppuccin"] {
-    --color-surface: var(--color-catppuccin-surface);
-    --color-surface-raised: var(--color-catppuccin-surface-raised);
-    --color-surface-inset: var(--color-catppuccin-surface-inset);
-    --color-outline: var(--color-catppuccin-outline);
-    --color-outline-strong: var(--color-catppuccin-outline-strong);
-    --color-on-surface: var(--color-catppuccin-on-surface);
-    --color-on-surface-muted: var(--color-catppuccin-on-surface-muted);
-    --color-on-surface-faint: var(--color-catppuccin-on-surface-faint);
-    --color-primary: var(--color-catppuccin-primary);
-    --color-on-primary: var(--color-catppuccin-on-primary);
-    --color-success: var(--color-catppuccin-success);
-    --color-warning: var(--color-catppuccin-warning);
-    --color-error: var(--color-catppuccin-error);
-    --color-info: var(--color-catppuccin-info);
-    --color-category-network: var(--color-catppuccin-category-network);
-    --color-category-azure: var(--color-catppuccin-category-azure);
-    --color-category-microsoft: var(--color-catppuccin-category-microsoft);
-    --color-category-security: var(--color-catppuccin-category-security);
-    --color-category-developer: var(--color-catppuccin-category-developer);
-    --color-category-content: var(--color-catppuccin-category-content);
-    --color-success-subtle: var(--color-catppuccin-success-subtle);
-    --color-warning-subtle: var(--color-catppuccin-warning-subtle);
-    --color-info-subtle: var(--color-catppuccin-info-subtle);
-    --color-danger-subtle: var(--color-catppuccin-error-subtle);
-  }
-
-  :root.light[data-palette="catppuccin"] {
-    --color-surface: var(--color-catppuccin-surface-light);
-    --color-surface-raised: var(--color-catppuccin-surface-raised-light);
-    --color-surface-inset: var(--color-catppuccin-surface-inset-light);
-    --color-outline: var(--color-catppuccin-outline-light);
-    --color-outline-strong: var(--color-catppuccin-outline-strong-light);
-    --color-on-surface: var(--color-catppuccin-on-surface-light);
-    --color-on-surface-muted: var(--color-catppuccin-on-surface-muted-light);
-    --color-on-surface-faint: var(--color-catppuccin-on-surface-faint-light);
-    --color-primary: var(--color-catppuccin-primary-light);
-    --color-on-primary: var(--color-catppuccin-on-primary-light);
-    --color-success: var(--color-catppuccin-success-light);
-    --color-warning: var(--color-catppuccin-warning-light);
-    --color-error: var(--color-catppuccin-error-light);
-    --color-info: var(--color-catppuccin-info-light);
-    --color-category-network: var(--color-catppuccin-category-network-light);
-    --color-category-azure: var(--color-catppuccin-category-azure-light);
-    --color-category-microsoft: var(--color-catppuccin-category-microsoft-light);
-    --color-category-security: var(--color-catppuccin-category-security-light);
-    --color-category-developer: var(--color-catppuccin-category-developer-light);
-    --color-category-content: var(--color-catppuccin-category-content-light);
-    --color-success-subtle: var(--color-catppuccin-success-subtle-light);
-    --color-warning-subtle: var(--color-catppuccin-warning-subtle-light);
-    --color-info-subtle: var(--color-catppuccin-info-subtle-light);
-    --color-danger-subtle: var(--color-catppuccin-error-subtle-light);
-    color-scheme: light;
-  }
-
-  :root[data-palette="dracula"] {
-    --color-surface: var(--color-dracula-surface);
-    --color-surface-raised: var(--color-dracula-surface-raised);
-    --color-surface-inset: var(--color-dracula-surface-inset);
-    --color-outline: var(--color-dracula-outline);
-    --color-outline-strong: var(--color-dracula-outline-strong);
-    --color-on-surface: var(--color-dracula-on-surface);
-    --color-on-surface-muted: var(--color-dracula-on-surface-muted);
-    --color-on-surface-faint: var(--color-dracula-on-surface-faint);
-    --color-primary: var(--color-dracula-primary);
-    --color-on-primary: var(--color-dracula-on-primary);
-    --color-success: var(--color-dracula-success);
-    --color-warning: var(--color-dracula-warning);
-    --color-error: var(--color-dracula-error);
-    --color-info: var(--color-dracula-info);
-    --color-category-network: var(--color-dracula-category-network);
-    --color-category-azure: var(--color-dracula-category-azure);
-    --color-category-microsoft: var(--color-dracula-category-microsoft);
-    --color-category-security: var(--color-dracula-category-security);
-    --color-category-developer: var(--color-dracula-category-developer);
-    --color-category-content: var(--color-dracula-category-content);
-    --color-success-subtle: var(--color-dracula-success-subtle);
-    --color-warning-subtle: var(--color-dracula-warning-subtle);
-    --color-info-subtle: var(--color-dracula-info-subtle);
-    --color-danger-subtle: var(--color-dracula-error-subtle);
-  }
-
-  :root.light[data-palette="dracula"] {
-    --color-surface: var(--color-dracula-surface-light);
-    --color-surface-raised: var(--color-dracula-surface-raised-light);
-    --color-surface-inset: var(--color-dracula-surface-inset-light);
-    --color-outline: var(--color-dracula-outline-light);
-    --color-outline-strong: var(--color-dracula-outline-strong-light);
-    --color-on-surface: var(--color-dracula-on-surface-light);
-    --color-on-surface-muted: var(--color-dracula-on-surface-muted-light);
-    --color-on-surface-faint: var(--color-dracula-on-surface-faint-light);
-    --color-primary: var(--color-dracula-primary-light);
-    --color-on-primary: var(--color-dracula-on-primary-light);
-    --color-success: var(--color-dracula-success-light);
-    --color-warning: var(--color-dracula-warning-light);
-    --color-error: var(--color-dracula-error-light);
-    --color-info: var(--color-dracula-info-light);
-    --color-category-network: var(--color-dracula-category-network-light);
-    --color-category-azure: var(--color-dracula-category-azure-light);
-    --color-category-microsoft: var(--color-dracula-category-microsoft-light);
-    --color-category-security: var(--color-dracula-category-security-light);
-    --color-category-developer: var(--color-dracula-category-developer-light);
-    --color-category-content: var(--color-dracula-category-content-light);
-    --color-success-subtle: var(--color-dracula-success-subtle-light);
-    --color-warning-subtle: var(--color-dracula-warning-subtle-light);
-    --color-info-subtle: var(--color-dracula-info-subtle-light);
-    --color-danger-subtle: var(--color-dracula-error-subtle-light);
-    color-scheme: light;
-  }
-
-  :root[data-palette="nord"] {
-    --color-surface: var(--color-nord-surface);
-    --color-surface-raised: var(--color-nord-surface-raised);
-    --color-surface-inset: var(--color-nord-surface-inset);
-    --color-outline: var(--color-nord-outline);
-    --color-outline-strong: var(--color-nord-outline-strong);
-    --color-on-surface: var(--color-nord-on-surface);
-    --color-on-surface-muted: var(--color-nord-on-surface-muted);
-    --color-on-surface-faint: var(--color-nord-on-surface-faint);
-    --color-primary: var(--color-nord-primary);
-    --color-on-primary: var(--color-nord-on-primary);
-    --color-success: var(--color-nord-success);
-    --color-warning: var(--color-nord-warning);
-    --color-error: var(--color-nord-error);
-    --color-info: var(--color-nord-info);
-    --color-category-network: var(--color-nord-category-network);
-    --color-category-azure: var(--color-nord-category-azure);
-    --color-category-microsoft: var(--color-nord-category-microsoft);
-    --color-category-security: var(--color-nord-category-security);
-    --color-category-developer: var(--color-nord-category-developer);
-    --color-category-content: var(--color-nord-category-content);
-    --color-success-subtle: var(--color-nord-success-subtle);
-    --color-warning-subtle: var(--color-nord-warning-subtle);
-    --color-info-subtle: var(--color-nord-info-subtle);
-    --color-danger-subtle: var(--color-nord-error-subtle);
-  }
-
-  :root.light[data-palette="nord"] {
-    --color-surface: var(--color-nord-surface-light);
-    --color-surface-raised: var(--color-nord-surface-raised-light);
-    --color-surface-inset: var(--color-nord-surface-inset-light);
-    --color-outline: var(--color-nord-outline-light);
-    --color-outline-strong: var(--color-nord-outline-strong-light);
-    --color-on-surface: var(--color-nord-on-surface-light);
-    --color-on-surface-muted: var(--color-nord-on-surface-muted-light);
-    --color-on-surface-faint: var(--color-nord-on-surface-faint-light);
-    --color-primary: var(--color-nord-primary-light);
-    --color-on-primary: var(--color-nord-on-primary-light);
-    --color-success: var(--color-nord-success-light);
-    --color-warning: var(--color-nord-warning-light);
-    --color-error: var(--color-nord-error-light);
-    --color-info: var(--color-nord-info-light);
-    --color-category-network: var(--color-nord-category-network-light);
-    --color-category-azure: var(--color-nord-category-azure-light);
-    --color-category-microsoft: var(--color-nord-category-microsoft-light);
-    --color-category-security: var(--color-nord-category-security-light);
-    --color-category-developer: var(--color-nord-category-developer-light);
-    --color-category-content: var(--color-nord-category-content-light);
-    --color-success-subtle: var(--color-nord-success-subtle-light);
-    --color-warning-subtle: var(--color-nord-warning-subtle-light);
-    --color-info-subtle: var(--color-nord-info-subtle-light);
-    --color-danger-subtle: var(--color-nord-error-subtle-light);
-    color-scheme: light;
-  }
-
-  :root[data-palette="tokyo-night"] {
-    --color-surface: var(--color-tokyo-night-surface);
-    --color-surface-raised: var(--color-tokyo-night-surface-raised);
-    --color-surface-inset: var(--color-tokyo-night-surface-inset);
-    --color-outline: var(--color-tokyo-night-outline);
-    --color-outline-strong: var(--color-tokyo-night-outline-strong);
-    --color-on-surface: var(--color-tokyo-night-on-surface);
-    --color-on-surface-muted: var(--color-tokyo-night-on-surface-muted);
-    --color-on-surface-faint: var(--color-tokyo-night-on-surface-faint);
-    --color-primary: var(--color-tokyo-night-primary);
-    --color-on-primary: var(--color-tokyo-night-on-primary);
-    --color-success: var(--color-tokyo-night-success);
-    --color-warning: var(--color-tokyo-night-warning);
-    --color-error: var(--color-tokyo-night-error);
-    --color-info: var(--color-tokyo-night-info);
-    --color-category-network: var(--color-tokyo-night-category-network);
-    --color-category-azure: var(--color-tokyo-night-category-azure);
-    --color-category-microsoft: var(--color-tokyo-night-category-microsoft);
-    --color-category-security: var(--color-tokyo-night-category-security);
-    --color-category-developer: var(--color-tokyo-night-category-developer);
-    --color-category-content: var(--color-tokyo-night-category-content);
-    --color-success-subtle: var(--color-tokyo-night-success-subtle);
-    --color-warning-subtle: var(--color-tokyo-night-warning-subtle);
-    --color-info-subtle: var(--color-tokyo-night-info-subtle);
-    --color-danger-subtle: var(--color-tokyo-night-error-subtle);
-  }
-
-  :root.light[data-palette="tokyo-night"] {
-    --color-surface: var(--color-tokyo-night-surface-light);
-    --color-surface-raised: var(--color-tokyo-night-surface-raised-light);
-    --color-surface-inset: var(--color-tokyo-night-surface-inset-light);
-    --color-outline: var(--color-tokyo-night-outline-light);
-    --color-outline-strong: var(--color-tokyo-night-outline-strong-light);
-    --color-on-surface: var(--color-tokyo-night-on-surface-light);
-    --color-on-surface-muted: var(--color-tokyo-night-on-surface-muted-light);
-    --color-on-surface-faint: var(--color-tokyo-night-on-surface-faint-light);
-    --color-primary: var(--color-tokyo-night-primary-light);
-    --color-on-primary: var(--color-tokyo-night-on-primary-light);
-    --color-success: var(--color-tokyo-night-success-light);
-    --color-warning: var(--color-tokyo-night-warning-light);
-    --color-error: var(--color-tokyo-night-error-light);
-    --color-info: var(--color-tokyo-night-info-light);
-    --color-category-network: var(--color-tokyo-night-category-network-light);
-    --color-category-azure: var(--color-tokyo-night-category-azure-light);
-    --color-category-microsoft: var(--color-tokyo-night-category-microsoft-light);
-    --color-category-security: var(--color-tokyo-night-category-security-light);
-    --color-category-developer: var(--color-tokyo-night-category-developer-light);
-    --color-category-content: var(--color-tokyo-night-category-content-light);
-    --color-success-subtle: var(--color-tokyo-night-success-subtle-light);
-    --color-warning-subtle: var(--color-tokyo-night-warning-subtle-light);
-    --color-info-subtle: var(--color-tokyo-night-info-subtle-light);
-    --color-danger-subtle: var(--color-tokyo-night-error-subtle-light);
-    color-scheme: light;
-  }
-
-  :root[data-palette="github"] {
-    --color-surface: var(--color-github-surface);
-    --color-surface-raised: var(--color-github-surface-raised);
-    --color-surface-inset: var(--color-github-surface-inset);
-    --color-outline: var(--color-github-outline);
-    --color-outline-strong: var(--color-github-outline-strong);
-    --color-on-surface: var(--color-github-on-surface);
-    --color-on-surface-muted: var(--color-github-on-surface-muted);
-    --color-on-surface-faint: var(--color-github-on-surface-faint);
-    --color-primary: var(--color-github-primary);
-    --color-on-primary: var(--color-github-on-primary);
-    --color-success: var(--color-github-success);
-    --color-warning: var(--color-github-warning);
-    --color-error: var(--color-github-error);
-    --color-info: var(--color-github-info);
-    --color-category-network: var(--color-github-category-network);
-    --color-category-azure: var(--color-github-category-azure);
-    --color-category-microsoft: var(--color-github-category-microsoft);
-    --color-category-security: var(--color-github-category-security);
-    --color-category-developer: var(--color-github-category-developer);
-    --color-category-content: var(--color-github-category-content);
-    --color-success-subtle: var(--color-github-success-subtle);
-    --color-warning-subtle: var(--color-github-warning-subtle);
-    --color-info-subtle: var(--color-github-info-subtle);
-    --color-danger-subtle: var(--color-github-error-subtle);
-  }
-
-  :root.light[data-palette="github"] {
-    --color-surface: var(--color-github-surface-light);
-    --color-surface-raised: var(--color-github-surface-raised-light);
-    --color-surface-inset: var(--color-github-surface-inset-light);
-    --color-outline: var(--color-github-outline-light);
-    --color-outline-strong: var(--color-github-outline-strong-light);
-    --color-on-surface: var(--color-github-on-surface-light);
-    --color-on-surface-muted: var(--color-github-on-surface-muted-light);
-    --color-on-surface-faint: var(--color-github-on-surface-faint-light);
-    --color-primary: var(--color-github-primary-light);
-    --color-on-primary: var(--color-github-on-primary-light);
-    --color-success: var(--color-github-success-light);
-    --color-warning: var(--color-github-warning-light);
-    --color-error: var(--color-github-error-light);
-    --color-info: var(--color-github-info-light);
-    --color-category-network: var(--color-github-category-network-light);
-    --color-category-azure: var(--color-github-category-azure-light);
-    --color-category-microsoft: var(--color-github-category-microsoft-light);
-    --color-category-security: var(--color-github-category-security-light);
-    --color-category-developer: var(--color-github-category-developer-light);
-    --color-category-content: var(--color-github-category-content-light);
-    --color-success-subtle: var(--color-github-success-subtle-light);
-    --color-warning-subtle: var(--color-github-warning-subtle-light);
-    --color-info-subtle: var(--color-github-info-subtle-light);
-    --color-danger-subtle: var(--color-github-error-subtle-light);
-    color-scheme: light;
   }
 }
 
@@ -499,12 +231,19 @@
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
-    letter-spacing: -0.006em;
     transition: background-color 240ms ease, color 180ms ease;
   }
 
-  /* Headings run tight — this is what gives the interface its engineered
-     feel. Sizes follow DESIGN.md's named scale. */
+  /* Headings are the display voice — Bricolage, heavy and tight. The type
+     steps carry size/weight/tracking but not family (the generator strips
+     per-step family tokens), so the family is assigned to the elements. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+  }
+
   h1 {
     font-size: var(--text-headline-lg);
     font-weight: var(--font-weight-headline-lg);
@@ -550,51 +289,26 @@
   }
 }
 
-@keyframes rt-surface-enter {
-  from {
-    opacity: 0;
-    transform: translateY(6px) scale(0.995);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
+/*
+  The entrance animations are gone.
 
-@keyframes rt-content-enter {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+  `rt-surface-enter` (panels and cards) and `rt-content-enter` (page regions)
+  faded and lifted every surface into place, with a nth-child stagger across
+  the first rows. Signal's Motion section retires all of it: the index is now
+  one shared-edge ruled grid, and a ruled grid arriving cell by cell reads as
+  a rendering fault rather than as polish.
 
+  `.rt-enter-surface`, `.rt-enter-content` and `.rt-enter-row` are kept as
+  no-op class names so the ~50 call sites in `src/components/ui/` and the
+  tools do not all have to change in one commit, and so a stray one cannot
+  reintroduce an animation that no longer exists. They mark "this is a
+  surface" and nothing more; new code should not add them.
+*/
 @layer components {
-  .rt-enter-surface {
-    animation: rt-surface-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .rt-enter-content[data-state="active"] {
-    animation: rt-content-enter 180ms ease-out both;
-  }
-
+  .rt-enter-surface,
+  .rt-enter-content,
   .rt-enter-row {
-    animation: rt-content-enter 180ms ease-out both;
-  }
-
-  .rt-enter-row:nth-child(2) {
-    animation-delay: 24ms;
-  }
-
-  .rt-enter-row:nth-child(3) {
-    animation-delay: 48ms;
-  }
-
-  .rt-enter-row:nth-child(n + 4) {
-    animation-delay: 72ms;
+    animation: none;
   }
 }
 
@@ -676,15 +390,17 @@
   }
 
   /*
-    Hover lifts are the only remaining transform, now that the ambient
-    `floaty` / `idleDrift` decoration this used to also silence has been
-    deleted rather than merely disabled.
+    The hover lift and the press-sink are the only remaining transforms.
+    Removing the movement keeps the shadow change, which conveys the same
+    state without motion — DESIGN.md's reduced-motion contract.
   */
   .interactive:hover,
   .card:hover,
   .rt-card:hover,
-  .rt-card:hover .rt-ico svg,
-  .rt-card:focus-visible .rt-ico svg {
+  .rt-card:focus-visible,
+  .rt-brand:active,
+  .rt-chip:active,
+  .rt-island-retry:active {
     transform: none !important;
   }
 

@@ -232,27 +232,47 @@ grid.
 
 ```
 DESIGN.md (YAML front matter)
-  → pnpm generate:tokens  (scripts/generate-tokens.mjs, via @google/design.md)
+  → pnpm generate:tokens  (scripts/generate-tokens.mjs, via @google/design.md@0.3.0)
     → src/styles/tokens.generated.css   [committed, never hand-edited]
-      → src/styles/globals.css          [light peers, palette maps, shadcn aliases]
+      → src/styles/globals.css          [light peers, shadcn aliases, hand-held tokens]
 ```
 
-`DESIGN.md`'s front matter carries the base dark tokens, their `-light` peers, and six
-named palettes (`solarized`, `catppuccin`, `dracula`, `nord`, `tokyo-night`, `github`) each
-with dark and light values. The generator exports them all into `tokens.generated.css`;
-`globals.css` does only the two jobs the exporter cannot — switch the light peers in under
-`:root.light` and `prefers-color-scheme`, map `:root[data-palette="<id>"]` onto the named
-palette's tokens, and alias the shadcn names the components render against by `var()`
-reference so the light remap carries through.
+`DESIGN.md`'s front matter carries the graphite dark tokens and their bone `-light` peers.
+The generator exports them into `tokens.generated.css`; `globals.css` does only the jobs
+the exporter cannot — switch the light peers in under `:root.light` and
+`prefers-color-scheme`, and alias the shadcn names the components render against by
+`var()` reference so the light remap carries through.
+
+**The exporter reads four keys and silently ignores the rest.** `colors`, `typography`,
+`rounded` and `spacing` produce output; `borderWidth`, `shadow`, `motion` and `components`
+produce nothing at all. The border and motion values are therefore transcribed by hand
+into the `@theme` block in `globals.css`, and `tokens.contrast.test.js` asserts they match
+what `DESIGN.md` declares. `components` is documentation, implemented by hand in
+`src/components/ui/` and `src/styles/shell.css`.
+
+The exporter version is **pinned**. Its output shape is not a stable contract — 0.1.1 had
+no `css-tailwind` format at all — so an unpinned `pnpm dlx` would change the committed
+stylesheet with no repo change and fail the drift assertion on a file nobody touched.
 
 `src/styles/tokens.contrast.test.js` reads all three files and fails if the generated CSS
 has drifted from `DESIGN.md` or if any pair falls below its WCAG floor (4.5:1 for body
-text, 3:1 for large text and UI boundaries). The generator needs the network on first run,
-which is why its output is committed and CI never runs it.
+text, 3:1 for large text, UI boundaries and the `on-surface-dim` metadata step). The
+generator needs the network on first run, which is why its output is committed and CI
+never runs it.
 
-The default palette is `catppuccin` (`src/shell/palettes.mjs`); the pre-paint script reads
-`vite-ui-theme` and `russ-tools-palette` from `localStorage` and stamps `class` and
-`data-palette` on `<html>` before the first frame.
+There are two themes. The six alternate palettes (Solarized, Catppuccin, Dracula, Nord,
+Tokyo Night, GitHub) were retired with the Signal redesign, along with the picker and the
+`russ-tools-palette` key; that key is left in `localStorage` but nothing reads it. The
+pre-paint script reads `vite-ui-theme` and stamps `class` and `data-theme-pref` on
+`<html>` before the first frame.
+
+Three colour roles exist because a single token could not do both jobs:
+
+| Pair | Why |
+|---|---|
+| `category-*` / `category-fill-*` | the text hue is deepened in light mode to clear 4.5:1 on bone; the fill is identical in both themes because the ink on it is always graphite |
+| `primary` / `primary-text` | the chartreuse accent is 1.18:1 on bone, so it is a fill only; `primary-text` is the accent in dark and an olive derivative in light, and is what `--color-ring` points at |
+| `on-primary` / `on-status` | the accent takes graphite ink in both themes; the status hues are bright in dark and deep in light, so their ink flips |
 
 ### Three name collisions with Tailwind's own scales
 
@@ -264,7 +284,7 @@ thing to remember.
 | Collision | Symptom | Fixed in |
 |---|---|---|
 | `--spacing-lg` against Tailwind's *container* scale | `max-w-lg` became 16px — every dialog a sliver | `scripts/generate-tokens.mjs` renames the scale to `--rt-space-*` |
-| `--font-title-sm` against the font **family** namespace | `font-title-sm` set `font-family: "Inter"` rather than the self-hosted `"Inter Variable"`, so headings fell back to serif | the same script strips per-step family tokens and folds each step into one `--text-*` carrying weight, line-height and tracking |
+| `--font-title-sm` against the font **family** namespace | `font-title-sm` set `font-family: "Instrument Sans"` rather than the self-hosted `"Instrument Sans Variable"`, so headings fell back to serif | the same script strips per-step family tokens and folds each step into one `--text-*` carrying weight, line-height and tracking |
 | `text-body-sm` looks like a colour to tailwind-merge | `cn()` deleted the size class: present in the source, absent from the DOM | `src/lib/utils.js` declares the type steps as a `font-size` group, pinned by `src/lib/utils.test.js` |
 
 Fix a collision in the generator or in `cn()`, never by renaming things in `DESIGN.md`.

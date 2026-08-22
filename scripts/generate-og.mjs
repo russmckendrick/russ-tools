@@ -9,18 +9,18 @@
  * and the alternative put a font pipeline on the critical path of every
  * production deploy.
  *
- * Why Playwright rather than sharp or satori: `@fontsource-variable/inter`
- * ships **woff2 only**. Satori cannot read woff2 and resvg/sharp need a TTF
- * handed to them, so build-time rasterising meant either three more packages
- * to decompress the font or trusting whatever fonts happen to exist on the
- * build image — an environment-dependent difference that renders as a silent
- * fallback typeface rather than an error. Chromium reads the woff2 the site
- * itself uses, so a card is drawn with the real Inter, by the same engine
+ * Why Playwright rather than sharp or satori: the fontsource packages ship
+ * **woff2 only**. Satori cannot read woff2 and resvg/sharp need a TTF handed
+ * to them, so build-time rasterising meant either three more packages to
+ * decompress the font or trusting whatever fonts happen to exist on the build
+ * image — an environment-dependent difference that renders as a silent
+ * fallback typeface rather than an error. Chromium reads the same woff2 the
+ * site does, so a card is drawn with the real families by the same engine
  * that draws the page.
  *
- * The palette is Catppuccin Mocha — DEFAULT_PALETTE, so a card matches what
- * a first-time visitor actually lands on. Values are read out of the
- * generated token layer rather than retyped, so `pnpm generate:tokens`
+ * The card is drawn in Stacks' paper light — DESIGN.md names paper the house
+ * ground and says link cards should read as paper — with every value read out
+ * of the generated token layer rather than retyped, so `pnpm generate:tokens`
  * followed by this stays consistent with DESIGN.md.
  */
 
@@ -45,17 +45,34 @@ const token = (name) => {
 };
 
 const C = {
-  surface: token('color-catppuccin-surface'),
-  raised: token('color-catppuccin-surface-raised'),
-  outline: token('color-catppuccin-outline'),
-  text: token('color-catppuccin-on-surface'),
-  muted: token('color-catppuccin-on-surface-faint'),
+  surface: token('color-surface-light'),
+  raised: token('color-surface-raised-light'),
+  outline: token('color-outline-light'),
+  rule: token('color-rule-light'),
+  text: token('color-on-surface-light'),
+  muted: token('color-on-surface-muted-light'),
+  faint: token('color-on-surface-faint-light'),
+  onFill: token('color-on-category-fill'),
 };
 
-const hue = (category) => token(`color-catppuccin-category-${category}`);
+/** The TEXT hue (light-mode deep value), for the category-tinted icon. */
+const hue = (category) => token(`color-category-${category}-light`);
+/** The FILL hue, for the solid badge block — always with graphite ink. */
+const fillHue = (category) => token(`color-category-fill-${category}`);
 
-const fontData = readFileSync(
-  'node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2'
+/**
+ * All three families, inlined. Stacks draws headings in Bricolage, labels in
+ * Space Grotesk and the footer strip in Space Mono, so a card drawn with one
+ * face is drawn wrong.
+ */
+const displayData = readFileSync(
+  'node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2'
+).toString('base64');
+const sansData = readFileSync(
+  'node_modules/@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2'
+).toString('base64');
+const monoData = readFileSync(
+  'node_modules/@fontsource/space-mono/files/space-mono-latin-400-normal.woff2'
 ).toString('base64');
 
 // The toolbox silhouette, lifted from SiteMark.astro. Only the outer body is
@@ -66,67 +83,105 @@ const siteMarkPaths = readFileSync('src/shell/SiteMark.astro', 'utf8')
 
 /** @param {{title: string, sub: string, icon: string|null, category: string|null}} card */
 const cardHtml = ({ title, sub, icon, category }) => {
-  const accent = category ? hue(category) : token('color-catppuccin-primary');
+  const accent = category ? hue(category) : token('color-primary-text-light');
+  const fill = category ? fillHue(category) : token('color-primary');
   return `<!doctype html>
 <meta charset="utf-8">
 <style>
   @font-face {
-    font-family: 'Inter Variable';
-    src: url(data:font/woff2;base64,${fontData}) format('woff2');
-    font-weight: 100 900;
+    font-family: 'Bricolage Grotesque Variable';
+    src: url(data:font/woff2;base64,${displayData}) format('woff2');
+    font-weight: 200 800;
+    font-display: block;
+  }
+  @font-face {
+    font-family: 'Space Grotesk Variable';
+    src: url(data:font/woff2;base64,${sansData}) format('woff2');
+    font-weight: 300 700;
+    font-display: block;
+  }
+  @font-face {
+    font-family: 'Space Mono';
+    src: url(data:font/woff2;base64,${monoData}) format('woff2');
+    font-weight: 400;
     font-display: block;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     width: ${WIDTH}px; height: ${HEIGHT}px;
-    font-family: 'Inter Variable', sans-serif;
+    font-family: 'Space Grotesk Variable', sans-serif;
     background: ${C.surface};
     color: ${C.text};
-    display: flex; flex-direction: column;
-    padding: 72px 80px;
     position: relative; overflow: hidden;
     -webkit-font-smoothing: antialiased;
   }
-  /* The hue glows, it does not fill — DESIGN.md keeps category colour off
-     large surfaces, and a 1200px slab of amber is the exact failure that
-     rule exists for. */
-  .glow {
-    position: absolute; top: -280px; right: -220px;
-    width: 780px; height: 780px; border-radius: 50%;
-    background: radial-gradient(circle, ${accent}2e 0%, ${accent}00 68%);
+  /*
+    Stacks: the whole card is one chunky panel — the 2px-rule border scaled
+    up for the 1200px canvas, the panel radius, and the press-lg offset
+    shadow in the rule colour. The hue appears only as the solid badge block
+    and the icon tile, exactly as on a tool tile.
+  */
+  .frame {
+    position: absolute; inset: 30px 42px 42px 30px;
+    border: 4px solid ${C.rule};
+    border-radius: 30px;
+    background: ${C.raised};
+    box-shadow: 12px 12px 0 ${C.rule};
+    display: flex; flex-direction: column;
+    padding: 48px 64px 40px;
   }
-  .rule { position: absolute; left: 0; top: 0; width: 100%; height: 6px; background: ${accent}; }
-  header { display: flex; align-items: center; gap: 13px; color: ${C.muted}; font-size: 26px; font-weight: 500; }
-  header svg { width: 30px; height: 30px; }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    color: ${C.text}; font-size: 27px; font-weight: 600; letter-spacing: -0.01em;
+    font-family: 'Bricolage Grotesque Variable', sans-serif;
+  }
+  header svg { width: 32px; height: 32px; color: ${accent}; }
   main { margin-top: auto; }
+  .mark { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; }
   .tile {
-    width: 104px; height: 104px; border-radius: 24px;
-    background: ${C.raised}; border: 1px solid ${C.outline};
     display: flex; align-items: center; justify-content: center;
-    color: ${accent}; margin-bottom: 34px;
+    width: 78px; height: 78px;
+    background: ${fill}; color: ${C.onFill};
+    border: 4px solid ${C.rule}; border-radius: 18px;
   }
-  h1 { font-size: ${title.length > 26 ? 62 : 72}px; font-weight: 600; letter-spacing: -0.022em; line-height: 1.06; }
-  p { margin-top: 20px; font-size: 31px; line-height: 1.4; color: ${C.muted}; max-width: 900px; font-weight: 400; }
-  footer { margin-top: 40px; display: flex; align-items: center; gap: 16px; font-size: 21px; }
-  .cat { color: ${accent}; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; }
-  .dot { width: 5px; height: 5px; border-radius: 50%; background: ${C.outline}; }
-  .claim { color: ${C.muted}; }
+  .badge {
+    background: ${fill}; color: ${C.onFill};
+    border: 3px solid ${C.rule}; border-radius: 12px;
+    font-size: 19px; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; padding: 7px 15px; white-space: nowrap;
+  }
+  h1 {
+    font-family: 'Bricolage Grotesque Variable', sans-serif;
+    font-size: ${title.length > 26 ? 62 : 74}px; font-weight: 800;
+    letter-spacing: -0.02em; line-height: 1.04;
+  }
+  p { margin-top: 20px; font-size: 29px; line-height: 1.4; color: ${C.muted}; max-width: 900px; font-weight: 400; }
+  footer {
+    margin-top: 38px; padding-top: 24px;
+    border-top: 1px solid ${C.outline};
+    display: flex; align-items: center; gap: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 18px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: ${C.faint};
+  }
 </style>
-<div class="rule"></div>
-<div class="glow"></div>
-<header>
-  <svg viewBox="0 0 950 950" fill="currentColor">${siteMarkPaths}</svg>
-  <span>${SITE_NAME}</span>
-</header>
-<main>
-  ${icon ? `<div class="tile">${iconSvg(icon, 56)}</div>` : ''}
-  <h1>${title}</h1>
-  <p>${sub}</p>
-</main>
-<footer>
-  ${category ? `<span class="cat">${categoryLabel(category)}</span><span class="dot"></span>` : ''}
-  <span class="claim">Runs entirely in your browser</span>
-</footer>`;
+<div class="frame">
+  <header>
+    <svg viewBox="0 0 950 950" fill="currentColor">${siteMarkPaths}</svg>
+    <span>${SITE_NAME}</span>
+  </header>
+  <main>
+    <div class="mark">
+      ${icon ? `<span class="tile">${iconSvg(icon, 44)}</span>` : ''}
+      ${category ? `<span class="badge">${categoryLabel(category)}</span>` : ''}
+    </div>
+    <h1>${title}</h1>
+    <p>${sub}</p>
+  </main>
+  <footer>
+    <span>Runs entirely in your browser</span>
+  </footer>
+</div>`;
 };
 
 const tools = await loadManifests();

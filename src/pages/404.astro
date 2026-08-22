@@ -34,13 +34,23 @@ const suggestions = TOOLS.filter((t) =>
     </p>
   </div>
 
+  <!--
+    The same group markup the index uses. This used to hand-roll the heading
+    as a raw `<b style="color:…">`, which meant a page that looked almost but
+    not quite like the catalogue and carried an inline colour nothing else in
+    the shell does.
+
+    No `--cat` here: the group spans three categories, so it has no hue of its
+    own, and `--cat` may only ever carry a `--color-category-*` token
+    (`category-accent.test.js`). `.rt-group-label` falls back to the neutral.
+  -->
   <div class="rt-board">
     <section class="rt-group">
       <div class="rt-group-head">
-        <b style="color:var(--color-on-surface-muted)">Popular tools</b>
+        <h2 class="rt-group-label" id="popular-label">Popular tools</h2>
         <hr />
       </div>
-      <div class="rt-grid">
+      <div class="rt-grid" aria-labelledby="popular-label">
         {suggestions.map((tool) => <ToolCard tool={tool} />)}
       </div>
     </section>

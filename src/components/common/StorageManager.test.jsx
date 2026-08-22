@@ -7,6 +7,13 @@ import StorageManager from './StorageManager.jsx';
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
 
+/**
+ * `russ-tools-palette` is a retired key — the six alternate palettes went with
+ * the Signal redesign and nothing reads it any more. It stays in these tests
+ * on purpose: an orphaned site-preference key is exactly the thing "Clear all
+ * tool data" must leave alone, and it is now the only one besides the theme.
+ */
+
 describe('StorageManager', () => {
   it('shows only data owned by a tool', async () => {
     localStorage.setItem('russ-tools-palette', 'nord');

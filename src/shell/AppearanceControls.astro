@@ -1,83 +1,40 @@
 ---
-import { DEFAULT_PALETTE, palettes } from './palettes.mjs';
+/**
+ * The theme control — the last cell in the header nav.
+ *
+ * It was a palette picker plus a mode toggle. The six alternate palettes went
+ * with the Signal redesign, so only the mode toggle remains, and it stays a
+ * three-state cycle (system -> light -> dark) rather than the prototype's
+ * single static glyph: "follow the system" is a real preference, and an
+ * `aria-live` button that announces the state it is in is a real affordance.
+ *
+ * All three icons and all three labels are in the markup; CSS reveals exactly
+ * one from `:root[data-theme-pref]`, so the control is correct on the first
+ * frame rather than after hydration.
+ */
 ---
 
-<div class="rt-appearance" role="group" aria-label="Appearance">
-  <div class="rt-palette-picker">
-    <button
-      type="button"
-      class="rt-palette-toggle"
-      data-palette-toggle
-      aria-haspopup="menu"
-      aria-expanded="false"
-      aria-controls="rt-palette-menu"
-    >
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M4 5.5h16v13H4z" />
-        <path d="m7.5 10 2 2-2 2M12 14h4.5" />
-      </svg>
-      <span class="rt-toolbar-label" data-palette-current>Catppuccin</span>
-      <svg class="rt-palette-chevron" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="m4 6 4 4 4-4" />
-      </svg>
-    </button>
-
-    <div id="rt-palette-menu" class="rt-palette-menu" data-palette-menu role="menu" aria-label="Color palette" hidden>
-      <div class="rt-palette-menu-head">
-        <span>Palette</span>
-        <span>Uses current mode</span>
-      </div>
-      <div class="rt-palette-options">
-        {palettes.map((palette) => (
-          <button
-            type="button"
-            class="rt-palette-option"
-            role="menuitemradio"
-            aria-checked={palette.id === DEFAULT_PALETTE ? 'true' : 'false'}
-            tabindex={palette.id === DEFAULT_PALETTE ? 0 : -1}
-            data-palette-option
-            data-palette-value={palette.id}
-            data-palette-name={palette.name}
-          >
-            <span class="rt-terminal-preview" aria-hidden="true">
-              <span class="rt-terminal-bar"><i></i><i></i><i></i></span>
-              <span class="rt-terminal-screen">
-                <span class="rt-terminal-command"><i>›</i><b></b></span>
-                <span class="rt-terminal-line"></span>
-                <span class="rt-terminal-line rt-terminal-line-short"></span>
-              </span>
-            </span>
-            <span class="rt-palette-copy">
-              <strong>{palette.name}</strong>
-              <small><span>{palette.dark}</span><i>/</i><span>{palette.light}</span></small>
-            </span>
-            <svg class="rt-palette-check" viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="9" cy="9" r="7.25" />
-              <path d="m5.8 9.1 2.1 2.1 4.4-4.5" />
-            </svg>
-          </button>
-        ))}
-      </div>
-    </div>
-  </div>
-
-  <button type="button" class="rt-theme-toggle" data-theme-toggle aria-live="polite">
-    <svg class="rt-theme-icon" data-for="system" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="2.5" y="4" width="19" height="13" rx="1.5" />
-      <path d="M8.5 20.5h7M12 17v3.5" />
-    </svg>
-    <svg class="rt-theme-icon" data-for="light" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="4.2" />
-      <path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" />
-    </svg>
-    <svg class="rt-theme-icon" data-for="dark" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z" />
-    </svg>
-    <span class="rt-mode-name" data-for="system">System</span>
-    <span class="rt-mode-name" data-for="light">Light</span>
-    <span class="rt-mode-name" data-for="dark">Dark</span>
-  </button>
-</div>
+<button
+  type="button"
+  class="rt-theme-toggle"
+  data-theme-toggle
+  aria-live="polite"
+>
+  <svg class="rt-theme-icon" data-for="system" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="2.5" y="4" width="19" height="13" rx="1.5" />
+    <path d="M8.5 20.5h7M12 17v3.5" />
+  </svg>
+  <svg class="rt-theme-icon" data-for="light" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2" />
+    <path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" />
+  </svg>
+  <svg class="rt-theme-icon" data-for="dark" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z" />
+  </svg>
+  <span class="rt-mode-name" data-for="system">System</span>
+  <span class="rt-mode-name" data-for="light">Light</span>
+  <span class="rt-mode-name" data-for="dark">Dark</span>
+</button>
 
 <script>
   import './appearance-controls.js';

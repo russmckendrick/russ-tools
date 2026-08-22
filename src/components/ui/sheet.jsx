@@ -41,12 +41,12 @@ const SheetContent = React.forwardRef(({ side = 'right', className, children, ..
       ref={ref}
       className={cn(
         'fixed z-50 flex flex-col gap-4 bg-surface-raised p-4',
-        'shadow-[0_0_60px_-20px_rgba(0,0,0,.7)] transition ease-out',
-        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:duration-250',
+        'transition ease-linear',
+        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-140 data-[state=open]:duration-140',
         side === 'right' &&
-          'inset-y-0 right-0 h-full w-full max-w-[min(28rem,100vw)] border-l border-outline data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
+          'inset-y-0 right-0 h-full w-full max-w-[min(28rem,100vw)] border-l-2 border-rule data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
         side === 'left' &&
-          'inset-y-0 left-0 h-full w-full max-w-[min(28rem,100vw)] border-r border-outline data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+          'inset-y-0 left-0 h-full w-full max-w-[min(28rem,100vw)] border-r-2 border-rule data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
         className
       )}
       {...props}
@@ -54,8 +54,8 @@ const SheetContent = React.forwardRef(({ side = 'right', className, children, ..
       {children}
       <SheetPrimitive.Close
         className={cn(
-          'absolute right-3 top-3 rounded-sm text-on-surface-faint transition-colors',
-          'hover:text-on-surface focus:outline-none focus:ring-2 focus:ring-primary',
+          'absolute right-3 top-3 text-on-surface-faint transition-colors',
+          'hover:text-on-surface focus:outline-none focus:ring-2 focus:ring-ring',
           'focus:ring-offset-2 focus:ring-offset-surface-raised'
         )}
       >

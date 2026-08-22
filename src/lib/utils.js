@@ -13,7 +13,9 @@ import { useEffect, useState } from "react"
  * source. Every custom step was affected wherever it shared a component with
  * a text colour, which is most of them.
  *
- * Declaring the ten steps as `font-size` makes the two groups distinct again.
+ * Declaring the steps as `font-size` makes the two groups distinct again.
+ * This list must match DESIGN.md's `typography` block exactly — a step missing
+ * here is a step `cn()` deletes at every call site, silently.
  * Guarded by src/lib/utils.test.js.
  */
 const TYPE_SCALE = [
@@ -25,9 +27,12 @@ const TYPE_SCALE = [
   "body-md",
   "body-sm",
   "label-caps",
+  "label-caps-sm",
+  "data-xl",
   "data-lg",
   "data-md",
   "data-sm",
+  "verdict",
 ]
 
 const twMerge = extendTailwindMerge({

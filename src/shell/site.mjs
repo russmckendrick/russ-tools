@@ -24,11 +24,15 @@ export const AUTHOR = {
 };
 
 /**
- * Matches the Catppuccin Mocha ground — the default palette the pre-paint
- * script applies, so the browser chrome agrees with the first frame rather
- * than with whatever the palette used to be.
+ * Stacks' ink ground (`--color-surface` in the dark theme), so the browser
+ * chrome agrees with the first frame for dark-preference users; the manifest
+ * cannot switch per theme, and the dark value is the one that clashes
+ * loudest when wrong.
+ *
+ * `public/site.webmanifest` carries the same value twice, and
+ * `src/layouts/seo.test.js` fails if the three ever disagree.
  */
-export const THEME_COLOR = '#1e1e2e';
+export const THEME_COLOR = '#1a1812';
 
 /** @param {string} path @returns {string} absolute, no trailing slash */
 export const absolute = (path) => new URL(path, SITE_URL).href.replace(/\/$/, '');

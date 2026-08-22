@@ -191,6 +191,85 @@ Three further changes ride with it, each observable:
 
 ---
 
+## Signal: the visual language replaced
+
+`design_handoff_signal/` specified a replacement design language and it has been
+applied. Almost all of it is presentational, but seven changes are observable
+behaviour or a deliberate departure from the handoff, so they are logged here.
+
+### The six alternate palettes are gone
+
+Solarized, Catppuccin, Dracula, Nord, Tokyo Night and GitHub are retired, along
+with the palette picker in the header. Signal ships **graphite dark** and **bone
+light**, and the three-state system/light/dark toggle is unchanged.
+
+`DEFAULT_PALETTE` was `catppuccin`, so this changes the look for *every*
+returning visitor, not only the ones who had chosen a palette.
+`russ-tools-palette` is deliberately **left in localStorage** rather than
+deleted — nothing reads it, so a stored value degrades to the only theme pair
+there is, and clearing a key the app no longer owns is not its business.
+`StorageManager` must still not delete it; that is asserted in both
+`StorageManager.test.jsx` and `e2e/deeplinks.spec.js`.
+
+### Nine colours differ from the handoff
+
+The handoff's palette failed 37 of the contrast assertions this repo enforces in
+CI. Every correction preserves the hue exactly and moves only lightness; the
+table and the measured ratios are in `DESIGN.md` under *Contrast corrections*.
+The worst was `outline-strong` at **1.50:1** — Signal assigns it to the `select`
+border, which is a WCAG 1.4.11 control boundary.
+
+Three roles the handoff did not declare were added for the same reason:
+`on-status` (ink on a solid status fill, which flips with the theme while the
+accent's ink does not), `on-footer` / `on-footer-muted` (the footer is dark in
+*both* themes, so light mode was putting `#16171b` text on a `#16171b` ground),
+and the reinstated `*-subtle` tints, which twelve tool files already used and
+the handoff dropped.
+
+### The 3px panel rule is opt-in
+
+DESIGN.md's `panel` in the handoff carries a 3px `rule` along its top. That
+works on a page with one result panel, which is what the prototype drew. A tool
+here stacks five to ten, and the CRON builder rendered as six bright stripes
+down the page, none of which signalled anything because they all did. The rule
+moved to `panel-emphasis` / `<Card emphasis>` and marks the one panel per page
+that is the page's subject. Applied so far to the SSL grade and the CRON
+generated expression.
+
+### The tool tile dropped its badge strip
+
+The index tile used to end with `tool.badges` ("A · AAAA · MX · TXT") above the
+route path. Signal's tile has four elements and no room for it, and the solid
+category block does the marking now. **The badges are still in the search
+haystack**, so filtering by "MX" still finds the DNS tool — the string is no
+longer drawn, not no longer indexed.
+
+### Card entrance motion is gone
+
+`rt-surface-enter`, `rt-content-enter` and the nth-child stagger are retired,
+along with the `restage()` call that re-fired the stagger on filter. A ruled
+grid arriving one cell at a time reads as a rendering fault. `.rt-enter-*`
+survive as no-op class names so the ~50 call sites did not all have to change
+at once; new code should not add them.
+
+### Escape closes the mobile menu from anywhere
+
+Previously the `keydown` listener was scoped to the menu, so Escape only worked
+when focus was already inside it — which it was, but only because opening the
+palette picker put it there. With the picker gone that became "Escape does
+nothing", so the listener moved to `document` and is gated on the menu being
+open. Strictly better than before.
+
+### The brand mark stayed
+
+The handoff's header and footer show a plain 14px chartreuse square. That is a
+prototype stand-in for a logo it did not have access to — the handoff's own
+Assets section says no new icons were drawn. `SiteMark` is kept and rendered in
+the accent, which honours the intent without discarding an identity the
+favicon, the OG cards and the web manifest all share.
+
+---
+
 ## Planned, deliberate, not yet made
 
 Called out in the plan so they are not mistaken for regressions when they land:

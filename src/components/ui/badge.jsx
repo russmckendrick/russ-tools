@@ -11,9 +11,22 @@ import { cn } from "@/lib/utils"
  * title; those were page furniture restating what the tool plainly is, and
  * they are gone. A badge here always labels something concrete on the page.
  *
- * `default` takes the tool's category hue as a tint, so a badge belonging to
- * a tool is coloured by the manifest rather than by the tool. Status variants
- * are the only ones permitted to express state.
+ * DESIGN.md defines two badge shapes, and they are not the same component:
+ *
+ *   `badge-category`  a SOLID block of `category-fill-*` with graphite ink —
+ *                     the `category` variant here. It marks what a thing *is*.
+ *   `badge-status`    a hue on its own `-subtle` tint — the status variants.
+ *
+ * `default` is neither. It is the quiet marker most tools actually reach for,
+ * labelling a record type, a count or a key, and it stays a hairline outline
+ * with the category hue as *text*: thirty-four files use it, and turning all
+ * of them into solid colour blocks would repeat the category signal until it
+ * meant nothing.
+ *
+ * The two category hues are not interchangeable. `--cat` is the text hue,
+ * deepened in light mode to clear 4.5:1 on bone. `--cat-fill` is the block,
+ * identical in both themes because the ink on it is always graphite. Putting
+ * `--cat` behind that ink measures 1.6:1 on the light card.
  */
 const badgeVariants = cva(
   cn(
@@ -25,7 +38,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-[color-mix(in_oklab,var(--cat,var(--color-primary))_40%,transparent)] bg-[color-mix(in_oklab,var(--cat,var(--color-primary))_13%,transparent)] text-[var(--cat,var(--color-primary))]",
+          "border-outline bg-transparent text-[var(--cat,var(--color-primary-text))]",
+        category:
+          "border-2 border-rule bg-[var(--cat-fill,var(--color-primary))] px-2 py-[3px] font-sans text-label-caps-sm uppercase text-on-category-fill",
         secondary: "border-outline bg-surface-inset text-on-surface-muted",
         outline: "border-outline text-on-surface-muted",
         destructive: "border-danger/40 bg-danger-subtle text-danger",
