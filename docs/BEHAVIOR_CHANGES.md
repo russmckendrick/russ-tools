@@ -24,6 +24,26 @@ Two rules:
 
 ## Landed
 
+### Tool help is a page, not a drawer
+
+| | |
+|---|---|
+| **Where** | `src/pages/[tool]/help.astro` + `src/bridge/HelpArticle.jsx` (new); `src/bridge/ToolHelp.jsx` (now a link); `src/components/ui/help-dialog.jsx`, `src/components/ui/sheet.jsx` (deleted) |
+| **Pinned by** | `e2e/help.spec.js` (rewritten), `src/tools/sitemap.test.js` (help URLs added) |
+| **Landed** | owner decision, 2026-08-22 |
+
+The slide-in help drawer is gone. Every tool's Help action is now a plain
+link to `/<tool>/help`, a prerendered page rendering the same
+`help:start`/`help:end` block of `docs/tools/<id>/README.md` at a full
+reading measure, with jump chips per section and a back link. Why: the
+drawer set its section headings in ALL-CAPS Space Mono (a Signal idiom
+Stacks retired — mono is data only), capped the copy at 448px, and dimmed
+the tool it was meant to be read alongside. The help pages are in the
+sitemap and carry canonical + breadcrumb schema; for tools with param
+deep-links the generated `_redirects` emits a `/help` self-rewrite ahead of
+the `/:param` rewrite so Cloudflare serves the page rather than rewriting
+it onto the tool. Field-level `HelpHint` tooltips are unchanged.
+
 ### Network Designer removed, replaced by the Subnet Calculator
 
 | | |

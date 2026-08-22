@@ -69,6 +69,12 @@ const entries = [
     loc: `${SITE}${tool.path}`,
     lastmod: lastCommitDate(`src/tools/${tool.id}`),
   })),
+  // The per-tool help pages: prerendered from docs/tools/<id>/README.md, so
+  // their lastmod tracks the docs, not the tool.
+  ...tools.map((tool) => ({
+    loc: `${SITE}${tool.path}/help`,
+    lastmod: lastCommitDate(`docs/tools/${tool.id}`),
+  })),
 ];
 
 // Param routes are deliberately absent: `/ssl-checker/example.com` is a deep

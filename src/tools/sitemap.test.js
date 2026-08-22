@@ -34,10 +34,16 @@ const readSitemapUrls = (path) => {
 describe('sitemap URL set', () => {
   const committed = readSitemapUrls('public/sitemap.xml');
 
-  // The index plus one page per tool. Param routes are deliberately absent
-  // from both sitemaps: `/ssl-checker/example.com` is a deep link into a
-  // result, not a page worth indexing.
-  const fromRegistry = new Set([SITE, ...TOOLS.map((t) => `${SITE}${t.path}`)]);
+  // The index, one page per tool, and one help page per tool. Param routes
+  // are deliberately absent from both sitemaps: `/ssl-checker/example.com`
+  // is a deep link into a result, not a page worth indexing. The help pages
+  // ARE indexable — that was half the point of moving help out of the
+  // drawer and onto /:tool/help.
+  const fromRegistry = new Set([
+    SITE,
+    ...TOOLS.map((t) => `${SITE}${t.path}`),
+    ...TOOLS.map((t) => `${SITE}${t.path}/help`),
+  ]);
 
   it('matches the registry exactly, in both directions', () => {
     const onlyCommitted = [...committed].filter((u) => !fromRegistry.has(u));
@@ -56,8 +62,8 @@ describe('sitemap URL set', () => {
     expect([...committed].some((u) => u.endsWith('/delete'))).toBe(false);
   });
 
-  it('lists every tool exactly once', () => {
-    expect(committed.size).toBe(TOOLS.length + 1);
+  it('lists every tool and its help page exactly once', () => {
+    expect(committed.size).toBe(TOOLS.length * 2 + 1);
   });
 
   it('is the only sitemap the build ships', () => {

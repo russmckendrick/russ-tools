@@ -1,0 +1,126 @@
+/*
+ * Signal — reference token layer.
+ *
+ * This file is a READABLE reference for the values in DESIGN.md, not a
+ * replacement for src/styles/tokens.generated.css. Regenerate that file from
+ * the new DESIGN.md with `pnpm generate:tokens` and use this only to check
+ * the generator's output against what the prototype actually rendered.
+ */
+
+:root,
+.dark {
+  /* ground */
+  --color-surface: #16171b;
+  --color-surface-raised: #1d1f24;
+  --color-surface-inset: #1f2127;
+  --color-nav-active: #22242a;
+  --color-footer: #101114;
+
+  /* lines */
+  --color-outline: #2a2d34;
+  --color-outline-strong: #3a3e47;
+  --color-rule: #e9eaec;
+
+  /* text */
+  --color-on-surface: #e9eaec;
+  --color-on-surface-muted: #a2a8b3;
+  --color-on-surface-faint: #8b919c;
+  --color-on-surface-dim: #6b7180;
+
+  /* accent */
+  --color-primary: #c6f232;
+  --color-primary-hover: #d4f75e;
+  --color-primary-text: #c6f232;
+  --color-on-primary: #16171b;
+
+  /* status */
+  --color-success: #7ade7f;
+  --color-warning: #f5c04e;
+  --color-error: #f87171;
+  --color-info: #6ba3ff;
+
+  /* category — text role */
+  --color-category-network: #4fd8c4;
+  --color-category-azure: #6ba3ff;
+  --color-category-microsoft: #b79cff;
+  --color-category-security: #f5c04e;
+  --color-category-developer: #7ade7f;
+  --color-category-content: #f58ab8;
+}
+
+.light {
+  --color-surface: #f4f4f1;
+  --color-surface-raised: #ffffff;
+  --color-surface-inset: #eaeae4;
+  --color-nav-active: #e7e7e0;
+  --color-footer: #16171b;
+
+  --color-outline: #dddcd5;
+  --color-outline-strong: #b9b8af;
+  --color-rule: #16171b;
+
+  --color-on-surface: #16171b;
+  --color-on-surface-muted: #5d616a;
+  --color-on-surface-faint: #767b84;
+  --color-on-surface-dim: #9a9ea6;
+
+  --color-primary: #c6f232;
+  --color-primary-hover: #b1dd1f;
+  --color-primary-text: #5f7d0a;
+  --color-on-primary: #16171b;
+
+  --color-success: #15803d;
+  --color-warning: #a16207;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+
+  --color-category-network: #0e7a6e;
+  --color-category-azure: #2563eb;
+  --color-category-microsoft: #7c3aed;
+  --color-category-security: #a16207;
+  --color-category-developer: #15803d;
+  --color-category-content: #be185d;
+}
+
+/* Category FILL role — theme-independent: the ink on these is always graphite. */
+:root {
+  --color-category-fill-network: #4fd8c4;
+  --color-category-fill-azure: #6ba3ff;
+  --color-category-fill-microsoft: #b79cff;
+  --color-category-fill-security: #f5c04e;
+  --color-category-fill-developer: #7ade7f;
+  --color-category-fill-content: #f58ab8;
+  --color-on-category-fill: #16171b;
+
+  /* type */
+  --font-sans: 'Instrument Sans Variable', 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: 'Red Hat Mono Variable', 'Red Hat Mono', ui-monospace, monospace;
+
+  /* shape — square everywhere */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-full: 9999px;
+
+  --border-hairline: 1px;
+  --border-structural: 3px;
+
+  /* space */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 28px;
+  --space-3xl: 36px;
+  --space-4xl: 56px;
+  --space-5xl: 88px;
+  --gutter: 32px;
+  --max-width: 1200px;
+
+  /* motion */
+  --duration-fast: 90ms;
+  --duration-base: 140ms;
+  --easing: linear;
+}

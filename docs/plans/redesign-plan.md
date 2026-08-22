@@ -2147,3 +2147,27 @@ everywhere. The whole dark neutral ramp, subtle tints, nav-active and footer
 were retuned for the lifted grounds (faint and dim both needed lightening to
 clear their floors on the new inset), and `THEME_COLOR` follows the new
 surface. 514 unit + 41 e2e green.
+
+### Session 9 — help leaves the drawer for its own page
+
+Owner feedback on the post-redesign help drawer ("not a fan"): its section
+headings were ALL-CAPS Space Mono — the exact Signal idiom Stacks retired
+(mono is data only) — the copy was squeezed into a 448px sheet, and the
+overlay dimmed the tool it was meant to be read alongside. Three directions
+were mocked on a design canvas (in-page section, own page, restyled drawer);
+the owner picked **help on its own page**.
+
+Landed as `/​<tool>/help`: a new `src/pages/[tool]/help.astro` prerenders the
+same `help:start`/`help:end` block of `docs/tools/<id>/README.md` the drawer
+used to fetch, through a static (no client directive) `HelpArticle` React
+component — react-markdown now runs at build only and ships no JS. The page
+gets the standard tool furniture (`rt-tool-head`, crumb + Help level, icon,
+`<h1>{title} help</h1>`), an "On this page" jump-chip row reusing `rt-chip`,
+a `72ch` article styled by new `rt-help-*` rules, and a back link.
+`ToolHelp.jsx` is now just an outline-button link; `ui/help-dialog.jsx` and
+`ui/sheet.jsx` are deleted. Help URLs joined the sitemap (lastmod from
+`docs/tools/<id>`), and `generate-redirects.mjs` emits a `/help`
+self-rewrite ahead of each `/:param` rewrite — Cloudflare evaluates rules
+before assets, so `/ssl-checker/:domain` would otherwise swallow
+`/ssl-checker/help`. `e2e/help.spec.js` rewritten for the navigation;
+ledger entry in `docs/BEHAVIOR_CHANGES.md`.

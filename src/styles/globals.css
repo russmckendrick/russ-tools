@@ -378,6 +378,24 @@
 }
 
 /* =============================================================================
+   iOS auto-zoom guard: Safari zooms the whole viewport when a focused form
+   control's font-size is under 16px, and never zooms back out. Inputs and
+   textareas sit at 13px (`text-data-md`), so on touch devices they must be
+   16px. Deliberately un-layered — un-layered CSS beats Tailwind's
+   `@layer utilities`, so this wins over the type-step classes without
+   `!important`. `[role="combobox"]` (the Radix select trigger) can't trigger
+   the zoom itself but is included so selects match neighbouring inputs.
+   ========================================================================== */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select,
+  [role="combobox"] {
+    font-size: 16px;
+  }
+}
+
+/* =============================================================================
    Accessibility floor: nothing above may animate for a user who asked us not
    to. This must stay last so it wins on specificity ties.
    ========================================================================== */

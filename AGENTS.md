@@ -50,7 +50,10 @@ rather than shadcn's stock values. Notably: the default badge takes `var(--cat)`
 manifest's `category` — a tool never names a colour. The focus ring is `--color-ring`,
 which resolves to `primary-text` (the accent in dark, a deep green in light);
 the raw accent is ~1.6:1 on paper and cannot be a ring or text there. There is one `<Toaster/>`
-(`ui/toaster.jsx`, mounted by `ToolIsland`), one help affordance (`ui/help-dialog.jsx`), and
+(`ui/toaster.jsx`, mounted by `ToolIsland`), one tool-level help affordance (the prerendered
+`/<tool>/help` page — `src/pages/[tool]/help.astro`, linked by `src/bridge/ToolHelp.jsx`; the
+old drawer `ui/help-dialog.jsx` and `ui/sheet.jsx` are deleted), one field-level hint
+(`ui/help-hint.jsx`), and
 one source for the Material tool icons (`src/shell/icons.mjs`, rendered by the Astro
 `ToolIcon` and the React `ui/tool-icon.jsx`).
 

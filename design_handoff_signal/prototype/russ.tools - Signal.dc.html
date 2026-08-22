@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Red+Hat+Mono:wght@300..700&display=swap">
+<style>
+  html,body{margin:0;padding:0;background:#16171b;}
+  body{font-family:'Instrument Sans',sans-serif;color:#e8e9eb;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  a:hover{color:var(--acc-text);}
+  *{box-sizing:border-box;}
+</style>
+</helmet>
+<div style="{{ rootStyle }}">
+
+  <!-- ===== SHELL: header ===== -->
+  <header style="border-bottom:3px solid var(--rule);">
+    <div style="max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:stretch;justify-content:space-between;">
+      <a href="#" style="display:flex;align-items:center;gap:10px;padding:18px 0;font-weight:700;font-size:17px;letter-spacing:-0.02em;">
+        <span style="width:14px;height:14px;background:var(--acc);display:inline-block;"></span>russ.tools
+      </a>
+      <nav style="display:flex;">
+        <a href="#" style="display:flex;align-items:center;padding:0 22px;border-left:1px solid var(--line);font-size:13px;font-weight:600;background:var(--nav-active);color:var(--acc-text);">Tools</a>
+        <a href="#" style="display:flex;align-items:center;padding:0 22px;border-left:1px solid var(--line);font-size:13px;font-weight:500;color:var(--muted);" style-hover="color:var(--ink);">Saved data</a>
+        <a href="#" style="display:flex;align-items:center;padding:0 22px;border-left:1px solid var(--line);font-size:13px;font-weight:500;color:var(--muted);" style-hover="color:var(--ink);">Source</a>
+        <a href="#" style="display:flex;align-items:center;padding:0 22px;border-left:1px solid var(--line);font-family:'Red Hat Mono',monospace;font-size:12px;color:var(--muted);" style-hover="color:var(--ink);" onClick="{{ toggleTheme }}">◐</a>
+      </nav>
+    </div>
+  </header>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 32px;">
+
+    <!-- ===== INDEX PAGE ===== -->
+    <section data-screen-label="Index">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;padding:48px 0 32px;">
+        <h1 style="margin:0;font-size:64px;font-weight:700;letter-spacing:-0.04em;line-height:1;">Tools</h1>
+        <span style="font-family:'Red Hat Mono',monospace;font-size:12px;color:var(--muted2);">15 utilities · everything runs in your browser</span>
+      </div>
+
+      <div style="display:flex;border-top:3px solid var(--rule);border-bottom:1px solid var(--line);">
+        <span style="padding:12px 18px 12px 0;font-family:'Red Hat Mono',monospace;font-size:11px;font-weight:600;border-bottom:3px solid var(--acc);margin-bottom:-1px;">ALL 15</span>
+        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="5">
+          <a href="#" style="padding:12px 18px;font-family:'Red Hat Mono',monospace;font-size:11px;color:var(--muted);" style-hover="color:var(--ink);">{{ c.label }} {{ c.count }}</a>
+        </sc-for>
+        <span style="margin-left:auto;align-self:center;font-family:'Red Hat Mono',monospace;font-size:11px;color:var(--faint);">/ to filter</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid var(--line);">
+        <sc-for list="{{ tools }}" as="t" hint-placeholder-count="15">
+          <a href="#" style="display:flex;flex-direction:column;gap:8px;padding:18px 20px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg);" style-hover="background:var(--hover);">
+            <span style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+              <span style="color:{{ t.color }};display:inline-flex;">{{ t.icon }}</span>
+              <span style="font-family:'Red Hat Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.08em;padding:3px 7px;background:{{ t.fill }};color:#16171b;white-space:nowrap;">{{ t.cat }}</span>
+            </span>
+            <span style="font-size:17px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;">{{ t.name }}</span>
+            <span style="font-size:13px;line-height:1.45;color:var(--muted2);">{{ t.desc }}</span>
+            <span style="margin-top:auto;font-family:'Red Hat Mono',monospace;font-size:11px;color:var(--acc-text);">{{ t.path }} →</span>
+          </a>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- ===== divider ===== -->
+    <div style="display:flex;align-items:center;gap:16px;padding:88px 0 0;">
+      <span style="font-family:'Red Hat Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.1em;color:var(--faint);">TOOL PAGE — /SSL-CHECKER</span>
+      <span style="flex:1;border-top:1px solid var(--line);"></span>
+    </div>
+
+    <!-- ===== SSL CHECKER PAGE ===== -->
+    <section data-screen-label="SSL Checker" style="padding:44px 0 0;">
+      <nav style="font-family:'Red Hat Mono',monospace;font-size:11px;color:var(--muted2);">
+        <a href="#" style="color:var(--muted2);">TOOLS</a> → <a href="#" style="color:{{ secCat }};font-weight:600;">SECURITY</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:14px;margin:16px 0 8px;">
+        <span style="display:inline-flex;color:{{ secCat }};">{{ sslIcon }}</span>
+        <h1 style="margin:0;font-size:44px;font-weight:700;letter-spacing:-0.03em;">SSL Certificate Checker</h1>
+      </div>
+      <p style="margin:0 0 36px;font-size:15px;color:var(--muted);font-weight:500;">Inspect the chain, ciphers and expiry for any host. This lookup runs through a Cloudflare Worker.</p>
+
+      <div style="display:flex;border:3px solid var(--rule);">
+        <input value="example.com" style="flex:1;border:none;background:var(--panel);padding:18px 22px;font-family:'Red Hat Mono',monospace;font-size:15px;color:var(--ink);outline:none;"></input>
+        <button style="border:none;background:var(--acc);color:var(--on-acc);padding:0 36px;font-size:15px;font-weight:700;cursor:pointer;" style-hover="background:var(--btn-hov);">Check →</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:240px 1fr;margin-top:36px;border:1px solid var(--line);border-top:3px solid var(--rule);">
+        <div style="border-right:1px solid var(--line);padding:28px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;background:var(--panel);">
+          <span style="font-family:'Red Hat Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.12em;color:var(--muted2);">GRADE</span>
+          <span style="font-size:104px;font-weight:700;letter-spacing:-0.06em;line-height:1;color:{{ okColor }};">A+</span>
+          <span style="font-family:'Red Hat Mono',monospace;font-size:12px;color:var(--muted2);margin-top:10px;">example.com<br>93.184.215.14</span>
+        </div>
+        <div style="background:var(--panel);">
+          <sc-for list="{{ certRows }}" as="r" hint-placeholder-count="7">
+            <div style="display:grid;grid-template-columns:200px 1fr;border-bottom:1px solid var(--line);">
+              <span style="padding:13px 24px;font-family:'Red Hat Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--muted2);background:var(--panel);border-right:1px solid var(--line);">{{ r.k }}</span>
+              <span style="padding:13px 24px;font-family:'Red Hat Mono',monospace;font-size:13px;color:{{ r.color }};">{{ r.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="margin-top:56px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid var(--rule);padding-bottom:12px;">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-0.02em;">Recent checks</h2>
+          <a href="#" style="font-family:'Red Hat Mono',monospace;font-size:11px;color:var(--muted2);">CLEAR</a>
+        </div>
+        <sc-for list="{{ history }}" as="h" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:1fr 80px 180px 110px;gap:20px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);">
+            <span style="font-family:'Red Hat Mono',monospace;font-size:14px;">{{ h.domain }}</span>
+            <span style="font-size:17px;font-weight:700;color:{{ h.color }};">{{ h.grade }}</span>
+            <span style="font-family:'Red Hat Mono',monospace;font-size:12px;color:var(--muted2);">{{ h.when }}</span>
+            <a href="#" style="font-family:'Red Hat Mono',monospace;font-size:11px;font-weight:600;color:var(--acc-text);text-align:right;">RECHECK ↻</a>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- ===== divider ===== -->
+    <div style="display:flex;align-items:center;gap:16px;padding:88px 0 0;">
+      <span style="font-family:'Red Hat Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.1em;color:var(--faint);">TOOL PAGE — /CRON</span>
+      <span style="flex:1;border-top:1px solid var(--line);"></span>
+    </div>
+
+    <!-- ===== CRON BUILDER PAGE ===== -->
+    <section data-screen-label="CRON Builder" style="padding:44px 0 0;">
+      <nav style="font-family:'Red Hat Mono',monospace;font-size:11px;color:var(--muted2);">
+        <a href="#" style="color:var(--muted2);">TOOLS</a> → <a href="#" style="color:{{ devCat }};font-weight:600;">DEVELOPER</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:14px;margin:16px 0 8px;">
+        <span style="display:inline-flex;color:{{ devCat }};">{{ cronIcon }}</span>
+        <h1 style="margin:0;font-size:44px;font-weight:700;letter-spacing:-0.03em;">CRON Expression Builder</h1>
+      </div>
+      <p style="margin:0 0 36px;font-size:15px;color:var(--muted);font-weight:500;">Build and read cron expressions in plain English. Nothing leaves your browser.</p>
+
+      <div style="border:3px solid var(--rule);background:var(--panel);">
+        <div style="display:flex;align-items:stretch;border-bottom:1px solid var(--line);">
+          <span style="flex:1;display:flex;align-items:center;padding:22px 24px;font-family:'Red Hat Mono',monospace;font-size:32px;font-weight:500;letter-spacing:0.06em;">0 9 * * 1-5</span>
+          <button style="border:none;border-left:1px solid var(--line);background:var(--panel);color:var(--ink);padding:0 28px;font-family:'Red Hat Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;" style-hover="background:var(--acc);color:var(--on-acc);">COPY</button>
+        </div>
+        <div style="padding:14px 24px;font-size:14px;color:var(--muted);font-weight:500;background:var(--panel);">Runs at <b style="color:var(--ink);">9:00 AM</b>, Monday through Friday. Next: Mon 17 Aug 2026, 09:00.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);margin-top:36px;border:1px solid var(--line);border-top:3px solid var(--rule);background:var(--panel);">
+        <sc-for list="{{ cronFields }}" as="f" hint-placeholder-count="5">
+          <div style="border-right:1px solid var(--line);padding:18px 20px 20px;display:flex;flex-direction:column;gap:10px;">
+            <span style="font-family:'Red Hat Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--muted2);">{{ f.label }}</span>
+            <span style="display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line-strong);padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;" style-hover="border-color:var(--ink);">{{ f.value }}<span style="color:var(--faint);font-size:10px;">▾</span></span>
+            <span style="font-family:'Red Hat Mono',monospace;font-size:12px;color:var(--acc-text);">{{ f.token }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="margin-top:56px;">
+        <div style="border-bottom:3px solid var(--rule);padding-bottom:12px;">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-0.02em;">Common schedules</h2>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);border-left:1px solid var(--line);">
+          <sc-for list="{{ presets }}" as="p" hint-placeholder-count="6">
+            <a href="#" style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:14px 20px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);" style-hover="background:var(--hover);">
+              <span style="font-size:14px;font-weight:600;">{{ p.label }}</span>
+              <span style="font-family:'Red Hat Mono',monospace;font-size:12px;color:var(--acc-text);">{{ p.expr }}</span>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== SHELL: footer ===== -->
+  <footer style="margin-top:96px;border-top:3px solid var(--rule);background:var(--footer-bg);color:var(--footer-ink);">
+    <div style="max-width:1200px;margin:0 auto;padding:28px 32px 44px;display:flex;justify-content:space-between;align-items:baseline;">
+      <span style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;"><span style="width:12px;height:12px;background:var(--acc);display:inline-block;"></span>russ.tools</span>
+      <span style="font-family:'Red Hat Mono',monospace;font-size:11px;color:var(--muted2);">CLIENT-SIDE ONLY · NO ANALYTICS · NO ACCOUNTS</span>
+      <nav style="display:flex;gap:24px;font-size:13px;font-weight:500;">
+        <a href="#" style="color:var(--footer-ink);">Tools</a><a href="#" style="color:var(--footer-ink);">Saved data</a><a href="#" style="color:var(--footer-ink);">Source</a>
+      </nav>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;dark&quot;, &quot;light&quot;], &quot;default&quot;: &quot;dark&quot;, &quot;tsType&quot;: &quot;'dark' | 'light'&quot;, &quot;section&quot;: &quot;Appearance&quot;}}">
+class Component extends DCLogic {
+  state = { theme: null };
+  // Material Design Icons, copied verbatim from src/shell/icons.mjs (Apache 2.0, Google LLC)
+  static PATHS = {
+    'manage-search':'<path d="M7 9H2V7h5zm0 3H2v2h5zm13.59 7-3.83-3.83c-.8.52-1.74.83-2.76.83-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5c0 1.02-.31 1.96-.83 2.75L22 17.59zM17 11c0-1.65-1.35-3-3-3s-3 1.35-3 3 1.35 3 3 3 3-1.35 3-3M2 19h10v-2H2z"/>',
+    'new-label':'<path d="m21 12-4.37 6.16c-.37.52-.98.84-1.63.84h-3v-6H9v-3H3V7c0-1.1.9-2 2-2h10c.65 0 1.26.31 1.63.84zm-11 3H7v-3H5v3H2v2h3v3h2v-3h3z"/>',
+    'data-object':'<path d="M4 7v2c0 .55-.45 1-1 1H2v4h1c.55 0 1 .45 1 1v2c0 1.65 1.35 3 3 3h3v-2H7c-.55 0-1-.45-1-1v-2c0-1.3-.84-2.42-2-2.83v-.34C5.16 11.42 6 10.3 6 9V7c0-.55.45-1 1-1h3V4H7C5.35 4 4 5.35 4 7M21 10c-.55 0-1-.45-1-1V7c0-1.65-1.35-3-3-3h-3v2h3c.55 0 1 .45 1 1v2c0 1.3.84 2.42 2 2.83v.34c-1.16.41-2 1.52-2 2.83v2c0 .55-.45 1-1 1h-3v2h3c1.65 0 3-1.35 3-3v-2c0-.55.45-1 1-1h1v-4z"/>',
+    campaign:'<path d="M18 11v2h4v-2zm-2 6.61c.96.71 2.21 1.65 3.2 2.39.4-.53.8-1.07 1.2-1.6-.99-.74-2.24-1.68-3.2-2.4-.4.54-.8 1.08-1.2 1.61M20.4 5.6c-.4-.53-.8-1.07-1.2-1.6-.99.74-2.24 1.68-3.2 2.4.4.53.8 1.07 1.2 1.6.96-.72 2.21-1.65 3.2-2.4M4 9c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h1v4h2v-4h1l5 3V6L8 9zm11.5 3c0-1.33-.58-2.53-1.5-3.35v6.69c.92-.81 1.5-2.01 1.5-3.34"/>',
+    schedule:'<path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2M12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>',
+    transform:'<path d="M22 18v-2H8V4h2L7 1 4 4h2v2H2v2h4v8c0 1.1.9 2 2 2h8v2h-2l3 3 3-3h-2v-2zM10 8h6v6h2V8c0-1.1-.9-2-2-2h-6z"/>',
+    dns:'<path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1M7 19c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2M20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1M7 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2"/>',
+    token:'<path d="M19.97 6.43 12 2 4.03 6.43 9.1 9.24C9.83 8.48 10.86 8 12 8s2.17.48 2.9 1.24zM10 12c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2m1 9.44L3 17V8.14l5.13 2.85c-.09.32-.13.66-.13 1.01 0 1.86 1.27 3.43 3 3.87zm2 0v-5.57c1.73-.44 3-2.01 3-3.87 0-.35-.04-.69-.13-1.01L21 8.14V17z"/>',
+    'table-view':'<path d="M19 7H9c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2m0 2v2H9V9zm-6 6v-2h2v2zm2 2v2h-2v-2zm-4-2H9v-2h2zm6-2h2v2h-2zm-8 4h2v2H9zm8 2v-2h2v2zM6 17H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v1h-2V5H5v10h1z"/>',
+    apps:'<path d="M4 8h4V4H4zm6 12h4v-4h-4zm-6 0h4v-4H4zm0-6h4v-4H4zm6 0h4v-4h-4zm6-10v4h4V4zm-6 4h4V4h-4zm6 6h4v-4h-4zm0 6h4v-4h-4z"/>',
+    password:'<path d="M2 17h20v2H2zm1.15-4.05L4 11.47l.85 1.48 1.3-.75-.85-1.48H7v-1.5H5.3l.85-1.47L4.85 7 4 8.47 3.15 7l-1.3.75.85 1.47H1v1.5h1.7l-.85 1.48zm6.7-.75 1.3.75.85-1.48.85 1.48 1.3-.75-.85-1.48H15v-1.5h-1.7l.85-1.47-1.3-.75L12 8.47 11.15 7l-1.3.75.85 1.47H9v1.5h1.7zM23 9.22h-1.7l.85-1.47-1.3-.75L20 8.47 19.15 7l-1.3.75.85 1.47H17v1.5h1.7l-.85 1.48 1.3.75.85-1.48.85 1.48 1.3-.75-.85-1.48H23z"/>',
+    policy:'<path d="m21 5-9-4-9 4v6c0 5.55 3.84 10.74 9 12 2.3-.56 4.33-1.9 5.88-3.71l-3.12-3.12a4.994 4.994 0 0 1-6.29-.64 5.003 5.003 0 0 1 0-7.07 5.003 5.003 0 0 1 7.07 0 5.006 5.006 0 0 1 .64 6.29l2.9 2.9C20.29 15.69 21 13.38 21 11z"/><circle cx="12" cy="12" r="3"/>',
+    lan:'<path d="M13 22h8v-7h-3v-4h-5V9h3V2H8v7h3v2H6v4H3v7h8v-7H8v-2h8v2h-3z"/>',
+    'corporate-fare':'<path d="M12 7V3H2v18h20V7zm-2 12H4v-2h6zm0-4H4v-2h6zm0-4H4V9h6zm0-4H4V5h6zm10 12h-8V9h8zm-2-8h-4v2h4zm0 4h-4v2h4z"/>',
+    badge:'<path d="M20 7h-5V4c0-1.1-.9-2-2-2h-2c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2M9 12c.83 0 1.5.67 1.5 1.5S9.83 15 9 15s-1.5-.67-1.5-1.5S8.17 12 9 12m3 6H6v-.75c0-1 2-1.5 3-1.5s3 .5 3 1.5zm1-9h-2V4h2zm5 7.5h-4V15h4zm0-3h-4V12h4z"/>',
+  };
+  icon(name, size) {
+    return React.createElement('svg', {
+      viewBox: '0 0 24 24', width: size, height: size, fill: 'currentColor',
+      'aria-hidden': true, style: {flexShrink: 0},
+      dangerouslySetInnerHTML: {__html: Component.PATHS[name]},
+    });
+  }
+  renderVals() {
+    const theme = this.state.theme ?? this.props.theme ?? 'dark';
+    const P = theme === 'light'
+      ? {bg:'#f4f4f1',panel:'#ffffff',hover:'#eaeae4',nav:'#e7e7e0',footBg:'#16171b',footInk:'#f4f4f1',line:'#dddcd5',lineS:'#b9b8af',ink:'#16171b',rule:'#16171b',muted:'#5d616a',muted2:'#767b84',faint:'#9a9ea6',acc:'#c6f232',accText:'#5f7d0a',btnHov:'#b1dd1f',ok:'#15803d',warn:'#a16207'}
+      : {bg:'#16171b',panel:'#1d1f24',hover:'#1f2127',nav:'#22242a',footBg:'#101114',footInk:'#e9eaec',line:'#2a2d34',lineS:'#3a3e47',ink:'#e9eaec',rule:'#e9eaec',muted:'#a2a8b3',muted2:'#8b919c',faint:'#6b7180',acc:'#c6f232',accText:'#c6f232',btnHov:'#d4f75e',ok:'#7ade7f',warn:'#f5c04e'};
+    const F = { NETWORK:'#4fd8c4', AZURE:'#6ba3ff', MICROSOFT:'#b79cff', SECURITY:'#f5c04e', DEVELOPER:'#7ade7f', CONTENT:'#f58ab8' };
+    const C = theme === 'light'
+      ? { NETWORK:'#0e7a6e', AZURE:'#2563eb', MICROSOFT:'#7c3aed', SECURITY:'#a16207', DEVELOPER:'#15803d', CONTENT:'#be185d' }
+      : F;
+    const tools = [
+      ['DNS Lookup Tool','Query any record type against Google or Cloudflare DNS over HTTPS.','/dns-lookup','NETWORK','dns'],
+      ['Subnet Calculator','IPv4 and IPv6 subnet details, with a visual split-and-join divide table.','/subnet-calculator','NETWORK','lan'],
+      ['WHOIS Lookup Tool','Registration and ownership detail for domains and IPs.','/whois-lookup','NETWORK','badge'],
+      ['Azure KQL Query Builder','Build Kusto queries for Azure services with guided forms.','/azure-kql','AZURE','manage-search'],
+      ['Azure Resource Naming Tool','Generate and validate names against Microsoft CAF rules.','/azure-naming','AZURE','new-label'],
+      ['Microsoft Portals (GDAP)','Deep links into 31 Microsoft portals, scoped to a tenant.','/microsoft-portals','MICROSOFT','apps'],
+      ['Microsoft Tenant Lookup','Discover the Microsoft tenant behind any domain.','/tenant-lookup','MICROSOFT','corporate-fare'],
+      ['JWT Decoder/Validator','Decode and validate tokens without them leaving the tab.','/jwt','SECURITY','token'],
+      ['Password Generator','Cryptographically random passwords, generated on-device.','/password-generator','SECURITY','password'],
+      ['SSL Certificate Checker','Inspect the chain, ciphers and expiry for any host.','/ssl-checker','SECURITY','policy'],
+      ['Base64 Encoder/Decoder','Encode and decode text and files, including URL-safe output.','/base64','DEVELOPER','data-object'],
+      ['CRON Expression Builder','Build and read cron expressions in plain English.','/cron','DEVELOPER','schedule'],
+      ['Data Converter','Convert between JSON, YAML and TOML, with validation.','/data-converter','DEVELOPER','transform'],
+      ['Markdown Table Tool','Build, format and re-align Markdown tables from CSV or scratch.','/markdown-table-tool','DEVELOPER','table-view'],
+      ['Buzzword Ipsum','Corporate filler text, for when real words will not do.','/buzzword-ipsum','CONTENT','campaign'],
+    ].map(([name,desc,path,cat,ic]) => ({name,desc,path,cat,color:C[cat],fill:F[cat],icon:this.icon(ic,20)}));
+    const counts = {};
+    tools.forEach(t => counts[t.cat] = (counts[t.cat]||0)+1);
+    const cats = Object.keys(C).map(label => ({label, count: counts[label]}));
+    const certRows = [
+      {k:'ISSUED TO', v:'CN=example.com', color:P.ink},
+      {k:'ISSUER', v:'DigiCert Global G3 TLS ECC SHA384 2020 CA1', color:P.ink},
+      {k:'VALID UNTIL', v:'2027-01-15 · 153 days remaining', color:P.ok},
+      {k:'PROTOCOLS', v:'TLS 1.3, TLS 1.2', color:P.ink},
+      {k:'KEY', v:'EC 256 bits (SHA256withECDSA)', color:P.ink},
+      {k:'HSTS', v:'max-age=31536000; includeSubDomains', color:P.ok},
+      {k:'WEAK CIPHERS', v:'none detected', color:P.muted2},
+    ];
+    const history = [
+      {domain:'russ.cloud', grade:'A+', color:P.ok, when:'today, 09:41'},
+      {domain:'media-files.xyz', grade:'B', color:P.warn, when:'yesterday, 16:02'},
+      {domain:'internal-proxy.net', grade:'A', color:P.ok, when:'12 Aug, 11:37'},
+    ];
+    const cronFields = [
+      {label:'MINUTE', value:'Once per hour', token:'0'},
+      {label:'HOUR', value:'9 AM', token:'9'},
+      {label:'DAY OF MONTH', value:'Every day', token:'*'},
+      {label:'MONTH', value:'Every month', token:'*'},
+      {label:'DAY OF WEEK', value:'Weekdays', token:'1-5'},
+    ];
+    const presets = [
+      {label:'Every minute', expr:'* * * * *'},
+      {label:'Every 15 minutes', expr:'0,15,30,45 * * * *'},
+      {label:'Hourly', expr:'0 * * * *'},
+      {label:'Daily at midnight', expr:'0 0 * * *'},
+      {label:'Weekdays at 9 AM', expr:'0 9 * * 1-5'},
+      {label:'1st of the month', expr:'0 0 1 * *'},
+    ];
+    const rootStyle = {minHeight:'100vh',background:'var(--bg)',color:'var(--ink)','--bg':P.bg,'--panel':P.panel,'--hover':P.hover,'--nav-active':P.nav,'--footer-bg':P.footBg,'--footer-ink':P.footInk,'--line':P.line,'--line-strong':P.lineS,'--ink':P.ink,'--rule':P.rule,'--muted':P.muted,'--muted2':P.muted2,'--faint':P.faint,'--acc':P.acc,'--acc-text':P.accText,'--btn-hov':P.btnHov,'--on-acc':'#16171b'};
+    return { tools, cats, certRows, history, cronFields, presets, rootStyle,
+      okColor: P.ok, secCat: C.SECURITY, devCat: C.DEVELOPER,
+      toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+      sslIcon: this.icon('policy', 30), cronIcon: this.icon('schedule', 30) };
+  }
+}
+</script>
+</body>
+</html>

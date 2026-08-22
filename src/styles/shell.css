@@ -1062,3 +1062,118 @@ body > main {
   transform: translate(3px, 3px);
   box-shadow: none;
 }
+
+/* --- Tool help page (/:tool/help) ----------------------------------------
+   The drawer's replacement: the same docs markdown, prerendered at a full
+   reading measure. The jump row reuses the index's rt-chip — a jump link is
+   a pressable key here exactly as a filter is there. */
+
+.rt-help-toc {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rt-space-md);
+  padding-block: var(--rt-space-2xl) 0;
+}
+.rt-help-toc > span {
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  letter-spacing: var(--tracking-label-caps);
+  text-transform: uppercase;
+  color: var(--color-on-surface-faint);
+}
+.rt-help-toc .rt-chip {
+  text-decoration: none;
+}
+
+.rt-help-article {
+  max-width: 72ch;
+  padding-top: var(--rt-space-md);
+}
+.rt-help-article h2 {
+  margin: var(--rt-space-3xl) 0 var(--rt-space-lg);
+  /* The sticky-free page still wants the anchor to land with air above it. */
+  scroll-margin-top: var(--rt-space-2xl);
+}
+.rt-help-article h3 {
+  margin: var(--rt-space-xl) 0 var(--rt-space-md);
+}
+.rt-help-article p {
+  margin: 0 0 var(--rt-space-md);
+  font-size: var(--text-body-md);
+  line-height: var(--text-body-md--line-height);
+  color: var(--color-on-surface-muted);
+}
+/* Preflight strips list markers site-wide; the article is prose, so they
+   come back here — decimal in the tool's category hue for steps, discs for
+   the rest. */
+.rt-help-article :is(ul, ol) {
+  margin: 0 0 var(--rt-space-md);
+  padding-left: 24px;
+  display: grid;
+  gap: var(--rt-space-sm);
+}
+.rt-help-article ul {
+  list-style: disc;
+}
+.rt-help-article ol {
+  list-style: decimal;
+}
+.rt-help-article li {
+  padding-left: 4px;
+  font-size: var(--text-body-md);
+  line-height: var(--text-body-md--line-height);
+  color: var(--color-on-surface-muted);
+}
+.rt-help-article li::marker {
+  color: var(--cat, var(--color-on-surface-faint));
+}
+.rt-help-article ol li::marker {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+}
+.rt-help-article strong {
+  color: var(--color-on-surface);
+  font-weight: 600;
+}
+.rt-help-article code {
+  padding: 1px 6px;
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-inset);
+  color: var(--color-on-surface);
+}
+.rt-help-article pre {
+  overflow-x: auto;
+  margin: 0 0 var(--rt-space-md);
+  padding: var(--rt-space-md);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inset);
+}
+.rt-help-article pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.rt-help-article a {
+  color: var(--color-primary-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rt-help-back {
+  margin: var(--rt-space-3xl) 0 0;
+  padding-top: var(--rt-space-2xl);
+  border-top: 1px solid var(--color-outline);
+}
+.rt-help-back a {
+  color: var(--color-primary-text);
+  font-size: var(--text-body-md);
+  font-weight: 500;
+  text-decoration: none;
+}
+.rt-help-back a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

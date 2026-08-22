@@ -57,6 +57,10 @@ if (redirects.length) {
 for (const tool of tools) {
   if (!tool.params.length) continue;
   lines.push(`# ${tool.title}`);
+  // The help page is a real prerendered file, but Cloudflare evaluates these
+  // rules before serving assets — so /:param would swallow /help. The
+  // self-rewrite pins it, and must come first: first match wins.
+  lines.push(`${`${tool.path}/help`.padEnd(40)}${`${tool.path}/help`.padEnd(24)}200`);
   for (let i = 0; i < tool.params.length; i++) {
     const pattern = `${tool.path}/${tool.params.slice(0, i + 1).map((p) => `:${p}`).join('/')}`;
     // Column-aligned purely so the file is readable when debugging a 404.

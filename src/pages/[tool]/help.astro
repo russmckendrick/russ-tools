@@ -1,0 +1,98 @@
+---
+/**
+ * One prerendered help page per tool: /<tool>/help.
+ *
+ * This replaced the slide-in help drawer (see docs/BEHAVIOR_CHANGES.md). The
+ * content is the same source the drawer read — the help:start/help:end block
+ * of docs/tools/<id>/README.md, reached through the manifest's `help()` — but
+ * it is rendered here at build time, so help is a real page: linkable,
+ * indexable, printed into the crawler's copy, and read at a full measure
+ * instead of a 448px overlay.
+ *
+ * Serving note: for tools with param deep-links the generated _redirects
+ * carries a `/help` self-rewrite ahead of the `/:param` rewrite — Cloudflare
+ * evaluates rules before assets, so without it /ssl-checker/help would be
+ * swallowed by /ssl-checker/:domain. See scripts/generate-redirects.mjs.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolIcon from '../../shell/ToolIcon.astro';
+import HelpArticle from '../../bridge/HelpArticle.jsx';
+import { TOOLS } from '../../tools/registry.mjs';
+import { extractHelpMarkdown, helpHeadings } from '../../lib/helpMarkdown.js';
+import { categoryGroupId, categoryLabel } from '../../shell/categories.mjs';
+import { SITE_NAME, SITE_URL } from '../../shell/site.mjs';
+
+export function getStaticPaths() {
+  return TOOLS.map((tool) => ({
+    params: { tool: tool.path.slice(1) },
+    props: { tool },
+  }));
+}
+
+const { tool } = Astro.props;
+
+const source = await tool.help();
+const markdown = extractHelpMarkdown(source.default);
+const headings = helpHeadings(markdown);
+
+const toolUrl = new URL(tool.path, Astro.site).href;
+const helpUrl = `${toolUrl}/help`;
+const categoryHref = `/#${categoryGroupId(tool.category)}`;
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Tools', item: `${SITE_URL}/` },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: categoryLabel(tool.category),
+        item: `${SITE_URL}${categoryHref}`,
+      },
+      { '@type': 'ListItem', position: 3, name: tool.title, item: toolUrl },
+      { '@type': 'ListItem', position: 4, name: 'Help', item: helpUrl },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title={`${tool.title} help — ${SITE_NAME}`}
+  description={`How to use the ${tool.title}: quick start, tips and troubleshooting from the tool's documentation.`}
+  keywords={tool.seo?.keywords ?? []}
+  canonical={helpUrl}
+  image={`/og/${tool.id}.png`}
+  schema={schema}
+>
+  <div style={`--cat: var(--color-category-${tool.category}); --cat-fill: var(--color-category-fill-${tool.category})`}>
+    <div class="rt-tool-head">
+      <nav class="rt-crumb" aria-label="Breadcrumb">
+        <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a> / <a href={tool.path}>{tool.title}</a> / Help
+      </nav>
+
+      <div class="rt-tool-id">
+        <ToolIcon icon={tool.icon} size={34} />
+        <h1>{tool.title} help</h1>
+      </div>
+
+      <p>Guidance from this tool's documentation.</p>
+    </div>
+
+    <div class="rt-tool-body">
+      <nav class="rt-help-toc" aria-label="On this page">
+        <span>On this page</span>
+        <div class="rt-chips">
+          {headings.map((h) => <a class="rt-chip" href={`#${h.id}`}>{h.title}</a>)}
+        </div>
+      </nav>
+
+      <HelpArticle markdown={markdown} />
+
+      <p class="rt-help-back">
+        <a href={tool.path}><span aria-hidden="true">←</span> Back to {tool.title}</a>
+      </p>
+    </div>
+  </div>
+</BaseLayout>

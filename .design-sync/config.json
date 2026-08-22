@@ -1,0 +1,49 @@
+{
+  "projectId": "1789cdfa-b1da-486d-920f-b82aa476bd36",
+  "shape": "package",
+  "pkg": "russ-tools",
+  "globalName": "RussTools",
+  "buildCmd": "pnpm build && node .design-sync/prep-css.mjs && node .design-sync/gen-entry.mjs",
+  "srcDir": "src/components/ui",
+  "tsconfig": ".design-sync/tsconfig.json",
+  "cssEntry": ".design-sync/.cache/css/app.css",
+  "docsDir": ".design-sync/docs",
+  "readmeHeader": ".design-sync/conventions.md",
+  "guidelinesGlob": ["DESIGN.md", "PRODUCT.md"],
+  "extraEntries": ["./.design-sync/ds-preview-root.jsx", "./.design-sync/ds-toast.js"],
+  "overrides": {
+    "Dialog": { "cardMode": "single", "primaryStory": "Confirm" },
+    "Sheet": { "cardMode": "single", "primaryStory": "Details" },
+    "HelpDialog": { "cardMode": "single", "primaryStory": "Open" },
+    "Tooltip": { "cardMode": "single", "primaryStory": "Visible" },
+    "Toaster": { "cardMode": "single", "primaryStory": "Statuses" }
+  },
+  "provider": {
+    "component": "DesignSystemRoot"
+  },
+  "componentSrcMap": {
+    "Alert": "src/components/ui/alert.jsx",
+    "Badge": "src/components/ui/badge.jsx",
+    "Button": "src/components/ui/button.jsx",
+    "Card": "src/components/ui/card.jsx",
+    "Collapsible": "src/components/ui/collapsible.jsx",
+    "Dialog": "src/components/ui/dialog.jsx",
+    "HelpDialog": "src/components/ui/help-dialog.jsx",
+    "HelpHint": "src/components/ui/help-hint.jsx",
+    "Input": "src/components/ui/input.jsx",
+    "Label": "src/components/ui/label.jsx",
+    "Progress": "src/components/ui/progress.jsx",
+    "Select": "src/components/ui/select.jsx",
+    "Separator": "src/components/ui/separator.jsx",
+    "Sheet": "src/components/ui/sheet.jsx",
+    "Slider": "src/components/ui/slider.jsx",
+    "Switch": "src/components/ui/switch.jsx",
+    "Table": "src/components/ui/table.jsx",
+    "Tabs": "src/components/ui/tabs.jsx",
+    "Textarea": "src/components/ui/textarea.jsx",
+    "Toaster": "src/components/ui/toaster.jsx",
+    "ToolAction": "src/components/ui/tool-actions.jsx",
+    "ToolIcon": "src/components/ui/tool-icon.jsx",
+    "Tooltip": "src/components/ui/tooltip.jsx"
+  }
+}

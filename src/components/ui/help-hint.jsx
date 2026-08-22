@@ -8,10 +8,10 @@ import { cn } from '@/lib/utils';
 /**
  * A field-level hint: the small `i` beside a label that explains one control.
  *
- * The counterpart to HelpDialog, not a competitor to it — tool-level help is
- * a dialog, field-level help is this. Both exist once, so a user learns the
- * two affordances and they mean the same thing in all fifteen tools. This was
- * azure-naming's private `HelpTooltipShadcn`; nothing else could reach it.
+ * The counterpart to the tool help page, not a competitor to it — tool-level
+ * help is the /:tool/help page, field-level help is this. Both exist once, so
+ * a user learns the two affordances and they mean the same thing in all
+ * fifteen tools. This was azure-naming's private `HelpTooltipShadcn`.
  *
  * @param {{ content: React.ReactNode, className?: string, label?: string }} props
  */
