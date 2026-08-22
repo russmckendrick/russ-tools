@@ -327,17 +327,17 @@ describe('token layer integrity', () => {
       );
     }
 
-    // And the shadow colour is genuinely darker than every ground it falls
-    // on, in both themes — a pale shadow reads as a glow, which is the fault
-    // the Espresso dark rework fixed.
-    for (const [mode, tokens] of themes) {
-      for (const ground of ['surface', 'surface-raised']) {
-        expect(
-          luminance(tokens['shadow-ink']),
-          `shadow-ink is darker than ${ground} in ${mode}`
-        ).toBeLessThan(luminance(tokens[ground]));
-      }
+    // In light the shadow is genuinely darker than every ground — the ink.
+    // In dark it is deliberately NOT: true black vanished into the cocoa
+    // grounds, so the offset is drawn with the border taupe instead, a
+    // printed second edge rather than a cast shadow (the user's call).
+    for (const ground of ['surface', 'surface-raised']) {
+      expect(
+        luminance(light['shadow-ink']),
+        `shadow-ink is darker than ${ground} in light`
+      ).toBeLessThan(luminance(light[ground]));
     }
+    expect(dark['shadow-ink'], 'the dark offset is drawn with the border pen').toBe(dark.rule);
   });
 
   it('carries the rule and motion values the exporter drops', () => {

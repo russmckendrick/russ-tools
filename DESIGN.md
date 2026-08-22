@@ -117,12 +117,12 @@ colors:
   on-status-light: "#ffffff"
 
   # ---- The press shadow ---------------------------------------------------
-  # The offset shadow's colour, distinct from `rule` on purpose: the border
-  # inverts with the theme (ink on paper, taupe on espresso) but a shadow
-  # is always DARKER than the ground it falls on. In light it is the ink; in
-  # dark it is true black, because on the cocoa grounds anything softer
-  # disappears. A pale shadow reads as a glow, not a press.
-  shadow-ink: "#000000"
+  # The offset shadow's colour. In light it is the ink; in dark it is the
+  # same taupe as the rule — the offset is drawn with the border pen, a
+  # printed second edge rather than a cast shadow. (True black was tried and
+  # vanished into the cocoa grounds; cream read as a glow.) The token stays
+  # separate from `rule` so the two can diverge again without a refactor.
+  shadow-ink: "#7d735e"
   shadow-ink-light: "#17150f"
 
   # ---- Ink on the footer --------------------------------------------------
@@ -253,8 +253,8 @@ borderWidth:
   structural: 2px
 
 # The offset shadow is hard-edged (no blur) and its colour is always the
-# `shadow-ink` token — the ink in light, true black in dark; never grey,
-# never translucent, never a light colour (a pale shadow reads as a glow).
+# `shadow-ink` token — the ink in light, the border taupe in dark (a
+# printed second edge, not a cast shadow); never grey and never translucent.
 # It means exactly one thing: THIS IS PRESSABLE.
 # Pressing an element sinks it: translate by the offset, shadow to none.
 # The one exception is `press-lg`, which also marks the page's one emphasis
@@ -590,8 +590,8 @@ knob, status dots, keycap hints.
 ## Elevation
 
 There is no elevation. The offset shadow is not "height"; it is
-**pressability**, drawn flat in `shadow-ink` with zero blur — darker than
-the ground in both themes, exactly like the light theme's ink shadow:
+**pressability**, drawn flat in `shadow-ink` with zero blur — the ink in
+light, the border taupe in dark, like a printed second edge:
 
 - `press-sm` (3px) — buttons, chips, small controls.
 - `press` (4px) — a hovered/focused tool tile.
