@@ -803,11 +803,16 @@ body > main {
     edge, and blurring hairlines as they pass under it is exactly the smear
     the header dropped its backdrop-filter to avoid.
   */
+  /*
+    The band still wraps: the chips are the one nowrap line (they scroll),
+    and the find field's 100% basis drops it onto its own row beneath them.
+    `nowrap` here once forced both onto one line and crushed the chips to
+    nothing — the search field ate the row and the categories vanished.
+  */
   .rt-filters {
     position: sticky;
     top: 0;
     z-index: 20;
-    flex-wrap: nowrap;
     background: var(--color-surface);
   }
   .rt-chips {

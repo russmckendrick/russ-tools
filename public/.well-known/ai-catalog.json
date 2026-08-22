@@ -1,0 +1,63 @@
+{
+  "specVersion": "0.1.0",
+  "host": {
+    "name": "russ.tools",
+    "url": "https://russ.tools",
+    "description": "Fifteen focused tools for network, cloud and platform work — subnetting, DNS, WHOIS, SSL, JWT, Azure naming and KQL, and more. Everything runs in your browser: no accounts, no analytics, nothing uploaded."
+  },
+  "entries": [
+    {
+      "id": "urn:air:russ.tools:docs:llms-txt",
+      "displayName": "Tool index (llms.txt)",
+      "type": "text/plain",
+      "url": "https://russ.tools/llms.txt",
+      "representativeQueries": [
+        "What tools does russ.tools offer?",
+        "Is there a subnet calculator on russ.tools?",
+        "List the Azure tools available on russ.tools"
+      ]
+    },
+    {
+      "id": "urn:air:russ.tools:docs:llms-full",
+      "displayName": "Full tool documentation (llms-full.txt)",
+      "type": "text/plain",
+      "url": "https://russ.tools/llms-full.txt",
+      "representativeQueries": [
+        "How do I use the russ.tools subnet calculator?",
+        "What options does the Azure resource naming tool support?",
+        "How does the JWT decoder validate tokens?"
+      ]
+    },
+    {
+      "id": "urn:air:russ.tools:docs:agents-md",
+      "displayName": "Agent front door (agents.md)",
+      "type": "text/markdown",
+      "url": "https://russ.tools/agents.md",
+      "representativeQueries": [
+        "How should an AI agent use russ.tools?",
+        "Does russ.tools send my data anywhere?"
+      ]
+    },
+    {
+      "id": "urn:air:russ.tools:webmcp:manifest",
+      "displayName": "WebMCP manifest",
+      "type": "application/json",
+      "url": "https://russ.tools/_webmcp/manifest.json",
+      "representativeQueries": [
+        "What WebMCP tools does russ.tools register?",
+        "Can I call calculate_subnet on russ.tools via document.modelContext?",
+        "Which russ.tools pages expose structured in-page tools?"
+      ]
+    },
+    {
+      "id": "urn:air:russ.tools:api:catalog",
+      "displayName": "API catalog (RFC 9727 linkset)",
+      "type": "application/linkset+json",
+      "url": "https://russ.tools/.well-known/api-catalog",
+      "representativeQueries": [
+        "What lookup APIs does russ.tools proxy?",
+        "Where is the SSL checker API documented?"
+      ]
+    }
+  ]
+}

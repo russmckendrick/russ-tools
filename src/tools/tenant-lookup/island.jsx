@@ -172,7 +172,7 @@ const TenantLookupTool = () => {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="domain">Domain or Email Address</Label>
-                <div className="flex gap-2 mt-1">
+                <div className="flex flex-col gap-2 mt-1 sm:flex-row">
                   <div className="relative flex-1">
                     <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -294,10 +294,10 @@ const TenantLookupTool = () => {
             <CardContent>
               <div className="space-y-3">
                 {savedLookups.map((savedLookup) => (
-                  <div key={savedLookup.id} className="flex items-center justify-between p-3 border rounded-md">
-                    <div className="flex items-center gap-3">
-                      <Building className="h-4 w-4 text-muted-foreground" />
-                      <div>
+                  <div key={savedLookup.id} className="flex flex-wrap items-center justify-between gap-2 p-3 border rounded-md">
+                    <div className="flex min-w-0 flex-wrap items-center gap-3">
+                      <Building className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0">
                         <p className="font-medium">{savedLookup.domain}</p>
                         <p className="text-body-sm text-muted-foreground">
                           {savedLookup.displayName || 'No display name'}

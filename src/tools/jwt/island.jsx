@@ -393,7 +393,7 @@ const JWTTool = () => {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="decoded" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="flex w-full sm:grid sm:grid-cols-3">
                   <TabsTrigger value="decoded" className="flex items-center gap-2">
                     <Fingerprint className="h-4 w-4" />
                     Decoded Token

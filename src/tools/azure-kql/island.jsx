@@ -247,7 +247,7 @@ const AzureKqlTool = () => {
       </ToolAction>
       <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="flex w-full sm:grid sm:grid-cols-4 mb-6">
             <TabsTrigger value="builder">Query Builder</TabsTrigger>
             <TabsTrigger value="favorites">Favorites</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>

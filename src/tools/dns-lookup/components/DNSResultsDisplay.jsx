@@ -71,12 +71,12 @@ const DNSResultsDisplay = ({ results, domain, recordType }) => {
           {/* Query Summary */}
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-wrap justify-between items-center gap-2">
                 <div className="flex items-center gap-2">
                   <Globe className="h-5 w-5" />
                   <h3 className="text-title-sm">DNS Query Results</h3>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge className={getRecordTypeColor(recordType)}>
                     {recordType} Record
                   </Badge>

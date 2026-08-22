@@ -100,7 +100,7 @@ const SSLResultsDisplay = ({ data }) => {
       )}
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="flex w-full lg:grid lg:grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="certificates">Certificates</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>

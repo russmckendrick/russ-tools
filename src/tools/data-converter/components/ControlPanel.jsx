@@ -26,8 +26,8 @@ const ControlPanel = ({
   return (
     <Card className="mb-6">
       <CardHeader>
-        <div className="flex items-center justify-end">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end">
+          <div className="flex flex-wrap items-center gap-2">
             <SamplesDialog
               isOpen={isSamplesOpen}
               onOpenChange={setIsSamplesOpen}

@@ -1,0 +1,51 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://russ.tools/",
+      "service-doc": [
+        {
+          "href": "https://russ.tools/agents.md",
+          "type": "text/markdown",
+          "title": "russ.tools — agent front door"
+        }
+      ],
+      "describedby": [
+        {
+          "href": "https://russ.tools/llms.txt",
+          "type": "text/plain",
+          "title": "Tool index (llms.txt)"
+        }
+      ]
+    },
+    {
+      "anchor": "https://ssl.russ.tools/",
+      "service-doc": [
+        {
+          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#ssl-checker--sslrusstools",
+          "type": "text/html",
+          "title": "SSL Certificate Checker API"
+        }
+      ]
+    },
+    {
+      "anchor": "https://whois.russ.tools/",
+      "service-doc": [
+        {
+          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#whois--whoisrusstools",
+          "type": "text/html",
+          "title": "WHOIS Lookup API"
+        }
+      ]
+    },
+    {
+      "anchor": "https://tenant.russ.tools/",
+      "service-doc": [
+        {
+          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#microsoft-tenant-lookup--tenantrusstools",
+          "type": "text/html",
+          "title": "Microsoft Tenant Lookup API"
+        }
+      ]
+    }
+  ]
+}

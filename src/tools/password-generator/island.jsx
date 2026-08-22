@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 import { copyText, downloadFile } from '@/core';
 import { createToolIcon } from '@/components/ui/tool-icon';
 
-const PasswordIcon = createToolIcon('password');
+const PasswordIcon = createToolIcon('key-round');
 
 const secureRandomInt = (max) => {
   const range = 0x100000000; // 2^32

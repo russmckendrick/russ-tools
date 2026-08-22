@@ -77,19 +77,19 @@ const MarkdownTableTool = () => {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
             <Badge variant="outline" className={getValidationColor()}>
               {getValidationIcon()}
               {validation.isValid ? 'Valid' : 'Issues'}
             </Badge>
-            
+
             <Badge variant="secondary">
               {stats.rows} rows × {stats.columns} cols
             </Badge>
           </div>
-          
-          <div className="flex items-center space-x-2">
+
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"

@@ -1,0 +1,9 @@
+/
+  Link: </.well-known/api-catalog>; rel="api-catalog", </agents.md>; rel="service-doc"
+
+/.well-known/api-catalog
+  Content-Type: application/linkset+json
+  Access-Control-Allow-Origin: *
+
+/.well-known/ai-catalog.json
+  Access-Control-Allow-Origin: *

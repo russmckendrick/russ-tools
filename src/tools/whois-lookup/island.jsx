@@ -430,7 +430,7 @@ const WhoisLookupTool = () => {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="query">Domain Name or IP Address</Label>
-                <div className="flex gap-2 mt-1">
+                <div className="flex flex-col gap-2 mt-1 sm:flex-row">
                   <div className="relative flex-1">
                     <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -554,10 +554,10 @@ const WhoisLookupTool = () => {
             <CardContent>
               <div className="space-y-3">
                 {lookupHistory.slice(0, 10).map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-md">
-                    <div className="flex items-center gap-3">
+                  <div key={index} className="flex flex-wrap items-center justify-between gap-2 p-3 border rounded-md">
+                    <div className="flex min-w-0 items-center gap-3">
                       {getTypeIcon(item.type)}
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-data-md font-mono">{item.query}</p>
                         <p className="text-data-sm font-mono text-muted-foreground">
                           {formatDate(item.timestamp)} • {item.type}

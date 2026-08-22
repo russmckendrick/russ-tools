@@ -54,7 +54,7 @@ const DNSHistoryDisplay = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center gap-2">
             <History className="h-5 w-5" />
             <h3 className="text-title-sm">Recent DNS Lookups</h3>
@@ -72,11 +72,11 @@ const DNSHistoryDisplay = ({
       <CardContent>
         <div className="space-y-3">
           {lookupHistory.slice(0, 10).map((item, index) => (
-            <div key={index} className="flex items-center justify-between p-3 border rounded-md">
-              <div className="flex items-center gap-3">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
+            <div key={index} className="flex flex-wrap items-center justify-between gap-2 p-3 border rounded-md">
+              <div className="flex min-w-0 items-center gap-3">
+                <Globe className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
                     <p className="font-medium font-mono">{item.domain}</p>
                     <Badge className={getRecordTypeColor(item.recordType)}>
                       {item.recordType}

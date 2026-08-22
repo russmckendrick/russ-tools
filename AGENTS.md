@@ -184,7 +184,7 @@ under Network when its category is `security`.
 
 ### The AI-agent surface (added 2026-08-22)
 
-Three pieces, all manifest-driven:
+Four pieces — the first three manifest-driven, the fourth static:
 
 - **`scripts/generate-llms.mjs`** writes `public/llms.txt`, `public/llms-full.txt` and
   `public/agents.md` (all gitignored) from `loadManifests()` + the help blocks of
@@ -206,6 +206,18 @@ Three pieces, all manifest-driven:
   through `textResult()`. Subnet Calculator (`calculate_subnet`) and Base64
   (`base64_encode`/`base64_decode`) are the pattern to copy. Mind the BigInt gotcha:
   `ipv6Details().totalAddresses` doesn't survive `JSON.stringify`.
+- **Discovery statics** (checked in, not generated): `public/_headers` puts an RFC 8288
+  `Link: rel="api-catalog"` + `rel="service-doc"` on `/` and sets
+  `application/linkset+json` + open CORS on the catalog; `public/.well-known/api-catalog`
+  (RFC 9727 linkset) anchors the three worker APIs from `apiConfig.json`;
+  `public/.well-known/ai-catalog.json` is the ARD manifest pointing at llms.txt, the
+  WebMCP manifest and the api-catalog; `robots.txt` carries
+  `Content-Signal: search=yes, ai-input=yes` (`ai-train` deliberately undeclared — an
+  owner's rights call, not a default). All pinned against `apiConfig.json` and
+  `site.mjs` by `src/tools/agent-discovery.test.js`. OAuth discovery / protected-resource
+  metadata / auth.md / an MCP server card were considered and **rejected** — there are no
+  protected APIs and no standalone MCP server, and publishing metadata for auth that
+  doesn't exist would misdirect agents.
 
 ## Frozen contracts (never break these — "keep the functionality" means these)
 

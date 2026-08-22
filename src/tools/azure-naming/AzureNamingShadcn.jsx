@@ -86,7 +86,7 @@ const AzureNamingShadcn = () => {
       </ToolAction>
 
       <Tabs defaultValue="builder" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid h-auto w-full grid-cols-1 sm:h-10 sm:grid-cols-3">
               <TabsTrigger value="builder" className="gap-2">
                 <Edit size={16} />
                 Name Builder

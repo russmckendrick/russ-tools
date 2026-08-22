@@ -2211,3 +2211,81 @@ to `ENCODING_MODES`. Hook behaviour pinned by `src/lib/useWebMCPTool.test.jsx`.
 
 Lint 0 errors / 11 warnings (unchanged), 534 vitest (+18), 41 e2e. Ledger
 entry in `docs/BEHAVIOR_CHANGES.md`; AGENTS.md gained "The AI-agent surface".
+
+### Session 10b — discovery statics (Link headers, catalogs, Content-Signals)
+
+An isitagentready.com scan listed ten gaps. Four were real for a static,
+no-auth site and landed as checked-in statics (the well-known files are
+site-shaped, not tool-shaped, so no generator): `public/_headers` (Cloudflare
+Pages) puts `Link: </.well-known/api-catalog>; rel="api-catalog",
+</agents.md>; rel="service-doc"` on `/` and gives the catalog
+`application/linkset+json` + `Access-Control-Allow-Origin: *`;
+`public/.well-known/api-catalog` is an RFC 9727/9264 linkset anchoring
+`ssl.`/`whois.`/`tenant.russ.tools` with service-doc links into the workers
+README; `public/.well-known/ai-catalog.json` is the ARD manifest (urn:air
+ids, representativeQueries) pointing at llms.txt, llms-full.txt, agents.md,
+`_webmcp/manifest.json` and the api-catalog; `robots.txt` gained
+`Content-Signal: search=yes, ai-input=yes` inside the wildcard group —
+`ai-train` left undeclared on purpose, it's the owner's rights call.
+All pinned against `apiConfig.json` and `site.mjs` by
+`src/tools/agent-discovery.test.js` (+8), and verified on the wire through
+`wrangler pages dev dist`.
+
+Rejected as not applicable rather than unimplemented: OAuth/OIDC discovery,
+protected-resource metadata and auth.md (no protected APIs — fabricated auth
+metadata would misdirect agents) and the MCP server card (WebMCP is in-page;
+there is no standalone MCP server). Remaining scan items live outside the
+repo: DNS-AID SVCB records and Cloudflare's Markdown for Agents are zone /
+dashboard changes.
+
+Lint 0 errors / 11 warnings (unchanged), 542 vitest (+8), e2e untouched.
+
+### 2026-08-22 — Session 11: the mobile review (390px sweep, every tool)
+
+A phone screenshot of dns-lookup showed buttons hanging off card edges. A
+Playwright sweep at 390×844 (all 16 pages, empty *and* interacted states,
+with an offender scan for anything painting past the viewport) found the
+one screenshot was ten distinct faults, each pinned and fixed:
+
+- **password-generator island crashed everywhere** — `createToolIcon('password')`
+  names an icon that isn't in `icons.mjs` (the manifest says `key-round`).
+  The only tool whose island didn't mount; caught because the sweep looks
+  at every page, not the one reported.
+- **The index lost its category chips on phones** — the 600px media query
+  set `flex-wrap: nowrap` on the whole `.rt-filters` band, so the find
+  field's `flex: 1 0 100%` couldn't wrap and crushed the chip row to
+  nothing. The nowrap belonged to `.rt-chips` alone (it already has it);
+  the band wraps again.
+- **`grid-cols-N` TabsLists overlap when labels outgrow their tracks** —
+  Tailwind's tracks are `minmax(0, 1fr)`, so cells can't grow and the
+  nowrap centered labels paint over their neighbours. `ui/tabs.jsx` now
+  gives every TabsList `max-w-full overflow-x-auto`; the three lists whose
+  labels genuinely can't fit at 390 (jwt ×3, azure-kql ×4, ssl-checker ×6)
+  drop the grid below `sm`/`lg` and scroll at natural width; azure-naming's
+  three icon+label tabs stack (`grid-cols-1 sm:grid-cols-3`).
+- **The `justify-between` row with an unshrinkable left side** — the
+  pattern behind the screenshot. History/list rows in dns-lookup,
+  whois-lookup, tenant-lookup and ssl-checker pushed their trailing button
+  past the card edge because the left flex block had no `min-w-0` and the
+  badge row no wrap. All now `flex-wrap` + `gap-2` + `min-w-0`.
+- **`break-all` split IPs mid-octet** (`142.251.29.13` / newline / `8`) —
+  dns-lookup record rows now `break-words`, which wraps at the spaces the
+  text already has.
+- **Input+button lookup rows crushed the input to two characters**
+  (ssl-checker, tenant-lookup, whois-lookup, microsoft-portals) — stacked
+  `flex-col sm:flex-row`; ssl-checker's flush 3px-border object stacks
+  inside its wrapper, seam intact.
+- **markdown-table's toolbar forced the whole document to 698px** — the
+  island toolbar and TableEditor controls rows now wrap.
+- **azure-kql's service grid** — `grid-cols-2` at 390 with `whitespace-nowrap`
+  buttons overlapped; now `grid-cols-1 sm:grid-cols-2` with
+  `whitespace-normal` text.
+- **data-converter's `justify-end` toolbar clipped its first chip** — wraps.
+
+The sweep scripts live in the session scratchpad, not the repo; the
+offender scan (any element whose rect leaves the viewport, minus those
+inside a real `overflow-x` scroller) is the reusable trick. Remaining
+flagged elements are deliberate scrollers (index chips, column-alignment
+row) and sonner's fixed-position mobile wrapper (its toast compensates;
+fixed elements don't scroll the document). 542 unit + 41 e2e green, lint
+0 errors / the same 11 warnings.

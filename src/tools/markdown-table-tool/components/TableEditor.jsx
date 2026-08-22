@@ -125,19 +125,17 @@ const TableEditor = ({
   return (
     <div className="space-y-4" ref={tableRef}>
       {/* Controls */}
-      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="has-header"
-              checked={hasHeader}
-              onCheckedChange={onToggleHeader}
-            />
-            <Label htmlFor="has-header">First row is header</Label>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-muted/30 rounded-lg">
+        <div className="flex items-center gap-2">
+          <Switch
+            id="has-header"
+            checked={hasHeader}
+            onCheckedChange={onToggleHeader}
+          />
+          <Label htmlFor="has-header">First row is header</Label>
         </div>
-        
-        <div className="flex items-center space-x-2">
+
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => onAddRow()}>
             <Plus className="w-4 h-4 mr-1" />
             Add Row

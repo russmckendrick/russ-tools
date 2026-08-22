@@ -125,7 +125,7 @@ const SslCheckerTool = () => {
                   The border lives on the wrapper, so the two controls drop
                   their own and the seam is the button's own edge.
                 */}
-                <div className="mt-2 flex items-stretch border-[3px] border-rule bg-surface-raised">
+                <div className="mt-2 flex flex-col items-stretch border-[3px] border-rule bg-surface-raised sm:flex-row">
                   <div className="relative flex-1">
                     <Globe className="pointer-events-none absolute left-[22px] top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-faint" />
                     <Input
@@ -233,9 +233,9 @@ const SslCheckerTool = () => {
             <CardContent>
               <div className="space-y-2">
                 {domainHistory.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col">
+                  <div key={index} className="flex flex-wrap items-center justify-between gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex min-w-0 flex-col">
                         <span className="text-data-md font-mono">{item.domain}</span>
                         <div className="flex items-center gap-2 text-data-sm font-mono text-muted-foreground">
                           <Clock className="h-3 w-3" />
