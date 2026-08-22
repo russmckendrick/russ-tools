@@ -357,6 +357,7 @@ describe('token layer integrity', () => {
     for (const [key, prop] of [
       ['duration-fast', '--duration-fast'],
       ['duration-base', '--duration-base'],
+      ['duration-settle', '--duration-settle'],
     ]) {
       const declared = frontMatter.match(new RegExp(`^  ${key}:\\s*(\\S+)`, 'm'))?.[1];
       expect(declared, `motion.${key} in DESIGN.md`).toBeDefined();

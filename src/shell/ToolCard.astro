@@ -24,11 +24,27 @@
  * checks the built HTML for it — and with the section headings gone the tile
  * is what the browser scrolls to, which lands the reader on the tool rather
  * than on a heading above it.
+ *
+ * `order` is the tile's position in the stream, and it feeds two settles that
+ * only the index spends (see DESIGN.md's Motion section):
+ *
+ *   - `--rt-i` staggers the entrance. Capped at ten steps in CSS rather than
+ *     here, so the eleventh tile and the fifteenth land together instead of
+ *     the tail of a long catalogue trailing off the clock.
+ *   - `view-transition-name` is what lets a filtered tile *travel* to its new
+ *     row rather than blink there. It has to be unique among rendered
+ *     elements and a valid custom-ident, so it is the manifest id behind a
+ *     `t-` prefix — ids are kebab-case and cannot lead with a digit, but the
+ *     prefix costs nothing and removes the question.
+ *
+ * /404 renders this component without `order` and gets neither: its three
+ * suggestions are a fixed grid that never refilters, and a page that opens on
+ * an error is the wrong place to deal cards.
  */
 import ToolIcon from './ToolIcon.astro';
 import { categoryGroupId, categoryVar } from './categories.mjs';
 
-const { tool, widthStep = 315, anchor = null, hidden = false } = Astro.props;
+const { tool, widthStep = 315, anchor = null, hidden = false, order = null } = Astro.props;
 
 /**
  * The link's accessible name. Without this the name is the whole card
@@ -41,6 +57,9 @@ const label = tool.title;
 
 /** Pre-lowercased haystack so the index filter never rebuilds it per keystroke. */
 const haystack = [tool.title, tool.shortDescription, ...tool.badges].join(' ').toLowerCase();
+
+const motion =
+  order === null ? '' : `; --rt-i: ${order}; view-transition-name: t-${tool.id}`;
 ---
 
 <!--
@@ -62,7 +81,7 @@ const haystack = [tool.title, tool.shortDescription, ...tool.badges].join(' ').t
   aria-label={label}
   data-search={haystack}
   data-category={categoryGroupId(tool.category)}
-  style={`${categoryVar(tool.category)}; flex-basis: ${widthStep}px`}
+  style={`${categoryVar(tool.category)}; flex-basis: ${widthStep}px${motion}`}
 >
   <ToolIcon icon={tool.icon} size={19} />
   <span class="rt-card-text">

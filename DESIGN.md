@@ -413,6 +413,7 @@ components:
 motion:
   duration-fast: 90ms
   duration-base: 140ms
+  duration-settle: 240ms
   easing: ease-out
 ---
 
@@ -720,9 +721,39 @@ category *text* hue, no tile.
 
 Snappy and physical, still minimal: hover and ground changes at
 `90–140ms ease-out`; the press (translate + shadow removal) is instant on
-`:active`. No entrance animations, no ambient motion, no parallax, no glow.
+`:active`. No ambient motion, no parallax, no glow — nothing loops, and
+nothing moves that the reader did not touch.
+
+Motion is **the object behaving like an object**, never decoration laid over
+one. That admits exactly three things beyond hover and press, all at
+`duration-settle` (240ms) or faster:
+
+1. **Reflow settles; it does not cut.** When a filter changes which tiles are
+   on screen, the survivors *travel* to their new positions — they are the
+   same pieces of paper being resorted, and teleporting them denies that.
+   Implemented as a same-document view transition, so a browser without one
+   falls back to the instant reflow and loses nothing but the continuity.
+   Only discrete choices earn it: a category chip transitions, a keystroke in
+   a search field does not, because a transition per character is a stutter,
+   not a settle.
+2. **First paint sets the tiles down.** A catalogue may deal itself in once
+   per load: each tile starts 3px raised carrying the `press` shadow and
+   lands flat and shadowless, which is the press vocabulary run backwards —
+   the page assembles out of things that are visibly pressable. Strictly
+   bounded: 240ms per tile, an 18ms stagger capped at ten steps, so the last
+   tile has landed inside 420ms. It is pure CSS on prerendered markup, so it
+   delays no content and survives with JavaScript off. Nothing else on the
+   site animates on entry.
+3. **A swapped value fades in.** Where text is replaced under the reader —
+   a live count, a list of matches recomputed as they type — the new value
+   arrives over `duration-fast` instead of blinking. 90ms, opacity only.
+
 `prefers-reduced-motion` removes the hover translate and keeps the shadow
-change, which conveys the same state without movement.
+change, which conveys the same state without movement. It also removes all
+three of the above outright: no view transition, no entrance, no fade. Every
+one of them is continuity for people who track movement, and for the people
+who asked us to stop moving things, the instant result was never the worse
+outcome.
 
 ## Accessibility
 

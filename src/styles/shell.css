@@ -383,6 +383,22 @@ body > main {
   padding-bottom: var(--rt-space-sm);
 }
 
+/* The count was the one number on the page that never moved while the page
+   moved constantly — fifteen tiles filtered down to three and the line still
+   read `15 tools`. It ticks now, and `tabular-nums` is what stops the tick
+   from shoving `tools · nothing leaves the browser` sideways by a glyph.
+
+   Not a live region: `#rt-status` already announces the filter, and a second
+   one would say the same thing twice into the same ear. This is the sighted
+   half of an announcement that was already being made. */
+.rt-index-count {
+  font-variant-numeric: tabular-nums;
+}
+/* Filtered, so the count is no longer the whole catalogue and says so. */
+.rt-index-count[data-filtered] {
+  color: var(--color-on-surface-muted);
+}
+
 /* --- The paste panel ------------------------------------------------------
    DESIGN.md allows one `panel-emphasis` per page and the index used to spend
    none, which is most of why it sat flat. It is spent on a control rather
@@ -514,6 +530,20 @@ a.rt-kbd:focus-visible {
 a.rt-kbd[data-first] {
   color: var(--color-primary-text);
   border-color: var(--color-primary-text);
+}
+
+/* The hint row is rebuilt on every keystroke, so each keycap here is a brand
+   new node and starts this on insertion — no re-trigger dance needed.
+
+   Scoped off `data-resting` so it is matches only. The resting examples are
+   the prerendered markup restored, and the panel is `hidden` until its script
+   runs: fading those would mean the paste panel dealing itself in on load
+   beside the tiles, which is one entrance more than the page has earned.
+
+   Opacity only, 90ms — the row answers faster than the reader can type, and
+   anything that moved here would read as lag. */
+.rt-jump-hint:not([data-resting]) a.rt-kbd {
+  animation: rt-fade-in var(--duration-fast) var(--ease-signal);
 }
 
 /* --- The filter row -------------------------------------------------------
@@ -685,6 +715,79 @@ a.rt-kbd[data-first] {
   text-underline-offset: 3px;
 }
 
+/* --- The stream settles ---------------------------------------------------
+   Three behaviours, all of them the catalogue behaving like objects rather
+   than like a slideshow. DESIGN.md's Motion section is the authority; this is
+   where they are drawn.
+
+   1. THE DEAL-IN. Each tile starts 3px raised carrying the `press` shadow and
+      lands flat and shadowless — the press vocabulary run backwards, so the
+      page assembles out of visibly pressable things instead of fading up like
+      any other card grid. Pure CSS on prerendered markup: it blocks no
+      content, needs no JavaScript, and cannot leave a tile stuck invisible if
+      a script fails, because there is no script.
+
+      `backwards` fill is what holds the first frame during the stagger delay.
+      Without it every tile paints flat, then jumps back up to start.
+
+   2. THE STAGGER, capped. `--rt-i` is the tile's index; `min()` stops the
+      ramp at ten steps, so tiles 11–15 land together and the last tile is
+      down inside 420ms however long the catalogue grows. An uncapped ramp is
+      how a sixteenth tool would have made the page feel slower than a
+      fifteenth.
+
+   3. THE EMPTY STATE fades rather than blinks — it replaces fifteen tiles
+      with one sentence, which is a big enough change to deserve the 90ms. */
+
+@keyframes rt-card-in {
+  from {
+    opacity: 0;
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-press);
+  }
+}
+
+.rt-stream .rt-card {
+  animation: rt-card-in var(--duration-settle) var(--ease-signal) backwards;
+  animation-delay: calc(min(var(--rt-i, 0), 10) * 18ms);
+}
+
+.rt-empty {
+  animation: rt-fade-in var(--duration-fast) var(--ease-signal);
+}
+
+@keyframes rt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* --- The refilter travels -------------------------------------------------
+   A category chip rearranges the stream, and until now the survivors
+   teleported: `hidden` toggles, flex re-wraps, done. Each tile carries a
+   `view-transition-name` (see `ToolCard.astro`), so the browser FLIPs the
+   reflow for us — the tiles that stay slide to their new rows, the ones that
+   leave fade out where they stood.
+
+   The root group is silenced deliberately. Its default is a full-page
+   cross-fade, which would dissolve the header, the paste panel and the chip
+   row — none of which changed — and turn a precise rearrangement into a
+   wash. Only the named tiles animate; everything else is simply repainted.
+
+   `index.astro` starts these for chip presses alone. A transition per
+   keystroke in the name filter is a stutter, not a settle. */
+
+::view-transition-group(*) {
+  animation-duration: var(--duration-settle);
+  animation-timing-function: var(--ease-signal);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 /* --- The 404 grid ---------------------------------------------------------
    /404 still renders the index's old group markup for its "Popular tools"
    block — one heading over a fixed grid, which is right for three suggestions
@@ -779,6 +882,15 @@ a.rt-kbd[data-first] {
 .rt-card:focus-visible {
   box-shadow: var(--shadow-press);
   transform: translate(-2px, -2px);
+}
+/* The tile is the page's primary pressable and it was the one pressable on
+   the site that did not press: it rose on hover and then absorbed the click
+   without moving. Same sink as `.rt-chip:active`, one step past the hover
+   lift, and the shadow goes with it — DESIGN.md's second rule, which the
+   tile was quietly exempt from. */
+.rt-card:active {
+  box-shadow: none;
+  transform: translate(2px, 2px);
 }
 .rt-card:focus-visible {
   outline: 2px solid var(--color-ring);

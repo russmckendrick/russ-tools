@@ -110,7 +110,9 @@ const cards = TOOLS.map((tool) => {
   -->
   <div class="rt-index-head">
     <h1 class="rt-index-title">Tools</h1>
-    <span class="rt-index-note">{TOOLS.length} tools · nothing leaves the browser</span>
+    <span class="rt-index-note">
+      <span class="rt-index-count" id="rt-count">{TOOLS.length}</span> tools · nothing leaves the browser
+    </span>
   </div>
 
   <!--
@@ -179,10 +181,10 @@ const cards = TOOLS.map((tool) => {
   -->
   <div class="rt-stream" id="board">
     {
-      cards.map(({ tool, anchor, label }) => (
+      cards.map(({ tool, anchor, label }, i) => (
         <>
           {anchor && <h2 class="rt-visually-hidden">{label}</h2>}
-          <ToolCard tool={tool} widthStep={widthStep(tool)} anchor={anchor} />
+          <ToolCard tool={tool} widthStep={widthStep(tool)} anchor={anchor} order={i} />
         </>
       ))
     }
@@ -216,6 +218,7 @@ const cards = TOOLS.map((tool) => {
   const empty = document.getElementById('rt-empty');
   const emptyQ = document.getElementById('rt-empty-q');
   const find = document.getElementById('rt-find');
+  const count = document.getElementById('rt-count');
 
   const CATEGORIES = new Set(cards.map((c) => c.dataset.category));
   const TOTAL = cards.length;
@@ -230,6 +233,32 @@ const cards = TOOLS.map((tool) => {
   let query = '';
 
   const plural = (n) => `${n} ${n === 1 ? 'tool' : 'tools'}`;
+
+  /*
+    Read live, not once: the setting can change under a session, and a page
+    left open across that change should honour the new answer rather than the
+    one that happened to hold at load.
+  */
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /*
+    The mono count beside the h1. It read `15` while the page showed three,
+    because nothing was updating it — `#rt-status` was carrying the whole
+    announcement and only screen readers heard it.
+
+    The 90ms fade is WAAPI rather than CSS because the element persists and
+    only its text changes, which re-triggers no keyframe; `globals.css`'s
+    reduced-motion block cannot reach a script-driven animation either, so
+    `still` is checked here rather than relied on downstream.
+  */
+  const tick = (visible) => {
+    const next = visible === TOTAL ? String(TOTAL) : `${visible} / ${TOTAL}`;
+    if (next === count.textContent) return;
+    count.textContent = next;
+    count.toggleAttribute('data-filtered', visible !== TOTAL);
+    if (still.matches) return;
+    count.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 90, easing: 'ease-out' });
+  };
 
   const render = () => {
     const q = query.trim().toLowerCase();
@@ -246,6 +275,7 @@ const cards = TOOLS.map((tool) => {
 
     empty.hidden = !(searching && visible === 0);
     if (!empty.hidden) emptyQ.textContent = `“${query.trim()}”`;
+    tick(visible);
 
     for (const chip of chips) {
       const on = chip.dataset.filter === category;
@@ -279,23 +309,52 @@ const cards = TOOLS.map((tool) => {
     history[push ? 'pushState' : 'replaceState'](null, '', next);
   };
 
+  /*
+    Rearranging the stream, with the survivors travelling rather than
+    teleporting.
+
+    Each tile carries a `view-transition-name`, so `startViewTransition` FLIPs
+    the reflow: the tiles that survive the filter slide to their new rows and
+    the ones that go fade out where they stood. `shell.css` silences the root
+    group so only the tiles move.
+
+    Three ways this declines, all of them landing on today's instant reflow:
+    the reduced-motion setting, a browser with no same-document view
+    transitions, and — deliberately — every path that is not a discrete
+    choice. Typing in the name filter calls `render()` directly, because a
+    transition per keystroke queues, skips and stutters; only pressing a chip
+    is a decision worth animating.
+  */
+  const settle = (mutate) => {
+    if (still.matches || !document.startViewTransition) return mutate();
+    document.startViewTransition(mutate);
+  };
+
   const setCategory = (next, push = true) => {
     category = CATEGORIES.has(next) ? next : 'all';
     if (query) {
       query = '';
       find.value = '';
     }
-    render();
+    settle(render);
     writeUrl(push);
   };
 
-  const readUrl = () => {
+  /*
+    `animate` is false for the one call at init and true for the two history
+    listeners. Back and forward are discrete choices like a chip press and
+    settle the same way; the initial read is a page load, where the tiles have
+    their own deal-in and a view transition over it would be two entrances
+    fighting for the same 400ms.
+  */
+  const readUrl = (animate = false) => {
     const id = decodeURIComponent(location.hash.slice(1));
     const q = new URL(location.href).searchParams.get('q') ?? '';
     query = q;
     find.value = q;
     category = !q && CATEGORIES.has(id) ? id : 'all';
-    render();
+    if (animate) settle(render);
+    else render();
   };
 
   filters.addEventListener('click', (event) => {
@@ -318,7 +377,10 @@ const cards = TOOLS.map((tool) => {
   document.getElementById('rt-empty-clear').addEventListener('click', () => {
     query = '';
     find.value = '';
-    render();
+    // Not a keystroke: one press that puts all fifteen tiles back, which is
+    // the largest rearrangement the page can make and the clearest case for
+    // showing where they land.
+    settle(render);
     writeUrl(false);
     find.focus();
   });
@@ -336,7 +398,7 @@ const cards = TOOLS.map((tool) => {
     if (event.key !== 'Escape' || !find.value) return;
     query = '';
     find.value = '';
-    render();
+    settle(render);
     writeUrl(false);
   });
 
@@ -350,8 +412,8 @@ const cards = TOOLS.map((tool) => {
     find.select();
   });
 
-  window.addEventListener('hashchange', readUrl);
-  window.addEventListener('popstate', readUrl);
+  window.addEventListener('hashchange', () => readUrl(true));
+  window.addEventListener('popstate', () => readUrl(true));
 
   find.hidden = false;
   readUrl();

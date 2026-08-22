@@ -106,6 +106,10 @@
   --shadow-press-lg: 5px 5px 0 var(--color-shadow-ink);
   --duration-fast: 90ms;
   --duration-base: 140ms;
+  /* Reflow, and the index's one entrance. Everything a reader touches is
+     faster than this; `settle` is for the page rearranging itself under
+     them, where the point is that the pieces stayed the same pieces. */
+  --duration-settle: 240ms;
   --ease-signal: ease-out;
 }
 
@@ -422,10 +426,27 @@
   .card:hover,
   .rt-card:hover,
   .rt-card:focus-visible,
+  .rt-card:active,
   .rt-brand:active,
   .rt-chip:active,
   .rt-island-retry:active {
     transform: none !important;
+  }
+
+  /*
+    The index's three settle behaviours, removed rather than shortened.
+
+    The entrance and the match fade are killed by the blanket
+    `animation-duration` above; a view transition is not, because its
+    animations run on pseudo-elements the browser generates outside this
+    document's cascade order. `index.astro` already declines to start one
+    when this query matches — this is the belt to that braces, and it also
+    covers a transition started before the setting changed.
+  */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 
   /* Spinners still need to convey "working", just calmly. */
