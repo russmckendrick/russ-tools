@@ -23,7 +23,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'microsoft',
-  icon: 'apps',
+  icon: 'layout-grid',
   badges: [
     'GDAP',
     '31 portals',

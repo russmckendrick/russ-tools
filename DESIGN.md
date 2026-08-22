@@ -665,11 +665,17 @@ the word ERROR at `label-caps`. Empty states keep their copy and take
 
 ## Iconography
 
-Unchanged. The Material Design Icons set in `src/shell/icons.mjs` is kept
-verbatim, one glyph per tool from its manifest, `currentColor`, 24px grid.
+One library for everything: **Lucide**, stroke-based on the 24px grid with a
+2px `currentColor` stroke — the same weight as the structural border, so an
+icon is drawn with the same pen as the panel it sits in. Per-tool glyphs are
+vendored in `src/shell/icons.mjs` (one drawing, rendered by both the Astro
+`ToolIcon` and the React `ui/tool-icon.jsx`), keyed by kebab-cased Lucide
+names from the manifests; generic UI glyphs come from lucide-react directly.
+The filled Material set is retired — solid slabs fought the stroke language.
+
 In a tool tile the glyph sits in a `category-fill` icon tile at 20px with
 `on-category-fill` ink; beside a tool-page `h1` it renders at 30px in the
-category *text* hue, no tile. Generic UI glyphs remain lucide-react.
+category *text* hue, no tile.
 
 ## Motion
 

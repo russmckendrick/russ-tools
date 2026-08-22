@@ -4,16 +4,16 @@ import { TOOL_ICONS } from '@/shell/icons.mjs';
 import { cn } from '@/lib/utils';
 
 /**
- * A tool's Material icon, in React.
+ * A tool's Lucide icon, in React.
  *
- * The paths come from `src/shell/icons.mjs` — the same module the prerendered
- * Astro `ToolIcon` renders from — so a tool's icon is drawn once and used in
- * both apps. Before this, every tool had a `<Tool>Icon.jsx` wrapper around a
- * @tabler glyph, which meant the icon in the page header and the icon inside
- * the tool were two different pictures of the same thing.
+ * The drawings come from `src/shell/icons.mjs` — the same module the
+ * prerendered Astro `ToolIcon` renders from — so a tool's icon is drawn once
+ * and used in both apps. The wrapper attributes here are Lucide's stroke
+ * contract and must agree with `iconSvg` in that module.
  *
- * `currentColor`, per DESIGN.md, makes the filled glyph take the category hue
- * from `--cat` wherever one is in scope without picking its own colour.
+ * `currentColor`, per DESIGN.md, makes the glyph take its ink from the
+ * surrounding layout — graphite inside a category tile, the category text
+ * hue beside a heading — without picking its own colour.
  *
  * @param {{ name: string, size?: number, className?: string }} props
  */
@@ -27,8 +27,11 @@ export const ToolIcon = React.forwardRef(({ name, size, className, ...props }, r
       viewBox="0 0 24 24"
       width={size}
       height={size}
-      fill="currentColor"
-      stroke="none"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
       aria-hidden="true"
       className={cn(size ? undefined : 'size-6', className)}
       dangerouslySetInnerHTML={{ __html: paths }}

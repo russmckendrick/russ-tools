@@ -62,14 +62,18 @@ describe('manifest contract', () => {
     expect(new Set(TOOLS.map((t) => t.icon)).size).toBe(TOOLS.length);
   });
 
-  it('renders every tool icon as a filled current-color SVG', () => {
+  it('renders every tool icon as a stroked current-color SVG', () => {
+    // Stacks draws icons with Lucide's stroke contract: a 2px currentColor
+    // stroke — the structural border weight — with no fill on the wrapper.
+    // The Signal-era set was filled; a regression back to filled slabs (or a
+    // wrapper that stops passing the stroke down) is what this pins.
     expect(ICON_NAMES).toHaveLength(TOOLS.length);
     for (const name of ICON_NAMES) {
       const svg = iconSvg(name, 25);
-      expect(svg).toContain('fill="currentColor"');
-      expect(svg).toContain('stroke="none"');
+      expect(svg).toContain('fill="none"');
+      expect(svg).toContain('stroke="currentColor"');
+      expect(svg).toContain('stroke-width="2"');
       expect(svg).toContain(TOOL_ICONS[name]);
-      expect(svg).not.toContain('stroke-width');
     }
   });
 

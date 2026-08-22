@@ -26,7 +26,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'azure',
-  icon: 'manage-search',
+  icon: 'search-code',
   badges: [
     'Templates',
     'Favourites',

@@ -212,10 +212,11 @@ under Network when its category is `security`.
 
 `dayjs`, `framer-motion`, `d3-force`, `@svgdotjs/svg.js`, `next-themes`,
 `tailwindcss-animate`, `uuid` (use `crypto.randomUUID()`), `autoprefixer`,
-`@radix-ui/react-scroll-area`. Icons: **lucide-react is the only icon library for generic
-UI glyphs**, and per-tool icons are selected filled Material Design glyphs vendored in
-`src/shell/icons.mjs` (Astro `ToolIcon`, React `ui/tool-icon.jsx`) — one drawing, both
-renderers, with no `react-icons` runtime dependency.
+`@radix-ui/react-scroll-area`. Icons: **Lucide is the only icon library** —
+lucide-react for generic UI glyphs, and per-tool icons are stroke-based Lucide glyphs
+vendored in `src/shell/icons.mjs` (Astro `ToolIcon`, React `ui/tool-icon.jsx`) — one
+drawing, both renderers, keyed by kebab-cased Lucide names in the manifests, with no
+`react-icons` runtime dependency. The filled Material set was retired with Stacks.
 `@tabler/icons-react` is **removed**; do not reintroduce it. Also removed at cutover:
 `postcss`, `@tailwindcss/postcss` (Tailwind arrives via `@tailwindcss/vite`),
 `@astrojs/sitemap`, `jwt-decode` (`jose` already exports `decodeJwt`), and
