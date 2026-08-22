@@ -6,5 +6,6 @@
     }
   </style>
   <path class="stroke" d="M4 8.5 H20 V18 a1.5 1.5 0 0 1 -1.5 1.5 H5.5 A1.5 1.5 0 0 1 4 18 Z" fill="#6ee787" stroke-width="2" stroke-linejoin="round"/>
-  <path class="stroke" d="M9 8.5 V6.8 A1.8 1.8 0 0 1 10.8 5 h2.4 A1.8 1.8 0 0 1 15 6.8 V8.5 M10 13 h4" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path class="stroke" d="M9 8.5 V6.8 A1.8 1.8 0 0 1 10.8 5 h2.4 A1.8 1.8 0 0 1 15 6.8 V8.5" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M10 13 h4" stroke="#17150f" stroke-width="2" stroke-linecap="round" fill="none"/>
 </svg>
