@@ -598,9 +598,9 @@ its three-state system → light → dark cycle button with `aria-live`
 labelling.
 
 The brand is **signage, not a chip**: the toolbox mark in `primary-text`
-beside `russ.tools` set in the display face at 800 — no box, no border, no
-shadow. The wordmark competes with nothing because it is the only display
-type in the bar.
+beside `russ.tools` set in the display face at the `headline-md` step — no
+box, no border, no shadow, and no off-ramp size. The wordmark competes with
+nothing because it is the only display type in the bar.
 
 External links (Source) carry a small code glyph (`</>`), not an arrow.
 
