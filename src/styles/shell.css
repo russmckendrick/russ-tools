@@ -175,8 +175,14 @@ body > main {
 
 /* The open tab: page ground, and its own bottom edge overwrites the header
    rule (2px taller, pulled 2px below the bar) so the tab and the page read
-   as one surface. Ink text, not accent — the opening IS the signal. */
-.rt-topnav a[aria-current='page'] {
+   as one surface. Ink text, not accent — the opening IS the signal.
+
+   Bare `[aria-current]`, not `[aria-current='page']`. A tool page and its
+   help page set `true` rather than `page` — the Tools link points at the
+   index, not at the document being read, so `page` there would be a lie
+   (see `HeaderActions.astro`) — and keying on the exact value left the tab
+   shut on every page but three. */
+.rt-topnav a[aria-current] {
   background: var(--color-surface);
   border-bottom: var(--border-structural) solid var(--color-surface);
   margin-bottom: calc(-1 * var(--border-structural));
@@ -250,7 +256,7 @@ body > main {
     background: var(--color-surface-raised);
     padding: 13px 16px;
   }
-  .rt-topnav a[aria-current='page'] {
+  .rt-topnav a[aria-current] {
     margin-bottom: 0;
     background: var(--color-nav-active);
     border-bottom: var(--border-structural) solid var(--color-rule);
