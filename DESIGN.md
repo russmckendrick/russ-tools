@@ -32,7 +32,7 @@ colors:
   surface-inset: "#383025"
   outline: "#453c2c"
   outline-strong: "#8f8670"  # a control boundary needs 3:1 on every ground
-  rule: "#f5efe0"            # the 2px structural border is cream on cocoa
+  rule: "#7d735e"            # a quiet warm taupe — full cream borders glowed
   on-surface: "#f5efe0"
   on-surface-muted: "#bab19c"
   on-surface-faint: "#a59c86"
@@ -118,11 +118,11 @@ colors:
 
   # ---- The press shadow ---------------------------------------------------
   # The offset shadow's colour, distinct from `rule` on purpose: the border
-  # inverts with the theme (ink on paper, cream on cocoa) but a shadow is
-  # always DARKER than the ground it falls on. In light it is the ink; in
-  # dark it is a near-black deeper than the cocoa page. A cream shadow on a
-  # dark ground reads as a glow, not a press.
-  shadow-ink: "#0f0c07"
+  # inverts with the theme (ink on paper, taupe on espresso) but a shadow
+  # is always DARKER than the ground it falls on. In light it is the ink; in
+  # dark it is true black, because on the cocoa grounds anything softer
+  # disappears. A pale shadow reads as a glow, not a press.
+  shadow-ink: "#000000"
   shadow-ink-light: "#17150f"
 
   # ---- Ink on the footer --------------------------------------------------
@@ -253,9 +253,9 @@ borderWidth:
   structural: 2px
 
 # The offset shadow is hard-edged (no blur) and its colour is always the
-# `shadow-ink` token — the ink in light, a near-black deeper than the cocoa
-# page in dark; never grey, never translucent, never a light colour (a pale
-# shadow reads as a glow). It means exactly one thing: THIS IS PRESSABLE.
+# `shadow-ink` token — the ink in light, true black in dark; never grey,
+# never translucent, never a light colour (a pale shadow reads as a glow).
+# It means exactly one thing: THIS IS PRESSABLE.
 # Pressing an element sinks it: translate by the offset, shadow to none.
 # The one exception is `press-lg`, which also marks the page's one emphasis
 # panel (the result you came for), because that panel is the page's object.
@@ -381,7 +381,7 @@ components:
     rounded: "{rounded.sm}"
     padding: 7px 14px
   chip-active:
-    backgroundColor: "{colors.rule}"
+    backgroundColor: "{colors.on-surface}"
     textColor: "{colors.surface}"
 
   # ---- markers ----
@@ -429,8 +429,9 @@ of elevation.
 
 Three rules produce the whole language:
 
-1. **The border is the structure.** A 2px border in the `rule` colour (ink on
-   paper, cream on ink) bounds every panel, control and badge. The 1px
+1. **The border is the structure.** A 2px border in the `rule` colour (ink
+   on paper, a quiet warm taupe on espresso — full cream glowed) bounds
+   every panel, control and badge. The 1px
    `outline` hairline organises peers *inside* a bordered region — table
    rows, list items, a panel's header bar. Nothing else draws a boundary.
 2. **Shadow means pressable; pressing sinks it.** The offset shadow
@@ -663,8 +664,9 @@ join the field and its submit button flush, sharing the border.
 ### Chips (the index category filter)
 
 Bordered pills with `press-sm` shadows — they read as keyboard keys. The
-active chip inverts to the `rule` colour (ink chip on paper, cream chip on
-ink) with the opposing ground as its text. Counts ride inside the chip in
+active chip inverts to `on-surface` (ink chip on paper, cream chip on
+espresso) with the page ground as its text — the theme's strongest
+contrast, which the demoted taupe rule no longer provides in dark. Counts ride inside the chip in
 `on-surface-dim`.
 
 ### Badges

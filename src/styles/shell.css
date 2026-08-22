@@ -77,12 +77,12 @@ body > main {
 }
 
 /* The mark is two-tone: its body fill is the accent token, and its stroke is
-   `currentColor` — set here to the structural `rule` so the toolbox is drawn
-   with the same ink as every border on the page. The wordmark's dot takes
-   the accent's TEXT role (`primary-text`, never raw `primary`, which is
-   ~1.6:1 on paper). */
+   `currentColor` — set here to `on-surface` (ink on paper, cream on
+   espresso), the strongest ink, so the brand stays crisp now that the dark
+   rule is a demoted taupe. The wordmark's dot takes the accent's TEXT role
+   (`primary-text`, never raw `primary`, which is ~1.6:1 on paper). */
 .rt-site-mark {
-  color: var(--color-rule);
+  color: var(--color-on-surface);
 }
 .rt-brand-dot {
   color: var(--color-primary-text);
@@ -426,13 +426,14 @@ body > main {
   color: var(--color-on-surface-dim);
 }
 
-/* The pressed key: the chip inverts to the rule colour and stays down —
-   background, no shadow. `surface` as its text is the opposing ground by
-   construction (the rule IS the opposing ink in both themes). */
+/* The pressed key: the chip inverts to the theme's strongest ink and stays
+   down — background, no shadow. `on-surface`, not `rule`: the dark rule is
+   a demoted taupe, and the pressed key needs the full-contrast inversion
+   (ink chip on paper, cream chip on espresso). */
 .rt-chip[aria-checked='true'] {
   color: var(--color-surface);
   font-weight: 600;
-  background: var(--color-rule);
+  background: var(--color-on-surface);
   box-shadow: none;
 }
 .rt-chip[aria-checked='true'] .rt-chip-count {
@@ -1007,9 +1008,9 @@ body > main {
   letter-spacing: -0.02em;
 }
 .rt-footer-brand svg {
-  /* Same two-tone mark as the header: the stroke follows the structural
-     rule, which clears both footer grounds. */
-  color: var(--color-rule);
+  /* Same two-tone mark as the header: the strongest ink on both footer
+     grounds. */
+  color: var(--color-on-surface);
 }
 .rt-footnav {
   justify-self: end;

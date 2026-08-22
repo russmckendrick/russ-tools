@@ -32,7 +32,7 @@ type, layout, shape and components.
 
 Short version — the language is **Stacks** (it replaced Signal in August 2026; the
 token *names* survived, every value changed): **chunky rounded** (8/10/14/18px, always
-paired with a 2px `rule` border — ink on paper, cream on ink), a hard **offset shadow**
+paired with a 2px `rule` border — ink on paper, quiet taupe on espresso), a hard **offset shadow**
 that appears only on pressables and the one `panel-emphasis` per page (`:active` sinks
 the element and removes it), **paper light** as the house ground with an **ink dark**
 peer and *no other palettes*, one green accent (`#6ee787`) that only ever appears on

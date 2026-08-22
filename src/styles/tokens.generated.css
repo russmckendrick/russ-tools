@@ -17,7 +17,7 @@
   --color-surface-inset: #383025;
   --color-outline: #453c2c;
   --color-outline-strong: #8f8670;
-  --color-rule: #f5efe0;
+  --color-rule: #7d735e;
   --color-on-surface: #f5efe0;
   --color-on-surface-muted: #bab19c;
   --color-on-surface-faint: #a59c86;
@@ -81,7 +81,7 @@
   --color-primary-text-light: #1b7038;
   --color-on-status: #17150f;
   --color-on-status-light: #ffffff;
-  --color-shadow-ink: #0f0c07;
+  --color-shadow-ink: #000000;
   --color-shadow-ink-light: #17150f;
   --color-on-footer: #f5efe0;
   --color-on-footer-muted: #b5ad99;
