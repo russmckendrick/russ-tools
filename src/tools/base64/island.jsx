@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyText, readText, downloadFile } from '@/core';
+import { useWebMCPTool, textResult } from '@/lib/useWebMCPTool';
 import {
   detectBase64,
   getFileType,
@@ -36,7 +37,57 @@ const ENCODING_MODES = [
   { value: 'mime', label: 'MIME Base64', description: 'MIME encoding with line breaks' }
 ];
 
+const TYPE_SCHEMA = {
+  type: 'string',
+  enum: ENCODING_MODES.map((m) => m.value),
+  description: 'Encoding variant; defaults to standard',
+};
+
+const BASE64_ENCODE_TOOL = {
+  name: 'base64_encode',
+  description: 'Encode UTF-8 text to Base64 (standard, URL-safe or MIME variant).',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      text: { type: 'string', description: 'The text to encode' },
+      type: TYPE_SCHEMA,
+    },
+    required: ['text'],
+  },
+  annotations: { readOnlyHint: true },
+  execute: ({ text, type = 'standard' }) => {
+    try {
+      return textResult(encodeBase64(text, type));
+    } catch (error) {
+      return textResult({ error: error.message });
+    }
+  },
+};
+
+const BASE64_DECODE_TOOL = {
+  name: 'base64_decode',
+  description: 'Decode a Base64 string (standard, URL-safe or MIME variant) back to UTF-8 text.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      text: { type: 'string', description: 'The Base64 string to decode' },
+      type: TYPE_SCHEMA,
+    },
+    required: ['text'],
+  },
+  annotations: { readOnlyHint: true, untrustedContentHint: true },
+  execute: ({ text, type = 'standard' }) => {
+    try {
+      return textResult(decodeBase64(text, type));
+    } catch (error) {
+      return textResult({ error: error.message });
+    }
+  },
+};
+
 const Base64Tool = () => {
+  useWebMCPTool(BASE64_ENCODE_TOOL);
+  useWebMCPTool(BASE64_DECODE_TOOL);
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [mode, setMode] = useState('encode');

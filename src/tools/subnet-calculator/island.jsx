@@ -24,6 +24,7 @@ import {
 import { Calculator, Copy, Scissors, Combine, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyText, generateShareableURL, parseConfigFromURL } from '@/core';
+import { useWebMCPTool, textResult } from '@/lib/useWebMCPTool';
 import { parseIPv4, formatIPv4, ipv4Details, parseIPv4Cidr, maskFromPrefix } from './lib/ipv4';
 import { parseIPv6, compressIPv6, ipv6Details, parseIPv6Cidr } from './lib/ipv6';
 import { leaves, splitNode, joinNode, pruneSplits } from './lib/divide';
@@ -53,7 +54,37 @@ function parseInput(raw) {
 
 const DEFAULT_PREFIX = { 4: 24, 6: 64 };
 
+const CALCULATE_SUBNET_TOOL = {
+  name: 'calculate_subnet',
+  description:
+    'Calculate full IPv4 or IPv6 subnet details — network, broadcast, host range, ' +
+    'netmask, wildcard, binary forms and reverse DNS — for an address with an optional /prefix.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      cidr: {
+        type: 'string',
+        description: 'An IPv4 or IPv6 address, optionally with a prefix, e.g. 192.168.1.0/24 or 2001:db8::/48',
+      },
+    },
+    required: ['cidr'],
+  },
+  annotations: { readOnlyHint: true },
+  execute: ({ cidr }) => {
+    const parsed = parseInput(cidr);
+    if (!parsed) return textResult({ error: 'Not a valid IPv4 or IPv6 address or CIDR.' });
+    const prefix = parsed.prefix ?? DEFAULT_PREFIX[parsed.family];
+    const details =
+      parsed.family === 4 ? ipv4Details(parsed.address, prefix) : ipv6Details(parsed.address, prefix);
+    return textResult({
+      ...details,
+      totalAddresses: formatTotal(details.totalAddresses, prefix, FAMILIES[parsed.family].bits),
+    });
+  },
+};
+
 const SubnetCalculatorTool = () => {
+  useWebMCPTool(CALCULATE_SUBNET_TOOL);
   const [input, setInput] = useState('');
   const [prefixChoice, setPrefixChoice] = useState('');
   const [error, setError] = useState(null);

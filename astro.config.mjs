@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
+import webmcp from 'astro-webmcp';
 
 /**
  * The site. A static shell with one React island per tool.
@@ -38,6 +39,10 @@ export default defineConfig({
     // actually advertises — three files, one set, two sources to drift. The
     // single generator is scripts/generate-sitemap.js, driven by the
     // manifests and run at the head of `pnpm build`.
+    webmcp({
+      search: { backend: 'manifest' },
+      security: { exposedTo: [], sanitizeOutputs: true, maxOutputLength: 8192 },
+    }),
   ],
 
   vite: {

@@ -24,6 +24,25 @@ Two rules:
 
 ## Landed
 
+### The site grew an AI-agent surface
+
+| | |
+|---|---|
+| **Where** | `scripts/generate-llms.mjs`, `scripts/patch-webmcp-manifest.mjs` (new); `astro-webmcp` in `astro.config.mjs`; `src/lib/useWebMCPTool.js` (new); `src/tools/subnet-calculator/island.jsx`, `src/tools/base64/island.jsx` |
+| **Pinned by** | `src/tools/llms.test.js`, `src/tools/webmcp.test.js`, `src/lib/useWebMCPTool.test.jsx` (all new) |
+| **Landed** | owner decision, 2026-08-22 |
+
+Additive, no fixture diverged. The build now ships `/llms.txt`,
+`/llms-full.txt` and `/agents.md` (generated from the manifests + help
+blocks, gitignored like the sitemap), plus `/_webmcp/manifest.json` and
+`/.well-known/skills/index.json` from `astro-webmcp`, whose entries are
+rewritten from the manifests post-build because its own dist scan cannot
+read `build.format:'file'` pages. Every page's injected WebMCP client
+registers site search/navigation tools on supporting browsers; the Subnet
+Calculator and Base64 islands additionally register `calculate_subnet` and
+`base64_encode`/`base64_decode` backed by their own `lib/` functions.
+robots.txt deliberately unchanged (allow-all, owner decision).
+
 ### Tool help is a page, not a drawer
 
 | | |

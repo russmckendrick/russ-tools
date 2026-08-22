@@ -182,6 +182,31 @@ because every hand-maintained copy drifted: this file claimed 15 including a "Ne
 Designer" that was retired and replaced by the Subnet Calculator, and filed SSL Checker
 under Network when its category is `security`.
 
+### The AI-agent surface (added 2026-08-22)
+
+Three pieces, all manifest-driven:
+
+- **`scripts/generate-llms.mjs`** writes `public/llms.txt`, `public/llms-full.txt` and
+  `public/agents.md` (all gitignored) from `loadManifests()` + the help blocks of
+  `docs/tools/*/README.md`. Runs at the head of `pnpm build`; pinned against the
+  registry by `src/tools/llms.test.js`. The public `/agents.md` is unrelated to this
+  file. `@adkinn/astro-ai-readiness` was evaluated and **rejected** — Astro `^5||^6`
+  peer only, and it would duplicate the existing JSON-LD/robots/sitemap.
+- **`astro-webmcp`** (in `astro.config.mjs`) injects a client script registering
+  site-wide WebMCP tools (search/sections/navigate/page-info) on browsers with
+  `document.modelContext`, and emits `dist/_webmcp/manifest.json` +
+  `dist/.well-known/skills/index.json`. Its dist scan can't read flat
+  `build.format:'file'` pages, so **`scripts/patch-webmcp-manifest.mjs` rewrites the
+  manifest from the manifests as the build's last step** — pinned by
+  `src/tools/webmcp.test.js`. Don't use its config-level `customTools` (stringified
+  function bodies, run on every page).
+- **Per-tool WebMCP tools** register from the island via `useWebMCPTool` in
+  `src/lib/useWebMCPTool.js` — descriptor as a **module-scope constant** (it is the
+  effect dependency), `execute` calling the tool's own `lib/` functions, results
+  through `textResult()`. Subnet Calculator (`calculate_subnet`) and Base64
+  (`base64_encode`/`base64_decode`) are the pattern to copy. Mind the BigInt gotcha:
+  `ipv6Details().totalAddresses` doesn't survive `JSON.stringify`.
+
 ## Frozen contracts (never break these — "keep the functionality" means these)
 
 1. **Deep-link routes** — the 26 paths frozen in `src/tools/registry.test.js` are

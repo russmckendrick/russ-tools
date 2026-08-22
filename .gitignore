@@ -22,6 +22,9 @@ graphify-out
 
 # Generated files
 public/sitemap.xml
+public/llms.txt
+public/llms-full.txt
+public/agents.md
 
 # Playwright
 test-results

@@ -2171,3 +2171,43 @@ self-rewrite ahead of each `/:param` rewrite — Cloudflare evaluates rules
 before assets, so `/ssl-checker/:domain` would otherwise swallow
 `/ssl-checker/help`. `e2e/help.spec.js` rewritten for the navigation;
 ledger entry in `docs/BEHAVIOR_CHANGES.md`.
+
+### Session 10 — the AI-agent surface (llms.txt + WebMCP)
+
+The owner pointed at two integrations (`@adkinn/astro-ai-readiness`,
+`astro-webmcp`) and asked for AI tools and compatibility. The first was
+rejected on inspection: Astro `^5||^6` peer against our 7.2.0, Node ≥22.12,
+and everything it generates beyond llms.txt already exists here better
+(manifest-driven JSON-LD, robots.txt, the one-generator sitemap). Its useful
+third is hand-rolled instead: `scripts/generate-llms.mjs` writes
+`public/llms.txt` (llmstxt.org index, categories → `[title](url):
+shortDescription`), `public/llms-full.txt` (per tool: manifest copy +
+Features + the same `help:start`/`help:end` block `/​<tool>/help` renders)
+and `public/agents.md`, at the head of `pnpm build`, pinned bidirectionally
+against the registry by `src/tools/llms.test.js`.
+
+`astro-webmcp@0.5.0` landed as-is in `astro.config.mjs` (manifest search
+backend, outputs sanitised, 8192-char cap) — but its dist scan only reads
+index.html-shaped documents, so under `build.format:'file'` every tool page
+became a slug with an empty description. `scripts/patch-webmcp-manifest.mjs`
+now runs as the build's last step and rewrites `dist/_webmcp/manifest.json`
+(and the section list in `dist/.well-known/skills/index.json`) from
+`loadManifests()`: real titles, shortDescriptions as the searchable field,
+categories as collections, 404/delete dropped. Pinned by
+`src/tools/webmcp.test.js`.
+
+Custom tools went in at the island, not the config: the package's
+`customTools` are stringified function bodies evaluated on every page, which
+would duplicate tool logic outside the bundle and dodge ESLint. Instead
+`src/lib/useWebMCPTool.js` (beside `useLookupTool`) registers a module-scope
+descriptor via `document.modelContext.registerTool` (navigator fallback;
+AbortSignal + unregister-handle + `unregisterTool` teardown; clean no-op
+elsewhere — the same progressive enhancement as the package's own client).
+Subnet Calculator registers `calculate_subnet` on `ipv4Details`/
+`ipv6Details` (BigInt `totalAddresses` folded through the island's own
+`formatTotal` — `JSON.stringify` throws on it, the TOML gotcha again);
+Base64 registers `base64_encode`/`base64_decode` on the real codecs, enum'd
+to `ENCODING_MODES`. Hook behaviour pinned by `src/lib/useWebMCPTool.test.jsx`.
+
+Lint 0 errors / 11 warnings (unchanged), 534 vitest (+18), 41 e2e. Ledger
+entry in `docs/BEHAVIOR_CHANGES.md`; AGENTS.md gained "The AI-agent surface".
