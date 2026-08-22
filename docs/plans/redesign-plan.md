@@ -1992,3 +1992,158 @@ carry `WEBSITE_ID`, and the index node gained the site description and
 **State:** `pnpm test` **1022 / 32** · `pnpm lint` 0 errors, 11 existing
 warnings · build green · breadcrumb link and `/#network` filtering checked in
 the browser.
+
+---
+
+### Session 8 — Signal: the visual language replaced
+
+`design_handoff_signal/` arrived as a drop-in replacement for the root
+`DESIGN.md` plus a hi-fi HTML prototype of the shell, the index, `/ssl-checker`
+and `/cron`. Applied in full, including peripherals.
+
+**What Signal is.** Square (`rounded: 0` at every step, no shadow scale at all),
+structured by rule weight — 3px structural, 1px hairline — instead of radius and
+elevation. Graphite `#16171b` with a bone light peer, one chartreuse accent
+`#c6f232` that only appears on something you can press, Instrument Sans +
+Red Hat Mono, and the index as one shared-edge ruled grid with no `gap`.
+
+**The handoff did not drop in.** Two things had to be resolved before anything
+could be applied, and both are the kind of fault this repo's tests exist to
+catch:
+
+1. **The palette failed 37 of the contrast assertions in
+   `tokens.contrast.test.js`.** Worst was `outline-strong` at 1.50:1 — Signal
+   assigns it to the `select` border, a WCAG 1.4.11 control boundary. Also:
+   `ring` (the raw accent) at 1.18:1 on bone, every status `*-foreground` at
+   ~3.3:1 in light because the handoff coupled them to `on-primary`, the whole
+   light category set falling just short on the darker bone inset, and a footer
+   that is dark in *both* themes with no ink role declared — `#16171b` text on a
+   `#16171b` ground. Nine hues were corrected by moving lightness only, and
+   three roles added (`on-status`, `on-footer`/`on-footer-muted`, and the
+   `*-subtle` tints the handoff dropped while twelve tool files still used them).
+2. **The exporter reads four front-matter keys and ignores the rest.**
+   Confirmed by running it: `borderWidth`, `shadow`, `motion` and `components`
+   produce no output whatsoever. Those are transcribed into `globals.css` by
+   hand and pinned by a new test. The exporter is now version-pinned too.
+
+**What got smaller.** 352 colour tokens → 71. `tokens.generated.css` 437 → 139
+lines. `globals.css` 697 → 421. `shell.css` 1448 → 1046. Five separate
+enumerations of the six palettes → none. The test count fell from ~1022 to 514
+because the contrast matrix ran over 12 palette/mode combinations and now runs
+over 2 — it measures *more* roles against fewer themes, and the base dark/light
+pair it now covers was never actually measured before.
+
+**Two judgement calls against the handoff**, both logged in
+`docs/BEHAVIOR_CHANGES.md`: the 3px panel rule is opt-in (`<Card emphasis>`)
+because a tool page stacks five to ten panels and the CRON builder came out as
+six meaningless bright stripes; and `SiteMark` stays instead of the prototype's
+plain accent square, which was a stand-in for a logo it had no access to.
+
+**A pre-existing build failure fixed on the way.** `pnpm build` had been dying
+in `generatePages` on `Named export 'parseCookie' not found` (noted in
+`.design-sync/NOTES.md` as failing on `main`). Cause: an orphaned real
+`node_modules/cookie@1.0.2` directory left by an old npm install, which Node
+resolves ahead of pnpm's own copies when it imports the built prerender entry
+from `dist/`. Removing it unblocked the build, and with it `seo.test.js`,
+`canonical.test.js` and the whole e2e suite.
+
+**Verified in the rendered DOM, not just the source** — the rule this repo
+learned the hard way. A Playwright pass over both themes checked 41 computed
+properties: the font families actually resolve to the self-hosted faces (the
+serif-fallback collision), no stray radius survives anywhere, the grid has no
+gap and the cells carry the hairlines, the badge is a solid fill behind graphite
+ink in both themes, the footer keeps its dark ground and legible ink under
+light, and the focus ring is olive rather than invisible chartreuse on bone.
+
+**State:** `pnpm test` **514 / 33** · `pnpm test:e2e` **41** · `pnpm lint` 0
+errors, 11 existing warnings · build green · OG cards regenerated · both themes
+checked in a real browser.
+
+### 2026-08-22 — Session 8 (Stacks: the second visual language)
+
+**Model:** Fable 5. **Branch:** `design/signal` (continues; the branch name is now
+historical).
+
+**Decision** — Signal shipped but was rejected on look and feel ("functions great but
+really not feeling it"). Four genuinely different directions were mocked on a Claude
+Design canvas against the real homepage content (Broadsheet warm editorial / Lumen
+soft-depth dark / Stacks playful-chunky / Ledger calm minimal); the user picked
+**Stacks**, and a build-out page (Subnet Calculator tool page, dark homepage peer,
+component sheet) settled the open questions before any code moved.
+
+**The language** — `DESIGN.md` is rewritten as `stacks-1`. Chunky radii (8/10/14/18px)
+always paired with a 2px `rule` border (ink on paper / cream on ink); a hard offset
+shadow (`press-sm`/`press`/`press-lg` in the rule colour) that means *pressable* and
+appears only on controls, hovered tiles and the one `panel-emphasis` per page —
+`:active` sinks the element by the offset. Paper light is the house ground; ink dark is
+the peer (the CSS keeps dark as the unsuffixed default purely as plumbing). Accent
+green `#6ee787` (fills only; `primary-text` is `#1b7038` in light). Category hues went
+candy: network `#2dd4bf`, azure `#5aa7ff`, microsoft `#b393ff`, security `#ffc857`,
+**developer `#ff9f43` orange** — moved off green deliberately so a primary button never
+reads as a category signal (the canvas mockups had it green; the design review caught
+the collision). Type: Bricolage Grotesque (display/headings, 700–800), Space Grotesk
+(body + all small labels — labels are sans now, not mono), Space Mono (data only).
+
+**What carried over untouched** — every token *name* and type-step name (the five
+load-bearing consumers needed zero edits), the category fill/text two-slot system and
+both `category-accent.test.js` guards, `on-status`/`on-footer`, the two-theme economy,
+the spacing scale, the stacked controls-above-results layout (the two-column split
+stays withdrawn), and the entire contrast-floor test matrix — the new palette passed
+all 514 tests on the first run after the two deliberate contract-pin updates (shape
+scale + font families).
+
+**Mechanics** — fonts swapped to `@fontsource-variable/bricolage-grotesque`,
+`@fontsource-variable/space-grotesk`, `@fontsource/space-mono` (+700); `THEME_COLOR`
+and the webmanifest moved to `#1a1812`; `generate-tokens.mjs` needed no changes (line
+heights kept Signal's values by construction). The exporter exits non-zero if a
+`{shadow.*}` reference appears in `components` — shadow values are stated as plain
+offsets with the colour in prose. `globals.css` gained `--font-display` (headings get
+Bricolage via element selectors since type steps deliberately carry no family) and the
+three `--shadow-press*` tokens; `shell.css` restyled (pill nav, key-cap chips with
+invert-on-active, gapped tile grid replacing the shared-edge grid, category icon tiles,
+dark-mode tiles get category-hued hover shadows); all of `src/components/ui/` moved to
+`border-2 border-rule` + radius + press shadows. Verified in a real browser via
+Playwright against `pnpm dev` (port 4321): computed styles and screenshots in both
+themes. Note `pnpm dev:astro`/port 5173 no longer exists — the script is `pnpm dev`.
+
+### 2026-08-22 — Session 8b (header and footer rework)
+
+The Stacks header was rejected as timid — a lone boxed brand chip next to naked
+text links. Four header treatments were mocked on the design canvas; the user
+chose **H3's signage combined with H4's folder tabs**: the brand is now the
+toolbox mark (`primary-text`) plus `russ.tools` in Bricolage 800 with no box,
+and the nav items are folder tabs standing on the header's 2px rule — bordered
+three sides, top corners rounded, `nav-active` ground — with the active tab
+taking the page ground and erasing the rule beneath itself (`margin-bottom:
+-2px` + a surface-coloured bottom border). On tool pages every tab sits closed.
+In the mobile dropdown the tab shape reverts to bordered rows. The Source link
+carries a `</>` code glyph (the ↗ arrow was rejected).
+
+The footer stopped being an ink slab: it is now a deepened band of each theme's
+own ground (`footer-light #efe7d3`, `footer #14120e`), so `on-footer` /
+`on-footer-muted` gained `-light` peers and joined the light remap — remember
+that remap lives in TWO blocks with different indentation (`.light` at 4
+spaces, the media fallback at 6) and the sync test catches a one-sided edit.
+DESIGN.md's Navigation and footer sections, the component entries and the
+contrast-test comment were updated to match. 514 unit + 41 e2e green.
+
+### 2026-08-22 — Session 8c (Espresso: the dark theme rework)
+
+The first Stacks dark was rejected: it inverted the materials (cream borders,
+cream shadows on near-black) but kept card and page at almost the same value,
+so every card collapsed into a wire outline. Three rethinks went on the design
+canvas (K1 Espresso / K2 Toast / K3 Neon board); the user picked **K1**, whose
+thesis is that dark should keep the LIGHT theme's physics: page lifts to warm
+cocoa (`#241f18`), cards sit visibly lighter (`#2e2820`), and the press shadow
+goes back to being darker than the ground.
+
+That last point forced a new token pair: the shadow colour was `rule`, which
+is cream in dark — a glow, not a press. `shadow-ink` / `shadow-ink-light`
+(`#0f0c07` / `#17150f`) now feed the three `--shadow-press*` values, joined
+the light remap (both blocks), and the contrast test asserts shadow-ink is
+strictly darker than both grounds in both themes. The dark category-hued card
+hover shadow is retired with the rework — the shadow is `shadow-ink`
+everywhere. The whole dark neutral ramp, subtle tints, nav-active and footer
+were retuned for the lifted grounds (faint and dim both needed lightening to
+clear their floors on the new inset), and `THEME_COLOR` follows the new
+surface. 514 unit + 41 e2e green.

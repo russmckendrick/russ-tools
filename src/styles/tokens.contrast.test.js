@@ -70,21 +70,17 @@ const base = { ...blockFrom(generated, '@theme static {'), ...blockFrom(css, '@t
 const dark = resolve(base);
 const light = resolve({ ...base, ...blockFrom(css, '.light {') });
 const lightMedia = resolve({ ...base, ...blockFrom(css, ':root:not(.dark) {') });
-const PALETTES = [
-  ['Solarized', 'solarized'],
-  ['Catppuccin', 'catppuccin'],
-  ['Dracula', 'dracula'],
-  ['Nord', 'nord'],
-  ['Tokyo Night', 'tokyo-night'],
-  ['GitHub', 'github'],
-];
 
-const themes = PALETTES.flatMap(([label, id]) => {
-  return [
-    [`${label} light`, resolve({ ...base, ...blockFrom(css, `:root.light[data-palette="${id}"] {`) })],
-    [`${label} dark`, resolve({ ...base, ...blockFrom(css, `:root[data-palette="${id}"] {`) })],
-  ];
-});
+// Signal ships two themes. The six alternate palettes (Solarized, Catppuccin,
+// Dracula, Nord, Tokyo Night, GitHub) are retired — they multiplied every
+// colour decision by six and made this matrix the largest single constraint on
+// the design. Note the base dark/light pair was never actually measured before:
+// the suite only ever ran over the palettes, and `DEFAULT_PALETTE` meant nobody
+// saw the base theme. It is measured now.
+const themes = [
+  ['ink dark', dark],
+  ['paper light', light],
+];
 
 const channel = (v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
 const luminance = (hex) => {
@@ -98,6 +94,19 @@ const contrast = (a, b) => {
 };
 
 const CATEGORIES = ['network', 'azure', 'microsoft', 'security', 'developer', 'content'];
+
+/**
+ * The three page grounds any piece of text or control can land on.
+ *
+ * `nav-active` is deliberately NOT in this list. It is one cell in the header,
+ * and the only things that ever sit on it are nav labels — no category hue, no
+ * form control, no dim metadata. Measuring every role against it would
+ * over-constrain the palette for a ground those roles never touch. What does
+ * sit on it is asserted explicitly in NAV_PAIRS below, because DESIGN.md's
+ * `nav-item-active` puts `primary-text` there and the handoff's original
+ * accent-text value measured 3.82:1 on it while clearing all three grounds.
+ */
+const GROUNDS = ['surface', 'surface-raised', 'surface-inset'];
 
 /** [foreground token, background token, minimum ratio, why] */
 const PAIRS = [
@@ -113,13 +122,22 @@ const PAIRS = [
   ['primary-foreground', 'primary', 4.5, 'label on a primary button'],
   ['destructive-foreground', 'destructive', 4.5, 'label on a destructive button'],
 
-  // --- DESIGN.md's own three-step text ramp, on all three surfaces --------
-  ['on-surface', 'surface', 4.5, 'body text on the page'],
-  ['on-surface-muted', 'surface-raised', 4.5, 'muted text on a panel'],
-  ['on-surface-muted', 'surface-inset', 4.5, 'muted text on an inset'],
-  ['on-surface-faint', 'surface', 4.5, 'faint text on the page'],
-  ['on-surface-faint', 'surface-raised', 4.5, 'faint text on a panel'],
-  ['on-surface-faint', 'surface-inset', 4.5, 'faint text on an inset'],
+  // --- the accent ----------------------------------------------------------
+  // DESIGN.md: `primary` is validated as a FILL and never as text. #c6f232 is
+  // 1.18:1 on the bone ground, so the text role is `primary-text`, which is
+  // the raw accent in dark and an olive derivative in light. The ring alias
+  // points at `primary-text` for exactly this reason.
+  ['on-primary', 'primary', 4.5, 'ink on the accent'],
+  ['on-primary', 'primary-hover', 4.5, 'ink on the hovered accent'],
+
+  // DESIGN.md's text ramp and the category hues are generated over GROUNDS
+  // below, rather than transcribed here.
+
+  // --- the footer ----------------------------------------------------------
+  // A deepened band of each theme's own ground, so `on-footer` and
+  // `on-footer-muted` remap per theme like every other surface role.
+  ['on-footer', 'footer', 4.5, 'footer text'],
+  ['on-footer-muted', 'footer', 4.5, 'the footer mono strip'],
 
   // --- status -------------------------------------------------------------
   ['success', 'background', 4.5, 'success text on the page'],
@@ -146,22 +164,58 @@ const PAIRS = [
   ['input', 'background', 3, 'input outline against the page'],
   ['input', 'card', 3, 'input outline against a card'],
 
-  // `outline-strong` exists solely to satisfy 1.4.11 for control boundaries,
-  // so it has to clear 3:1 on every surface a control can sit on — including
-  // the inset, which is where the light value originally failed.
-  ['outline-strong', 'surface', 3, 'control boundary on the page'],
-  ['outline-strong', 'surface-raised', 3, 'control boundary on a panel'],
-  ['outline-strong', 'surface-inset', 3, 'control boundary on an inset'],
+  // `outline-strong` exists solely to satisfy 1.4.11 for control boundaries.
+  // Signal assigns it to the `select` border, so it is load-bearing: the
+  // handoff's #3a3e47 measured 1.50:1 and would have made every form control
+  // boundary invisible. Generated over GROUNDS below.
+
+  // The 3px structural rule is a graphic object a reader must perceive to read
+  // the layout at all, so it takes the same 3:1 bar. The 1px hairline does not
+  // — it organises peers that are already distinguishable by position.
+  ['rule', 'surface', 3, 'the structural rule against the page'],
+  ['rule', 'surface-raised', 3, 'the structural rule against a panel'],
+
+  // --- the active nav cell -------------------------------------------------
+  // The only two inks that land on the `nav-active` ground.
+  ['primary-text', 'nav-active', 4.5, 'the active nav label'],
+  ['on-surface', 'nav-active', 4.5, 'a nav label on the active cell'],
 ];
 
-// Category hue as text, on all three surfaces, in both themes. This is the
-// reason the light category values are so much darker than the dark ones.
+// The text ramp, the accent-as-text and the category hues, over every ground.
+// `on-surface-dim` is deliberately absent from the 4.5 list — see below.
+for (const ground of GROUNDS) {
+  for (const step of ['on-surface', 'on-surface-muted', 'on-surface-faint']) {
+    PAIRS.push([step, ground, 4.5, `${step} on ${ground}`]);
+  }
+  PAIRS.push(['primary-text', ground, 4.5, `accent text on ${ground}`]);
+  PAIRS.push(['outline-strong', ground, 3, `control boundary on ${ground}`]);
+
+  // `on-surface-dim` is the one text step held to 3:1 rather than 4.5:1.
+  // DESIGN.md documents it as non-essential metadata that is duplicated
+  // elsewhere — a counter, a placeholder, a keyboard hint. Lifting it to 4.5
+  // would put it within 0.55 of `on-surface-faint` and collapse the ramp to
+  // three usable steps. Anything a reader must read is `faint` or above.
+  PAIRS.push(['on-surface-dim', ground, 3, `dim metadata on ${ground}`]);
+}
+
+// Each category has two roles, and they are not interchangeable.
+//
+//   category-*       the TEXT hue — crumbs, tool icons, small labels. Measured
+//                    against every ground, which is why the light values are so
+//                    much darker than the dark ones.
+//   category-fill-*  the solid badge block. Theme-independent, because the ink
+//                    on it is always graphite, so it is measured once against
+//                    `on-category-fill` rather than against the page.
 for (const c of CATEGORIES) {
-  PAIRS.push(
-    [`category-${c}`, 'surface', 4.5, `${c} label on the page`],
-    [`category-${c}`, 'surface-raised', 4.5, `${c} label on a panel`],
-    [`category-${c}`, 'surface-inset', 4.5, `${c} label on an inset`]
-  );
+  for (const ground of GROUNDS) {
+    PAIRS.push([`category-${c}`, ground, 4.5, `${c} label on ${ground}`]);
+  }
+  PAIRS.push([
+    'on-category-fill',
+    `category-fill-${c}`,
+    4.5,
+    `ink on the solid ${c} badge`,
+  ]);
 }
 
 describe.each(themes)('%s theme contrast', (mode, tokens) => {
@@ -199,9 +253,6 @@ describe('token layer integrity', () => {
     // light theme, not part of it.
     const names = (t) => Object.keys(t).filter((k) => !k.endsWith('-light')).sort();
     expect(names(light)).toEqual(names(dark));
-    for (let index = 0; index < themes.length; index += 2) {
-      expect(names(themes[index][1])).toEqual(names(themes[index + 1][1]));
-    }
   });
 
   it('keeps the prefers-color-scheme fallback in sync with .light', () => {
@@ -211,21 +262,37 @@ describe('token layer integrity', () => {
     expect(lightMedia).toEqual(light);
   });
 
-  it('exposes the complete official Solarized ramp', () => {
-    const ramp = Object.keys(base).filter((key) => key.startsWith('solar-'));
-    expect(ramp).toHaveLength(16);
-    expect(base['solar-base03']).toBe('#002b36');
-    expect(base['solar-base3']).toBe('#fdf6e3');
-    expect(base['solar-blue']).toBe('#268bd2');
+  it('has retired the alternate palettes', () => {
+    // Signal ships two themes. Six palettes × 24 tokens made every colour
+    // decision a 12-way problem, and `DEFAULT_PALETTE` meant the base theme
+    // the tokens actually describe was the one nobody ever saw.
+    for (const id of ['solarized', 'catppuccin', 'dracula', 'nord', 'tokyo-night', 'github']) {
+      expect(generated, `--color-${id}-* should be gone`).not.toContain(`--color-${id}-`);
+      expect(css, `[data-palette="${id}"] should be gone`).not.toContain(`data-palette="${id}"`);
+    }
+    expect(generated, 'the raw Solarized ramp should be gone').not.toMatch(/--color-solar-/);
+    expect(css, 'nothing may read a palette attribute').not.toMatch(/data-palette/);
   });
 
-  it('emits the complete token contract for runtime palette selection', () => {
+  it('emits the complete token contract', () => {
     expect(generated).toMatch(/@theme\s+static\s*\{/);
     for (const [, tokens] of themes) {
       for (const category of CATEGORIES) {
         expect(tokens[`category-${category}`]).toBeDefined();
+        expect(tokens[`category-fill-${category}`]).toBeDefined();
       }
     }
+  });
+
+  it('keeps the accent out of every text slot', () => {
+    // `primary` is a fill. #c6f232 as text on bone is 1.18:1, so the moment an
+    // alias points a text or ring role at it, the light theme loses that role
+    // entirely. `primary-text` is the value that switches per theme.
+    for (const [mode, tokens] of themes) {
+      expect(tokens.ring, `ring resolves in ${mode}`).toBe(tokens['primary-text']);
+    }
+    expect(css).toMatch(/--color-ring:\s*var\(--color-primary-text\)/);
+    expect(light['primary-text']).not.toBe(light.primary);
   });
 
   it('does not reintroduce a remote font import', () => {
@@ -233,10 +300,68 @@ describe('token layer integrity', () => {
   });
 
   it('reserves the mono family for data by self-hosting it', () => {
-    // DESIGN.md pairs Inter with JetBrains Mono, and requires both to be
-    // self-hosted so first paint makes no third-party request.
-    expect(css).toMatch(/--font-mono:\s*"JetBrains Mono Variable"/);
-    expect(css).toMatch(/--font-sans:\s*"Inter Variable"/);
+    // DESIGN.md sets Bricolage Grotesque for display, Space Grotesk for body
+    // and labels, Space Mono for data — all self-hosted so first paint makes
+    // no third-party request.
+    expect(css).toMatch(/--font-mono:\s*"Space Mono"/);
+    expect(css).toMatch(/--font-sans:\s*"Space Grotesk Variable"/);
+    expect(css).toMatch(/--font-display:\s*"Bricolage Grotesque Variable"/);
+  });
+
+  it('carries the Stacks shape scale and the press shadows', () => {
+    // Radius is a token, so one wrong step here reshapes the whole app. The
+    // scale is 8/10/14/18 — badge and chip, control, panel, sheet — and
+    // `full` is for pills: nav items, the toggle knob, status dots.
+    for (const [step, value] of [['sm', '8px'], ['md', '10px'], ['lg', '14px'], ['xl', '18px'], ['full', '9999px']]) {
+      expect(generated, `--radius-${step}`).toContain(`--radius-${step}: ${value};`);
+    }
+
+    // The offset shadow is not elevation: it is pressability, hard-edged and
+    // always in the structural `rule` colour. The exporter drops `shadow`, so
+    // the three steps are hand-transcribed into globals.css — and there is
+    // still no shadow scale in the generated file to drift against.
+    expect(generated, 'the exporter emits no shadow scale').not.toMatch(/--shadow-press/);
+    for (const step of ['press-sm', 'press', 'press-lg']) {
+      expect(css, `--shadow-${step}`).toMatch(
+        new RegExp(`--shadow-${step}:\\s*\\d+px \\d+px 0 var\\(--color-shadow-ink\\);`)
+      );
+    }
+
+    // In light the shadow is genuinely darker than every ground — the ink.
+    // In dark it is deliberately NOT: true black vanished into the cocoa
+    // grounds, so the offset is drawn with the border taupe instead, a
+    // printed second edge rather than a cast shadow (the user's call).
+    for (const ground of ['surface', 'surface-raised']) {
+      expect(
+        luminance(light['shadow-ink']),
+        `shadow-ink is darker than ${ground} in light`
+      ).toBeLessThan(luminance(light[ground]));
+    }
+    expect(dark['shadow-ink'], 'the dark offset is drawn with the border pen').toBe(dark.rule);
+  });
+
+  it('carries the rule and motion values the exporter drops', () => {
+    // DESIGN.md declares `borderWidth`, `shadow` and `motion`, but the
+    // exporter behind `pnpm generate:tokens` reads only colors, typography,
+    // rounded and spacing. These are transcribed into globals.css by hand, so
+    // nothing but this test notices when they drift.
+    const frontMatter = design.slice(0, design.indexOf('\n---', 4));
+    for (const [key, prop] of [
+      ['hairline', '--border-hairline'],
+      ['structural', '--border-structural'],
+    ]) {
+      const declared = frontMatter.match(new RegExp(`^  ${key}:\\s*(\\S+)`, 'm'))?.[1];
+      expect(declared, `borderWidth.${key} in DESIGN.md`).toBeDefined();
+      expect(css, prop).toContain(`${prop}: ${declared};`);
+    }
+    for (const [key, prop] of [
+      ['duration-fast', '--duration-fast'],
+      ['duration-base', '--duration-base'],
+    ]) {
+      const declared = frontMatter.match(new RegExp(`^  ${key}:\\s*(\\S+)`, 'm'))?.[1];
+      expect(declared, `motion.${key} in DESIGN.md`).toBeDefined();
+      expect(css, prop).toContain(`${prop}: ${declared};`);
+    }
   });
 
   it('disables ambient animation under prefers-reduced-motion', () => {

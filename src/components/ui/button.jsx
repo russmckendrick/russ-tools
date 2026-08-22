@@ -20,14 +20,19 @@ import { cn } from "@/lib/utils"
  *    on any accent in this palette measures near 2:1. Phase 1 caught the
  *    approved mockup doing exactly this.
  *
- * Sizes follow DESIGN.md's `8px 13px` control padding and 6px radius, not
- * shadcn's stock 10/4 and `rounded-md`.
+ * Under Stacks a solid button is a pressable chunk: 2px `rule` border,
+ * `rounded-md`, and the `press-sm` offset shadow that vanishes as `:active`
+ * sinks the button by the offset — the press IS the animation. The accent's
+ * hover state is the explicit `primary-hover` token rather than a
+ * `brightness()` filter, which would drift the hue off the value measured
+ * against its ink. Ghost and link stay chromeless; `outline` is the quiet
+ * bordered middle (no shadow).
  */
 const buttonVariants = cva(
   cn(
-    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-sm",
-    "text-body-sm font-medium transition-[color,background-color,border-color,box-shadow,filter,transform] duration-150 ease-out active:scale-[0.98]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap",
+    "text-body-sm font-medium transition-[color,background-color,border-color,box-shadow,transform] duration-140 ease-out",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
     "disabled:pointer-events-none disabled:opacity-50",
     "[&_svg]:size-4 [&_svg]:shrink-0"
   ),
@@ -35,20 +40,25 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-on-primary shadow-[inset_0_1px_0_rgba(255,255,255,.18)] hover:brightness-110",
+          "rounded-md border-2 border-rule bg-primary text-on-primary shadow-press-sm hover:bg-primary-hover active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
+        // `on-status`, not `on-primary`. The ink on a status fill flips with
+        // the theme — graphite on the bright dark hue, white on the deep
+        // light one — while the accent's ink is graphite in both.
         destructive:
-          "bg-error text-on-primary shadow-[inset_0_1px_0_rgba(255,255,255,.18)] hover:brightness-110",
+          "rounded-md border-2 border-rule bg-error text-on-status shadow-press-sm hover:brightness-110 active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
         outline:
-          "border border-outline-strong bg-surface-raised text-on-surface hover:bg-surface-inset",
+          "rounded-md border-2 border-rule bg-transparent text-on-surface hover:bg-surface-inset",
         secondary:
-          "border border-outline bg-surface-inset text-on-surface hover:border-outline-strong",
-        ghost: "text-on-surface-muted hover:bg-surface-inset hover:text-on-surface",
-        link: "text-primary underline-offset-4 hover:underline",
+          "rounded-md border-2 border-rule bg-surface-raised text-on-surface shadow-press-sm hover:bg-surface-inset active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
+        ghost: "rounded-md text-on-surface-muted hover:bg-surface-inset hover:text-on-surface",
+        // `primary-text`, never `primary`: the raw accent as text is ~1.6:1
+        // on the paper ground.
+        link: "text-primary-text underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-[13px] py-2",
-        sm: "h-8 px-2.5 text-data-sm",
-        lg: "h-10 px-4",
+        default: "h-9 px-[15px] py-2",
+        sm: "h-8 rounded-sm px-2.5 text-data-sm",
+        lg: "h-10 px-[18px]",
         icon: "h-9 w-9 p-0",
       },
     },

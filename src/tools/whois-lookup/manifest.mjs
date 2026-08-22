@@ -24,7 +24,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'network',
-  icon: 'badge',
+  icon: 'id-card',
   badges: [
     'Domains',
     'IPv4',

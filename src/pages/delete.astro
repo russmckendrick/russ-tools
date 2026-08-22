@@ -28,6 +28,12 @@ import StorageManager from '../components/common/StorageManager.jsx';
     <nav class="rt-crumb" aria-label="Breadcrumb">
       <a href="/">Tools</a> / <b>Saved data</b>
     </nav>
+    <!--
+      The same head every tool page uses, minus the icon. Every glyph in
+      `icons.mjs` belongs to a tool, and borrowing one would say this page is
+      that tool. No `--cat` either — this is not a tool and has no category,
+      so `.rt-crumb b` takes its neutral fallback.
+    -->
     <div class="rt-tool-id">
       <h1>Saved data</h1>
     </div>

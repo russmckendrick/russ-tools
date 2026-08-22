@@ -24,7 +24,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'microsoft',
-  icon: 'corporate-fare',
+  icon: 'building-2',
   badges: [
     'Tenant ID',
     'Domains',

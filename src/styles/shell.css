@@ -36,70 +36,86 @@ body > main {
   flex: 1;
 }
 
-/* --- Topbar --------------------------------------------------------------- */
+/* --- Topbar ---------------------------------------------------------------
+   Stacks' header is a full-width bar closed by the 2px rule, and the rule is
+   a SHELF: the nav items are folder tabs standing on it, and the active tab
+   opens into the page by erasing the rule beneath itself. The brand is
+   signage — the toolbox mark plus the wordmark in display type, no box —
+   because a boxed chip next to naked links used half the page's chunk
+   vocabulary on one corner. The bar is opaque: no translucency, no blur. */
 
 .rt-site-header {
   position: sticky;
   top: 0;
   z-index: 40;
-  border-bottom: 1px solid var(--color-outline);
-  background: color-mix(in oklab, var(--color-surface) 88%, transparent);
-  backdrop-filter: blur(16px) saturate(125%);
+  border-bottom: var(--border-structural) solid var(--color-rule);
+  background: var(--color-surface);
 }
 
 .rt-topbar {
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 20px;
+  align-items: stretch;
   min-height: 62px;
-  padding-block: 9px;
 }
 
 .rt-brand {
   display: inline-flex;
   align-items: center;
+  align-self: center;
   justify-self: start;
-  gap: 8px;
-  font-weight: 620;
-  letter-spacing: -0.02em;
+  gap: 10px;
+  padding-block: 12px;
+  font-family: var(--font-display);
+  /* The headline-md step, applied whole — the signage sits on the ramp
+     rather than inventing a size between its steps. */
+  font-size: var(--text-headline-md);
+  font-weight: var(--font-weight-headline-md);
+  letter-spacing: var(--tracking-headline-md);
   color: var(--color-on-surface);
   text-decoration: none;
 }
 
+/* The mark is two-tone: its body fill is the accent token, and its stroke is
+   `currentColor` — set here to `on-surface` (ink on paper, cream on
+   espresso), the strongest ink, so the brand stays crisp now that the dark
+   rule is a demoted taupe. The wordmark's dot takes the accent's TEXT role
+   (`primary-text`, never raw `primary`, which is ~1.6:1 on paper). */
 .rt-site-mark {
-  color: var(--color-primary);
-  transition: transform 180ms ease, color 180ms ease;
+  color: var(--color-on-surface);
 }
-.rt-brand:hover .rt-site-mark {
-  color: var(--color-category-network);
-  transform: translateY(-1px) rotate(-3deg);
+.rt-brand-dot {
+  color: var(--color-primary-text);
+  font-weight: inherit;
 }
 
 .rt-header-actions-wrap {
   position: relative;
   justify-self: end;
+  display: flex;
+  align-items: flex-end;
 }
 
 .rt-menu-toggle {
   display: none;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  align-self: center;
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid var(--color-outline);
+  border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
   color: var(--color-on-surface-muted);
   cursor: pointer;
-  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+  transition: color var(--duration-fast) var(--ease-signal),
+    background-color var(--duration-fast) var(--ease-signal);
 }
 .rt-menu-toggle:hover,
-.rt-menu-toggle[aria-expanded="true"] {
+.rt-menu-toggle[aria-expanded='true'] {
   color: var(--color-on-surface);
-  border-color: var(--color-outline-strong);
-  background: var(--color-surface-inset);
+  background: var(--color-nav-active);
 }
 .rt-menu-toggle:focus-visible {
   outline: 2px solid var(--color-ring);
@@ -109,461 +125,71 @@ body > main {
 .rt-header-actions {
   justify-self: end;
   display: flex;
-  align-items: center;
-  gap: 7px;
+  align-items: flex-end;
+  gap: 6px;
 }
 
 .rt-topnav {
   display: flex;
-  align-items: center;
-  gap: 1px;
+  align-items: flex-end;
+  gap: 6px;
 }
-.rt-topnav a {
-  position: relative;
-  display: inline-grid;
-  grid-template-columns: auto 0fr;
+
+/* One rule for every tab in the row — nav links and the theme button alike,
+   which is why the theme button is a sibling of the links rather than
+   sitting inside a wrapper of its own. A tab is bordered on three sides,
+   top corners rounded, standing on the header's bottom rule. */
+.rt-topnav a,
+.rt-theme-toggle {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  min-width: 34px;
-  height: 34px;
-  padding-inline: 8px;
-  overflow: hidden;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  gap: 7px;
+  padding: 11px 17px 12px;
+  border: var(--border-structural) solid var(--color-rule);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: var(--color-nav-active);
+  font-family: inherit;
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  line-height: 1;
   color: var(--color-on-surface-muted);
   text-decoration: none;
-  transition: color 150ms ease, background-color 150ms ease, transform 150ms ease, grid-template-columns 180ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--duration-fast) var(--ease-signal),
+    background-color var(--duration-fast) var(--ease-signal);
 }
+
 .rt-topnav a:hover,
-.rt-topnav a:focus-visible {
-  grid-template-columns: auto 1fr;
+.rt-theme-toggle:hover {
   color: var(--color-on-surface);
-  background: color-mix(in oklab, var(--color-surface-inset) 76%, transparent);
-  transform: translateY(-1px);
+  background: var(--color-surface-raised);
 }
-.rt-topnav a:focus-visible {
+
+.rt-topnav a:focus-visible,
+.rt-theme-toggle:focus-visible {
   outline: 2px solid var(--color-ring);
-  outline-offset: 2px;
+  outline-offset: -3px;
 }
-.rt-topnav a[aria-current="page"] {
-  color: var(--color-primary);
-  background: color-mix(in oklab, var(--color-primary) 8%, transparent);
-}
-.rt-topnav a[aria-current="page"]::after {
-  content: "";
-  position: absolute;
-  inset: auto 8px -10px;
-  height: 2px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary);
-  box-shadow: 0 0 10px color-mix(in oklab, var(--color-primary) 55%, transparent);
-}
-.rt-nav-icon {
-  flex: 0 0 auto;
-  transition: transform 150ms ease;
-}
-.rt-topnav a:hover .rt-nav-icon {
-  transform: scale(1.06);
+
+/* The open tab: page ground, and its own bottom edge overwrites the header
+   rule (2px taller, pulled 2px below the bar) so the tab and the page read
+   as one surface. Ink text, not accent — the opening IS the signal. */
+.rt-topnav a[aria-current='page'] {
+  background: var(--color-surface);
+  border-bottom: var(--border-structural) solid var(--color-surface);
+  margin-bottom: calc(-1 * var(--border-structural));
+  color: var(--color-on-surface);
+  font-weight: 600;
 }
 
 /* --- Theme toggle ---------------------------------------------------------
-   Sized to the topnav's optical line rather than to a touch target: it sits
-   in a row of 13px links and a 36px control would read as the most important
-   thing in the header, which it is not. */
+   All three icons and all three labels ship in the markup; exactly one pair
+   is revealed from `:root[data-theme-pref]`, which the pre-paint script has
+   already written. So the control is correct on the first frame rather than
+   after hydration, and never briefly shows the wrong state. */
 
-.rt-appearance {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding-left: 8px;
-  border-left: 1px solid var(--color-outline);
-}
-
-.rt-palette-picker {
-  position: relative;
-}
-
-.rt-palette-toggle,
-.rt-theme-toggle {
-  display: inline-grid;
-  grid-template-columns: auto 0fr;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  padding-block: 0;
-  overflow: hidden;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--color-on-surface-muted);
-  cursor: pointer;
-  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease, grid-template-columns 180ms ease;
-}
-.rt-palette-toggle {
-  grid-template-columns: auto 0fr auto;
-  min-width: 38px;
-  padding-inline: 6px;
-  font: inherit;
-  font-size: var(--text-body-sm);
-}
-.rt-theme-toggle {
-  min-width: 34px;
-  padding-inline: 7px;
-}
-.rt-palette-toggle:hover,
-.rt-palette-toggle[aria-expanded="true"],
-.rt-palette-toggle:focus-visible,
-.rt-theme-toggle:hover,
-.rt-theme-toggle:focus-visible {
-  color: var(--color-on-surface);
-  border-color: var(--color-outline);
-  background: var(--color-surface-inset);
-}
-.rt-palette-toggle:hover,
-.rt-palette-toggle[aria-expanded="true"],
-.rt-palette-toggle:focus-visible {
-  grid-template-columns: auto 1fr auto;
-}
-.rt-theme-toggle:hover,
-.rt-theme-toggle:focus-visible {
-  grid-template-columns: auto 1fr;
-}
-.rt-palette-toggle:focus-visible,
-.rt-theme-toggle:focus-visible {
-  outline: 2px solid var(--color-ring);
-  outline-offset: 2px;
-}
-
-.rt-palette-chevron {
-  flex: 0 0 auto;
-  transition: transform 160ms ease;
-}
-.rt-palette-toggle[aria-expanded="true"] .rt-palette-chevron {
-  transform: rotate(180deg);
-}
-
-.rt-nav-label,
-.rt-toolbar-label,
-.rt-mode-name {
-  display: block;
-  min-width: 0;
-  overflow: hidden;
-  opacity: 0;
-  color: currentColor;
-  font-size: var(--text-body-sm);
-  line-height: 1;
-  white-space: nowrap;
-  transition: opacity 120ms ease;
-}
-.rt-nav-label {
-  text-indent: 7px;
-}
-.rt-toolbar-label,
-.rt-mode-name {
-  text-indent: 6px;
-}
-.rt-toolbar-label::after {
-  content: "";
-  display: inline-block;
-  width: 6px;
-}
-.rt-topnav a:hover .rt-nav-label,
-.rt-topnav a:focus-visible .rt-nav-label,
-.rt-palette-toggle:hover .rt-toolbar-label,
-.rt-palette-toggle:focus-visible .rt-toolbar-label,
-.rt-palette-toggle[aria-expanded="true"] .rt-toolbar-label,
-.rt-theme-toggle:hover .rt-mode-name,
-.rt-theme-toggle:focus-visible .rt-mode-name {
-  opacity: 1;
-}
-
-.rt-palette-menu {
-  position: absolute;
-  top: calc(100% + 11px);
-  right: -35px;
-  z-index: 20;
-  width: min(356px, calc(100vw - (var(--rt-space-gutter) * 2)));
-  max-height: min(570px, calc(100vh - 82px));
-  overflow: hidden;
-  border: 1px solid color-mix(in oklab, var(--color-outline) 70%, var(--color-primary));
-  border-radius: var(--radius-xl);
-  background: color-mix(in oklab, var(--color-surface-raised) 97%, var(--color-surface));
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--color-on-surface) 8%, transparent),
-    0 22px 60px color-mix(in oklab, var(--color-surface) 78%, transparent);
-  transform-origin: top right;
-  animation: rt-palette-menu-in 170ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.rt-palette-menu[hidden] {
-  display: none;
-}
-@keyframes rt-palette-menu-in {
-  from {
-    opacity: 0;
-    transform: translateY(-5px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.rt-palette-menu-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 11px 12px 9px;
-  border-bottom: 1px solid var(--color-outline);
-  color: var(--color-on-surface-faint);
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  line-height: 1;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.rt-palette-menu-head span:last-child {
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-.rt-palette-options {
-  display: grid;
-  gap: 4px;
-  max-height: min(520px, calc(100vh - 126px));
-  padding: 6px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-.rt-palette-option {
-  display: grid;
-  grid-template-columns: 78px 1fr 18px;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 62px;
-  padding: 6px 9px 6px 6px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-on-surface);
-  text-align: left;
-  cursor: pointer;
-  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
-}
-.rt-palette-option:hover,
-.rt-palette-option:focus-visible {
-  border-color: var(--color-outline);
-  background: var(--color-surface-inset);
-  outline: none;
-}
-.rt-palette-option:hover {
-  transform: translateX(2px);
-}
-.rt-palette-option:focus-visible {
-  box-shadow: inset 0 0 0 1px var(--color-ring);
-}
-.rt-palette-option[aria-checked="true"] {
-  border-color: color-mix(in oklab, var(--color-primary) 34%, var(--color-outline));
-  background: color-mix(in oklab, var(--color-primary) 9%, var(--color-surface-inset));
-}
-
-.rt-terminal-preview {
-  display: grid;
-  grid-template-rows: 13px 1fr;
-  width: 78px;
-  height: 48px;
-  overflow: hidden;
-  border: 1px solid color-mix(in oklab, var(--rt-preview-muted) 42%, var(--rt-preview-surface));
-  border-radius: 6px;
-  background: var(--rt-preview-surface);
-  box-shadow: 0 5px 12px color-mix(in oklab, var(--rt-preview-surface) 45%, transparent);
-  transition: transform 160ms ease, box-shadow 160ms ease;
-}
-.rt-palette-option:hover .rt-terminal-preview,
-.rt-palette-option:focus-visible .rt-terminal-preview {
-  transform: translateY(-1px) rotate(-0.6deg);
-  box-shadow: 0 7px 15px color-mix(in oklab, var(--rt-preview-surface) 58%, transparent);
-}
-.rt-terminal-bar {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding-inline: 5px;
-  background: var(--rt-preview-raised);
-}
-.rt-terminal-bar i {
-  display: block;
-  width: 3.5px;
-  height: 3.5px;
-  border-radius: var(--radius-full);
-  background: var(--rt-preview-muted);
-}
-.rt-terminal-bar i:first-child {
-  background: var(--rt-preview-accent);
-}
-.rt-terminal-bar i:nth-child(2) {
-  opacity: 0.72;
-}
-.rt-terminal-bar i:nth-child(3) {
-  opacity: 0.42;
-}
-.rt-terminal-screen {
-  display: grid;
-  align-content: center;
-  gap: 4px;
-  padding: 4px 7px 5px;
-}
-.rt-terminal-command {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.rt-terminal-command i {
-  color: var(--rt-preview-accent);
-  font-family: var(--font-mono);
-  font-size: 8px;
-  font-style: normal;
-  line-height: 1;
-}
-.rt-terminal-command b,
-.rt-terminal-line {
-  display: block;
-  height: 2.5px;
-  border-radius: var(--radius-full);
-  background: var(--rt-preview-muted);
-  opacity: 0.8;
-}
-.rt-terminal-command b {
-  width: 30px;
-  background: var(--rt-preview-accent);
-  opacity: 0.82;
-}
-.rt-terminal-line {
-  width: 52px;
-  opacity: 0.5;
-}
-.rt-terminal-line-short {
-  width: 37px;
-  opacity: 0.32;
-}
-
-.rt-palette-copy {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-.rt-palette-copy strong {
-  font-size: var(--text-body-sm);
-  font-weight: 620;
-  line-height: 1.15;
-}
-.rt-palette-copy small {
-  display: flex;
-  gap: 5px;
-  color: var(--color-on-surface-faint);
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  line-height: 1.2;
-}
-.rt-palette-copy small i {
-  opacity: 0.5;
-  font-style: normal;
-}
-.rt-palette-copy small span:first-child,
-.light .rt-palette-copy small span:last-child {
-  color: var(--rt-preview-accent);
-}
-.light .rt-palette-copy small span:first-child {
-  color: var(--color-on-surface-faint);
-}
-.rt-palette-check {
-  color: var(--color-primary);
-  opacity: 0;
-  transform: scale(0.72);
-  transition: opacity 140ms ease, transform 140ms ease;
-}
-.rt-palette-option[aria-checked="true"] .rt-palette-check {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.rt-palette-option[data-palette-value="solarized"] {
-  --rt-preview-surface: var(--color-solarized-surface);
-  --rt-preview-raised: var(--color-solarized-surface-raised);
-  --rt-preview-muted: var(--color-solarized-on-surface-muted);
-  --rt-preview-accent: var(--color-solarized-primary);
-}
-.rt-palette-option[data-palette-value="catppuccin"] {
-  --rt-preview-surface: var(--color-catppuccin-surface);
-  --rt-preview-raised: var(--color-catppuccin-surface-raised);
-  --rt-preview-muted: var(--color-catppuccin-on-surface-muted);
-  --rt-preview-accent: var(--color-catppuccin-primary);
-}
-.rt-palette-option[data-palette-value="dracula"] {
-  --rt-preview-surface: var(--color-dracula-surface);
-  --rt-preview-raised: var(--color-dracula-surface-raised);
-  --rt-preview-muted: var(--color-dracula-on-surface-muted);
-  --rt-preview-accent: var(--color-dracula-primary);
-}
-.rt-palette-option[data-palette-value="nord"] {
-  --rt-preview-surface: var(--color-nord-surface);
-  --rt-preview-raised: var(--color-nord-surface-raised);
-  --rt-preview-muted: var(--color-nord-on-surface-muted);
-  --rt-preview-accent: var(--color-nord-primary);
-}
-.rt-palette-option[data-palette-value="tokyo-night"] {
-  --rt-preview-surface: var(--color-tokyo-night-surface);
-  --rt-preview-raised: var(--color-tokyo-night-surface-raised);
-  --rt-preview-muted: var(--color-tokyo-night-on-surface-muted);
-  --rt-preview-accent: var(--color-tokyo-night-primary);
-}
-.rt-palette-option[data-palette-value="github"] {
-  --rt-preview-surface: var(--color-github-surface);
-  --rt-preview-raised: var(--color-github-surface-raised);
-  --rt-preview-muted: var(--color-github-on-surface-muted);
-  --rt-preview-accent: var(--color-github-primary);
-}
-
-.light .rt-palette-option[data-palette-value="solarized"] {
-  --rt-preview-surface: var(--color-solarized-surface-light);
-  --rt-preview-raised: var(--color-solarized-surface-raised-light);
-  --rt-preview-muted: var(--color-solarized-on-surface-muted-light);
-  --rt-preview-accent: var(--color-solarized-primary-light);
-}
-.light .rt-palette-option[data-palette-value="catppuccin"] {
-  --rt-preview-surface: var(--color-catppuccin-surface-light);
-  --rt-preview-raised: var(--color-catppuccin-surface-raised-light);
-  --rt-preview-muted: var(--color-catppuccin-on-surface-muted-light);
-  --rt-preview-accent: var(--color-catppuccin-primary-light);
-}
-.light .rt-palette-option[data-palette-value="dracula"] {
-  --rt-preview-surface: var(--color-dracula-surface-light);
-  --rt-preview-raised: var(--color-dracula-surface-raised-light);
-  --rt-preview-muted: var(--color-dracula-on-surface-muted-light);
-  --rt-preview-accent: var(--color-dracula-primary-light);
-}
-.light .rt-palette-option[data-palette-value="nord"] {
-  --rt-preview-surface: var(--color-nord-surface-light);
-  --rt-preview-raised: var(--color-nord-surface-raised-light);
-  --rt-preview-muted: var(--color-nord-on-surface-muted-light);
-  --rt-preview-accent: var(--color-nord-primary-light);
-}
-.light .rt-palette-option[data-palette-value="tokyo-night"] {
-  --rt-preview-surface: var(--color-tokyo-night-surface-light);
-  --rt-preview-raised: var(--color-tokyo-night-surface-raised-light);
-  --rt-preview-muted: var(--color-tokyo-night-on-surface-muted-light);
-  --rt-preview-accent: var(--color-tokyo-night-primary-light);
-}
-.light .rt-palette-option[data-palette-value="github"] {
-  --rt-preview-surface: var(--color-github-surface-light);
-  --rt-preview-raised: var(--color-github-surface-raised-light);
-  --rt-preview-muted: var(--color-github-on-surface-muted-light);
-  --rt-preview-accent: var(--color-github-primary-light);
-}
-
-/* All three glyphs are in the markup; the live one is revealed from the
-   preference the pre-paint script has already written, so the button is
-   never briefly wrong. */
 .rt-theme-icon {
   display: none;
   flex: 0 0 auto;
@@ -582,12 +208,12 @@ body > main {
   display: none;
 }
 
+/* --- Header on a phone ----------------------------------------------------
+   Below 720px the cell row collapses behind the hamburger into a stacked
+   panel, which keeps the square ruled idiom: hairline between rows, a 3px
+   rule closing the top, no radius and no shadow. */
+
 @media (max-width: 720px) {
-  .rt-topbar {
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-    padding-block: 8px;
-  }
   .rt-menu-toggle {
     display: inline-flex;
   }
@@ -597,92 +223,38 @@ body > main {
     right: 0;
     z-index: 30;
     display: none;
-    width: min(318px, calc(100vw - (var(--rt-space-gutter) * 2)));
-    padding: 8px;
-    align-items: stretch;
-    gap: 8px;
-    border: 1px solid color-mix(in oklab, var(--color-outline) 72%, var(--color-primary));
-    border-radius: var(--radius-xl);
-    background: color-mix(in oklab, var(--color-surface-raised) 97%, var(--color-surface));
-    box-shadow:
-      inset 0 1px 0 color-mix(in oklab, var(--color-on-surface) 8%, transparent),
-      0 22px 60px color-mix(in oklab, var(--color-surface) 78%, transparent);
-    transform-origin: top right;
-    animation: rt-palette-menu-in 170ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  }
-  .rt-menu-toggle[aria-expanded="true"] + .rt-header-actions {
-    display: flex;
     flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    width: min(280px, calc(100vw - (var(--rt-space-gutter) * 2)));
+    padding: 8px;
+    border: var(--border-structural) solid var(--color-rule);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-press-lg);
+  }
+  .rt-menu-toggle[aria-expanded='true'] + .rt-header-actions {
+    display: flex;
   }
   .rt-topnav {
-    display: grid;
-    gap: 2px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
   }
+  /* Inside the dropdown card the folder-tab shape makes no sense — the rows
+     revert to bordered list items, and the open tab becomes a marked row. */
   .rt-topnav a,
-  .rt-topnav a:hover,
-  .rt-topnav a:focus-visible {
-    width: 100%;
-    grid-template-columns: auto max-content;
-    justify-content: start;
-    gap: 9px;
-    padding-inline: 10px;
-    transform: none;
+  .rt-theme-toggle {
+    border: var(--border-structural) solid var(--color-rule);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    padding: 13px 16px;
   }
-  .rt-topnav a[aria-current="page"]::after {
-    inset: 7px auto 7px -1px;
-    width: 2px;
-    height: auto;
-  }
-  .rt-appearance {
-    display: grid;
-    gap: 2px;
-    padding: 8px 0 0;
-    border-top: 1px solid var(--color-outline);
-    border-left: 0;
-  }
-  .rt-palette-picker {
-    width: 100%;
-  }
-  .rt-palette-toggle,
-  .rt-theme-toggle,
-  .rt-palette-toggle:hover,
-  .rt-palette-toggle:focus-visible,
-  .rt-palette-toggle[aria-expanded="true"],
-  .rt-theme-toggle:hover,
-  .rt-theme-toggle:focus-visible {
-    width: 100%;
-    justify-content: start;
-    gap: 9px;
-    padding-inline: 10px;
-  }
-  .rt-palette-toggle,
-  .rt-palette-toggle:hover,
-  .rt-palette-toggle:focus-visible,
-  .rt-palette-toggle[aria-expanded="true"] {
-    grid-template-columns: auto max-content auto;
-  }
-  .rt-theme-toggle,
-  .rt-theme-toggle:hover,
-  .rt-theme-toggle:focus-visible {
-    grid-template-columns: auto max-content;
-  }
-  .rt-header-actions .rt-nav-label,
-  .rt-header-actions .rt-toolbar-label,
-  .rt-header-actions .rt-mode-name {
-    text-indent: 0;
-    opacity: 1;
-  }
-  .rt-header-actions .rt-toolbar-label::after {
-    width: 0;
-  }
-  .rt-palette-menu {
-    top: calc(100% + 7px);
-    right: 0;
-    width: min(356px, calc(100vw - (var(--rt-space-gutter) * 2)));
-    max-height: min(520px, calc(100vh - 150px));
-  }
-  .rt-palette-options {
-    max-height: min(470px, calc(100vh - 194px));
+  .rt-topnav a[aria-current='page'] {
+    margin-bottom: 0;
+    background: var(--color-nav-active);
+    border-bottom: var(--border-structural) solid var(--color-rule);
+    color: var(--color-on-surface);
   }
 }
 
@@ -693,43 +265,26 @@ body > main {
 }
 
 
-/* --- The one ambient element ---------------------------------------------
-   A broad wash of the house accent behind the top of the page, low enough
-   that it never competes with content. DESIGN.md permits exactly this one.
+/* --- No ambient wash ------------------------------------------------------
+   There was a broad radial wash of the accent behind the top of the page.
+   Signal has no glow, no gradient and no floating surface, so it is gone.
 
-   The page sections above it carry `position: relative` and deliberately
-   **no** `z-index`. They only need to paint after this wash, and a
-   positioned element with `z-index: auto` does exactly that — same painting
-   step, later in tree order — *without* creating a stacking context.
+   The stacking rule it documented still stands, which is why this note does:
+   the page sections carry `position: relative` and deliberately **no**
+   `z-index`. They only need to paint in tree order, and a positioned element
+   with `z-index: auto` does exactly that *without* creating a stacking
+   context.
 
    They each used to say `z-index: 1`, which did create one, and it took two
    of them to produce the bug. The toaster asks for `z-index: 999999999`, but
    it renders inside the island, so inside `.rt-tool-body`'s context that
    counts for nothing outside it — the whole subtree is worth 1. The footer
-   was also 1 and comes later in the document, so it won, and its top hairline
+   was also 1 and comes later in the document, so it won, and its top rule
    drew straight across every toast that reached the bottom of the page.
 
-   Neither element was wrong on its own, which is why fixing one of them
-   still left the bug: the pair was. Removing the `z-index` from all of them
-   is the fix, and it also removes the ceiling for anything else a tool
-   renders in place rather than through a portal — sonner does not portal,
-   Radix dialogs do, which is why the dialogs never showed this. */
+   Neither element was wrong on its own, which is why fixing one of them still
+   left the bug: the pair was. Do not add `z-index` back to a page section. */
 
-.rt-ambient {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 320px;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(
-    120% 100% at 50% 0%,
-    color-mix(in oklab, var(--color-primary) 13%, transparent),
-    transparent 62%
-  );
-}
-.light .rt-ambient {
-  opacity: 0.5;
-}
 
 /* --- Index title ---------------------------------------------------------
    Was a hero and a four-tile stat strip. Both were selling the site to
@@ -777,9 +332,10 @@ body > main {
   z-index: 60;
   transform: translateY(calc(-100% - var(--rt-space-xl)));
   padding: 9px 14px;
+  border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-outline-strong);
   background: var(--color-surface-raised);
+  box-shadow: var(--shadow-press-sm);
   color: var(--color-on-surface);
   font-size: var(--text-body-sm);
   text-decoration: none;
@@ -789,110 +345,135 @@ body > main {
   transform: none;
 }
 
+/* --- Index head -----------------------------------------------------------
+   `Tools` at the display step, alone. The count line went the way of the
+   hero and the stat strip — all three were selling the site to someone
+   already standing on it (the chips carry the counts). */
+
+.rt-index-head {
+  position: relative;
+  padding-block: var(--rt-space-4xl) var(--rt-space-3xl);
+}
+
 .rt-index-title {
-  position: relative;
   margin: 0;
-  padding-block: var(--rt-space-xl) var(--rt-space-md);
-  font-size: var(--text-headline-lg);
-  font-weight: var(--font-weight-headline-lg);
-  letter-spacing: var(--tracking-headline-lg);
-  animation: rt-content-enter 180ms ease-out both;
+  font-size: var(--text-display);
+  font-weight: var(--font-weight-display);
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
 }
 
-/* --- Name filter ---------------------------------------------------------- */
-
-.rt-find {
-  position: relative;
-  animation: rt-content-enter 200ms 20ms ease-out both;
-}
-.rt-find-input {
-  width: 100%;
-  max-width: 340px;
-  font-family: var(--font-mono);
-  font-size: var(--text-data-md);
-  line-height: 1.5;
-  padding: 8px 11px;
-  border-radius: var(--radius-sm);
-  /* The Input contract: darker than the panel, on the control boundary. */
-  background: var(--color-surface);
-  border: 1px solid var(--color-outline-strong);
-  color: var(--color-on-surface);
-  transition: border-color 0.13s ease, box-shadow 0.13s ease;
-}
-.rt-find-input::placeholder {
-  color: var(--color-on-surface-faint);
-}
-.rt-find-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-primary) 35%, transparent);
-}
-.rt-find-input::-webkit-search-cancel-button {
-  cursor: pointer;
-}
-
-/* --- Category filter chips ------------------------------------------------ */
+/* --- The filter row -------------------------------------------------------
+   Chips are bordered pills with press shadows — they read as keyboard keys.
+   The active chip inverts to the rule colour (ink chip on paper, cream chip
+   on ink) with the opposing ground as its text, so selection is unmistakable
+   without putting a category hue on a control, which Stacks still forbids. */
 
 .rt-filters {
   position: relative;
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
-  padding-block: var(--rt-space-md) var(--rt-space-xl);
-  animation: rt-content-enter 220ms 35ms ease-out both;
+  align-items: center;
+  gap: var(--rt-space-md);
+  padding-block: var(--rt-space-xs) var(--rt-space-md);
 }
+
+.rt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .rt-chip {
-  font: inherit;
-  font-size: 13px;
+  font-family: inherit;
+  font-size: var(--text-body-sm);
+  font-weight: 500;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 7px 12px;
+  padding: 9px 14px;
+  border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
+  box-shadow: var(--shadow-press-sm);
   color: var(--color-on-surface-muted);
-  border: 1px solid var(--color-outline);
   cursor: pointer;
-  transition: color 0.13s ease, border-color 0.13s ease, background 0.13s ease;
-}
-.rt-chip-dot {
-  flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--cat, var(--color-on-surface-faint));
-  transition: box-shadow 0.13s ease;
-}
-.rt-chip-count {
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  color: var(--color-on-surface-faint);
-  font-variant-numeric: tabular-nums;
+  transition: color var(--duration-fast) var(--ease-signal),
+    background-color var(--duration-fast) var(--ease-signal),
+    box-shadow var(--duration-fast) var(--ease-signal),
+    transform var(--duration-fast) var(--ease-signal);
 }
 .rt-chip:hover {
   color: var(--color-on-surface);
-  border-color: var(--color-outline-strong);
+  background: var(--color-surface-inset);
 }
-/*
-  Selected reads as *selected*, not as recessed. The old treatment dropped the
-  chip to `surface-inset`, which in dark is darker than the page ground while
-  every unselected chip sits above it — so the active chip was the least
-  prominent chip on the row, at roughly 1.2:1 against its peers in light.
-  State now rides the category hue: a 12% tint over the raised surface and the
-  hue at full strength on the border. Small element, so still a label and not
-  a livery.
-*/
-.rt-chip[aria-checked="true"] {
+.rt-chip:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+.rt-chip:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.rt-chip-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-on-surface-dim);
+}
+
+/* The pressed key: the chip inverts to the theme's strongest ink and stays
+   down — background, no shadow. `on-surface`, not `rule`: the dark rule is
+   a demoted taupe, and the pressed key needs the full-contrast inversion
+   (ink chip on paper, cream chip on espresso). */
+.rt-chip[aria-checked='true'] {
+  color: var(--color-surface);
+  font-weight: 600;
+  background: var(--color-on-surface);
+  box-shadow: none;
+}
+.rt-chip[aria-checked='true'] .rt-chip-count {
+  color: var(--color-surface);
+}
+
+/* --- Name filter ----------------------------------------------------------
+   Pushed to the end of the chip row rather than sitting above it. */
+
+.rt-find {
+  position: relative;
+  margin-left: auto;
+  padding-left: var(--rt-space-lg);
+}
+.rt-find-input {
+  width: 100%;
+  max-width: 300px;
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  line-height: 1;
+  padding: 10px 13px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  border: var(--border-structural) solid var(--color-rule);
   color: var(--color-on-surface);
-  background: color-mix(in oklab, var(--cat, var(--color-outline-strong)) 12%, var(--color-surface-raised));
-  border-color: var(--cat, var(--color-outline-strong));
+  transition: background-color var(--duration-base) var(--ease-signal);
 }
-.rt-chip[aria-checked="true"] .rt-chip-dot {
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--cat, var(--color-outline-strong)) 25%, transparent);
+.rt-find-input::placeholder {
+  color: var(--color-on-surface-faint);
 }
-.rt-chip[aria-checked="true"] .rt-chip-count {
-  color: var(--color-on-surface-muted);
+.rt-find-input:hover {
+  background: var(--color-surface-inset);
+}
+.rt-find-input:focus {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+  background: var(--color-surface-raised);
+}
+.rt-find-input::-webkit-search-cancel-button {
+  cursor: pointer;
 }
 
 /* --- Category groups + the tool grid -------------------------------------- */
@@ -900,8 +481,10 @@ body > main {
 .rt-board {
   position: relative;
   display: grid;
-  gap: var(--rt-space-xl);
-  padding-bottom: 30px;
+  gap: var(--rt-space-3xl);
+  /* The filter row above closes on a hairline, and the first group label sat
+     straight on it with nothing between the two. */
+  padding-block: var(--rt-space-3xl) var(--rt-space-4xl);
 }
 .rt-group {
   display: grid;
@@ -921,18 +504,20 @@ body > main {
 */
 .rt-group-label {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: inherit;
   font-size: var(--text-label-caps);
   font-weight: var(--font-weight-label-caps);
   line-height: 1;
   letter-spacing: var(--tracking-label-caps);
   text-transform: uppercase;
-  color: var(--cat);
+  /* The fallback is for /404, whose one group spans three categories and so
+     has no hue of its own. `--cat` may only ever carry a category token, so
+     the neutral lives here rather than being assigned there. */
+  color: var(--cat, var(--color-on-surface-muted));
 }
 .rt-group-label a {
   color: inherit;
   text-decoration: none;
-  border-radius: var(--radius-sm);
 }
 .rt-group-label a:hover {
   text-decoration: underline;
@@ -1009,14 +594,14 @@ body > main {
 }
 .rt-board.is-filtered .rt-group[data-demoted] .rt-group-head {
   gap: 8px;
-  padding: 8px 12px;
-  border: 1px solid var(--color-outline);
+  padding: 8px 13px;
+  border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
-  transition: border-color 0.13s ease;
+  transition: background-color var(--duration-base) var(--ease-signal);
 }
 .rt-board.is-filtered .rt-group[data-demoted] .rt-group-head:hover {
-  border-color: color-mix(in oklab, var(--cat) 55%, var(--color-outline));
+  background: var(--color-surface-inset);
 }
 
 /* Searching flattens the board back to a plain stack of matching groups. */
@@ -1041,14 +626,21 @@ body > main {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--color-primary);
+  /* `primary-text`, never `primary`: the raw accent as text is ~1.6:1 on
+     the paper ground. */
+  color: var(--color-primary-text);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* --- The grid -------------------------------------------------------------
+   Separated tiles with a real gap. Signal's shared-edge idiom is retired:
+   the border belongs to the tile again, because the tile is a pressable
+   object — a bordered card that gains its shadow under the pointer. */
+
 .rt-grid {
   display: grid;
-  gap: 11px;
+  gap: 18px;
 }
 @media (min-width: 600px) {
   .rt-grid {
@@ -1061,71 +653,76 @@ body > main {
   }
 }
 
-/* --- Card: the tool tile, and the workhorse ------------------------------- */
+/* --- Card: the tool tile, and the workhorse -------------------------------
+   A bordered card on the raised ground. Hover is the press affordance
+   arriving: the tile gains the `press` shadow and moves up-left by the same
+   2px, exactly as if it had risen under the finger. The shadow is
+   `shadow-ink` in both themes — the Espresso rework retired the dark
+   theme's category-hued hover shadow, because a coloured shadow undermined
+   the press metaphor.
+
+   The entrance stagger stays gone. */
 
 .rt-card {
   position: relative;
-  display: grid;
-  gap: 9px;
-  align-content: start;
-  padding: 15px var(--rt-space-lg) 14px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rt-space-sm);
+  padding: 18px 20px 16px;
+  border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-outline);
-  /*
-    Depth is tonal, not cast: a flat panel with a lit top edge and a soft
-    tonal wash at the top. The wash used to be a `linear-gradient`, i.e. a
-    `background-image`, which cannot be transitioned — so on a theme change
-    the cards snapped instantly while `body` crossfaded over 240ms and the
-    page spent a quarter of a second as dark cards on a light ground. An
-    inset shadow paints the same wash and does transition.
-  */
   background-color: var(--color-surface-raised);
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--color-on-surface) 5%, transparent),
-    inset 0 42px 42px -42px color-mix(in oklab, var(--color-surface-inset) 78%, transparent);
   color: inherit;
   text-decoration: none;
-  animation: rt-surface-enter 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease,
-    background-color 0.24s ease;
+  transition: box-shadow var(--duration-base) var(--ease-signal),
+    transform var(--duration-base) var(--ease-signal);
 }
-/*
-  The stagger reached `nth-child(3)`, so at three columns exactly one row
-  moved and everything below arrived at once. Two rows now carry it, which is
-  as far as an entrance should reach before it becomes a queue.
-*/
-.rt-card:nth-child(2) { animation-delay: 30ms; }
-.rt-card:nth-child(3) { animation-delay: 60ms; }
-.rt-card:nth-child(4) { animation-delay: 90ms; }
-.rt-card:nth-child(5) { animation-delay: 120ms; }
-.rt-card:nth-child(6) { animation-delay: 150ms; }
 
-.rt-card:hover {
-  border-color: color-mix(in oklab, var(--cat) 45%, var(--color-outline));
-  transform: translateY(-1px);
-  /* The single piece of ornament in the system: a category-tinted glow. */
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--color-on-surface) 7%, transparent),
-    0 6px 22px -12px color-mix(in oklab, var(--cat) 60%, transparent);
+.rt-card:hover,
+.rt-card:focus-visible {
+  box-shadow: var(--shadow-press);
+  transform: translate(-2px, -2px);
 }
 .rt-card:focus-visible {
-  outline: 2px solid var(--cat);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-ring);
+  outline-offset: 3px;
 }
 
+/* Icon and category badge on the first line, opposed. */
 .rt-card-top {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: var(--rt-space-sm);
 }
+
+/* The solid category block. `category-fill-*` is theme-independent and always
+   takes graphite ink — it is NOT `--cat`, which is the text hue and would be
+   1.6:1 as a fill behind this ink. `ToolCard.astro` sets `--cat-fill`. */
+.rt-card-badge {
+  flex: none;
+  padding: 4px 8px;
+  border: var(--border-structural) solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-label-caps-sm);
+  font-weight: var(--font-weight-label-caps-sm);
+  line-height: 1;
+  letter-spacing: var(--tracking-label-caps-sm);
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: var(--cat-fill);
+  color: var(--color-on-category-fill);
+}
+
 .rt-card-name {
+  font-family: var(--font-display);
   font-size: var(--text-title-sm);
   font-weight: var(--font-weight-title-sm);
   letter-spacing: var(--tracking-title-sm);
+  line-height: 1.2;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .rt-card p {
   margin: 0;
@@ -1139,15 +736,20 @@ body > main {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* The route path, pinned to the bottom of the cell so every tile's last line
+   sits on the same baseline however long its description ran. It is always
+   visible now — it used to fade in on hover, which meant the tile's one piece
+   of mono detail was missing until you touched it. */
 .rt-card-foot {
   display: flex;
   align-items: center;
   gap: var(--rt-space-sm);
-  padding-top: 9px;
-  border-top: 1px solid var(--color-outline);
+  margin-top: auto;
+  padding-top: var(--rt-space-sm);
   font-family: var(--font-mono);
   font-size: var(--text-data-sm);
-  color: var(--color-on-surface-faint);
+  color: var(--color-primary-text);
   min-width: 0;
 }
 .rt-card-foot span {
@@ -1156,18 +758,14 @@ body > main {
   white-space: nowrap;
 }
 .rt-card-foot .rt-go {
-  margin-left: auto;
   flex: none;
-  color: var(--cat);
-  opacity: 0;
-  transition: opacity 0.14s ease;
-}
-.rt-card:hover .rt-go,
-.rt-card:focus-visible .rt-go {
-  opacity: 1;
 }
 
-/* --- Tool icon ------------------------------------------------------------ */
+/* --- Tool icon ------------------------------------------------------------
+   In a tile the glyph sits in a small solid `category-fill` icon tile with
+   graphite ink and the 2px border — the tile is the category's swatch. In
+   the tool-page head (below) the glyph stands alone in the category TEXT
+   hue. Nothing animates on hover: the card's own shadow is the response. */
 
 .rt-ico {
   flex: none;
@@ -1175,32 +773,24 @@ body > main {
   height: 32px;
   display: grid;
   place-items: center start;
-  color: var(--cat);
+  color: var(--cat, var(--color-on-surface-muted));
 }
 .rt-ico svg {
   display: block;
-  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), filter 180ms ease;
 }
-.rt-card:hover .rt-ico svg,
-.rt-card:focus-visible .rt-ico svg {
-  transform: translateY(-2px) rotate(-2deg) scale(1.06);
-  filter: drop-shadow(0 4px 5px color-mix(in oklab, var(--cat) 24%, transparent));
+/* The tile treatment applies only where a category fill is guaranteed —
+   inside a tool card. Everywhere else the glyph stands alone. */
+.rt-card .rt-ico {
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: var(--border-structural) solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  background: var(--cat-fill);
+  color: var(--color-on-category-fill);
 }
 
 /* --- Index on a phone ----------------------------------------------------- */
-
-/*
-  The route path is a hover affordance, and on a touch device it never
-  reveals — but it still reserved its width in the footer flex row, which is
-  why the badge line clipped to "IPv4 · IPv6 · Visual sp…" at 375px. The one
-  line that lets someone judge a tool without opening it was being truncated
-  by an element they can never see.
-*/
-@media (hover: none), (max-width: 600px) {
-  .rt-card-foot .rt-go {
-    display: none;
-  }
-}
 
 @media (max-width: 600px) {
   /*
@@ -1208,52 +798,74 @@ body > main {
     before the first card, on the control whose whole job is to shorten the
     page. One scroll-snapped line instead, stuck under the header so it is
     still reachable three screens down.
+
+    The band is opaque here rather than a blurred wash: it is a sticky ruled
+    edge, and blurring hairlines as they pass under it is exactly the smear
+    the header dropped its backdrop-filter to avoid.
   */
   .rt-filters {
     position: sticky;
     top: 0;
     z-index: 20;
     flex-wrap: nowrap;
+    background: var(--color-surface);
+  }
+  .rt-chips {
+    flex-wrap: nowrap;
     overflow-x: auto;
     scroll-snap-type: x proximity;
     scrollbar-width: none;
-    margin-inline: calc(var(--rt-space-md) * -1);
-    padding-inline: var(--rt-space-md);
-    padding-block: var(--rt-space-md);
-    background: color-mix(in oklab, var(--color-surface) 88%, transparent);
-    backdrop-filter: blur(8px);
   }
-  .rt-filters::-webkit-scrollbar {
+  .rt-chips::-webkit-scrollbar {
     display: none;
   }
   .rt-chip {
     flex: none;
     /* A moving thumb needs more than the 29px this used to be. */
     min-height: 44px;
-    padding-inline: 14px;
     scroll-snap-align: start;
+  }
+  .rt-find {
+    flex: 1 0 100%;
+    margin-left: 0;
+    padding-left: 0;
+    padding-block: var(--rt-space-sm);
+    border-top: var(--border-hairline) solid var(--color-outline);
   }
   .rt-find-input {
     max-width: none;
     min-height: 44px;
+  }
+  .rt-index-head {
+    padding-block: var(--rt-space-3xl) var(--rt-space-xl);
+  }
+  /* 64px is a desktop step. Below 600px it eats the fold on its own. */
+  .rt-index-title {
+    font-size: var(--text-headline-lg);
+    letter-spacing: var(--tracking-headline-lg);
   }
   .rt-board.is-filtered {
     gap: var(--rt-space-lg) var(--rt-space-sm);
   }
 }
 
-/* --- Tool page ------------------------------------------------------------ */
+/* --- Tool page ------------------------------------------------------------
+   Three lines and no more: crumb, icon + h1, one factual sentence. The head
+   is closed by a 3px rule — it is the "new thing" boundary above the tool.
+   No entrance animation; Signal has none. */
 
 .rt-tool-head {
   position: relative;
-  padding-block: var(--rt-space-xl) 18px;
-  border-bottom: 1px solid var(--color-outline);
+  padding-block: var(--rt-space-3xl) var(--rt-space-2xl);
+  border-bottom: var(--border-structural) solid var(--color-rule);
   display: grid;
-  gap: 13px;
-  animation: rt-content-enter 190ms ease-out both;
+  gap: var(--rt-space-md);
 }
 .rt-crumb {
-  font-size: 12.5px;
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label-caps);
   color: var(--color-on-surface-faint);
 }
 .rt-crumb a {
@@ -1264,8 +876,9 @@ body > main {
   color: var(--color-on-surface-muted);
 }
 .rt-crumb b {
-  color: var(--cat);
-  font-weight: 500;
+  /* Fallback for /delete, which has a crumb but no category. */
+  color: var(--cat, var(--color-on-surface));
+  font-weight: 600;
 }
 /* The category crumb is a link to its group on the index, so it needs its own
    hover: the rule above paints the `b` inside it and would otherwise swallow
@@ -1277,32 +890,32 @@ body > main {
 .rt-tool-id {
   display: flex;
   align-items: center;
-  gap: var(--rt-space-md);
+  gap: 14px;
 }
+/* 30px beside an h1, per DESIGN.md's Iconography. No tile, ring or ground
+   behind it — the glyph carries the category hue on its own. */
 .rt-tool-id .rt-ico {
-  width: 42px;
-  height: 42px;
+  width: 30px;
+  height: 30px;
   place-items: center start;
 }
 .rt-tool-id h1 {
   margin: 0;
-  /* The floor is the headline-md step, not a 22px literal a hair above it.
-     Both ends of the clamp are now on the ten-step scale. */
-  font-size: clamp(var(--text-headline-md), 3vw, var(--text-headline-lg));
+  /* Both ends of the clamp are on the scale; the floor is headline-md. */
+  font-size: clamp(var(--text-headline-md), 4vw, var(--text-headline-lg));
   font-weight: var(--font-weight-headline-lg);
   letter-spacing: var(--tracking-headline-lg);
-  line-height: 1.12;
+  line-height: 1.05;
 }
 .rt-tool-head > p {
   margin: 0;
   max-width: 62ch;
-  font-size: 14.5px;
+  font-size: var(--text-body-lg);
+  font-weight: var(--font-weight-body-lg);
   color: var(--color-on-surface-muted);
 }
 
-/* Actions and alerts a bridged tool still owns, hoisted above its body.
-   Phase 2 only: ToolHeader's remaining slots land here once its icon, h1
-   and description have stood down. */
+/* Actions and alerts a bridged tool still owns, hoisted above its body. */
 
 .rt-tool-actions {
   display: grid;
@@ -1311,22 +924,24 @@ body > main {
   padding-bottom: var(--rt-space-md);
 }
 
-/* Controls left, output right, always. */
 /* One full-width column. A tool composes its own body inside it — the
    fifteen tools are not one shape, and a fixed control column imposed on
    all of them is what Session 6 reverted. */
 .rt-tool-body {
   position: relative;
-  padding-block: 18px var(--rt-space-xl);
+  padding-block: var(--rt-space-2xl) var(--rt-space-4xl);
   display: grid;
-  gap: var(--rt-space-md);
-  animation: rt-content-enter 230ms 40ms ease-out both;
+  gap: var(--rt-space-lg);
 }
 
-/* --- Panel ---------------------------------------------------------------- */
+/* --- Panel ----------------------------------------------------------------
+   `panel` in DESIGN.md's Components: raised ground inside the 2px rule
+   border at the panel radius, with NO shadow at rest — the offset shadow
+   belongs to pressables and to the one `panel-emphasis` per page. The
+   radius means corners exist again, so the panel clips its own header. */
 
 .rt-panel {
-  border: 1px solid var(--color-outline);
+  border: var(--border-structural) solid var(--color-rule);
   border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
   overflow: hidden;
@@ -1335,13 +950,12 @@ body > main {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 13px;
-  border-bottom: 1px solid var(--color-outline);
-  background: color-mix(in oklab, var(--color-surface-inset) 60%, var(--color-surface-raised));
-  font-family: var(--font-mono);
+  padding: 11px 16px;
+  border-bottom: var(--border-hairline) solid var(--color-outline);
+  background: var(--color-surface);
   font-size: var(--text-label-caps);
   font-weight: var(--font-weight-label-caps);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-label-caps);
   text-transform: uppercase;
   color: var(--color-on-surface-faint);
 }
@@ -1351,75 +965,72 @@ body > main {
   color: var(--color-on-surface-muted);
 }
 .rt-panel-body {
-  padding: 13px;
+  padding: 16px;
   display: grid;
-  gap: 10px;
+  gap: var(--rt-space-md);
 }
 
-/* --- Footer --------------------------------------------------------------- */
+/* An error panel swaps its whole border to the error hue, so the region
+   reads as failed before its text is parsed. Colour is never the sole
+   carrier — the word ERROR goes with it. */
+.rt-panel[data-state='error'] {
+  border-color: var(--color-error);
+}
+
+/* --- Footer ---------------------------------------------------------------
+   A deepened band of the theme's own ground, closed by the 2px rule — a
+   step down, not a slab. The ink-slab footer was tried under Stacks and the
+   hard black band read as jarring against the paper page; `on-footer` and
+   `on-footer-muted` now remap per theme like every other surface role. */
 
 .rt-site-footer {
-  margin-top: var(--rt-space-2xl);
-  border-top: 1px solid var(--color-outline);
-  background: color-mix(in oklab, var(--color-surface-raised) 54%, var(--color-surface));
+  margin-top: var(--rt-space-4xl);
+  border-top: var(--border-structural) solid var(--color-rule);
+  background: var(--color-footer);
+  color: var(--color-on-footer);
 }
 .rt-footer-inner {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--rt-space-lg);
-  padding-block: 17px 28px;
+  padding-block: var(--rt-space-2xl) 44px;
 }
 .rt-footer-brand {
   justify-self: start;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  color: var(--color-on-surface);
+  gap: var(--rt-space-sm);
+  color: var(--color-on-footer);
   text-decoration: none;
-  font-size: var(--text-body-sm);
-  font-weight: 600;
+  font-size: var(--text-body-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 .rt-footer-brand svg {
-  color: var(--color-primary);
-}
-.rt-shell-foot {
-  justify-self: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--rt-space-sm) var(--rt-space-lg);
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  color: var(--color-on-surface-faint);
-}
-.rt-shell-foot span + span::before {
-  content: "·";
-  margin-right: var(--rt-space-lg);
-  color: var(--color-outline-strong);
+  /* Same two-tone mark as the header: the strongest ink on both footer
+     grounds. */
+  color: var(--color-on-surface);
 }
 .rt-footnav {
   justify-self: end;
   display: flex;
-  gap: var(--rt-space-lg);
+  gap: var(--rt-space-2xl);
   font-size: var(--text-body-sm);
+  font-weight: 500;
 }
 .rt-footnav a {
-  color: var(--color-on-surface-muted);
+  color: var(--color-on-footer-muted);
   text-decoration: none;
-  transition: color 140ms ease;
+  transition: color var(--duration-base) var(--ease-signal);
 }
 .rt-footnav a:hover {
-  color: var(--color-on-surface);
+  color: var(--color-on-footer);
 }
-@media (max-width: 760px) {
-  .rt-footer-inner {
-    grid-template-columns: 1fr auto;
-  }
-  .rt-shell-foot {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    justify-self: start;
-  }
+.rt-footnav a:focus-visible,
+.rt-footer-brand:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 3px;
 }
 
 /* --- Bridge island --------------------------------------------------------
@@ -1438,11 +1049,16 @@ body > main {
 }
 .rt-island-retry {
   justify-self: start;
-  border: 1px solid var(--color-outline-strong);
-  border-radius: var(--radius-sm);
+  border: var(--border-structural) solid var(--color-rule);
+  border-radius: var(--radius-md);
   background: var(--color-surface-raised);
+  box-shadow: var(--shadow-press-sm);
   color: var(--color-on-surface);
-  padding: 8px 13px;
+  padding: 8px 15px;
   font-size: var(--text-body-sm);
   cursor: pointer;
+}
+.rt-island-retry:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
 }

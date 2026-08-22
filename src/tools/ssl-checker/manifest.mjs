@@ -24,7 +24,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'security',
-  icon: 'policy',
+  icon: 'shield-check',
   badges: [
     'TLS',
     'Chain',

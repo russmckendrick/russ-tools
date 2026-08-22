@@ -17,9 +17,16 @@ import { fileURLToPath } from 'node:url';
 const root = new URL('../', import.meta.url);
 const out = fileURLToPath(new URL('src/styles/tokens.generated.css', root));
 
+// Pinned. `pnpm dlx @google/design.md` unversioned takes whatever is latest, and
+// the emitter's output shape is not a stable contract — 0.1.1 had no
+// `css-tailwind` format at all. An unpinned upgrade would change
+// tokens.generated.css with no repo change, failing the drift assertion in
+// tokens.contrast.test.js on a file nobody touched.
+const EXPORTER = '@google/design.md@0.3.0';
+
 const theme = execFileSync(
   'pnpm',
-  ['dlx', '@google/design.md', 'export', 'DESIGN.md', '--format', 'css-tailwind'],
+  ['dlx', EXPORTER, 'export', 'DESIGN.md', '--format', 'css-tailwind'],
   { cwd: fileURLToPath(root), encoding: 'utf8', maxBuffer: 1024 * 1024 }
 ).trim();
 
@@ -66,10 +73,16 @@ namespaced = namespaced.replace(/^@theme\s*\{/, '@theme static {');
 // `--letter-spacing` sub-keys, so `text-title-sm` alone carries the whole
 // step. The three mono scales still ask for `font-mono` explicitly, which is
 // the one thing that should stay visible at the call site.
+// Transcribed from DESIGN.md's `typography` block, because the exporter drops
+// unitless line-heights (it only treats a *dimensioned* value as one). Every
+// step DESIGN.md declares must appear here or it emits no `--line-height`
+// sub-key and the step silently half-applies.
 const LINE_HEIGHTS = {
-  display: '1.06', 'headline-lg': '1.12', 'headline-md': '1.2', 'title-sm': '1.3',
-  'body-lg': '1.55', 'body-md': '1.55', 'body-sm': '1.45', 'label-caps': '1',
-  'data-lg': '1.35', 'data-md': '1.5', 'data-sm': '1.4',
+  display: '1', 'headline-lg': '1.05', 'headline-md': '1.15', 'title-sm': '1.2',
+  'body-lg': '1.5', 'body-md': '1.5', 'body-sm': '1.45',
+  'label-caps': '1', 'label-caps-sm': '1',
+  'data-xl': '1.2', 'data-lg': '1.4', 'data-md': '1.5', 'data-sm': '1.4',
+  verdict: '1',
 };
 
 const weights = new Map();

@@ -45,8 +45,16 @@ export const categorySchema = (id) =>
 export const categoryGroupId = (id) => (id === 'azure' || id === 'microsoft' ? 'microsoft-azure' : id);
 
 /**
- * Every surface that needs a category hue reads it from one custom property,
- * so the hue is set once on a container and inherited by everything inside.
+ * Every surface that needs a category hue reads it from these two custom
+ * properties, set once on a container and inherited by everything inside.
+ *
+ * Two, not one, and they are not interchangeable:
+ *   `--cat`       the TEXT hue — icons, crumbs, small labels. Deepened in
+ *                 light mode so it clears 4.5:1 on bone.
+ *   `--cat-fill`  the solid badge block. The same bright value in both
+ *                 themes, because the ink on it is always graphite.
+ * Using `--cat` as a fill behind that ink measures 1.6:1 on the light card.
  * @param {CategoryId} id
  */
-export const categoryVar = (id) => `--cat: var(--color-category-${id})`;
+export const categoryVar = (id) =>
+  `--cat: var(--color-category-${id}); --cat-fill: var(--color-category-fill-${id})`;

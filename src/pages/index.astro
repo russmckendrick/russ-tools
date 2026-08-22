@@ -49,7 +49,13 @@ const microsoft = categoryGroups.find((group) => group.id === 'microsoft');
 const groups = categoryGroups.flatMap((group) => {
   if (group.id === 'microsoft') return [];
   if (group.id !== 'azure') {
-    return [{ ...group, accent: `var(--color-category-${group.id})` }];
+    return [
+      {
+        ...group,
+        accent: `var(--color-category-${group.id})`,
+        accentFill: `var(--color-category-fill-${group.id})`,
+      },
+    ];
   }
 
   return [
@@ -63,6 +69,7 @@ const groups = categoryGroups.flatMap((group) => {
       // token pairs, so it could not see a page putting an action colour into
       // a text slot; `category-accent.test.js` now guards that.
       accent: 'var(--color-category-azure)',
+      accentFill: 'var(--color-category-fill-azure)',
       tools: [...azure.tools, ...microsoft.tools].sort((a, b) => a.title.localeCompare(b.title)),
     },
   ];
@@ -81,56 +88,63 @@ const groups = categoryGroups.flatMap((group) => {
     repeated the headline, and four tiles of which two ("100% client-side",
     "0 trackers") were slogans wearing a number's clothes. The h1 stays
     because the page needs one; it says what the page is and stops.
-  -->
-  <h1 class="rt-index-title">Tools</h1>
 
-  <div class="rt-find">
-    <!--
-      Hidden in the prerendered HTML and unhidden on init, so the no-JS
-      fallback is the full catalogue rather than a filter that does nothing.
-    -->
-    <input
-      class="rt-find-input"
-      id="rt-find"
-      type="search"
-      hidden
-      autocomplete="off"
-      spellcheck="false"
-      placeholder="Filter by name — press /"
-      aria-label="Filter tools by name"
-      aria-describedby="rt-find-hint"
-    />
-    <p class="rt-visually-hidden" id="rt-find-hint">
-      Typing searches every tool and clears the selected category.
-    </p>
+    The count beside it is the one piece of orientation that earns its place,
+    and it is set mono on the same baseline rather than as a second heading.
+  -->
+  <div class="rt-index-head">
+    <h1 class="rt-index-title">Tools</h1>
   </div>
 
   <!--
     A radio group, not six toggles. The categories are mutually exclusive, so
     `aria-pressed` on six buttons was describing six independent switches; a
     radiogroup announces "3 of 6" and costs one tab stop rather than six.
+
+    The name filter now sits at the end of this same row rather than above it,
+    so the whole filtering affordance is one ruled band.
   -->
-  <div class="rt-filters" id="filters" role="radiogroup" aria-label="Filter tools by category">
-    <button class="rt-chip" type="button" role="radio" data-filter="all" aria-checked="true">
-      <span class="rt-chip-dot" aria-hidden="true"></span>
-      All <span class="rt-chip-count">{TOOLS.length}</span>
-    </button>
-    {
-      groups.map((g) => (
-        <button
-          class="rt-chip"
-          type="button"
-          role="radio"
-          data-filter={g.id}
-          aria-checked="false"
-          tabindex="-1"
-          style={`--cat: ${g.accent}`}
-        >
-          <span class="rt-chip-dot" aria-hidden="true" />
-          {g.label} <span class="rt-chip-count">{g.tools.length}</span>
-        </button>
-      ))
-    }
+  <div class="rt-filters">
+    <div id="filters" class="rt-chips" role="radiogroup" aria-label="Filter tools by category">
+      <button class="rt-chip" type="button" role="radio" data-filter="all" aria-checked="true">
+        All <span class="rt-chip-count">{TOOLS.length}</span>
+      </button>
+      {
+        groups.map((g) => (
+          <button
+            class="rt-chip"
+            type="button"
+            role="radio"
+            data-filter={g.id}
+            aria-checked="false"
+            tabindex="-1"
+          >
+            {g.label} <span class="rt-chip-count">{g.tools.length}</span>
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="rt-find">
+      <!--
+        Hidden in the prerendered HTML and unhidden on init, so the no-JS
+        fallback is the full catalogue rather than a filter that does nothing.
+      -->
+      <input
+        class="rt-find-input"
+        id="rt-find"
+        type="search"
+        hidden
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Filter by name  /"
+        aria-label="Filter tools by name"
+        aria-describedby="rt-find-hint"
+      />
+      <p class="rt-visually-hidden" id="rt-find-hint">
+        Typing searches every tool and clears the selected category.
+      </p>
+    </div>
   </div>
 
   <p class="rt-visually-hidden" id="rt-status" role="status" aria-live="polite"></p>
@@ -144,7 +158,7 @@ const groups = categoryGroups.flatMap((group) => {
           data-category={g.id}
           data-count={g.tools.length}
           aria-labelledby={`${g.id}-label`}
-          style={`--cat: ${g.accent}`}
+          style={`--cat: ${g.accent}; --cat-fill: ${g.accentFill}`}
         >
           <div class="rt-group-head">
             {/*
@@ -282,7 +296,6 @@ const groups = categoryGroups.flatMap((group) => {
     }
     render();
     writeUrl(push);
-    restage();
   };
 
   const readUrl = () => {
@@ -292,25 +305,6 @@ const groups = categoryGroups.flatMap((group) => {
     find.value = q;
     category = !q && CATEGORIES.has(id) ? id : 'all';
     render();
-  };
-
-  /**
-   * Re-run the card entrance on the group that just moved to the top. The
-   * stagger fired on load and never again, so the same cards arrived with
-   * motion once and without it on every filter. Motion here marks what
-   * changed; the global reduced-motion rule still collapses it.
-   */
-  const restage = () => {
-    const active = board.querySelector('.rt-group.is-active');
-    if (!active) return;
-    for (const card of active.querySelectorAll('.rt-card')) {
-      for (const animation of card.getAnimations()) {
-        if (animation instanceof CSSAnimation && animation.animationName === 'rt-surface-enter') {
-          animation.cancel();
-          animation.play();
-        }
-      }
-    }
   };
 
   filters.addEventListener('click', (event) => {

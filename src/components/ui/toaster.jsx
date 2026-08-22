@@ -24,11 +24,11 @@ export function Toaster(props) {
       toastOptions={{
         classNames: {
           toast:
-            'rounded-lg border border-outline bg-surface-raised text-on-surface shadow-[0_16px_48px_-24px_rgba(0,0,0,.6)]',
+            'rounded-lg border-2 border-rule bg-surface-raised text-on-surface shadow-press',
           title: 'text-body-sm font-medium',
           description: 'text-body-sm text-on-surface-muted',
-          actionButton: 'rounded-sm bg-primary text-on-primary',
-          cancelButton: 'rounded-sm border border-outline-strong bg-surface-raised text-on-surface',
+          actionButton: 'bg-primary text-on-primary',
+          cancelButton: 'border border-outline-strong bg-surface-raised text-on-surface',
           closeButton: 'border-outline bg-surface-inset text-on-surface-muted',
           success: '[&_[data-icon]]:text-success',
           error: '[&_[data-icon]]:text-danger',

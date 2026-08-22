@@ -24,9 +24,12 @@ describe('cn', () => {
     'body-md',
     'body-sm',
     'label-caps',
+    'label-caps-sm',
+    'data-xl',
     'data-lg',
     'data-md',
     'data-sm',
+    'verdict',
   ];
 
   it.each(STEPS)('keeps text-%s when a text colour follows it', (step) => {

@@ -24,7 +24,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'developer',
-  icon: 'data-object',
+  icon: 'binary',
   badges: [
     'Text',
     'Files',

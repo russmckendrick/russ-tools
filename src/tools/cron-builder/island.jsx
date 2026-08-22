@@ -381,33 +381,43 @@ const CronBuilderTool = () => {
           </TabsList>
 
           <TabsContent value="builder" className="space-y-6">
-            {/* CRON Expression Output */}
-            <Card>
+            {/* CRON Expression Output — the page's subject, so this is the
+                one panel that takes the 3px structural rule. */}
+            <Card emphasis>
               <CardContent className="pt-6">
                 <div className="space-y-3">
-                    <Label className="text-body-sm text-muted-foreground">Generated Expression</Label>
-                    {/* The button belongs beside the value it copies, not
-                        beside the label three lines above it. */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 rounded-sm border border-outline bg-surface-inset px-3 py-2 font-mono text-data-lg text-on-surface">
+                    <Label className="text-label-caps uppercase text-on-surface-faint">
+                      Generated Expression
+                    </Label>
+                    {/*
+                      The expression bar. `data-xl` because the expression is
+                      the page's whole output, and the button sits flush beside
+                      the value it copies rather than beside the label above it.
+
+                      COPY is DESIGN.md's secondary button, which *becomes* the
+                      primary on hover — the system's one flourish, reserved
+                      for exactly this kind of utility action.
+                    */}
+                    <div className="flex items-stretch">
+                      <div className="min-w-0 flex-1 overflow-x-auto border border-outline border-r-0 bg-surface-inset px-6 py-[22px] font-mono text-data-xl text-on-surface">
                         {cronString}
                       </div>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="outline"
-                            size="icon"
+                            variant="secondary"
                             onClick={handleCopy}
                             aria-label={copied ? 'Copied' : 'Copy expression'}
-                            className={`h-auto self-stretch ${
-                              copied ? 'bg-success-subtle border-success/40' : ''
+                            className={`h-auto shrink-0 gap-2 px-7 text-label-caps uppercase ${
+                              copied ? 'border-success bg-success-subtle text-success hover:bg-success-subtle hover:text-success' : ''
                             }`}
                           >
                             {copied ? (
-                              <Check className="w-4 h-4 text-success" />
+                              <Check className="w-4 h-4" />
                             ) : (
                               <Copy className="w-4 h-4" />
                             )}
+                            {copied ? 'Copied' : 'Copy'}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>

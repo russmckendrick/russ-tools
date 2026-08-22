@@ -23,7 +23,7 @@ export default {
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'security',
-  icon: 'password',
+  icon: 'key-round',
   badges: [
     'crypto.getRandomValues',
   ],

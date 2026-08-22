@@ -112,7 +112,9 @@ const SSLResultsDisplay = ({ data }) => {
         {/* Overview Tab */}
         <TabsContent value="overview">
           <div className="space-y-4">
-            <Card>
+            {/* The grade is what the page is for, so it is the one panel
+                carrying the 3px structural rule. */}
+            <Card emphasis>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <h3 className="text-title-sm">SSL Grade</h3>

@@ -8,11 +8,12 @@
  */
 import '../styles/globals.css';
 import '../styles/shell.css';
-import '@fontsource-variable/inter';
-import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource-variable/space-grotesk';
+import '@fontsource/space-mono';
+import '@fontsource/space-mono/700.css';
 import HeaderActions from '../shell/HeaderActions.astro';
 import SiteMark from '../shell/SiteMark.astro';
-import { DEFAULT_PALETTE, paletteIds } from '../shell/palettes.mjs';
 import { AUTHOR, SITE_NAME, THEME_COLOR } from '../shell/site.mjs';
 
 const {
@@ -53,11 +54,7 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
 ---
 
 <!doctype html>
-<html
-  lang="en"
-  data-default-palette={DEFAULT_PALETTE}
-  data-palette-options={paletteIds.join(' ')}
->
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -110,28 +107,18 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
             stored === 'light' ||
             (stored === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches);
           document.documentElement.classList.add(light ? 'light' : 'dark');
-          const palette = localStorage.getItem('russ-tools-palette');
-          const palettes = document.documentElement.dataset.paletteOptions.split(' ');
-          const defaultPalette = document.documentElement.dataset.defaultPalette;
-          document.documentElement.dataset.palette = palettes.includes(palette)
-            ? palette
-            : defaultPalette;
           // The toggle's icon is chosen from this in CSS, so it is correct on
           // the first frame rather than after hydration.
           document.documentElement.dataset.themePref = stored;
         } catch {
           document.documentElement.classList.add('dark');
           document.documentElement.dataset.themePref = 'dark';
-          document.documentElement.dataset.palette =
-            document.documentElement.dataset.defaultPalette;
         }
       })();
     </script>
   </head>
 
   <body>
-    <div class="rt-ambient" aria-hidden="true"></div>
-
     <!--
       First tab stop on every page. The index is a fifteen-card catalogue and
       the tool pages carry a header toolbar before their content, so without
@@ -144,7 +131,7 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
         <div class="rt-topbar">
           <a class="rt-brand" href="/">
             <SiteMark class="rt-site-mark" />
-            <span>russ.tools</span>
+            <span>russ<b class="rt-brand-dot">.</b>tools</span>
           </a>
           <HeaderActions currentPath={Astro.url.pathname} />
         </div>
@@ -159,13 +146,8 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
       <div class="rt-shell rt-footer-inner">
         <a class="rt-footer-brand" href="/">
           <SiteMark size={19} />
-          <span>russ.tools</span>
+          <span>russ<b class="rt-brand-dot">.</b>tools</span>
         </a>
-        <div class="rt-shell-foot">
-          <span>Client-side only</span>
-          <span>No analytics</span>
-          <span>No accounts</span>
-        </div>
         <nav class="rt-footnav" aria-label="Footer">
           <a href="/">Tools</a>
           <a href="/delete">Saved data</a>
