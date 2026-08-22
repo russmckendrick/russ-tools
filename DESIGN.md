@@ -602,7 +602,9 @@ beside `russ.tools` set in the display face at the `headline-md` step — no
 box, no border, no shadow, and no off-ramp size. The wordmark competes with
 nothing because it is the only display type in the bar.
 
-External links (Source) carry a small code glyph (`</>`), not an arrow.
+Nav tabs may carry a small leading Lucide glyph where it names the
+destination — the GitHub mark on Source, the disc on Saved data — never a
+trailing arrow.
 
 ### Panels
 

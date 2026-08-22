@@ -346,17 +346,12 @@ body > main {
 }
 
 /* --- Index head -----------------------------------------------------------
-   `Tools` at the display step with the tool count set mono on the same
-   baseline, opposed. Still no hero and no stat strip — both were selling the
-   site to someone already standing on it. */
+   `Tools` at the display step, alone. The count line went the way of the
+   hero and the stat strip — all three were selling the site to someone
+   already standing on it (the chips carry the counts). */
 
 .rt-index-head {
   position: relative;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--rt-space-lg);
-  flex-wrap: wrap;
   padding-block: var(--rt-space-4xl) var(--rt-space-3xl);
 }
 
@@ -366,12 +361,6 @@ body > main {
   font-weight: var(--font-weight-display);
   letter-spacing: var(--tracking-display);
   line-height: 1;
-}
-
-.rt-index-count {
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  color: var(--color-on-surface-faint);
 }
 
 /* --- The filter row -------------------------------------------------------
