@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,37 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Calculator, Copy, Scissors, Combine, Share2 } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyText, generateShareableURL, parseConfigFromURL } from '@/core';
 import { useWebMCPTool, textResult } from '@/lib/useWebMCPTool';
-import { parseIPv4, formatIPv4, ipv4Details, parseIPv4Cidr, maskFromPrefix } from './lib/ipv4';
-import { parseIPv6, compressIPv6, ipv6Details, parseIPv6Cidr } from './lib/ipv6';
+import { parseIPv4, ipv4Details, parseIPv4Cidr } from './lib/ipv4';
+import { parseIPv6, ipv6Details, parseIPv6Cidr } from './lib/ipv6';
 import { leaves, splitNode, joinNode, pruneSplits } from './lib/divide';
-
-const FAMILIES = {
-  4: { bits: 32, format: (addr) => formatIPv4(Number(addr)) },
-  6: { bits: 128, format: compressIPv6 },
-};
-
-const number = new Intl.NumberFormat();
-
-/** "count (2^n)" for the enormous IPv6 totals; plain for IPv4. */
-function formatTotal(total, prefix, bits) {
-  const exponent = bits - prefix;
-  const exact = number.format(total);
-  return exponent > 20 ? `2^${exponent} (${exact})` : exact;
-}
+import { FAMILIES, detailRowsFor, formatTotal } from './lib/format';
+import SubnetDetails from './components/SubnetDetails';
+import SubnetDivide from './components/SubnetDivide';
+import { Ghost } from '@/components/ui/ghost';
 
 /** Parse either family from one input. Returns {family, address, prefix|null} | null. */
 function parseInput(raw) {
@@ -82,6 +63,18 @@ const CALCULATE_SUBNET_TOOL = {
     });
   },
 };
+
+/**
+ * The sample for the empty-state ghost, computed rather than written down.
+ *
+ * `ipv4Details` and `leaves` are the same pure functions the tool runs on a
+ * real address, so the ghost's fields and rows are the real fields and rows —
+ * there is no hand-made copy of the shape to fall out of step. A /24 split
+ * once gives the two-row divide table a typical answer produces.
+ */
+const GHOST_DETAILS = ipv4Details('10.0.0.0', 24);
+const GHOST_ROWS = detailRowsFor(4, GHOST_DETAILS);
+const GHOST_LEAVES = leaves(FAMILIES[4], { addr: 0n, prefix: 24 }, new Set(['10.0.0.0/24']));
 
 const SubnetCalculatorTool = () => {
   useWebMCPTool(CALCULATE_SUBNET_TOOL);
@@ -193,33 +186,7 @@ const SubnetCalculatorTool = () => {
     ].join('\n');
   };
 
-  const detailRows = details
-    ? result.family === 4
-      ? [
-          ['Network address', details.networkAddress],
-          ['Usable host range', `${details.firstHost} – ${details.lastHost}`],
-          ['Broadcast address', details.broadcastAddress ?? '—'],
-          ['Total addresses', number.format(details.totalAddresses)],
-          ['Usable hosts', number.format(details.usableHosts)],
-          ['Netmask', details.netmask],
-          ['Wildcard mask', details.wildcardMask],
-          ['Binary netmask', details.binaryNetmask],
-          ['Binary address', details.binaryAddress],
-          ['Hex / integer', `${details.hexAddress} / ${number.format(details.integerAddress)}`],
-          ['Class', details.ipClass],
-          ['Type', details.addressType],
-          ['Reverse DNS (PTR)', details.ptr],
-        ]
-      : [
-          ['Network address', details.networkAddress],
-          ['Address range', `${details.firstAddress} – ${details.lastAddress}`],
-          ['Total addresses', formatTotal(details.totalAddresses, details.prefix, 128)],
-          ['Expanded address', details.expandedAddress],
-          ['Expanded network', details.expandedNetwork],
-          ['Type', details.addressType],
-          ['Reverse DNS (PTR)', details.ptr],
-        ]
-    : [];
+  const detailRows = detailRowsFor(result?.family, details);
 
   return (
     <div className="space-y-6">
@@ -292,160 +259,62 @@ const SubnetCalculatorTool = () => {
         </Alert>
       )}
 
+      {/*
+        Nothing calculated yet: the shape of a calculation, drawn from the same
+        two components that render a real one and redacted by `.rt-ghosted`.
+        The sample is computed rather than hand-written — `ipv4Details` is a
+        pure function this tool already owns, so the ghost's fields are the
+        real fields and cannot fall out of step. Suppressed while an error is
+        showing: the error is the answer, and a ghost under it would promise a
+        result that is not coming.
+      */}
+      {!details && !error && (
+        <Ghost>
+          <SubnetDetails
+            cidr={GHOST_DETAILS.cidr}
+            family={4}
+            detailRows={GHOST_ROWS}
+            onCopyDetails={() => {}}
+            onCopyCidr={() => {}}
+          />
+          <div className="mt-4">
+            <SubnetDivide
+              family={4}
+              rows={GHOST_LEAVES}
+              joinable={false}
+              onSplit={() => {}}
+              onJoin={() => {}}
+              onShare={() => {}}
+            />
+          </div>
+        </Ghost>
+      )}
+
       {/* Details */}
       {details && (
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="font-mono text-data-lg truncate">{details.cidr}</span>
-                <Badge>IPv{result.family}</Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleCopy(detailsAsText(), 'Details')}
-                >
-                  <Copy className="mr-2 h-4 w-4" />
-                  Copy details
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleCopy(details.cidr, 'CIDR')}
-                >
-                  <Copy className="mr-2 h-4 w-4" />
-                  Copy CIDR
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableBody>
-                {detailRows.map(([label, value]) => (
-                  <TableRow key={label}>
-                    <TableCell className="text-body-sm text-muted-foreground whitespace-nowrap">
-                      {label}
-                    </TableCell>
-                    <TableCell className="font-mono text-data-md break-all select-all">
-                      {value}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <div className="rt-arrive">
+          <SubnetDetails
+            cidr={details.cidr}
+            family={result.family}
+            detailRows={detailRows}
+            onCopyDetails={() => handleCopy(detailsAsText(), 'Details')}
+            onCopyCidr={() => handleCopy(details.cidr, 'CIDR')}
+          />
+        </div>
       )}
 
       {/* Divide */}
       {details && root && (
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-title-sm">Divide</h3>
-                <p className="text-body-sm text-muted-foreground mt-1">
-                  Split any subnet in two, or join halves back together
-                </p>
-              </div>
-              <Button size="sm" variant="outline" onClick={handleShare}>
-                <Share2 className="mr-2 h-4 w-4" />
-                Copy share link
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Subnet</TableHead>
-                    {result.family === 4 && <TableHead>Netmask</TableHead>}
-                    <TableHead>{result.family === 4 ? 'Usable range' : 'Range'}</TableHead>
-                    <TableHead className="text-right">
-                      {result.family === 4 ? 'Usable hosts' : 'Addresses'}
-                    </TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((row) => {
-                    const rowFamily = FAMILIES[result.family];
-                    const rowDetails =
-                      result.family === 4
-                        ? ipv4Details(formatIPv4(Number(row.addr)), row.prefix)
-                        : ipv6Details(compressIPv6(row.addr), row.prefix);
-                    const joinable = splits.size > 0 && row.depth > 0;
-
-                    return (
-                      <TableRow key={row.key}>
-                        <TableCell
-                          className="font-mono text-data-md whitespace-nowrap"
-                          style={{ paddingLeft: `${row.depth * 16 + 13}px` }}
-                        >
-                          {row.key}
-                        </TableCell>
-                        {result.family === 4 && (
-                          <TableCell className="font-mono text-data-md whitespace-nowrap">
-                            {formatIPv4(maskFromPrefix(row.prefix))}
-                          </TableCell>
-                        )}
-                        <TableCell className="font-mono text-data-md whitespace-nowrap">
-                          {result.family === 4
-                            ? `${rowDetails.firstHost} – ${rowDetails.lastHost}`
-                            : `${rowDetails.firstAddress} – ${rowDetails.lastAddress}`}
-                        </TableCell>
-                        <TableCell className="font-mono text-data-md text-right whitespace-nowrap">
-                          {result.family === 4
-                            ? number.format(rowDetails.usableHosts)
-                            : formatTotal(rowDetails.totalAddresses, row.prefix, 128)}
-                        </TableCell>
-                        <TableCell className="text-right whitespace-nowrap">
-                          <div className="inline-flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={!row.splittable}
-                              onClick={() => setSplits(splitNode(splits, row.key))}
-                              aria-label={`Split ${row.key}`}
-                            >
-                              <Scissors className="h-4 w-4 mr-1" />
-                              Split
-                            </Button>
-                            {joinable && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  // Joining a leaf collapses its parent: the
-                                  // parent's key leaves the split set.
-                                  const parentPrefix = row.prefix - 1;
-                                  const parentSize = 1n << BigInt(rowFamily.bits - parentPrefix);
-                                  const parentAddr = (row.addr / parentSize) * parentSize;
-                                  setSplits(joinNode(rowFamily, splits, parentAddr, parentPrefix));
-                                }}
-                                aria-label={`Join ${row.key} with its sibling`}
-                              >
-                                <Combine className="h-4 w-4 mr-1" />
-                                Join
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-            <p className="mt-3 text-data-sm font-mono text-muted-foreground">
-              {rows.length} subnet{rows.length === 1 ? '' : 's'}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rt-arrive">
+          <SubnetDivide
+            family={result.family}
+            rows={rows}
+            joinable={splits.size > 0}
+            onSplit={(key) => setSplits(splitNode(splits, key))}
+            onJoin={(rowFamily, addr, prefix) => setSplits(joinNode(rowFamily, splits, addr, prefix))}
+            onShare={handleShare}
+          />
+        </div>
       )}
     </div>
   );

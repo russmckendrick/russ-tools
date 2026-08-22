@@ -3,7 +3,6 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,18 +10,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Globe,
   Search,
-  Info,
   Download,
   Copy,
   Trash2,
   RotateCcw,
   History,
   AlertCircle,
-  Server,
-  Calendar,
-  Building,
-  Network,
-  Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyText, downloadFile, apiFetch, buildUrl } from '@/core';
@@ -45,6 +38,32 @@ async function fetchWhois(query, { signal }) {
 
   return response.json();
 }
+
+import WHOISInfoDisplay from './components/WHOISInfoDisplay';
+import { formatDate, getTypeBadge, getTypeIcon } from './lib/present';
+import { Ghost } from '@/components/ui/ghost';
+
+/** The shape of a WHOIS answer, for the ghost above. RFC 2606 names only. */
+const GHOST_WHOIS = {
+  query: 'example.com',
+  type: 'domain',
+  normalized: {
+    domain: 'example.com',
+    status: ['client transfer prohibited'],
+    registrar: { name: 'Example Registrar, Inc.', handle: '1234' },
+    events: {
+      registration: '1995-08-14T04:00:00Z',
+      expiration: '2026-08-13T04:00:00Z',
+      'last changed': '2026-01-16T18:26:50Z',
+    },
+    nameservers: [
+      { name: 'NS1.EXAMPLE-DNS.COM', ipAddresses: { v4: [], v6: [] } },
+      { name: 'NS2.EXAMPLE-DNS.COM', ipAddresses: { v4: [], v6: [] } },
+    ],
+    entities: [],
+  },
+  data: { rdap: { status: ['client transfer prohibited'] } },
+};
 
 const WhoisLookupTool = () => {
   const {
@@ -116,310 +135,6 @@ const WhoisLookupTool = () => {
     );
   };
 
-  const formatDate = (timestamp) => {
-    if (!timestamp) return 'Unknown';
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getTypeIcon = (type) => {
-    switch (type?.toLowerCase()) {
-      case 'domain':
-        return <Globe className="h-4 w-4" />;
-      case 'ip':
-        return <Server className="h-4 w-4" />;
-      case 'network':
-        return <Network className="h-4 w-4" />;
-      default:
-        return <Info className="h-4 w-4" />;
-    }
-  };
-
-  const getTypeBadge = (type) => {
-    const colors = {
-      domain: 'bg-info-subtle text-info',
-      ip: 'bg-success-subtle text-success',
-      network: 'bg-[color-mix(in_oklab,var(--cat)_13%,transparent)] text-[var(--cat)]'
-    };
-
-    return (
-      <Badge className={colors[type?.toLowerCase()] || 'bg-surface-inset text-on-surface'}>
-        {type || 'Unknown'}
-      </Badge>
-    );
-  };
-
-  const WHOISInfoDisplay = ({ data }) => {
-    if (!data) return null;
-
-    const formatDateFromISO = (isoString) => {
-      if (!isoString) return 'Not available';
-      try {
-        return new Date(isoString).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-      } catch {
-        return isoString;
-      }
-    };
-
-    // Extract data from normalized structure if available
-    const normalized = data.normalized || {};
-    const rdap = data.data?.rdap || {};
-
-    return (
-      <div className="space-y-6">
-        {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <h3 className="text-title-sm flex items-center gap-2">
-                {getTypeIcon(data.type)}
-                Basic Information
-              </h3>
-              {getTypeBadge(data.type)}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-body-sm text-muted-foreground">Query</p>
-                <p className="text-data-md font-mono">{data.query}</p>
-              </div>
-              <div>
-                <p className="text-body-sm text-muted-foreground">Type</p>
-                <p className="font-medium">{data.type || 'Unknown'}</p>
-              </div>
-              {(normalized.status || rdap.status) && (
-                <div>
-                  <p className="text-body-sm text-muted-foreground">Status</p>
-                  <div className="space-y-1">
-                    {(normalized.status || rdap.status)?.map((status, index) => (
-                      <Badge key={index} variant="outline" className="mr-1 mb-1">
-                        {status}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {normalized.registrar?.name && (
-                <div>
-                  <p className="text-body-sm text-muted-foreground">Registrar</p>
-                  <p className="font-medium">{normalized.registrar.name}</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Registration Dates */}
-        {normalized.events && (
-          <Card>
-            <CardHeader>
-              <h3 className="text-title-sm flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Registration Dates
-              </h3>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {normalized.events.registration && (
-                  <div>
-                    <p className="text-body-sm text-muted-foreground">Registration</p>
-                    <p className="text-data-md font-mono">{formatDateFromISO(normalized.events.registration)}</p>
-                  </div>
-                )}
-                {normalized.events['last changed'] && (
-                  <div>
-                    <p className="text-body-sm text-muted-foreground">Last Changed</p>
-                    <p className="text-data-md font-mono">{formatDateFromISO(normalized.events['last changed'])}</p>
-                  </div>
-                )}
-                {normalized.events.expiration && (
-                  <div>
-                    <p className="text-body-sm text-muted-foreground">Expiration</p>
-                    <p className="text-data-md font-mono">{formatDateFromISO(normalized.events.expiration)}</p>
-                  </div>
-                )}
-                {normalized.events['last update of RDAP database'] && (
-                  <div className="md:col-span-3">
-                    <p className="text-body-sm text-muted-foreground">Last RDAP Update</p>
-                    <p className="text-data-md font-mono">{formatDateFromISO(normalized.events['last update of RDAP database'])}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Name Servers */}
-        {normalized.nameservers && normalized.nameservers.length > 0 && (
-          <Card>
-            <CardHeader>
-              <h3 className="text-title-sm flex items-center gap-2">
-                <Server className="h-4 w-4" />
-                Name Servers
-              </h3>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {normalized.nameservers.map((ns, index) => (
-                  <div key={index} className="p-3 bg-muted/50 rounded border">
-                    <p className="text-data-md font-mono">{ns.name}</p>
-                    {ns.status && (
-                      <div className="mt-1">
-                        {ns.status.map((status, statusIndex) => (
-                          <Badge key={statusIndex} variant="secondary" className="text-data-sm font-mono mr-1">
-                            {status}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* DNSSEC Information */}
-        {rdap.secureDNS && (
-          <Card>
-            <CardHeader>
-              <h3 className="text-title-sm flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                DNSSEC Information
-              </h3>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <p className="text-body-sm text-muted-foreground">Delegation Signed:</p>
-                  <Badge variant={rdap.secureDNS.delegationSigned ? "default" : "secondary"}>
-                    {rdap.secureDNS.delegationSigned ? "Yes" : "No"}
-                  </Badge>
-                </div>
-                {rdap.secureDNS.maxSigLife && (
-                  <div>
-                    <p className="text-body-sm text-muted-foreground">Max Signature Life</p>
-                    <p className="text-data-md font-mono">{rdap.secureDNS.maxSigLife} day(s)</p>
-                  </div>
-                )}
-                {rdap.secureDNS.dsData && rdap.secureDNS.dsData.length > 0 && (
-                  <div>
-                    <p className="text-body-sm text-muted-foreground mb-2">DS Records</p>
-                    <div className="space-y-2">
-                      {rdap.secureDNS.dsData.map((ds, index) => (
-                        <div key={index} className="p-2 bg-muted/50 rounded font-mono text-data-sm border">
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>Key Tag: {ds.keyTag}</div>
-                            <div>Algorithm: {ds.algorithm}</div>
-                            <div>Digest Type: {ds.digestType}</div>
-                            <div className="col-span-2">Digest: {ds.digest}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Registrar Information */}
-        {normalized.entities?.registrar && normalized.entities.registrar.length > 0 && (
-          <Card>
-            <CardHeader>
-              <h3 className="text-title-sm flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                Registrar Information
-              </h3>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {normalized.entities.registrar.map((registrar, index) => {
-                  const vcard = registrar.vcardArray?.[1] || [];
-                  const name = vcard.find(([prop]) => prop === 'fn')?.[3];
-                  const email = vcard.find(([prop]) => prop === 'email')?.[3];
-                  const abuseEntity = registrar.entities?.[0];
-                  const abuseVcard = abuseEntity?.vcardArray?.[1] || [];
-                  const abuseEmail = abuseVcard.find(([prop]) => prop === 'email')?.[3];
-                  
-                  return (
-                    <div key={index} className="border-l-2 border-primary pl-4">
-                      <h4 className="font-medium mb-2">{name || 'Registrar'}</h4>
-                      <div className="space-y-2 text-body-sm">
-                        {registrar.publicIds?.map((id, idIndex) => (
-                          <div key={idIndex}>
-                            <span className="text-muted-foreground">{id.type}: </span>
-                            <span className="font-medium">{id.identifier}</span>
-                          </div>
-                        ))}
-                        {email && (
-                          <div>
-                            <span className="text-muted-foreground">Contact: </span>
-                            <span className="font-medium">{email}</span>
-                          </div>
-                        )}
-                        {abuseEmail && (
-                          <div>
-                            <span className="text-muted-foreground">Abuse Contact: </span>
-                            <span className="font-medium">{abuseEmail}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Data Sources */}
-        {data.sources && data.sources.length > 0 && (
-          <Card>
-            <CardHeader>
-              <h3 className="text-title-sm flex items-center gap-2">
-                <Network className="h-4 w-4" />
-                Data Sources
-              </h3>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {data.sources.map((source, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                    <div>
-                      <p className="text-data-md font-mono">{source.name.toUpperCase()}</p>
-                      <p className="text-data-sm font-mono text-muted-foreground">{source.service}</p>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant={source.status === 'success' ? 'default' : 'destructive'}>
-                        {source.status}
-                      </Badge>
-                      <p className="text-data-sm font-mono text-muted-foreground mt-1">
-                        {formatDate(source.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    );
-  };
 
   return (
     <TooltipProvider>
@@ -483,8 +198,34 @@ const WhoisLookupTool = () => {
         )}
 
         {/* Results */}
+        {/*
+          Nothing looked up yet: the answer's own shape, drawn from the real
+          `WHOISInfoDisplay` under the real tab tray — the tabs live out here in
+          the island rather than inside the display, so a ghost of the display
+          alone was missing the row above it.
+
+          Deliberately shorter than a real answer, which runs past 1200px for a
+          registered domain. The ghost fills the empty region; it does not
+          reserve the whole result — a full-height one would make the *empty*
+          page longer than the gap it replaces. The lever is the sample: two
+          nameservers rather than four, three dates rather than five.
+        */}
+        {!lookupResults && !loading && !error && (
+          <Ghost>
+            <Tabs defaultValue="info" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="info">Information</TabsTrigger>
+                <TabsTrigger value="raw">Raw Data</TabsTrigger>
+              </TabsList>
+              <TabsContent value="info">
+                <WHOISInfoDisplay data={GHOST_WHOIS} />
+              </TabsContent>
+            </Tabs>
+          </Ghost>
+        )}
+
         {lookupResults && !loading && (
-          <Tabs defaultValue="info" className="space-y-4">
+          <Tabs defaultValue="info" className="rt-arrive space-y-4">
             <TabsList>
               <TabsTrigger value="info">Information</TabsTrigger>
               <TabsTrigger value="raw">Raw Data</TabsTrigger>

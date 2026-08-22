@@ -22,8 +22,31 @@ import { generateAllPortalLinks } from './lib/portalLinks';
 import TenantSearchCard from './components/TenantSearchCard';
 import PortalFilters from './components/PortalFilters';
 import PortalCard from './components/PortalCard';
+import { Ghost } from '@/components/ui/ghost';
 import PortalTable from './components/PortalTable';
 import EmptyState from './components/EmptyState';
+
+/**
+ * Six real portals for the empty-state ghost, from the tool's own generator.
+ *
+ * `generateAllPortalLinks` handles a null tenant by design — the no-tenant URL
+ * path is an explicit branch in `lib/portalLinks.js` — so this is genuine
+ * output rather than a fixture, and it costs no network. Sliced to six because
+ * the whole catalogue renders 5922px tall.
+ */
+const GHOST_PORTALS = Object.entries(generateAllPortalLinks(null))
+  .flatMap(([sectionKey, section]) =>
+    Object.entries(section).map(([portalKey, portal]) => ({
+      key: `${sectionKey}-${portalKey}`,
+      name: portal.name,
+      description: portal.description,
+      category: portal.category,
+      tags: portal.tags,
+      url: portal.url,
+      isFavorite: false,
+    }))
+  )
+  .slice(0, 6);
 
 const MicrosoftPortalsTool = () => {
   // searchInput doubles as the portal *filter* box, so it stays tool state
@@ -270,8 +293,42 @@ const MicrosoftPortalsTool = () => {
         />
 
         {/* Portal Links Section */}
+        {/*
+          Nothing searched yet: a real `Card` holding real `PortalCard`s, built
+          from `generateAllPortalLinks(null)` — the tool's own generator, which
+          already handles a null tenant and needs no network. So the cards are
+          the cards, not a drawing of them.
+
+          The wrapper is assembled here rather than extracted, which is the one
+          place this file departs from "render the real component". The result
+          block takes eleven props from tool state, and a props contract that
+          size exists only to serve a placeholder is a worse trade than three
+          lines of layout. The part that carries the shape — the card grid — is
+          real either way.
+
+          Six cards, not thirty-one: the full catalogue is 5922px, and a ghost
+          that tall makes the empty page far longer than the gap it replaces.
+        */}
+        {!portalLinks && (
+          <Ghost>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-title-sm">Microsoft Portals</CardTitle>
+                <CardDescription className="mt-1">31 portals available</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {GHOST_PORTALS.map((portal) => (
+                    <PortalCard key={portal.key} portal={portal} onToggleFavorite={() => {}} />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </Ghost>
+        )}
+
         {portalLinks && (
-          <Card>
+          <Card className="rt-arrive">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>

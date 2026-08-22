@@ -1396,3 +1396,196 @@ a.rt-kbd[data-first] {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+
+/* --- Ghost: the redaction layer -------------------------------------------
+   Turns a real result component into a picture of itself.
+
+   `ui/ghost.jsx` renders the *actual* result component with small sample data;
+   this is what removes the words. Structure survives untouched — panel
+   borders, the tab tray, table rules, column widths, the lot — and every run
+   of text becomes a bar. So the ghost is the real layout with nothing written
+   in it, and it cannot drift, because it is not a second description of the
+   shape.
+
+   ## Why this is here, in plain CSS, rather than in the component
+
+   `shell.css` is imported unlayered by `BaseLayout.astro`, while Tailwind
+   emits `@layer theme, base, components, utilities`. Unlayered rules beat
+   every layer regardless of specificity, so `color: transparent` here wins
+   over a `text-on-surface` utility on the same element — and over an
+   arbitrary-value one like `text-[var(--cat)]` — with no `!important`
+   anywhere. `globals.css` relies on the same mechanic and says so. Written as
+   Tailwind classes on a wrapper this would have to fight the utilities it is
+   trying to cover. */
+
+.rt-ghosted {
+  /*
+    The ink every bar is drawn in. `outline`, not `surface-inset`: a result
+    puts rows on both grounds — dns-lookup's answer records sit on the inset —
+    and an inset-coloured bar on an inset row is invisible. The hairline tint
+    is the one neutral that reads on the raised ground and on the inset one,
+    in both themes, without a per-row flip.
+  */
+  --rt-ghost-ink: var(--color-outline);
+
+  /*
+    The bar's weight, kept as a lever because it is the one value here that is
+    a judgement rather than a consequence: the strike sits on the font's own
+    strikeout metric, and Bricolage, Space Grotesk and Space Mono do not agree
+    on where that is.
+  */
+  --rt-ghost-bar: 0.92em;
+
+  /*
+    A ghost states nothing, and a category hue states something. The record
+    type badge on dns-lookup tints itself teal for CNAME before a single
+    lookup has run. Every hue in every tool arrives through these two custom
+    properties, set once per page by `ToolLayout` — so neutralising them here
+    reaches all fifteen tools without this file knowing what any of them
+    render.
+
+    DESIGN.md's rule is that `--cat` always carries a category hue, and
+    `category-accent.test.js` guards it — but its search does not cover
+    `styles/`, so this override is unwitnessed rather than blessed. It is
+    deliberate: that invariant exists to keep a hue legible as text, and there
+    is no legible text in here.
+  */
+  --cat: var(--color-on-surface-muted);
+  --cat-fill: var(--color-surface-inset);
+
+  pointer-events: none;
+  user-select: none;
+}
+
+/*
+  Blanket the text first. This is what guarantees no word survives, whatever a
+  component nests — including elements with mixed content, which every
+  `<Button>` has. Transparent text still occupies its space, so every line
+  box, row height and intrinsic width is exactly what the real result
+  produces. That is the whole advantage over a drawn skeleton, which had to
+  guess a row height and a row count per tool and was wrong the moment either
+  changed.
+*/
+.rt-ghosted,
+.rt-ghosted * {
+  color: transparent;
+}
+
+/*
+  Then the bars — a strike, not a background.
+
+  A background paints the element's BOX, and a box is the wrong shape for a
+  word. A `<p>` fills its column, so every value in a grid becomes an
+  identical full-width band; the `width: fit-content` that fixes that then
+  breaks centred text, right-aligned text, a `<td>` that owes its width to its
+  column, and any line that wraps. A strike paints the TEXT RUN: it hugs the
+  glyphs, follows the paragraph's alignment, and breaks into one bar per line
+  exactly as the text does. The shape comes from the type — which is the whole
+  reason for rendering the real component.
+
+  It also dissolves the nesting problem rather than working around it. Two
+  overlapping opaque strikes are one strike, so a rule that fires on a wrapper
+  and again on the span inside it costs nothing. That is why this needs no
+  leaf test: an earlier pass spent an element allowlist, a `:has(> *:not(svg))`
+  exemption and a `fit-content` rule on a problem this primitive does not
+  have, and still left bare `<div>` text undrawn.
+
+  The thickness is relative, so a bar grows with the heading it redacts and
+  stays a hairline on a `label-caps`, with no scale to maintain.
+*/
+.rt-ghosted,
+.rt-ghosted * {
+  text-decoration-line: line-through;
+  text-decoration-color: var(--rt-ghost-ink);
+  text-decoration-style: solid;
+  text-decoration-thickness: var(--rt-ghost-bar);
+}
+
+/*
+  Controls keep their shape and lose their colour.
+
+  This is the one that matters most. ssl-checker's grade badge is
+  `bg-success-subtle` — a green pill reading A — and drawn in an empty state
+  it says the certificate passed before anything was checked. A ghost must not
+  make a claim. The border goes with the ground, because the status variants
+  tint that too.
+
+  Scoped to the things that draw their own coloured box, never to `*`:
+  flattening every background would take the panel grounds, the header bars
+  and the table stripes with it, and those ARE the shape.
+*/
+.rt-ghosted :is(button, [role='tab'], [role='alert'], [data-slot='badge']) {
+  background-color: var(--color-surface-raised);
+  border-color: var(--color-outline);
+}
+.rt-ghosted [role='progressbar'] > * {
+  background-color: var(--rt-ghost-ink);
+}
+
+/*
+  Icons are drawings, and a ghost has nothing to draw. `visibility` rather
+  than `display` so they keep their footprint — an icon is usually what sets
+  the height of the row it sits in.
+*/
+.rt-ghosted svg {
+  visibility: hidden;
+}
+
+/*
+  Shadow means pressable, and nothing in a ghost can be pressed — including
+  the one `emphasis` panel a result is allowed to carry. DESIGN.md spends
+  `press-lg` on "the result you came for", and until the button is pressed
+  there isn't one.
+*/
+.rt-ghosted * {
+  box-shadow: none;
+}
+
+/* A field with no value in it still shows its own prompt otherwise. */
+.rt-ghosted ::placeholder {
+  color: transparent;
+}
+
+/*
+  The one place the redaction cannot hold. Forced colours replace both halves
+  of it — the bars lose their ink to a system colour and `transparent` text is
+  repainted as CanvasText — so the sample data would come back fully legible,
+  which is the single failure this must not have. Print is the same trade for
+  a different reason: a page of empty boxes is not worth the toner. In both, a
+  picture of a layout is worth nothing, so there is nothing to salvage.
+*/
+@media print, (forced-colors: active) {
+  .rt-ghosted {
+    display: none;
+  }
+}
+
+/* --- A result arriving -----------------------------------------------------
+   The ghost is replaced, not redrawn.
+
+   Swapping a redacted panel for the real one in a single frame reads as a
+   flicker: the layout is already correct — that is the ghost's whole job — so
+   the only thing that changes is the ink, and an instant ink change over an
+   unchanged shape looks like a glitch rather than an answer. Fading the words
+   up over the shape they were already occupying reads as the page filling in.
+
+   Opacity only, and only on the way in. Nothing moves, because nothing needs
+   to: the ghost put every panel where the result was going to be. And there is
+   no matching fade-out, because the ghost is gone the moment React swaps it —
+   holding both would mean two copies of the same layout on screen, which is
+   the flicker again with extra steps.
+
+   The reduced-motion floor in `globals.css` already collapses this to nothing;
+   an instant result was never the worse outcome for someone who asked us to
+   stop moving things. */
+
+@keyframes rt-arrive {
+  from {
+    opacity: 0;
+  }
+}
+
+.rt-arrive {
+  animation: rt-arrive var(--duration-settle) var(--ease-signal);
+}

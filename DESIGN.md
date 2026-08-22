@@ -703,6 +703,26 @@ progress line. An error is a `panel` with its border swapped to `error` and
 the word ERROR at `label-caps`. Empty states keep their copy and take
 `on-surface-muted`.
 
+**The ghost** is the other kind of empty state, for a tool that rests as a
+small control panel over a screenful of nothing. It is not a drawn skeleton:
+it renders the tool's *real* result component with a small sample, and a
+redaction layer turns every run of text into a bar. So the shape is never
+described twice, and cannot drift from the panel that replaces it.
+
+Three rules govern it. It carries **no copy** — the shape is the whole
+message, and a caption would be a second statement of it. It carries **no
+colour that states anything**: category hues and status tints are neutralised
+at the wrapper, because a green grade badge above an empty form claims a
+certificate passed. And it **never animates** — unlike a loading skeleton this
+is not temporary, it sits on screen for as long as someone reads the form
+above it, and a rectangle that throbs indefinitely is an irritation rather
+than a signal.
+
+Its size comes from the sample data rather than from a reserved height: the
+ghost fills the empty region, it does not reserve the whole result. Two tools
+whose answers run past 1200px pass deliberately less data, because a
+full-height ghost would make the empty page longer than the gap it replaces.
+
 ## Iconography
 
 One library for everything: **Lucide**, stroke-based on the 24px grid with a

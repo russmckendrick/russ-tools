@@ -21,6 +21,7 @@ import { ApiError, apiFetch, buildUrl, createToolStorage } from '@/core';
 import { useLookupTool } from '@/lib/useLookupTool';
 import apiConfig from '@/utils/api/apiConfig.json';
 import TenantInfoDisplay from './components/TenantInfoDisplay';
+import { Ghost } from '@/components/ui/ghost';
 import DNSAnalysisDisplay from './components/DNSAnalysisDisplay';
 import ServiceVerificationDisplay from './components/ServiceVerificationDisplay';
 import APIResultsDisplay from './components/APIResultsDisplay';
@@ -58,6 +59,29 @@ async function fetchTenant(domain, { signal }) {
   }
   return data;
 }
+
+/**
+ * The shape of a tenant record, for the ghost above — and the ghost's size,
+ * which is the same thing. `TenantInfoDisplay` renders a row per field it is
+ * given, so a sample carrying every optional key (auth and token URLs, the
+ * federation brand, the discovery method) drew a 726px panel where a typical
+ * answer is 448px. These are the fields a lookup reliably returns; the rest
+ * are dropped precisely because the ghost fills the empty region rather than
+ * reserving the largest result anyone might get.
+ */
+const GHOST_TENANT = {
+  // RFC 2606 reserved, and deliberately not the `contoso.com` the field's own
+  // placeholder suggests: the ghost's text is real text in the real DOM, so a
+  // sample echoing a value the tool also uses collides with anything that
+  // looks for it — a `getByText` in the island's own tests did exactly that,
+  // and find-in-page would too.
+  domain: 'example.com',
+  displayName: 'Example Organisation',
+  tenantId: '00000000-0000-0000-0000-000000000000',
+  defaultDomainName: 'example.onmicrosoft.com',
+  tenantType: 'Managed',
+  isCloudOnly: true,
+};
 
 const TenantLookupTool = () => {
   const {
@@ -227,9 +251,32 @@ const TenantLookupTool = () => {
           </Alert>
         )}
 
+        {/*
+          Nothing looked up yet: the answer's own shape, drawn from the real
+          `TenantInfoDisplay` under a real tab tray and redacted by
+          `.rt-ghosted`.
+
+          Two tabs, because those are the two every lookup returns. The DNS,
+          verification and API tabs are each conditional on what came back, so
+          drawing five would promise tabs a real answer often does not have.
+        */}
+        {!result && !loading && !error && (
+          <Ghost>
+            <Tabs defaultValue="tenant" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="tenant">Tenant Info</TabsTrigger>
+                <TabsTrigger value="raw">Raw Data</TabsTrigger>
+              </TabsList>
+              <TabsContent value="tenant">
+                <TenantInfoDisplay data={GHOST_TENANT} onSave={() => {}} />
+              </TabsContent>
+            </Tabs>
+          </Ghost>
+        )}
+
         {/* Results */}
         {result && !loading && (
-          <Tabs defaultValue="tenant" className="space-y-4">
+          <Tabs defaultValue="tenant" className="rt-arrive space-y-4">
             <TabsList>
               <TabsTrigger value="tenant">Tenant Info</TabsTrigger>
               {result.dnsInfo && (

@@ -23,6 +23,22 @@ import { useLookupTool } from '@/lib/useLookupTool';
 import { performSSLCheck } from './lib/sslApi';
 import { validateDomain, cleanDomain, isSSLDataComplete, getGradeInfo } from './lib/sslUtils';
 import SSLResultsDisplay from './components/SSLResultsDisplay';
+import { Ghost } from "@/components/ui/ghost";
+
+/**
+ * The shape of an SSL report, for the ghost above.
+ *
+ * `startTime` is offset from load rather than a fixed epoch because the
+ * Overview tab renders `Date.now() - startTime` as an elapsed-seconds figure:
+ * pinned at 0 that is a ten-digit number, and while the digits are redacted
+ * their *width* is not — the bar would stretch across the panel.
+ */
+const GHOST_SSL = {
+  host: 'example.com',
+  status: 'READY',
+  startTime: Date.now() - 12_000,
+  endpoints: [{ ipAddress: '203.0.113.10', statusMessage: 'Ready', grade: 'A', details: {} }],
+};
 
 const SslCheckerTool = () => {
   const [validationError, setValidationError] = React.useState('');
@@ -210,9 +226,23 @@ const SslCheckerTool = () => {
           </Alert>
         )}
 
+        {/*
+          Nothing checked yet: the report's own shape, drawn from the real
+          `SSLResultsDisplay` and redacted by `.rt-ghosted`. Radix only mounts
+          the selected tab, so one endpoint and an empty `details` is enough —
+          the five other tabs cost nothing until something is checked for real.
+        */}
+        {!certificateData && !loading && !error && (
+          <Ghost>
+            <SSLResultsDisplay data={GHOST_SSL} />
+          </Ghost>
+        )}
+
         {/* SSL Results */}
         {certificateData && !certificateData.connectivityOnly && !loading && (
-          <SSLResultsDisplay data={certificateData} />
+          <div className="rt-arrive">
+            <SSLResultsDisplay data={certificateData} />
+          </div>
         )}
 
         {/* Recent SSL Checks History */}
