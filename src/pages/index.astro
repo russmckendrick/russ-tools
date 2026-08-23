@@ -8,6 +8,7 @@ import PastePanel from '../shell/PastePanel.astro';
 import ToolCard from '../shell/ToolCard.astro';
 import { TOOLS } from '../tools/registry.mjs';
 import { categoryGroupId, categoryLabel } from '../shell/categories.mjs';
+import { placements } from '../lib/rowCadence.js';
 import { PERSON_SCHEMA, SITE_DESCRIPTION, SITE_NAME, SITE_URL, WEBSITE_ID } from '../shell/site.mjs';
 
 /**
@@ -64,20 +65,20 @@ for (const tool of TOOLS) {
 }
 
 /**
- * The tile's width, and the reason the stream is a stream.
+ * The tile's width comes from the cadence, not from its own text.
  *
- * Three steps, not a curve. The first attempt scaled width continuously off
- * the same two lengths and produced eighteen widths inside a 55px band, which
- * packed straight back into a perfect 3×5 — the grid this replaces, minus the
- * headings. Distinct steps are what make rows break at 3, 2, 3, 3 and 4.
+ * It used to come from its own text — three px steps chosen from title and
+ * description length — and that produced two faults at once. Every Microsoft
+ * and Azure title is long, so all seven took the widest step together and the
+ * middle of the page became a block of 2-up rows; and a 2-up row of tiles
+ * capped at 500px stopped 124px short of the right edge, so those rows read
+ * as a narrower table indented inside the catalogue.
  *
- * Title outweighs description because a wrapped title is what actually makes a
- * tile look cramped.
+ * `placements` authors the break instead — a row of three thirds or a row of
+ * two halves, both exactly 100% of the stream — and the half tile earns its
+ * width by carrying the tool's badge terms. See `src/lib/rowCadence.js`.
  */
-const widthStep = (tool) => {
-  const weight = tool.title.length + tool.shortDescription.length / 3;
-  return weight <= 36 ? 235 : weight <= 41 ? 315 : 400;
-};
+const layout = placements(TOOLS.length);
 
 /**
  * `/#network` is a compatibility contract: every tool page's breadcrumb links
@@ -88,11 +89,16 @@ const widthStep = (tool) => {
  * heading rotor still has more than one entry.
  */
 const seen = new Set();
-const cards = TOOLS.map((tool) => {
+const cards = TOOLS.map((tool, i) => {
   const id = categoryGroupId(tool.category);
   const first = !seen.has(id);
   seen.add(id);
-  return { tool, anchor: first ? id : null, label: groups.find((g) => g.id === id).label };
+  return {
+    tool,
+    anchor: first ? id : null,
+    label: groups.find((g) => g.id === id).label,
+    ...layout[i],
+  };
 });
 ---
 
@@ -181,10 +187,10 @@ const cards = TOOLS.map((tool) => {
   -->
   <div class="rt-stream" id="board">
     {
-      cards.map(({ tool, anchor, label }, i) => (
+      cards.map(({ tool, anchor, label, span, row, col }) => (
         <>
           {anchor && <h2 class="rt-visually-hidden">{label}</h2>}
-          <ToolCard tool={tool} widthStep={widthStep(tool)} anchor={anchor} order={i} />
+          <ToolCard tool={tool} span={span} row={row} col={col} anchor={anchor} />
         </>
       ))
     }
@@ -209,6 +215,7 @@ const cards = TOOLS.map((tool) => {
    * tile.
    */
   import { wirePastePanel } from '../lib/pastePanel.js';
+  import { placements } from '../lib/rowCadence.js';
 
   const board = document.getElementById('board');
   const filters = document.getElementById('filters');
@@ -263,16 +270,30 @@ const cards = TOOLS.map((tool) => {
   const render = () => {
     const q = query.trim().toLowerCase();
     const searching = q !== '';
-    let visible = 0;
+    const shown = [];
 
     for (const card of cards) {
       const matchesName = !searching || card.dataset.search.includes(q);
       const matchesCategory = searching || category === 'all' || card.dataset.category === category;
       const hit = matchesName && matchesCategory;
       card.hidden = !hit;
-      if (hit) visible += 1;
+      if (hit) shown.push(card);
     }
 
+    /*
+      The cadence is a function of what is on screen, not of what was
+      prerendered. Widths are ratios — a third or a half of a row — so a
+      filtered view left holding the widths written for eighteen tiles would
+      wrap at the wrong places: three Security tools would be a row of two and
+      an orphan rather than one flush row of thirds. Re-running the same
+      function over the survivors is the whole fix, and it is cheap enough to
+      sit in the keystroke path.
+    */
+    placements(shown.length).forEach(({ span }, i) => {
+      shown[i].dataset.span = span;
+    });
+
+    const visible = shown.length;
     empty.hidden = !(searching && visible === 0);
     if (!empty.hidden) emptyQ.textContent = `“${query.trim()}”`;
     tick(visible);

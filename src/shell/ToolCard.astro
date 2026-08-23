@@ -2,8 +2,13 @@
 /**
  * The tool tile — one item of the index's flowing stream.
  *
- * Icon in a `category-fill` tile beside a text column: title, one-line
- * description, route path. Everything comes from the manifest.
+ * Icon in a `category-fill` tile beside a text column: title and one-line
+ * description. Everything comes from the manifest.
+ *
+ * The route path used to sit under the description. It was the third
+ * statement of a fact the title and the link destination both already make,
+ * and it cost every tile a line — so the tile is title and sentence now, and
+ * the href is left to the browser's status bar.
  *
  * The category badge is gone. The stream has no section headings any more, so
  * the category is stated once — by the hue of the icon tile — instead of three
@@ -11,9 +16,17 @@
  * below, so filtering by "MX" still finds the DNS tool even though neither
  * string is drawn.
  *
- * `widthStep` is the tile's `flex-basis`, and it is what makes the stream a
- * stream: three distinct steps, so rows break at different counts. The index
- * computes it; /404 renders without it and takes the middle step.
+ * `span` is the tile's width step, and it is what makes the stream a stream:
+ * a third of a row or a half of one, never a pixel count, so a row of three
+ * thirds and a row of two halves both flush to the same two edges. The
+ * cadence that assigns it lives in `src/lib/rowCadence.js`; /404 renders
+ * without it and takes the third.
+ *
+ * A half tile carries the same four lines as a third, with more air around
+ * them and its route path pushed to the far corner. Rendering the manifest's
+ * `badges` as a row of keys inside it was tried and withdrawn — it read as a
+ * row of chips you could press, one control grammar too many on a page that
+ * already opens with a chip row.
  *
  * `hidden` lets a page prerender the whole catalogue and reveal a subset —
  * /404 does, so its "did you mean" guess can pick any tool without building
@@ -25,26 +38,35 @@
  * is what the browser scrolls to, which lands the reader on the tool rather
  * than on a heading above it.
  *
- * `order` is the tile's position in the stream, and it feeds two settles that
- * only the index spends (see DESIGN.md's Motion section):
+ * `row` and `col` are the tile's place in the cadence, and they feed the two
+ * settles that only the index spends (see DESIGN.md's Motion section):
  *
- *   - `--rt-i` staggers the entrance. Capped at ten steps in CSS rather than
- *     here, so the eleventh tile and the fifteenth land together instead of
- *     the tail of a long catalogue trailing off the clock.
+ *   - `--rt-r` and `--rt-c` stagger the entrance on the diagonal: the delay
+ *     is row plus column, so the catalogue deals in as a wave across the
+ *     page rather than as one straight line down it. Both are capped in CSS
+ *     rather than here, so the tail of a long catalogue lands together
+ *     instead of trailing off the clock.
  *   - `view-transition-name` is what lets a filtered tile *travel* to its new
  *     row rather than blink there. It has to be unique among rendered
  *     elements and a valid custom-ident, so it is the manifest id behind a
  *     `t-` prefix — ids are kebab-case and cannot lead with a digit, but the
  *     prefix costs nothing and removes the question.
  *
- * /404 renders this component without `order` and gets neither: its three
+ * /404 renders this component without them and gets neither: its three
  * suggestions are a fixed grid that never refilters, and a page that opens on
  * an error is the wrong place to deal cards.
  */
 import ToolIcon from './ToolIcon.astro';
 import { categoryGroupId, categoryVar } from './categories.mjs';
 
-const { tool, widthStep = 315, anchor = null, hidden = false, order = null } = Astro.props;
+const {
+  tool,
+  span = 'third',
+  row = null,
+  col = null,
+  anchor = null,
+  hidden = false,
+} = Astro.props;
 
 /**
  * The link's accessible name. Without this the name is the whole card
@@ -59,7 +81,7 @@ const label = tool.title;
 const haystack = [tool.title, tool.shortDescription, ...tool.badges].join(' ').toLowerCase();
 
 const motion =
-  order === null ? '' : `; --rt-i: ${order}; view-transition-name: t-${tool.id}`;
+  row === null ? '' : `; --rt-r: ${row}; --rt-c: ${col}; view-transition-name: t-${tool.id}`;
 ---
 
 <!--
@@ -81,12 +103,12 @@ const motion =
   aria-label={label}
   data-search={haystack}
   data-category={categoryGroupId(tool.category)}
-  style={`${categoryVar(tool.category)}; flex-basis: ${widthStep}px${motion}`}
+  data-span={span}
+  style={`${categoryVar(tool.category)}${motion}`}
 >
   <ToolIcon icon={tool.icon} size={19} />
   <span class="rt-card-text">
     <span class="rt-card-name">{tool.title}</span>
     <p>{tool.shortDescription}</p>
-    <span class="rt-card-foot">{tool.path}</span>
   </span>
 </a>

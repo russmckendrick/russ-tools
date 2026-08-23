@@ -684,7 +684,11 @@ a.rt-kbd[data-first] {
   position: relative;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  /* The tiles are sized as a fraction of the row minus the gutters between
+     them, so the gap has to be readable by that calc rather than written
+     twice. */
+  --rt-stream-gap: 14px;
+  gap: var(--rt-stream-gap);
   padding-block: var(--rt-space-2xl) var(--rt-space-4xl);
   /*
     Filtering fifteen tools down to three necessarily shortens the page, and a
@@ -736,11 +740,12 @@ a.rt-kbd[data-first] {
       `backwards` fill is what holds the first frame during the stagger delay.
       Without it every tile paints flat, then jumps back up to start.
 
-   2. THE STAGGER, capped. `--rt-i` is the tile's index; `min()` stops the
-      ramp at ten steps, so tiles 11–15 land together and the last tile is
-      down inside 420ms however long the catalogue grows. An uncapped ramp is
-      how a sixteenth tool would have made the page feel slower than a
-      fifteenth.
+   2. THE STAGGER, capped, and diagonal. `--rt-r` and `--rt-c` are the tile's
+      row and column in the cadence and the delay is their sum, so the
+      catalogue crosses the page as a wave rather than running down it in one
+      line. `min()` stops each term, so the last tile is down inside 420ms
+      however long the catalogue grows — an uncapped ramp is how a nineteenth
+      tool would have made the page feel slower than an eighteenth.
 
    3. THE EMPTY STATE fades rather than blinks — it replaces fifteen tiles
       with one sentence, which is a big enough change to deserve the 90ms. */
@@ -753,9 +758,14 @@ a.rt-kbd[data-first] {
   }
 }
 
+/* The deal-in runs on the diagonal: the delay is row plus column, so the
+   catalogue arrives as a wave crossing the page rather than as one straight
+   line down it. Both terms are capped here rather than in the template, so a
+   catalogue of thirty lands inside the same window as a catalogue of
+   eighteen. */
 .rt-stream .rt-card {
   animation: rt-card-in var(--duration-settle) var(--ease-signal) backwards;
-  animation-delay: calc(min(var(--rt-i, 0), 10) * 18ms);
+  animation-delay: calc((min(var(--rt-r, 0), 7) + min(var(--rt-c, 0), 2)) * 26ms);
 }
 
 .rt-empty {
@@ -869,7 +879,6 @@ a.rt-kbd[data-first] {
 .rt-card {
   position: relative;
   flex: 1 1 auto;
-  max-width: 500px;
   min-width: 0;
   display: flex;
   align-items: flex-start;
@@ -881,13 +890,67 @@ a.rt-kbd[data-first] {
   color: var(--color-on-surface);
   text-decoration: none;
   transition: box-shadow var(--duration-base) var(--ease-signal),
-    transform var(--duration-base) var(--ease-signal);
+    transform var(--duration-base) var(--ease-signal),
+    border-color var(--duration-base) var(--ease-signal);
 }
 
+/* --- The two width steps --------------------------------------------------
+   A tile is a third of a row or a half of one, and both are written as a
+   fraction of the row minus its gutters — so three thirds and two halves
+   flush to exactly the same two edges, at every container width and in every
+   filter state. This replaces three px steps (235/315/400) chosen from the
+   tile's own text length, which had no way to know what else was in its row:
+   all seven Microsoft and Azure titles are long, so all seven took the widest
+   step together, and a 2-up row of tiles capped at 500px stopped 124px short
+   of the right edge.
+
+   `min-width` is what makes the composition responsive without a breakpoint:
+   once a third would be narrower than a readable tile, the row breaks itself
+   down to two, then to one. `max-width` only ever catches the degenerate case
+   — a single search hit, which would otherwise stretch the full 1136px.
+
+   The cadence that assigns the step lives in `src/lib/rowCadence.js` and runs
+   again per filter in the index's client script. */
+
+.rt-stream .rt-card {
+  /* The floor is set by the longest title in the catalogue, not by taste:
+     the longest, "Microsoft 365 License Decoder", measures 253px and the
+     tile spends 81px on its icon and padding. Below 340px it wraps onto two
+     lines, and a wrapped title is what actually makes a tile look cramped. The row breaks itself down to two and then to one as the
+     viewport closes, so the composition needs no breakpoint of its own. */
+  min-width: 340px;
+  /* Only ever catches the degenerate case: a single search hit, which would
+     otherwise stretch the whole 1136px. */
+  max-width: 620px;
+}
+.rt-stream .rt-card[data-span='third'] {
+  flex-basis: calc((100% - 2 * var(--rt-stream-gap)) / 3);
+}
+.rt-stream .rt-card[data-span='half'] {
+  flex-basis: calc((100% - var(--rt-stream-gap)) / 2);
+}
+
+/* The half tile is the same two lines as a third with more air around them.
+   Two attempts at giving it more to hold were withdrawn: the manifest's badge
+   terms as a row of keys (they read as chips you could press, on a page that
+   already opens with a chip row you can) and the route path pushed to the far
+   corner (a fact the title and the link both already make). The wide step is
+   breathing room, and the cadence is what it is for. */
+.rt-stream .rt-card[data-span='half'] {
+  padding: 17px 19px 16px;
+}
+
+/* Hover answers in the tool's own colour: the 2px border — the structure
+   itself — takes the category TEXT hue for as long as the pointer is on the
+   tile, and the keys follow it. `--cat`, never `--cat-fill`: the fill hues
+   are pastel blocks meant to sit behind graphite ink and would read as a
+   1.6:1 wire outline on paper. This is the only place the category hue leaves
+   the icon tile, and it leaves it only under intent. */
 .rt-card:hover,
 .rt-card:focus-visible {
   box-shadow: var(--shadow-press);
   transform: translate(-2px, -2px);
+  border-color: var(--cat, var(--color-rule));
 }
 /* The tile is the page's primary pressable and it was the one pressable on
    the site that did not press: it rose on hover and then absorbed the click
@@ -923,25 +986,6 @@ a.rt-kbd[data-first] {
   font-size: var(--text-body-sm);
   line-height: 1.45;
   color: var(--color-on-surface-muted);
-}
-
-/* The route path. It sat in `primary-text` at rest, which put the accent on
-   fifteen things you had not touched; it is dim until the tile is hovered,
-   and the accent then marks the one you are about to open. */
-.rt-card-foot {
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  color: var(--color-on-surface-dim);
-  margin-top: 3px;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color var(--duration-base) var(--ease-signal);
-}
-.rt-card:hover .rt-card-foot,
-.rt-card:focus-visible .rt-card-foot {
-  color: var(--color-primary-text);
 }
 
 /* --- Tool icon ------------------------------------------------------------
@@ -1060,10 +1104,12 @@ a.rt-kbd[data-first] {
   .rt-jump-hint[data-resting] {
     display: none;
   }
-  /* The three width steps are a desktop composition. At 390px they would
-     produce two cramped columns instead of one readable one. */
-  .rt-stream .rt-card {
+  /* The width steps are a desktop composition. At 390px they would produce
+     two cramped columns instead of one readable one, so every tile takes the
+     full line and the half tile's wide-only treatment comes off with it. */
+  .rt-stream .rt-card[data-span] {
     flex-basis: 100%;
+    min-width: 0;
     max-width: none;
   }
 }
