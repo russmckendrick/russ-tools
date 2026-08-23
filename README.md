@@ -19,7 +19,10 @@ Cloudflare Workers. Those are named per tool in the table below's linked docs.
 | **Subnet Calculator** | Network | IPv4 and IPv6 subnet details, with a visual split-and-join divide table. | `/subnet-calculator` | [Docs](docs/tools/subnet-calculator/) |
 | **WHOIS Lookup Tool** | Network | Registration and ownership detail for domains and IPs. | `/whois-lookup` | [Docs](docs/tools/whois-lookup/) |
 | **Azure KQL Query Builder** | Azure | Build Kusto queries for Azure services with guided forms. | `/azure-kql` | [Docs](docs/tools/azure-kql/) |
+| **Azure RBAC Role Explorer** | Azure | Search 504 built-in Azure roles by name or by the action they grant. | `/azure-rbac` | [Docs](docs/tools/azure-rbac/) |
 | **Azure Resource Naming Tool** | Azure | Generate and validate names against Microsoft CAF rules. | `/azure-naming` | [Docs](docs/tools/azure-naming/) |
+| **Conditional Access Analyser** | Microsoft | Explain exported Conditional Access policies and spot the gaps. | `/conditional-access` | [Docs](docs/tools/conditional-access/) |
+| **Microsoft 365 License Decoder** | Microsoft | Turn licence GUIDs and SKU part numbers into names and service plans. | `/m365-licenses` | [Docs](docs/tools/m365-licenses/) |
 | **Microsoft Portals (GDAP)** | Microsoft | Deep links into 31 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](docs/tools/microsoft-portals/) |
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](docs/tools/tenant-lookup/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](docs/tools/jwt/) |
@@ -31,7 +34,7 @@ Cloudflare Workers. Those are named per tool in the table below's linked docs.
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](docs/tools/markdown-table-tool/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](docs/tools/buzzword-ipsum/) |
 
-15 tools.
+18 tools.
 <!-- TOOLS:END -->
 
 ## Quick start

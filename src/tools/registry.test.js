@@ -17,8 +17,8 @@ import { extractHelpMarkdown } from '../lib/helpMarkdown.js';
  */
 
 describe('manifest contract', () => {
-  it('registers all fifteen tools', () => {
-    expect(TOOLS).toHaveLength(15);
+  it('registers all eighteen tools', () => {
+    expect(TOOLS).toHaveLength(18);
   });
 
   it.each(TOOLS.map((t) => [t.id, t]))('%s has a well-formed manifest', (id, tool) => {
@@ -104,9 +104,12 @@ describe('frozen contract #1 — deep links', () => {
     '/azure-kql/:service',
     '/azure-kql/:service/:template',
     '/azure-naming',
+    '/azure-rbac',
+    '/azure-rbac/:role',
     '/base64',
     '/base64/:input',
     '/buzzword-ipsum',
+    '/conditional-access',
     '/cron',
     '/cron/:expression',
     '/data-converter',
@@ -114,6 +117,8 @@ describe('frozen contract #1 — deep links', () => {
     '/dns-lookup/:domain',
     '/jwt',
     '/jwt/:token',
+    '/m365-licenses',
+    '/m365-licenses/:query',
     '/markdown-table-tool',
     '/microsoft-portals',
     '/microsoft-portals/:domain',
@@ -137,7 +142,7 @@ describe('frozen contract #1 — deep links', () => {
   it('still carries every route the SPA served', () => {
     // Guards the list itself: a deletion here is a broken bookmark, and is
     // never what someone meant to do.
-    expect(routerPaths.length).toBe(28);
+    expect(routerPaths.length).toBe(33);
   });
 
   it('serves every one of them', () => {

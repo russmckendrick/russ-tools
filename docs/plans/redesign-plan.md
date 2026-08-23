@@ -2616,3 +2616,69 @@ result was going. No fade-out to match it: the ghost is gone the moment React
 swaps it, and holding both would put two copies of one layout on screen.
 
 697 unit + 46 e2e green, lint 0 errors / the same 11 warnings.
+
+### 2026-08-23 — Session 13: three Microsoft/Azure reference tools (15 → 18)
+
+The Microsoft/Azure shelf covered conventions (naming), queries (KQL), discovery
+(tenant lookup) and navigation (portals). It did not cover the reference lookup
+that fills an admin's day: turning the GUIDs Graph and PowerShell return back
+into names, working out which built-in role grants an action, and reading a CA
+policy that arrived as JSON. All three are lookup-and-explain problems over
+published data, so all three are client-side with no worker.
+
+**`m365-licenses`** — 620 SKUs and 796 service plans, normalised from Microsoft's
+licensing CSV (6,002 rows collapse to two tables plus a membership array). Search
+by GUID, part number or name, and the reverse lookup answers "which SKUs include
+this service plan", which the docs page cannot without a spreadsheet.
+
+**`azure-rbac`** — 504 built-in roles parsed from the 19 `built-in-roles/*.md`
+category files. Search by name or by action, with wildcards and NotActions
+honoured.
+
+**`conditional-access`** — no params and no storage on purpose: a policy is a
+pasted blob and it is someone's tenant configuration. Accepts all three export
+shapes, renders who/what/when/then, resolves 135 role template ids and the
+common first-party app ids, and runs a gap checklist.
+
+**Sizing was measured, not guessed, and the guess was wrong.** RBAC was assumed
+to need an index/detail split at "1–2 MB". Parsed, it is 504 roles / 444 KB /
+**58 KB gzipped** — smaller than the licensing dataset. No splitting was needed.
+Both live in `src/data/` and are reached by a dynamic `await import()`, so Vite
+emits each as its own lazy chunk instead of folding it into first paint.
+
+**Four things that only showed up by running the code.**
+
+*A module exporting `then` never finishes importing.* `explain.js` exported a
+function called `then` to match the who/what/when/**then** framing. An ES module
+namespace carrying a `then` is a thenable, so `await import(...)` hands the
+module to the promise machinery, which calls `then(resolve, reject)`; the
+function ignores both and returns an object, so the await never settles. Vitest
+hung at collection with no error and no output. Renamed to `demands`, with a
+regression test asserting the module has no `then`.
+
+*Least privilege by pattern count ranks Owner first.* Owner holds one action —
+`*`. Scoring by wildcards-and-depth instead then rewarded roles for having
+*more* permissions and put VM Restore Operator (45 patterns) above Storage Blob
+Data Reader (3) for a blob read. What works is counting the concrete operations
+a role actually grants: Owner 2553, Contributor 2548 (exactly its five
+Authorization exclusions), Reader 957, Storage Blob Data Reader 3. Computing it
+live costs 2.3 s of blocked main thread, so `refresh-azure-rbac.mjs` precomputes
+it — importing the tool's own matcher rather than reimplementing the semantics,
+because a second copy would be free to disagree and nothing would catch it.
+
+*Pattern overlap needs real intersection, not two literal tests.* Testing each
+pattern against the other as a string misses the case where both carry a
+wildcard in a different place: `Microsoft.Compute/virtualMachines/*` and
+`Microsoft.Compute/*/read` share `.../virtualMachines/read` but neither matches
+the other's text. Replaced with a small DP over the two patterns.
+
+*The type step does not carry the font family.* `text-data-sm` set size, weight
+and tracking, and the GUIDs rendered in the browser's default monospace.
+`pnpm lint` was clean and the class was in the DOM. Every existing tool pairs it
+with `font-mono`; the computed style is the only thing that says so. Exactly the
+failure mode AGENTS.md warns about.
+
+One incidental find, not fixed here: `microsoft-portals` hardcodes "31 portals"
+in three places while its catalogues hold 91.
+
+835 unit + 53 e2e green, lint 0 errors / the same 11 warnings.

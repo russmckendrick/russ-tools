@@ -13,7 +13,7 @@ export const SITE_URL = 'https://russ.tools';
 export const SITE_NAME = 'russ.tools';
 
 export const SITE_DESCRIPTION =
-  'Fifteen focused tools for network, cloud and platform work — subnetting, ' +
+  'Eighteen focused tools for network, cloud and platform work — subnetting, ' +
   'DNS, WHOIS, SSL, JWT, Azure naming and KQL, and more. Everything runs in ' +
   'your browser: no accounts, no analytics, nothing uploaded.';
 

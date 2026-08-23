@@ -98,8 +98,10 @@ const agentsMd = [
   `- Each tool has a prerendered guide at \`${SITE_URL}/<tool>/help\``,
   '- On browsers that support WebMCP, pages register structured tools via ' +
     '`document.modelContext` — site-wide search and navigation everywhere, plus ' +
-    'in-page tools such as `calculate_subnet` on the Subnet Calculator and ' +
-    '`base64_encode`/`base64_decode` on the Base64 tool.',
+    'in-page tools such as `calculate_subnet` on the Subnet Calculator, ' +
+    '`base64_encode`/`base64_decode` on the Base64 tool, ' +
+    '`lookup_m365_license` on the Microsoft 365 License Decoder and ' +
+    '`find_azure_role` on the Azure RBAC Role Explorer.',
   '',
   '## Author',
   '',

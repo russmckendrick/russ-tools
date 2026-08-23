@@ -55,11 +55,11 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('.rt-group')).toHaveCount(0);
     await expect(page.locator('.rt-card-badge')).toHaveCount(0);
 
-    const platformFilter = page.getByRole('radio', { name: 'Microsoft & Azure 4' });
+    const platformFilter = page.getByRole('radio', { name: 'Microsoft & Azure 7' });
     await expect(platformFilter).toBeVisible();
     await expect(page.locator('.rt-card[data-category="azure"]')).toHaveCount(0);
     await expect(page.locator('.rt-card[data-category="microsoft"]')).toHaveCount(0);
-    await expect(page.locator('.rt-card[data-category="microsoft-azure"]')).toHaveCount(4);
+    await expect(page.locator('.rt-card[data-category="microsoft-azure"]')).toHaveCount(7);
 
     await platformFilter.click();
     await expect(platformFilter).toHaveAttribute('aria-checked', 'true');
@@ -67,12 +67,12 @@ test.describe('home and shell pages', () => {
 
     // Filtering is now "hide what does not match" — the promote-one-group,
     // demote-the-rest model went with the sections.
-    await expect(page.locator('.rt-card:visible')).toHaveCount(4);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(7);
 
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(15);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(18);
   });
 
   test('the tiles vary in width so the rows break unevenly', async ({ page }) => {
@@ -91,7 +91,7 @@ test.describe('home and shell pages', () => {
       return [...counts.entries()].sort((a, b) => a[0] - b[0]).map(([, n]) => n);
     });
 
-    expect(rows.reduce((a, b) => a + b, 0)).toBe(15);
+    expect(rows.reduce((a, b) => a + b, 0)).toBe(18);
     expect(new Set(rows).size, `every row held the same count: ${rows}`).toBeGreaterThan(1);
   });
 
@@ -114,7 +114,7 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(15);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(18);
   });
 
   test('a shared category link arrives filtered', async ({ page }) => {
@@ -306,6 +306,56 @@ test.describe('param deep links — rewrite + island application', () => {
     await expect(
       page.getByPlaceholder('Enter domain (e.g., contoso.com) or email address...')
     ).toHaveValue('contoso.com');
+  });
+
+  test('/m365-licenses/:query resolves a SKU GUID', async ({ page }) => {
+    // Microsoft 365 E3. A GUID rather than a part number on purpose: it is
+    // what Graph hands back, and it is the case the tool exists to answer.
+    await expectRewrite(
+      page,
+      '/m365-licenses/05e9a617-0261-4cee-bb44-138d3ef5d965',
+      'Microsoft 365 License Decoder'
+    );
+    await expect(page.getByLabel('Search licence SKUs')).toHaveValue(
+      '05e9a617-0261-4cee-bb44-138d3ef5d965'
+    );
+    await expect(page.getByText('Microsoft 365 E3').first()).toBeVisible();
+  });
+
+  test('/m365-licenses/:query opens the plan tab for a service plan', async ({ page }) => {
+    // SHAREPOINTWAC is a service plan and NOT also a SKU part number, so the
+    // island has to switch tabs rather than sit on the SKU tab showing a
+    // no-match. Terms that are both (INTUNE_A is a plan *and* the standalone
+    // Intune SKU) deliberately resolve as the SKU instead.
+    await expectRewrite(page, '/m365-licenses/SHAREPOINTWAC', 'Microsoft 365 License Decoder');
+    await expect(page.getByText('Office for the Web').first()).toBeVisible();
+    await expect(page.getByText(/Included in \d+ SKUs/)).toBeVisible();
+  });
+
+  test('/azure-rbac/:role opens a role by slug', async ({ page }) => {
+    await expectRewrite(page, '/azure-rbac/storage-blob-data-reader', 'Azure RBAC Role Explorer');
+    await expect(page.getByText('Storage Blob Data Reader').first()).toBeVisible();
+    // The permission buckets are what the deep link is for.
+    await expect(page.getByText('Actions', { exact: true }).first()).toBeVisible();
+  });
+
+  test('/conditional-access explains a pasted policy set', async ({ page }) => {
+    // No params: the policy is pasted, so the sample button is the entry point.
+    const response = await page.goto('/conditional-access');
+    expect(response.status()).toBe(200);
+    await expect(page.locator('h1')).toHaveText('Conditional Access Analyser');
+
+    await page.getByRole('button', { name: 'Load sample' }).click();
+
+    // GUIDs resolved to names is the whole point of the who/what rows.
+    await expect(page.getByText('the Global Administrator role', { exact: false })).toBeVisible();
+    await expect(page.getByText('Office 365 Exchange Online', { exact: false })).toBeVisible();
+    // Report-only must be visibly distinct from enabled.
+    await expect(page.getByText('Report-only').first()).toBeVisible();
+
+    await page.getByRole('tab', { name: /Gaps/ }).click();
+    await expect(page.getByText('No enabled policy blocks legacy authentication')).toBeVisible();
+    await expect(page.getByText('not a tenant assessment', { exact: false })).toBeVisible();
   });
 
   test('/jwt/:token decodes the token', async ({ page }) => {
