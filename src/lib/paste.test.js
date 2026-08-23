@@ -92,10 +92,75 @@ describe('suggest', () => {
    * The four collisions the ordering exists to resolve. Each of these inputs
    * satisfies more than one detector; the assertion is which one wins.
    */
+  it('offers both Azure RBAC and the licence decoder for a bare GUID', () => {
+    // Contributor's role definition id. Nothing in the string says whether it
+    // names a role or a SKU, so the panel says both rather than guessing.
+    expect(ids('b24988ac-6180-42a0-ab88-20f7382dd24c')).toEqual([
+      'azure-rbac',
+      'm365-licenses',
+    ]);
+    expect(first('b24988ac-6180-42a0-ab88-20f7382dd24c').href).toBe(
+      '/azure-rbac/b24988ac-6180-42a0-ab88-20f7382dd24c'
+    );
+    expect(ids('B24988AC-6180-42A0-AB88-20F7382DD24C')).toEqual([
+      'azure-rbac',
+      'm365-licenses',
+    ]);
+  });
+
+  it('routes a SKU part number to the licence decoder, encoder behind it', () => {
+    expect(ids('SPE_E3')).toEqual(['m365-licenses', 'base64']);
+    expect(ids('ENTERPRISEPACK')).toEqual(['m365-licenses', 'base64']);
+    expect(first('SPE_E3').href).toBe('/m365-licenses/SPE_E3');
+  });
+
+  it('routes a bare licence code to the decoder', () => {
+    // The shorthand people actually carry. The decoder resolves a partial by
+    // substring, so E3 lands on results rather than an empty state.
+    for (const code of ['E3', 'e5', 'F1', 'A5', 'G3', 'P2']) {
+      expect(ids(code), code).toEqual(['m365-licenses', 'base64']);
+    }
+    expect(first('E3').href).toBe('/m365-licenses/E3');
+
+    // The digit is what makes the shape safe to claim. "BP" for Business
+    // Premium is real shorthand, but a bare pair of letters is also `go`,
+    // `id` and `ok`, so it stays text.
+    expect(ids('BP')).toEqual(['base64']);
+  });
+
+  it('drops the family prefix from a licence code, because the decoder cannot read it', () => {
+    // `/m365-licenses/m365 e3` finds nothing: the search is a literal
+    // substring over part numbers, names and GUIDs.
+    expect(first('M365 E3').href).toBe('/m365-licenses/E3');
+    expect(first('Microsoft 365 E5').href).toBe('/m365-licenses/E5');
+    expect(first('o365 e1').href).toBe('/m365-licenses/e1');
+    expect(first('EMS E3').href).toBe('/m365-licenses/E3');
+  });
+
   describe('collisions', () => {
     it('a bare word is base64, not a domain — both predicates say yes', () => {
       expect(ids('test')).toEqual(['base64']);
       expect(ids('abcd')).toEqual(['base64']);
+    });
+
+    it('a GUID is not a hostname and not base64, even though it is text', () => {
+      // Dashed hex reaches the encoder in every other reading of it.
+      expect(ids('00000000-0000-0000-0000-000000000000')).toEqual([
+        'azure-rbac',
+        'm365-licenses',
+      ]);
+      // One character short of a GUID is just text again.
+      expect(ids('b24988ac-6180-42a0-ab88-20f7382dd24')).toEqual(['base64']);
+    });
+
+    it('a lower-case underscored word is text, not a SKU', () => {
+      expect(ids('hello_world')).toEqual(['base64']);
+    });
+
+    it('a word is not a licence code — the shape is letters then digits', () => {
+      expect(ids('test')).toEqual(['base64']);
+      expect(ids('IPv4')).toEqual(['base64']);
+      expect(ids('hello world')).toEqual(['base64']);
     });
 
     it('a JWT wins over base64 even though its segments are base64', () => {

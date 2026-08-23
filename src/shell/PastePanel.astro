@@ -31,14 +31,15 @@ const {
       autocomplete="off"
       spellcheck="false"
       value={value}
-      placeholder="example.com  ·  10.0.0.0/22  ·  eyJhbGciOi…  ·  */15 * * * *"
+      placeholder="example.com  ·  10.0.0.0/22  ·  eyJhbGciOi…  ·  b24988ac-…  ·  SPE_E3"
       aria-describedby="rt-jump-desc"
     />
     <button class="rt-jump-go" type="submit">Open &rarr;</button>
   </div>
   <p class="rt-visually-hidden" id="rt-jump-desc">
-    Paste a domain, IP address, CIDR, JWT or cron expression. The tools that
-    can read it are listed below the field; Enter opens the first.
+    Paste a domain, IP address, CIDR, JWT, cron expression, GUID, or a licence
+    code or SKU part number. The tools that can read it are listed below the
+    field; Enter opens the first.
   </p>
   <div class="rt-jump-hint" id="rt-jump-hint" data-resting>
     <b>{hint}</b>
@@ -46,5 +47,7 @@ const {
     <span class="rt-kbd">CIDR &rarr; /subnet-calculator</span>
     <span class="rt-kbd">JWT &rarr; /jwt</span>
     <span class="rt-kbd">host &rarr; /ssl-checker</span>
+    <span class="rt-kbd">GUID &rarr; /azure-rbac</span>
+    <span class="rt-kbd">SKU &rarr; /m365-licenses</span>
   </div>
 </form>

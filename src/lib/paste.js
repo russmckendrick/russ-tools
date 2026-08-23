@@ -8,6 +8,12 @@
  * tenantLookup.js`, which both pull `@/core`, and it is why `hostname.js`
  * exists rather than a fourth copy of their domain regex.
  *
+ * `licenses.js` passes that test: its 426 KB dataset sits behind a dynamic
+ * import inside `loadLicenses()`, so importing `detectQueryKind` costs the
+ * index a few lines of module and nothing else. Reusing it is the point — the
+ * tool's own definition of "that is a SKU part number" is the only one that
+ * can be right about it.
+ *
  * Ranking, not routing, is the point. Five tools accept a bare hostname, so
  * "paste example.com and go" cannot be a single destination without silently
  * hiding four tools that wanted the same input. The caller renders one chip
@@ -17,10 +23,27 @@
 import { parseIPv4, parseIPv4Cidr } from '../tools/subnet-calculator/lib/ipv4.js';
 import { parseIPv6, parseIPv6Cidr } from '../tools/subnet-calculator/lib/ipv6.js';
 import { looksLikeCron } from '../tools/cron-builder/lib/cron.js';
+import { detectQueryKind } from '../tools/m365-licenses/lib/licenses.js';
 import { cleanHostname, isHostname } from './hostname.js';
 
 /** A pasted value long enough to be a file is not a link. */
 const MAX_LENGTH = 2000;
+
+/** The one shape two tools share: an Azure role id and a Microsoft 365 SKU id. */
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * A Microsoft licence code, which is what people actually have: `E3`, `E5`,
+ * `F1`, `F3`, `A1`/`A3`/`A5`, `G3`/`G5`, `P1`/`P2`, `BP`. One or two letters
+ * and one or two digits, and nothing else on this site reads that shape.
+ *
+ * The family prefix is optional and captured away, because "M365 E3" is how it
+ * is said and `/m365-licenses/m365 e3` finds nothing: the decoder searches by
+ * literal substring, so the link carries the code alone. Reducing a pasted
+ * value to the part a tool can read is what `subject()` already does for URLs.
+ */
+const LICENCE_CODE =
+  /^(?:(?:microsoft|office|m|o)\s*365\s+|ems\s+|win(?:dows)?\s+)?([a-z]{1,2}\d{1,2})$/i;
 
 /**
  * A path segment, with colons left alone.
@@ -88,6 +111,10 @@ const tool = (toolId, label, path, href, why) => ({ toolId, label, path, href, w
  *     parsers run before the hostname pattern.
  *   - a cron expression is only digits and punctuation in five fields, which
  *     nothing else here satisfies.
+ *   - a GUID is dashed hex and matches nothing above it; a SKU part number is
+ *     upper-case and underscored and a licence code is two letters and a
+ *     digit, and both are offered ahead of — not instead of — the encoder,
+ *     because neither test consults the licence dataset.
  *
  * The list is never empty for usable input: base64 encodes anything, so the
  * panel has no dead end to design a state for.
@@ -134,6 +161,50 @@ export function suggest(input) {
     // where its validator splits on any run of whitespace.
     const expression = value.replace(/\s+/g, ' ');
     return [tool('cron-builder', 'CRON Builder', '/cron', `/cron/${seg(expression)}`, 'cron expression')];
+  }
+
+  /*
+    A bare GUID is genuinely two answers, which is the case this panel was
+    built for. Azure role definitions and Microsoft 365 SKUs and service plans
+    are all identified by one, and nothing in the string says which — an RBAC
+    id copied out of a Bicep template and a SKU id copied out of a Graph
+    response are the same 36 characters. Both are offered; RBAC leads because
+    role ids are the ones people paste from something they are editing.
+  */
+  if (GUID.test(value)) {
+    return [
+      tool('azure-rbac', 'Azure RBAC', '/azure-rbac', `/azure-rbac/${seg(value)}`, 'GUID'),
+      tool('m365-licenses', 'M365 Licences', '/m365-licenses', `/m365-licenses/${seg(value)}`, 'GUID'),
+    ];
+  }
+
+  /*
+    Two ways of naming a licence, one destination.
+
+    A SKU part number — `SPE_E3`, `ENTERPRISEPACK` — is read by the licence
+    tool's own classifier rather than by a fifth copy of its regex here. A
+    licence code — `E3`, `M365 E5` — is the shorthand people actually carry,
+    and the decoder resolves a partial by substring, so it lands on a real
+    result rather than an empty state.
+
+    The encoder is kept in the list behind both, because neither test consults
+    the dataset: `detectQueryKind` is deliberately loose over there (it only
+    has to beat "name"), `DEADBEEF` is part-number-shaped, and `E7` is
+    code-shaped without being a licence anyone sells.
+  */
+  const licence = LICENCE_CODE.exec(value);
+  if (licence || detectQueryKind(value) === 'partNumber') {
+    const query = licence ? licence[1] : value;
+    return [
+      tool(
+        'm365-licenses',
+        'M365 Licences',
+        '/m365-licenses',
+        `/m365-licenses/${seg(query)}`,
+        licence ? 'licence code' : 'SKU part number'
+      ),
+      tool('base64', 'Base64 Encoder', '/base64', `/base64/${encodeURIComponent(raw)}`, 'text'),
+    ];
   }
 
   if (isHostname(value)) {

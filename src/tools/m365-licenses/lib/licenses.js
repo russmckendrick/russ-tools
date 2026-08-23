@@ -129,6 +129,31 @@ function score(haystack, needle) {
 }
 
 /**
+ * A GUID is hex, so a short query hits dozens of them by accident and hits
+ * them *hard*: two thirds of the catalogue's ids contain "e3" somewhere and
+ * some begin with it, which scored 1036 and beat every SKU whose **name**
+ * contains it. Searching "E3" answered "Microsoft Teams Phone Resource
+ * Account_USGOV_GCCHIGH" before "Microsoft 365 E3".
+ *
+ * So an id is matched only by a fragment long enough to have been copied from
+ * one, and an id-only match always sorts behind every name and part-number
+ * match rather than competing with them. An exact id never reaches here —
+ * `findSku` and `planDetail` answer that directly.
+ */
+const ID_FRAGMENT_MIN = 8;
+const ID_RANK = 100_000;
+
+function scoreId(id, needle) {
+  if (needle.length < ID_FRAGMENT_MIN) return -1;
+  const s = score(id, needle);
+  return s === -1 ? -1 : ID_RANK + s;
+}
+
+/** The best textual score, or `Infinity` when nothing matched. */
+const best = (...scores) =>
+  Math.min(...scores.filter((s) => s !== -1).concat(Number.POSITIVE_INFINITY));
+
+/**
  * Ranked partial matches across part number, display name and GUID.
  * @param {LicenseData} data
  * @param {string} query
@@ -141,12 +166,8 @@ export function searchSkus(data, query, limit = 50) {
 
   const scored = [];
   for (const sku of data.skus) {
-    const best = Math.min(
-      ...[score(sku.partNumber, q), score(sku.name, q), score(sku.guid, q)]
-        .filter((s) => s !== -1)
-        .concat(Number.POSITIVE_INFINITY)
-    );
-    if (Number.isFinite(best)) scored.push([best, sku]);
+    const rank = best(score(sku.partNumber, q), score(sku.name, q), scoreId(sku.guid, q));
+    if (Number.isFinite(rank)) scored.push([rank, sku]);
   }
 
   return scored
@@ -168,12 +189,8 @@ export function searchServicePlans(data, query, limit = 50) {
 
   const scored = [];
   for (const plan of data.servicePlans) {
-    const best = Math.min(
-      ...[score(plan.name, q), score(plan.friendly, q), score(plan.id, q)]
-        .filter((s) => s !== -1)
-        .concat(Number.POSITIVE_INFINITY)
-    );
-    if (Number.isFinite(best)) scored.push([best, plan]);
+    const rank = best(score(plan.name, q), score(plan.friendly, q), scoreId(plan.id, q));
+    if (Number.isFinite(rank)) scored.push([rank, plan]);
   }
 
   return scored

@@ -570,13 +570,32 @@ import '@fontsource/space-mono/700.css';
 
 - One content column, `max-width: 1200px`, `32px` gutters.
 - **The tool index** is one flowing stream of separated tiles — `flex-wrap`
-  with a `12px` gap, not a fixed track count. Each tile carries its own
-  `flex-basis` in three distinct steps (`235 / 315 / 400px`, chosen from title
-  and description length), so rows break at 3, 2, 3, 3 and 4 rather than
-  snapping to a grid. A continuous curve over the same inputs was tried first
-  and repacked into a uniform 3×5; the steps have to be distinct to do
-  anything. The index carries **no category headings** — the filter chips name
-  the categories and the icon tile carries the hue — and tools stay in category
+  with a `14px` gap, not a fixed track count — and the width of a tile is
+  **authored by a cadence, not read off its own text**. Two steps only: a
+  third of a row or a half of one, each written as a fraction of the row minus
+  its gutters, so three thirds and two halves flush to exactly the same two
+  edges. `src/lib/rowCadence.js` repeats `[3, 2, 3, 3, 2]` over the catalogue
+  (eighteen tools break `3,2,3,3,2,3,2`) and the index's client script re-runs
+  it over the visible tiles on every filter, so a filtered view is its own
+  cadence rather than a slice of one written for eighteen. `min-width: 340px`
+  — the longest title, plus the tile's icon and padding — breaks the row down
+  to two and then to one as the viewport closes, so the composition needs no
+  breakpoint of its own above the phone.
+
+  Three px steps chosen from title and description length were tried first and
+  withdrawn: every Microsoft and Azure title is long, so all seven took the
+  widest step at once and the middle of the page became a block of 2-up rows,
+  and a 2-up row of tiles capped at `max-width: 500px` stopped **124px short
+  of the right edge** — three consecutive rows reading as a narrower table
+  indented inside the catalogue. Two further attempts to give the wide tile
+  more to hold were also withdrawn: the manifest's badge terms as a row of
+  keys (they read as chips you could press, on a page that opens with a chip
+  row you can) and the route path (`/dns-lookup`) under the description, which
+  was a third statement of what the title and the link already say. The wide
+  step is breathing room; the cadence is what it is for.
+
+  The index carries **no category headings** — the filter chips name the
+  categories and the icon tile carries the hue — and tools stay in category
   order so the hues cluster and drift down the page. /404 keeps the 3-column
   grid, which is right for three suggestions under one heading.
   Signal's shared-edge idiom is retired: the border belongs to the tile again,
@@ -760,8 +779,11 @@ one. That admits exactly three things beyond hover and press, all at
    per load: each tile starts 3px raised carrying the `press` shadow and
    lands flat and shadowless, which is the press vocabulary run backwards —
    the page assembles out of things that are visibly pressable. Strictly
-   bounded: 240ms per tile, an 18ms stagger capped at ten steps, so the last
-   tile has landed inside 420ms. It is pure CSS on prerendered markup, so it
+   bounded: 240ms per tile, and the stagger runs on the
+   diagonal — the delay is the tile's row plus its column in the cadence, so
+   the catalogue crosses the page as a wave rather than running down it in one
+   line. 26ms a step, each term capped, so the last tile has landed inside
+   420ms. It is pure CSS on prerendered markup, so it
    delays no content and survives with JavaScript off. Nothing else on the
    site animates on entry.
 3. **A swapped value fades in.** Where text is replaced under the reader —

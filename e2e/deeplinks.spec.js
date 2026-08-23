@@ -75,24 +75,35 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('.rt-card:visible')).toHaveCount(18);
   });
 
-  test('the tiles vary in width so the rows break unevenly', async ({ page }) => {
+  test('the tiles vary in width and every row still flushes to both edges', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/');
+    // The tiles deal in on a stagger; measure where they land, not where the
+    // animation had them at first paint.
+    await page.waitForTimeout(800);
 
-    // The three width steps are what make this a stream rather than a grid.
-    // A regression to one width would repack it into a uniform 3xN and every
-    // other assertion here would still pass.
-    const rows = await page.evaluate(() => {
-      const counts = new Map();
+    // Two width steps are what make this a stream rather than a grid, and the
+    // flush edge is what makes it one stream rather than two tables — a 2-up
+    // row used to stop 124px short of the right edge because the tiles were
+    // capped at 500px. A regression to one width repacks the page into a
+    // uniform 3xN, and a regression on the cap leaves three rows indented;
+    // every other assertion here would still pass through both.
+    const { rows, ragged } = await page.evaluate(() => {
+      const edge = Math.round(document.getElementById('board').getBoundingClientRect().right);
+      const byTop = new Map();
       for (const card of document.querySelectorAll('.rt-stream .rt-card')) {
-        const top = Math.round(card.getBoundingClientRect().top);
-        counts.set(top, (counts.get(top) ?? 0) + 1);
+        const box = card.getBoundingClientRect();
+        const top = Math.round(box.top);
+        const row = byTop.get(top) ?? { n: 0, right: 0 };
+        byTop.set(top, { n: row.n + 1, right: Math.max(row.right, Math.round(box.right)) });
       }
-      return [...counts.entries()].sort((a, b) => a[0] - b[0]).map(([, n]) => n);
+      const all = [...byTop.entries()].sort((a, b) => a[0] - b[0]).map(([, r]) => r);
+      return { rows: all.map((r) => r.n), ragged: all.filter((r) => r.right !== edge).map((r) => r.right) };
     });
 
     expect(rows.reduce((a, b) => a + b, 0)).toBe(18);
     expect(new Set(rows).size, `every row held the same count: ${rows}`).toBeGreaterThan(1);
+    expect(ragged, `rows stopped short of the right edge: ${ragged}`).toEqual([]);
   });
 
   test('the name filter narrows the index and is readable off the URL', async ({ page }) => {
@@ -148,9 +159,46 @@ test.describe('home and shell pages', () => {
     await expect(chips).toHaveCount(1);
     await expect(chips.first()).toHaveAttribute('href', '/subnet-calculator/10.0.0.0/22');
 
+    // A GUID names either an Azure role definition or a Microsoft 365 SKU,
+    // and nothing in the string says which — so the panel says both.
+    await input.fill('b24988ac-6180-42a0-ab88-20f7382dd24c');
+    await expect(chips).toHaveCount(2);
+    await expect(chips.first()).toHaveAttribute(
+      'href',
+      '/azure-rbac/b24988ac-6180-42a0-ab88-20f7382dd24c'
+    );
+    await expect(chips.nth(1)).toHaveAttribute(
+      'href',
+      '/m365-licenses/b24988ac-6180-42a0-ab88-20f7382dd24c'
+    );
+
+    // A SKU part number leads, with the encoder kept behind it because the
+    // shape test is loose.
+    await input.fill('SPE_E3');
+    await expect(chips).toHaveCount(2);
+    await expect(chips.first()).toHaveText('M365 Licences \u2192 /m365-licenses');
+
+    // So does the shorthand, and the family prefix is dropped from the link
+    // because the decoder searches by literal substring.
+    await input.fill('E3');
+    await expect(chips.first()).toHaveAttribute('href', '/m365-licenses/E3');
+    await input.fill('M365 E3');
+    await expect(chips.first()).toHaveAttribute('href', '/m365-licenses/E3');
+
+    await input.fill('10.0.0.0/22');
     await input.press('Enter');
     await expect(page).toHaveURL(/\/subnet-calculator\/10\.0\.0\.0\/22$/);
     await expect(page.locator('h1')).toHaveText('Subnet Calculator');
+  });
+
+  test('the paste panel opens the licence decoder on a SKU', async ({ page }) => {
+    await page.goto('/');
+    const input = page.locator('#rt-jump-input');
+    await expect(input).toBeVisible();
+    await input.fill('SPE_E3');
+    await input.press('Enter');
+    await expect(page).toHaveURL(/\/m365-licenses\/SPE_E3$/);
+    await expect(page.locator('h1')).toHaveText('Microsoft 365 License Decoder');
   });
 
   test('/404 reads the failed URL rather than dead-ending', async ({ page }) => {
@@ -408,6 +456,27 @@ test.describe('param deep links — rewrite + island application', () => {
     // through useLookupTool, only the manifest was missing it.
     await expectRewrite(page, '/dns-lookup/example.com', 'DNS Lookup Tool');
     await expect(page.locator('#domain')).toHaveValue('example.com');
+  });
+
+  test('/azure-rbac/:role opens the role a GUID names', async ({ page }) => {
+    // Added with the paste panel's GUID branch: a role definition id pasted
+    // out of a template has to land on the role, not on a search box.
+    await expectRewrite(page, '/azure-rbac/b24988ac-6180-42a0-ab88-20f7382dd24c', 'Azure RBAC Role Explorer');
+    await expect(page.getByText('Contributor').first()).toBeVisible();
+  });
+
+  test('/m365-licenses/:query resolves a SKU part number', async ({ page }) => {
+    await expectRewrite(page, '/m365-licenses/SPE_E3', 'Microsoft 365 License Decoder');
+    await expect(page.getByText('Microsoft 365 E3').first()).toBeVisible();
+  });
+
+  test('/m365-licenses/:query lands a licence code on matches, not an empty state', async ({
+    page,
+  }) => {
+    // The panel offers `E3` on shape alone, so the landing has to be worth
+    // offering: the decoder resolves a partial by substring.
+    await expectRewrite(page, '/m365-licenses/E3', 'Microsoft 365 License Decoder');
+    await expect(page.getByText('E3', { exact: false }).first()).toBeVisible();
   });
 
   test('/cron/:expression seeds the builder', async ({ page }) => {
