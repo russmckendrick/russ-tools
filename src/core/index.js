@@ -15,6 +15,22 @@ export { copyText, readText } from './clipboard.js';
 export { downloadFile, downloadJSON, safeFilename } from './download.js';
 export { ApiError, apiFetch, apiJson, buildUrl } from './api.js';
 export {
+  DNS_PROVIDERS,
+  DNS_TYPES,
+  DNS_TYPE_NAMES,
+  canonicalDnsAnswers,
+  compareDnsResponses,
+  decodeDnsText,
+  dnsRcodeName,
+  dnsRecords,
+  dnsTypeName,
+  formatDnsRecord,
+  normalizeDnsName,
+  parseDnsRecord,
+  queryDns,
+  queryDnsMany,
+} from './dns.js';
+export {
   safeStringify,
   compressConfig,
   decompressConfig,

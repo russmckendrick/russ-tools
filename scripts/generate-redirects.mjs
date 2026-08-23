@@ -38,6 +38,8 @@ const lines = [
   '',
 ];
 
+const rule = (from, to, status) => `${from.padEnd(40)} ${to.padEnd(24)} ${status}`;
+
 let count = 0;
 
 // Retired paths first: real 301s, before any rewrite can match. Declared per
@@ -48,8 +50,8 @@ const redirects = tools.flatMap((tool) =>
 if (redirects.length) {
   lines.push('# Retired paths');
   for (const { from, to } of redirects) {
-    lines.push(`${from.padEnd(40)}${to.padEnd(24)}301`);
-    lines.push(`${`${from}/*`.padEnd(40)}${to.padEnd(24)}301`);
+    lines.push(rule(from, to, 301));
+    lines.push(rule(`${from}/*`, to, 301));
   }
   lines.push('');
 }
@@ -60,11 +62,11 @@ for (const tool of tools) {
   // The help page is a real prerendered file, but Cloudflare evaluates these
   // rules before serving assets — so /:param would swallow /help. The
   // self-rewrite pins it, and must come first: first match wins.
-  lines.push(`${`${tool.path}/help`.padEnd(40)}${`${tool.path}/help`.padEnd(24)}200`);
+  lines.push(rule(`${tool.path}/help`, `${tool.path}/help`, 200));
   for (let i = 0; i < tool.params.length; i++) {
     const pattern = `${tool.path}/${tool.params.slice(0, i + 1).map((p) => `:${p}`).join('/')}`;
     // Column-aligned purely so the file is readable when debugging a 404.
-    lines.push(`${pattern.padEnd(40)}${tool.path.padEnd(24)}200`);
+    lines.push(rule(pattern, tool.path, 200));
     count++;
   }
   lines.push('');

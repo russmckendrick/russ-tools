@@ -14,7 +14,7 @@
  * tool's own definition of "that is a SKU part number" is the only one that
  * can be right about it.
  *
- * Ranking, not routing, is the point. Five tools accept a bare hostname, so
+ * Ranking, not routing, is the point. Seven tools accept a bare hostname, so
  * "paste example.com and go" cannot be a single destination without silently
  * hiding four tools that wanted the same input. The caller renders one chip
  * per suggestion and follows the first on Enter.
@@ -31,6 +31,7 @@ const MAX_LENGTH = 2000;
 
 /** The one shape two tools share: an Azure role id and a Microsoft 365 SKU id. */
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ASN = /^(?:AS)?\d{1,10}$/i;
 
 /**
  * A Microsoft licence code, which is what people actually have: `E3`, `E5`,
@@ -138,6 +139,7 @@ export function suggest(input) {
     // The slash between address and prefix is a real segment boundary —
     // /subnet-calculator/:ip/:prefix — so the two halves are encoded
     // separately and joined with a literal one.
+    const normalized = `${cidr.address}/${cidr.prefix}`;
     return [
       tool(
         'subnet-calculator',
@@ -146,6 +148,8 @@ export function suggest(input) {
         `/subnet-calculator/${seg(cidr.address)}/${cidr.prefix}`,
         'CIDR'
       ),
+      tool('cidr-workbench', 'CIDR Workbench', '/cidr-workbench', `/cidr-workbench/${seg(normalized)}`, 'CIDR'),
+      tool('bgp-explorer', 'BGP Explorer', '/bgp-explorer', `/bgp-explorer/${seg(normalized)}`, 'CIDR'),
     ];
   }
 
@@ -153,6 +157,8 @@ export function suggest(input) {
     return [
       tool('subnet-calculator', 'Subnet Calculator', '/subnet-calculator', `/subnet-calculator/${seg(value)}`, 'IP address'),
       tool('whois-lookup', 'WHOIS Lookup', '/whois-lookup', `/whois-lookup/${seg(value)}`, 'IP address'),
+      tool('bgp-explorer', 'BGP Explorer', '/bgp-explorer', `/bgp-explorer/${seg(value)}`, 'IP address'),
+      tool('azure-service-tags', 'Azure Service Tags', '/azure-service-tags', `/azure-service-tags/${seg(value)}`, 'IP address'),
     ];
   }
 
@@ -161,6 +167,11 @@ export function suggest(input) {
     // where its validator splits on any run of whitespace.
     const expression = value.replace(/\s+/g, ' ');
     return [tool('cron-builder', 'CRON Builder', '/cron', `/cron/${seg(expression)}`, 'cron expression')];
+  }
+
+  if (ASN.test(value)) {
+    const asn = value.toUpperCase().startsWith('AS') ? value.toUpperCase() : `AS${value}`;
+    return [tool('bgp-explorer', 'BGP Explorer', '/bgp-explorer', `/bgp-explorer/${asn}`, 'autonomous system number')];
   }
 
   /*
@@ -208,12 +219,13 @@ export function suggest(input) {
   }
 
   if (isHostname(value)) {
-    // Ordered by how little each one presumes: DNS answers a question about
-    // any host at all, WHOIS presumes a registry, SSL presumes an HTTPS
-    // service, and the last two presume Microsoft.
+    // Ordered by how little each one presumes: general DNS answers first,
+    // then focused mail and DNSSEC analysis, registration, TLS and Microsoft.
     const host = cleanHostname(value);
     return [
       tool('dns-lookup', 'DNS Lookup', '/dns-lookup', `/dns-lookup/${seg(host)}`, 'domain'),
+      tool('email-dns-analyser', 'Email DNS', '/email-dns-analyser', `/email-dns-analyser/${seg(host)}`, 'domain'),
+      tool('dnssec-checker', 'DNSSEC Checker', '/dnssec-checker', `/dnssec-checker/${seg(host)}`, 'domain'),
       tool('whois-lookup', 'WHOIS Lookup', '/whois-lookup', `/whois-lookup/${seg(host)}`, 'domain'),
       tool('ssl-checker', 'SSL Checker', '/ssl-checker', `/ssl-checker/${seg(host)}`, 'domain'),
       tool('tenant-lookup', 'Tenant Lookup', '/tenant-lookup', `/tenant-lookup/${seg(host)}`, 'domain'),

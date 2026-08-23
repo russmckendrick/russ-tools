@@ -1,0 +1,20 @@
+export default {
+  id: 'bgp-explorer',
+  path: '/bgp-explorer',
+  title: 'BGP & ASN Explorer',
+  shortDescription: 'Inspect route origins, visibility, related prefixes and RPKI state.',
+  description: 'Explore the live routing state behind an IP address, CIDR prefix or autonomous system. See origin ASNs, holders, RIS visibility, more and less specifics, announced prefixes and RPKI validity through RIPEstat.',
+  category: 'network',
+  icon: 'route',
+  badges: ['BGP', 'ASN', 'RPKI', 'RIPE RIS'],
+  params: ['resource'],
+  features: ['IP, prefix and ASN input', 'Origin ASN discovery', 'RIS routing visibility', 'RPKI origin validation', 'More and less specific routes', 'Announced prefixes by ASN'],
+  seo: {
+    title: 'BGP & ASN Explorer - Route Origin and RPKI Lookup',
+    keywords: ['bgp lookup', 'asn lookup', 'route origin lookup', 'rpki validator', 'prefix lookup', 'bgp visibility', 'autonomous system explorer'],
+  },
+  storageKeys: [],
+  legacyKeys: [],
+  help: () => import('../../../docs/tools/bgp-explorer/README.md?raw'),
+  island: () => import('./island.jsx'),
+};

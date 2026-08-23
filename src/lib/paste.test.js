@@ -3,8 +3,8 @@ import { suggest } from './paste.js';
 import { allRoutes } from '../tools/registry.mjs';
 
 /**
- * The dispatcher's contract is the ranking, not just the routing: five tools
- * accept a bare hostname, so "paste a domain" must offer five chips rather
+ * The dispatcher's contract is the ranking, not just the routing: seven tools
+ * accept a bare hostname, so "paste a domain" must offer seven chips rather
  * than silently choosing one.
  *
  * Every href here is also a route the registry actually serves —
@@ -43,6 +43,12 @@ describe('suggest', () => {
     });
   });
 
+  it('also offers CIDR set work and route visibility', () => {
+    expect(ids('10.0.0.0/22')).toEqual(['subnet-calculator', 'cidr-workbench', 'bgp-explorer']);
+    expect(suggest('10.0.0.0/22')[1].href).toBe('/cidr-workbench/10.0.0.0%2F22');
+    expect(suggest('10.0.0.0/22')[2].href).toBe('/bgp-explorer/10.0.0.0%2F22');
+  });
+
   it('splits an IPv6 CIDR the same way, colons intact', () => {
     // Byte-identical to the fixture frozen in e2e/deeplinks.spec.js. A colon
     // is a legal pchar, and percent-encoding it would make every IPv6 deep
@@ -50,9 +56,15 @@ describe('suggest', () => {
     expect(first('2001:db8:abcd::/48').href).toBe('/subnet-calculator/2001:db8:abcd::/48');
   });
 
-  it('offers both subnet and WHOIS for a bare IP', () => {
-    expect(ids('10.0.0.1')).toEqual(['subnet-calculator', 'whois-lookup']);
-    expect(ids('2001:db8::1')).toEqual(['subnet-calculator', 'whois-lookup']);
+  it('offers calculators and live routing datasets for a bare IP', () => {
+    const expected = ['subnet-calculator', 'whois-lookup', 'bgp-explorer', 'azure-service-tags'];
+    expect(ids('10.0.0.1')).toEqual(expected);
+    expect(ids('2001:db8::1')).toEqual(expected);
+  });
+
+  it('routes an ASN to the BGP explorer', () => {
+    expect(first('AS3333').href).toBe('/bgp-explorer/AS3333');
+    expect(first('3333').href).toBe('/bgp-explorer/AS3333');
   });
 
   it('routes a cron expression to the builder', () => {
@@ -66,9 +78,11 @@ describe('suggest', () => {
     expect(ids('the quick brown fox jumps')).toEqual(['base64']);
   });
 
-  it('offers all five domain tools, DNS first', () => {
+  it('offers all seven domain tools, DNS first', () => {
     expect(ids('example.com')).toEqual([
       'dns-lookup',
+      'email-dns-analyser',
+      'dnssec-checker',
       'whois-lookup',
       'ssl-checker',
       'tenant-lookup',
@@ -168,11 +182,11 @@ describe('suggest', () => {
     });
 
     it('an IP wins over hostname even though both are dotted', () => {
-      expect(ids('192.168.1.1')).toEqual(['subnet-calculator', 'whois-lookup']);
+      expect(ids('192.168.1.1')).toEqual(['subnet-calculator', 'whois-lookup', 'bgp-explorer', 'azure-service-tags']);
     });
 
     it('a CIDR wins over a bare IP', () => {
-      expect(ids('192.168.1.0/24')).toEqual(['subnet-calculator']);
+      expect(ids('192.168.1.0/24')).toEqual(['subnet-calculator', 'cidr-workbench', 'bgp-explorer']);
     });
   });
 
@@ -207,11 +221,11 @@ describe('suggest', () => {
 
   describe('URLs', () => {
     it('reads an IP out of a URL rather than dropping it into base64', () => {
-      expect(ids('https://10.0.0.1:8443/')).toEqual(['subnet-calculator', 'whois-lookup']);
+      expect(ids('https://10.0.0.1:8443/')).toEqual(['subnet-calculator', 'whois-lookup', 'bgp-explorer', 'azure-service-tags']);
     });
 
     it('unwraps a bracketed IPv6 literal', () => {
-      expect(ids('https://[2001:db8::1]/')).toEqual(['subnet-calculator', 'whois-lookup']);
+      expect(ids('https://[2001:db8::1]/')).toEqual(['subnet-calculator', 'whois-lookup', 'bgp-explorer', 'azure-service-tags']);
       expect(first('https://[2001:db8::1]/').href).toBe('/subnet-calculator/2001:db8::1');
     });
 

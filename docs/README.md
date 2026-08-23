@@ -10,16 +10,22 @@ network, cloud and platform work.
 
 | Tool | Category | What it does | Path | Docs |
 |---|---|---|---|---|
-| **DNS Lookup Tool** | Network | Query any record type against Google or Cloudflare DNS over HTTPS. | `/dns-lookup` | [Docs](tools/dns-lookup/) |
+| **BGP & ASN Explorer** | Network | Inspect route origins, visibility, related prefixes and RPKI state. | `/bgp-explorer` | [Docs](tools/bgp-explorer/) |
+| **CIDR Workbench** | Network | Collapse, subtract, intersect and find gaps in IPv4 or IPv6 sets. | `/cidr-workbench` | [Docs](tools/cidr-workbench/) |
+| **DNS Lookup Tool** | Network | Inspect and compare DNS records through Google and Cloudflare DoH. | `/dns-lookup` | [Docs](tools/dns-lookup/) |
+| **DNS Zone File Linter** | Network | Lint, normalize and compare BIND-style DNS zone files. | `/zone-file-linter` | [Docs](tools/zone-file-linter/) |
+| **Email DNS Analyser** | Network | Check MX, SPF, DMARC, DKIM, MTA-STS and SMTP TLS reporting. | `/email-dns-analyser` | [Docs](tools/email-dns-analyser/) |
 | **Subnet Calculator** | Network | IPv4 and IPv6 subnet details, with a visual split-and-join divide table. | `/subnet-calculator` | [Docs](tools/subnet-calculator/) |
 | **WHOIS Lookup Tool** | Network | Registration and ownership detail for domains and IPs. | `/whois-lookup` | [Docs](tools/whois-lookup/) |
 | **Azure KQL Query Builder** | Azure | Build Kusto queries for Azure services with guided forms. | `/azure-kql` | [Docs](tools/azure-kql/) |
 | **Azure RBAC Role Explorer** | Azure | Search 504 built-in Azure roles by name or by the action they grant. | `/azure-rbac` | [Docs](tools/azure-rbac/) |
 | **Azure Resource Naming Tool** | Azure | Generate and validate names against Microsoft CAF rules. | `/azure-naming` | [Docs](tools/azure-naming/) |
+| **Azure Service Tags** | Azure | Search and compare Microsoft Azure service-tag IP ranges. | `/azure-service-tags` | [Docs](tools/azure-service-tags/) |
 | **Conditional Access Analyser** | Microsoft | Explain exported Conditional Access policies and spot the gaps. | `/conditional-access` | [Docs](tools/conditional-access/) |
 | **Microsoft 365 License Decoder** | Microsoft | Turn licence GUIDs and SKU part numbers into names and service plans. | `/m365-licenses` | [Docs](tools/m365-licenses/) |
 | **Microsoft Portals (GDAP)** | Microsoft | Deep links into 31 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](tools/microsoft-portals/) |
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](tools/tenant-lookup/) |
+| **DNSSEC & Delegation Checker** | Security | Verify DS/DNSKEY links and inspect a domain delegation. | `/dnssec-checker` | [Docs](tools/dnssec-checker/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](tools/jwt/) |
 | **Password Generator** | Security | Cryptographically random passwords, generated on-device. | `/password-generator` | [Docs](tools/password-generator/) |
 | **SSL Certificate Checker** | Security | Inspect the chain, ciphers and expiry for any host. | `/ssl-checker` | [Docs](tools/ssl-checker/) |
@@ -29,7 +35,7 @@ network, cloud and platform work.
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](tools/markdown-table-tool/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](tools/buzzword-ipsum/) |
 
-18 tools.
+24 tools.
 <!-- TOOLS:END -->
 
 Tools without a linked document work the same way as the rest; nobody has written one up
@@ -64,26 +70,31 @@ params, storage keys and SEO, and everything else is derived from it:
 | Derived from the manifest | Where |
 |---|---|
 | The page itself | `src/pages/[tool].astro` |
+| The documentation-backed help page | `src/pages/[tool]/help.astro` |
 | The index card and category filter | `src/pages/index.astro` |
 | Sitemap entries | `scripts/generate-sitemap.js` |
 | Cloudflare `_redirects` rules | `scripts/generate-redirects.mjs` |
 | The Open Graph card | `scripts/generate-og.mjs` |
 | The saved-data listing at `/delete` | `src/components/common/StorageManager.jsx` |
+| The llms and agent discovery files | `scripts/generate-llms.mjs` |
 | These documentation tables | `scripts/generate-docs.mjs` |
 
-Adding a tool means adding a folder. Nothing central needs editing.
+Adding a tool means adding its tool folder and documentation README. Nothing central needs
+editing.
 
-Shared code lives in `src/core/` (storage, clipboard, download, cache, the API client
-and the share-link codec) and `src/components/ui/` (the component layer every tool
-renders through). Tools do not hand-roll those, and they never set their own colour —
-the category hue comes from the manifest.
+Shared code lives in `src/core/` (storage, clipboard, download, cache, HTTP and DNS clients,
+and the share-link codec) and `src/components/ui/` (the component layer every tool renders
+through). Tools do not hand-roll those, and they never set their own colour — the category
+hue comes from the manifest.
 
 ## Privacy
 
-Processing happens in the browser. Three lookups cannot: WHOIS, SSL analysis and
-Microsoft tenant discovery need a server, and are proxied through Cloudflare Workers in
-`cloudflare-worker/`. Everything else — subnetting, JWT decoding, password generation,
-encoding, conversion — never leaves the tab.
+Local calculations and pasted data stay in the browser. DNS Lookup sends the queried name
+to the chosen Google or Cloudflare DNS-over-HTTPS resolver; Email DNS Analyser and DNSSEC &
+Delegation Checker use Google DNS-over-HTTPS. BGP & ASN Explorer sends the queried address,
+prefix or ASN to RIPEstat. WHOIS, SSL analysis and Microsoft tenant discovery send the
+queried name or address through the three corresponding Workers in `cloudflare-worker/`.
+Each lookup tool names that boundary where it runs.
 
 Saved data is browser local storage only. `/delete` shows what each tool has stored and
 clears it.

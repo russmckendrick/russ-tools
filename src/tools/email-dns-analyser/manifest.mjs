@@ -1,0 +1,20 @@
+export default {
+  id: 'email-dns-analyser',
+  path: '/email-dns-analyser',
+  title: 'Email DNS Analyser',
+  shortDescription: 'Check MX, SPF, DMARC, DKIM, MTA-STS and SMTP TLS reporting.',
+  description: 'Analyse the DNS configuration behind a mail domain in one pass. Follow SPF includes and lookup limits, explain DMARC policy, inspect an optional DKIM selector, and check MTA-STS and TLS reporting signals.',
+  category: 'network',
+  icon: 'mail-check',
+  badges: ['SPF', 'DMARC', 'DKIM', 'MTA-STS'],
+  params: ['domain'],
+  features: ['MX routing checks', 'Recursive SPF include analysis', 'DMARC policy parsing', 'Optional DKIM selector inspection', 'MTA-STS and TLS-RPT discovery', 'Evidence-based findings without a synthetic score'],
+  seo: {
+    title: 'Email DNS Analyser - SPF, DMARC and DKIM Checks',
+    keywords: ['email dns checker', 'spf checker', 'dmarc checker', 'dkim checker', 'mta-sts', 'tls-rpt', 'mail domain analyzer', 'mx lookup'],
+  },
+  storageKeys: [],
+  legacyKeys: [],
+  help: () => import('../../../docs/tools/email-dns-analyser/README.md?raw'),
+  island: () => import('./island.jsx'),
+};

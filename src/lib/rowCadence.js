@@ -25,9 +25,9 @@
  * sentence across 500px.
  *
  * `placements` runs twice over the same list: once in `index.astro` for the
- * prerendered eighteen, and once per filter in the index's client script, so
+ * prerendered catalogue, and once per filter in the index's client script, so
  * that three Security tools are three thirds rather than the middle of a
- * cadence written for eighteen.
+ * cadence written for one fixed inventory.
  */
 
 export const CADENCE = [3, 2, 3, 3, 2];

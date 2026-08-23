@@ -1,0 +1,20 @@
+export default {
+  id: 'cidr-workbench',
+  path: '/cidr-workbench',
+  title: 'CIDR Workbench',
+  shortDescription: 'Collapse, subtract, intersect and find gaps in IPv4 or IPv6 sets.',
+  description: 'Work with lists of IPv4 and IPv6 addresses, ranges and CIDRs entirely in the browser. Normalize and aggregate blocks, subtract one set from another, calculate intersections, report overlaps and find gaps.',
+  category: 'network',
+  icon: 'combine',
+  badges: ['IPv4', 'IPv6', 'Set operations', 'Range to CIDR'],
+  params: ['input'],
+  features: ['CIDR aggregation and deduplication', 'Address range to CIDR conversion', 'Set subtraction and intersection', 'Gap and overlap detection', 'IPv4 and IPv6 BigInt arithmetic', 'Text export'],
+  seo: {
+    title: 'CIDR Workbench - Aggregate, Subtract and Compare IP Ranges',
+    keywords: ['cidr aggregate', 'cidr merge', 'ip range to cidr', 'cidr subtract', 'cidr overlap', 'ipv6 cidr calculator', 'ip range calculator'],
+  },
+  storageKeys: [],
+  legacyKeys: [],
+  help: () => import('../../../docs/tools/cidr-workbench/README.md?raw'),
+  island: () => import('./island.jsx'),
+};

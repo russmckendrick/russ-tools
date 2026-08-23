@@ -54,4 +54,30 @@ describe('dns island', () => {
     expect(screen.queryByText(/Browser Default/)).toBe(null);
     expect(screen.getAllByText(/Google DNS/).length).toBeGreaterThan(0);
   });
+
+  it('records explicit A and Google defaults for a deep-link lookup', async () => {
+    renderAt('/dns-lookup/example.com');
+    await waitFor(() => {
+      const history = JSON.parse(localStorage.getItem('rt:dns-lookup:history'));
+      expect(history[0]).toMatchObject({
+        domain: 'example.com',
+        recordType: 'A',
+        provider: 'google',
+      });
+    });
+  });
+
+  it('migrates an incomplete history item when repeated', async () => {
+    localStorage.setItem('rt:dns-lookup:history', JSON.stringify([{
+      query: 'example.com',
+      domain: 'example.com',
+      timestamp: Date.now(),
+    }]));
+    renderAt('/dns-lookup');
+    fireEvent.click(screen.getByRole('button', { name: 'Repeat' }));
+    await waitFor(() => {
+      const history = JSON.parse(localStorage.getItem('rt:dns-lookup:history'));
+      expect(history[0]).toMatchObject({ recordType: 'A', provider: 'google' });
+    });
+  });
 });
