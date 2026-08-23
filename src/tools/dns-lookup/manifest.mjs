@@ -17,7 +17,7 @@ export default {
 
   // Rendered on the card, so a tool can never ship as a bare icon and a name.
   shortDescription:
-    'Query any record type against Google or Cloudflare DNS over HTTPS.',
+    'Inspect and compare DNS records through Google and Cloudflare DoH.',
   description:
     'Perform comprehensive DNS queries for various record types using ' +
     'multiple DNS providers. Get detailed DNS information with caching ' +
@@ -27,11 +27,9 @@ export default {
   category: 'network',
   icon: 'globe',
   badges: [
-    'A',
-    'AAAA',
-    'MX',
-    'TXT',
-    'NS',
+    'Resolver compare',
+    'DNSSEC',
+    'HTTPS/SVCB',
   ],
 
   // Deep-link segments. The generated _redirects turns each into a 200
@@ -44,7 +42,9 @@ export default {
   // `featureList`. Migrated off toolsConfig.json, which is retiring.
   features: [
     'Multiple DNS providers',
-    'All record types support',
+    'Common and advanced DNS record types',
+    'Google and Cloudflare answer comparison',
+    'DNSSEC validation status',
     'DNS over HTTPS',
     'Query history tracking',
     'Response caching',

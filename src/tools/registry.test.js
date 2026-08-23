@@ -17,8 +17,8 @@ import { extractHelpMarkdown } from '../lib/helpMarkdown.js';
  */
 
 describe('manifest contract', () => {
-  it('registers all eighteen tools', () => {
-    expect(TOOLS).toHaveLength(18);
+  it('registers all twenty-four tools', () => {
+    expect(TOOLS).toHaveLength(24);
   });
 
   it.each(TOOLS.map((t) => [t.id, t]))('%s has a well-formed manifest', (id, tool) => {
@@ -100,6 +100,8 @@ describe('frozen contract #1 — deep links', () => {
    * `/` and `/delete` are excluded — they are shell pages, not tool routes.
    */
   const routerPaths = [
+    '/azure-service-tags',
+    '/azure-service-tags/:query',
     '/azure-kql',
     '/azure-kql/:service',
     '/azure-kql/:service/:template',
@@ -108,13 +110,21 @@ describe('frozen contract #1 — deep links', () => {
     '/azure-rbac/:role',
     '/base64',
     '/base64/:input',
+    '/bgp-explorer',
+    '/bgp-explorer/:resource',
     '/buzzword-ipsum',
+    '/cidr-workbench',
+    '/cidr-workbench/:input',
     '/conditional-access',
     '/cron',
     '/cron/:expression',
     '/data-converter',
     '/dns-lookup',
     '/dns-lookup/:domain',
+    '/dnssec-checker',
+    '/dnssec-checker/:domain',
+    '/email-dns-analyser',
+    '/email-dns-analyser/:domain',
     '/jwt',
     '/jwt/:token',
     '/m365-licenses',
@@ -133,6 +143,7 @@ describe('frozen contract #1 — deep links', () => {
     '/tenant-lookup/:domain',
     '/whois-lookup',
     '/whois-lookup/:query',
+    '/zone-file-linter',
   ];
 
   // Paths a manifest has explicitly retired: served as a 301 by _redirects,
@@ -142,7 +153,7 @@ describe('frozen contract #1 — deep links', () => {
   it('still carries every route the SPA served', () => {
     // Guards the list itself: a deletion here is a broken bookmark, and is
     // never what someone meant to do.
-    expect(routerPaths.length).toBe(33);
+    expect(routerPaths.length).toBe(44);
   });
 
   it('serves every one of them', () => {

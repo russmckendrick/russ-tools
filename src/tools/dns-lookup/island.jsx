@@ -4,43 +4,31 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Ghost } from "@/components/ui/ghost";
 import { AlertCircle, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { apiFetch, buildUrl } from '@/core';
+import { queryDns } from '@/core';
 import { useLookupTool } from '@/lib/useLookupTool';
-import apiConfig from '@/utils/api/apiConfig.json';
 import DNSLookupForm from './components/DNSLookupForm';
 import DNSResultsDisplay from './components/DNSResultsDisplay';
 import DNSHistoryDisplay from './components/DNSHistoryDisplay';
 
-const DNS = apiConfig.endpoints.dns;
-
-// The two providers with a public DoH JSON API. OpenDNS and "Browser
-// Default" used to be offered and both silently queried Google — removed
-// rather than relabelled (BEHAVIOR_CHANGES.md).
-const DNS_URLS = {
-  google: DNS.google,
-  cloudflare: DNS.cloudflare,
-};
+const OVERVIEW_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'SOA', 'TXT', 'CAA', 'HTTPS'];
 
 async function fetchDns(domain, { signal, context }) {
-  const url = buildUrl(DNS_URLS[context.provider] ?? DNS_URLS.google, {
-    name: domain,
-    type: context.recordType,
-  });
+  const provider = context.provider ?? 'google';
+  const recordType = context.recordType ?? 'A';
+  const providers = provider === 'compare' ? ['google', 'cloudflare'] : [provider];
+  const types = recordType === 'OVERVIEW' ? OVERVIEW_TYPES : [recordType];
+  const settled = await Promise.allSettled(
+    providers.flatMap((provider) =>
+      types.map((type) => queryDns(domain, type, { provider, signal, dnssec: true }))
+    )
+  );
+  const queries = settled.filter((item) => item.status === 'fulfilled').map((item) => item.value);
+  const failures = settled
+    .filter((item) => item.status === 'rejected')
+    .map((item) => item.reason?.message ?? 'DNS query failed');
 
-  const response = await apiFetch(url, {
-    headers: { Accept: 'application/dns-json' },
-    timeout: DNS.timeout,
-    retries: DNS.retries,
-    signal,
-  });
-
-  if (!response.ok) {
-    throw new Error(`DNS lookup failed: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  data.timestamp = Date.now();
-  return data;
+  if (queries.length === 0) throw new Error(failures[0] ?? 'DNS lookup failed');
+  return { version: 2, queries, failures, timestamp: Date.now() };
 }
 
 /**
@@ -85,16 +73,16 @@ const DnsLookupTool = () => {
     urlParam: 'domain',
     // History items carry recordType/provider (historyEntry below), so the
     // same key function works for a fresh context and a stored item.
-    cacheKey: (q, ctx) => `${q}-${ctx.recordType ?? recordType}-${ctx.provider ?? dnsProvider}`,
-    historyKey: (q, ctx) => `${q}-${ctx.recordType ?? ''}-${ctx.provider ?? ''}`,
+    cacheKey: (q, ctx) => `v2-${q}-${ctx.recordType ?? 'A'}-${ctx.provider ?? 'google'}`,
+    historyKey: (q, ctx) => `${q}-${ctx.recordType ?? 'A'}-${ctx.provider ?? 'google'}`,
     historyEntry: (q, data, ctx) => ({
       domain: q,
-      recordType: ctx.recordType,
-      provider: ctx.provider,
-      recordCount: data?.Answer ? data.Answer.length : 0,
+      recordType: ctx.recordType ?? 'A',
+      provider: ctx.provider ?? 'google',
+      recordCount: data.queries.reduce((sum, query) => sum + (query.Answer?.length ?? 0), 0),
     }),
     onSuccess: (q, data, fromCache) => {
-      const recordCount = data.Answer ? data.Answer.length : 0;
+      const recordCount = data.queries.reduce((sum, query) => sum + (query.Answer?.length ?? 0), 0);
       toast.success(`DNS Lookup Complete${fromCache ? ' (Cached)' : ''}`, {
         description: fromCache
           ? `Cached records loaded for ${q}`
@@ -128,11 +116,15 @@ const DnsLookupTool = () => {
 
   const handleHistoryItemClick = (historyItem) => {
     // Old history can name a provider that no longer exists (opendns/auto).
-    const provider = historyItem.provider in DNS_URLS ? historyItem.provider : 'google';
-    setDomain(historyItem.domain);
-    setRecordType(historyItem.recordType);
+    const provider = ['google', 'cloudflare', 'compare'].includes(historyItem.provider)
+      ? historyItem.provider
+      : 'google';
+    const type = historyItem.recordType || 'A';
+    const historyDomain = historyItem.domain || historyItem.query;
+    setDomain(historyDomain);
+    setRecordType(type);
     setDnsProvider(provider);
-    performDNSLookup(historyItem.domain, historyItem.recordType, provider);
+    performDNSLookup(historyDomain, type, provider);
   };
 
   const clearHistory = () => {
@@ -186,7 +178,20 @@ const DnsLookupTool = () => {
         */}
         {!lookupResults && !loading && !error && (
           <Ghost>
-            <DNSResultsDisplay results={GHOST_RESULTS} domain="example.com" recordType="CNAME" />
+            <DNSResultsDisplay
+              results={{
+                version: 2,
+                queries: [{
+                  ...GHOST_RESULTS,
+                  provider: 'google',
+                  providerLabel: 'Google Public DNS',
+                  queryType: 'CNAME',
+                }],
+                failures: [],
+              }}
+              domain="example.com"
+              recordType="CNAME"
+            />
           </Ghost>
         )}
 

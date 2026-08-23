@@ -1,12 +1,13 @@
 # 🧰 Russ Tools
 
 [russ.tools](https://russ.tools/) is a set of small, focused utilities for people who
-work with networks, cloud platforms and certificates. Everything runs in your browser:
-no accounts, no analytics, and nothing uploaded.
+work with networks, cloud platforms and certificates. Most processing stays in your
+browser, with no accounts, analytics or uploads.
 
-The one exception is the handful of lookups that physically cannot run client-side —
-WHOIS, SSL analysis and Microsoft tenant discovery — which are proxied through
-Cloudflare Workers. Those are named per tool in the table below's linked docs.
+Network lookups necessarily send the queried name or address to the provider named in
+that tool: Google or Cloudflare DNS-over-HTTPS, RIPEstat for routing data, and Cloudflare
+Worker proxies for WHOIS, SSL analysis and Microsoft tenant discovery. Each tool's linked
+documentation states its boundary explicitly.
 
 ## Available tools
 
@@ -15,16 +16,22 @@ Cloudflare Workers. Those are named per tool in the table below's linked docs.
 
 | Tool | Category | What it does | Path | Docs |
 |---|---|---|---|---|
-| **DNS Lookup Tool** | Network | Query any record type against Google or Cloudflare DNS over HTTPS. | `/dns-lookup` | [Docs](docs/tools/dns-lookup/) |
+| **BGP & ASN Explorer** | Network | Inspect route origins, visibility, related prefixes and RPKI state. | `/bgp-explorer` | [Docs](docs/tools/bgp-explorer/) |
+| **CIDR Workbench** | Network | Collapse, subtract, intersect and find gaps in IPv4 or IPv6 sets. | `/cidr-workbench` | [Docs](docs/tools/cidr-workbench/) |
+| **DNS Lookup Tool** | Network | Inspect and compare DNS records through Google and Cloudflare DoH. | `/dns-lookup` | [Docs](docs/tools/dns-lookup/) |
+| **DNS Zone File Linter** | Network | Lint, normalize and compare BIND-style DNS zone files. | `/zone-file-linter` | [Docs](docs/tools/zone-file-linter/) |
+| **Email DNS Analyser** | Network | Check MX, SPF, DMARC, DKIM, MTA-STS and SMTP TLS reporting. | `/email-dns-analyser` | [Docs](docs/tools/email-dns-analyser/) |
 | **Subnet Calculator** | Network | IPv4 and IPv6 subnet details, with a visual split-and-join divide table. | `/subnet-calculator` | [Docs](docs/tools/subnet-calculator/) |
 | **WHOIS Lookup Tool** | Network | Registration and ownership detail for domains and IPs. | `/whois-lookup` | [Docs](docs/tools/whois-lookup/) |
 | **Azure KQL Query Builder** | Azure | Build Kusto queries for Azure services with guided forms. | `/azure-kql` | [Docs](docs/tools/azure-kql/) |
 | **Azure RBAC Role Explorer** | Azure | Search 504 built-in Azure roles by name or by the action they grant. | `/azure-rbac` | [Docs](docs/tools/azure-rbac/) |
 | **Azure Resource Naming Tool** | Azure | Generate and validate names against Microsoft CAF rules. | `/azure-naming` | [Docs](docs/tools/azure-naming/) |
+| **Azure Service Tags** | Azure | Search and compare Microsoft Azure service-tag IP ranges. | `/azure-service-tags` | [Docs](docs/tools/azure-service-tags/) |
 | **Conditional Access Analyser** | Microsoft | Explain exported Conditional Access policies and spot the gaps. | `/conditional-access` | [Docs](docs/tools/conditional-access/) |
 | **Microsoft 365 License Decoder** | Microsoft | Turn licence GUIDs and SKU part numbers into names and service plans. | `/m365-licenses` | [Docs](docs/tools/m365-licenses/) |
 | **Microsoft Portals (GDAP)** | Microsoft | Deep links into 31 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](docs/tools/microsoft-portals/) |
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](docs/tools/tenant-lookup/) |
+| **DNSSEC & Delegation Checker** | Security | Verify DS/DNSKEY links and inspect a domain delegation. | `/dnssec-checker` | [Docs](docs/tools/dnssec-checker/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](docs/tools/jwt/) |
 | **Password Generator** | Security | Cryptographically random passwords, generated on-device. | `/password-generator` | [Docs](docs/tools/password-generator/) |
 | **SSL Certificate Checker** | Security | Inspect the chain, ciphers and expiry for any host. | `/ssl-checker` | [Docs](docs/tools/ssl-checker/) |
@@ -34,7 +41,7 @@ Cloudflare Workers. Those are named per tool in the table below's linked docs.
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](docs/tools/markdown-table-tool/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](docs/tools/buzzword-ipsum/) |
 
-18 tools.
+24 tools.
 <!-- TOOLS:END -->
 
 ## Quick start
@@ -55,7 +62,7 @@ clears it, per tool or all at once.
 - **[Astro](https://astro.build)** — static shell; every page is prerendered HTML
 - **React 19** — one island per tool, hydrated only on pages that need it
 - **Tailwind CSS 4** with Radix primitives — the shared component layer in `src/components/ui/`
-- **Cloudflare Pages** for hosting, **Cloudflare Workers** for the three proxied lookups
+- **Cloudflare Pages** for hosting, **Cloudflare Workers** for three proxied lookups
 - **Vitest** and **Playwright** for unit and deep-link coverage
 
 Design is governed by [`DESIGN.md`](DESIGN.md) in the repo root — colour, type, layout,

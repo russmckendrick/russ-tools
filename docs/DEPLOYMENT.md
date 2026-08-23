@@ -1,8 +1,10 @@
 # Deployment
 
-The site is a static Astro build served by Cloudflare Pages. The three lookups that need a
-server are separate Cloudflare Workers on their own subdomains, deployed by hand and on
-their own schedule — see [`cloudflare-workers/README.md`](cloudflare-workers/README.md).
+The site is a static Astro build served by Cloudflare Pages. WHOIS, SSL analysis and
+Microsoft tenant discovery use separate Cloudflare Workers on their own subdomains,
+deployed by hand and on their own schedule — see
+[`cloudflare-workers/README.md`](cloudflare-workers/README.md). DNS and routing lookups go
+straight from the browser to their named public providers.
 
 There is no server-side rendering, no adapter and no runtime configuration. A deploy is a
 directory of files.
@@ -23,19 +25,26 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-`pnpm build` is three steps, in this order:
+`pnpm build` is five steps, in this order:
 
 1. **`pnpm generate:sitemap`** — `scripts/generate-sitemap.js` writes `public/sitemap.xml`
    from the tool manifests. It runs first because Astro copies `public/` into the output.
    `lastmod` for each URL comes from that tool's last commit (`git log -1 --format=%cs`),
    so the file is only correct when built from a real checkout with history.
-2. **`astro build`** — prerenders every page to `dist/`. `astro.config.mjs` sets
+2. **`pnpm generate:llms`** — `scripts/generate-llms.mjs` writes the gitignored
+   `public/llms.txt`, `public/llms-full.txt` and `public/agents.md` from the manifests and
+   per-tool help blocks so Astro can copy them into the build.
+3. **`astro build`** — prerenders every page to `dist/`. `astro.config.mjs` sets
    `output: 'static'`, `outDir: './dist'`, `trailingSlash: 'never'` and
    `build.format: 'file'`, so each tool becomes `dist/<tool>.html` and the URLs stay
-   exactly as the previous site served them.
-3. **`pnpm generate:redirects`** — `scripts/generate-redirects.mjs` writes
+   exactly as the previous site served them. The `astro-webmcp` integration also emits its
+   discovery files here.
+4. **`pnpm generate:redirects`** — `scripts/generate-redirects.mjs` writes
    `dist/_redirects` from the manifests. It exits non-zero if `dist/` does not exist, so it
    cannot silently produce nothing.
+5. **`pnpm patch:webmcp`** — `scripts/patch-webmcp-manifest.mjs` replaces the integration's
+   incomplete metadata for flat `<tool>.html` pages with manifest titles, descriptions,
+   categories and help-page entries.
 
 `pnpm preview` serves the build with Astro's own preview server. It does not apply
 `_redirects`, so param deep links 404 there; use `wrangler pages dev dist` when that
@@ -88,10 +97,15 @@ Every line is derived from a manifest — the param patterns from `params`, the 
 `redirectFrom` — so a route cannot be lost by forgetting to list it. The file carries a
 generated-file header; do not edit `dist/_redirects` by hand, and do not commit one.
 
+For a tool with a param route, the generator also emits a `/<tool>/help` self-rewrite
+before `/<tool>/:param`. Cloudflare evaluates the first matching rule, so this keeps the
+real prerendered help page from being mistaken for a parameter value.
+
 ### Verifying a deployment
 
-`e2e/deeplinks.spec.js` is the browser-level gate for the routing above. It only means
-anything against something that applies `_redirects`, which `astro dev` does not.
+`e2e/deeplinks.spec.js` and `e2e/help.spec.js` are the browser-level gates for the routing
+above. They only mean anything against something that applies `_redirects`, which
+`astro dev` does not.
 
 Against Cloudflare's runtime locally:
 

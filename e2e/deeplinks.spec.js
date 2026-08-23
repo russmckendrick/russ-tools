@@ -55,11 +55,11 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('.rt-group')).toHaveCount(0);
     await expect(page.locator('.rt-card-badge')).toHaveCount(0);
 
-    const platformFilter = page.getByRole('radio', { name: 'Microsoft & Azure 7' });
+    const platformFilter = page.getByRole('radio', { name: 'Microsoft & Azure 8' });
     await expect(platformFilter).toBeVisible();
     await expect(page.locator('.rt-card[data-category="azure"]')).toHaveCount(0);
     await expect(page.locator('.rt-card[data-category="microsoft"]')).toHaveCount(0);
-    await expect(page.locator('.rt-card[data-category="microsoft-azure"]')).toHaveCount(7);
+    await expect(page.locator('.rt-card[data-category="microsoft-azure"]')).toHaveCount(8);
 
     await platformFilter.click();
     await expect(platformFilter).toHaveAttribute('aria-checked', 'true');
@@ -67,12 +67,12 @@ test.describe('home and shell pages', () => {
 
     // Filtering is now "hide what does not match" — the promote-one-group,
     // demote-the-rest model went with the sections.
-    await expect(page.locator('.rt-card:visible')).toHaveCount(7);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(8);
 
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(18);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(24);
   });
 
   test('the tiles vary in width and every row still flushes to both edges', async ({ page }) => {
@@ -101,7 +101,7 @@ test.describe('home and shell pages', () => {
       return { rows: all.map((r) => r.n), ragged: all.filter((r) => r.right !== edge).map((r) => r.right) };
     });
 
-    expect(rows.reduce((a, b) => a + b, 0)).toBe(18);
+    expect(rows.reduce((a, b) => a + b, 0)).toBe(24);
     expect(new Set(rows).size, `every row held the same count: ${rows}`).toBeGreaterThan(1);
     expect(ragged, `rows stopped short of the right edge: ${ragged}`).toEqual([]);
   });
@@ -125,17 +125,17 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(18);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(24);
   });
 
   test('a shared category link arrives filtered', async ({ page }) => {
     await page.goto('/#security');
 
-    await expect(page.getByRole('radio', { name: 'Security 3' })).toHaveAttribute(
+    await expect(page.getByRole('radio', { name: 'Security 4' })).toHaveAttribute(
       'aria-checked',
       'true'
     );
-    await expect(page.locator('.rt-card:visible')).toHaveCount(3);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(4);
     // The anchor rides on the first tile of the run, so the breadcrumb link
     // every tool page carries still has something to scroll to.
     await expect(page.locator('#security')).toHaveClass(/rt-card/);
@@ -147,16 +147,16 @@ test.describe('home and shell pages', () => {
     const input = page.locator('#rt-jump-input');
     await expect(input).toBeVisible();
 
-    // Five tools take a bare hostname, so the panel offers all five rather
+    // Seven tools take a bare hostname, so the panel offers all seven rather
     // than silently choosing one.
     await input.fill('example.com');
     const chips = page.locator('#rt-jump-hint a');
-    await expect(chips).toHaveCount(5);
+    await expect(chips).toHaveCount(7);
     await expect(chips.first()).toHaveText('DNS Lookup \u2192 /dns-lookup');
 
-    // A CIDR is unambiguous, and its slash is a real segment boundary.
+    // A CIDR can be calculated, combined or inspected in the routing table.
     await input.fill('10.0.0.0/22');
-    await expect(chips).toHaveCount(1);
+    await expect(chips).toHaveCount(3);
     await expect(chips.first()).toHaveAttribute('href', '/subnet-calculator/10.0.0.0/22');
 
     // A GUID names either an Azure role definition or a Microsoft 365 SKU,
@@ -216,7 +216,7 @@ test.describe('home and shell pages', () => {
     // A wrong tool name carrying a right value: the domain lands in the panel.
     await page.goto('/whois/example.com');
     await expect(page.locator('#rt-jump-input')).toHaveValue('example.com');
-    await expect(page.locator('#rt-jump-hint a')).toHaveCount(5);
+    await expect(page.locator('#rt-jump-hint a')).toHaveCount(7);
 
     // A guess nobody could act on is worse than silence.
     await page.goto('/sdfsdfsdf');
@@ -456,6 +456,31 @@ test.describe('param deep links — rewrite + island application', () => {
     // through useLookupTool, only the manifest was missing it.
     await expectRewrite(page, '/dns-lookup/example.com', 'DNS Lookup Tool');
     await expect(page.locator('#domain')).toHaveValue('example.com');
+  });
+
+  test('/email-dns-analyser/:domain seeds the mail checks', async ({ page }) => {
+    await expectRewrite(page, '/email-dns-analyser/example.com', 'Email DNS Analyser');
+    await expect(page.locator('#mail-domain')).toHaveValue('example.com');
+  });
+
+  test('/dnssec-checker/:domain seeds the chain check', async ({ page }) => {
+    await expectRewrite(page, '/dnssec-checker/example.com', 'DNSSEC & Delegation Checker');
+    await expect(page.locator('#dnssec-domain')).toHaveValue('example.com');
+  });
+
+  test('/cidr-workbench/:input seeds the primary set', async ({ page }) => {
+    await expectRewrite(page, '/cidr-workbench/10.0.0.0%2F22', 'CIDR Workbench');
+    await expect(page.getByLabel('Primary CIDR set')).toHaveValue('10.0.0.0/22');
+  });
+
+  test('/bgp-explorer/:resource seeds the routing lookup', async ({ page }) => {
+    await expectRewrite(page, '/bgp-explorer/AS3333', 'BGP & ASN Explorer');
+    await expect(page.locator('#routing-resource')).toHaveValue('AS3333');
+  });
+
+  test('/azure-service-tags/:query seeds the offline search', async ({ page }) => {
+    await expectRewrite(page, '/azure-service-tags/Storage.UKSouth', 'Azure Service Tags');
+    await expect(page.locator('#service-tag-query')).toHaveValue('Storage.UKSouth');
   });
 
   test('/azure-rbac/:role opens the role a GUID names', async ({ page }) => {

@@ -77,15 +77,15 @@ const DNSHistoryDisplay = ({
                 <Globe className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <p className="font-medium font-mono">{item.domain}</p>
-                    <Badge className={getRecordTypeColor(item.recordType)}>
-                      {item.recordType}
+                    <p className="font-medium font-mono">{item.domain || item.query}</p>
+                    <Badge className={getRecordTypeColor(item.recordType || 'A')}>
+                      {item.recordType || 'A'}
                     </Badge>
                     <Badge 
                       variant="outline" 
-                      className={getProviderBadgeColor(item.provider)}
+                      className={getProviderBadgeColor(item.provider || 'google')}
                     >
-                      {getProviderName(item.provider)}
+                      {getProviderName(item.provider || 'google')}
                     </Badge>
                   </div>
                   <p className="text-data-md font-mono text-muted-foreground">

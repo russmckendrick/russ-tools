@@ -1,6 +1,6 @@
 ---
 /**
- * The tool index. Entirely derived from the registry — adding tool #16
+ * The tool index. Entirely derived from the registry — adding another tool
  * changes nothing in this file.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -12,7 +12,7 @@ import { placements } from '../lib/rowCadence.js';
 import { PERSON_SCHEMA, SITE_DESCRIPTION, SITE_NAME, SITE_URL, WEBSITE_ID } from '../shell/site.mjs';
 
 /**
- * The index published no structured data at all, so nothing tied the eighteen
+ * The index published no structured data at all, so nothing tied the tool
  * tool pages to a site or an author. The WebSite node is what a crawler reads
  * the tool pages' `isPartOf` against; the ItemList states outright that this
  * page is a catalogue and what is in it.
@@ -21,8 +21,8 @@ const schema = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    // Same id the tool pages' `isPartOf` names, so the sixteen documents
-    // describe one site rather than sixteen sites with identical names.
+    // Same id the tool pages' `isPartOf` names, so the documents describe one
+    // site rather than separate sites with identical names.
     '@id': WEBSITE_ID,
     name: SITE_NAME,
     url: SITE_URL,
@@ -104,7 +104,7 @@ const cards = TOOLS.map((tool, i) => {
 
 <BaseLayout
   title="russ.tools — client-side network, cloud and developer utilities"
-  description="Eighteen small utilities for people who work with networks, cloud platforms and certificates. Subnet planning, DNS and WHOIS lookups, Azure naming, JWTs, encoders and converters — all running entirely in your browser."
+  description="Twenty-four small utilities for people who work with networks, cloud platforms and certificates. DNS diagnostics, subnet planning, routing analysis, Azure data, JWTs and converters — mostly running entirely in your browser."
   keywords={['network tools', 'subnet calculator', 'dns lookup', 'whois', 'azure naming', 'jwt decoder', 'base64', 'developer tools']}
   schema={schema}
 >
@@ -117,7 +117,7 @@ const cards = TOOLS.map((tool, i) => {
   <div class="rt-index-head">
     <h1 class="rt-index-title">Tools</h1>
     <span class="rt-index-note">
-      <span class="rt-index-count" id="rt-count">{TOOLS.length}</span> tools · nothing leaves the browser
+      <span class="rt-index-count" id="rt-count">{TOOLS.length}</span> tools · local by default
     </span>
   </div>
 
@@ -181,7 +181,7 @@ const cards = TOOLS.map((tool, i) => {
   <!--
     One stream, no sections. The chips name the categories and the icon tile
     carries the hue, so a heading above each run was the third statement of the
-    same fact — and the bands it created were what made a catalogue of eighteen
+    same fact — and the bands it created were what made the catalogue
     read as five stacked tables. Tools stay in category order, so the hues
     cluster and drift down the page: the grouping is drawn, not labelled.
   -->
@@ -283,7 +283,7 @@ const cards = TOOLS.map((tool, i) => {
     /*
       The cadence is a function of what is on screen, not of what was
       prerendered. Widths are ratios — a third or a half of a row — so a
-      filtered view left holding the widths written for eighteen tiles would
+      filtered view left holding the widths written for the full catalogue would
       wrap at the wrong places: three Security tools would be a row of two and
       an orphan rather than one flush row of thirds. Re-running the same
       function over the survivors is the whole fix, and it is cheap enough to
@@ -398,7 +398,7 @@ const cards = TOOLS.map((tool, i) => {
   document.getElementById('rt-empty-clear').addEventListener('click', () => {
     query = '';
     find.value = '';
-    // Not a keystroke: one press that puts all eighteen tiles back, which is
+    // Not a keystroke: one press that puts every tile back, which is
     // the largest rearrangement the page can make and the clearest case for
     // showing where they land.
     settle(render);

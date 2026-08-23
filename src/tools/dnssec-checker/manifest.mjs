@@ -1,0 +1,20 @@
+export default {
+  id: 'dnssec-checker',
+  path: '/dnssec-checker',
+  title: 'DNSSEC & Delegation Checker',
+  shortDescription: 'Verify DS/DNSKEY links and inspect a domain delegation.',
+  description: 'Inspect a domain DNSSEC chain and delegation. Compare parent DS digests with child DNSKEY records, report recursive validation, enumerate authoritative name servers and verify that their addresses and the zone SOA are visible.',
+  category: 'security',
+  icon: 'globe-lock',
+  badges: ['DS', 'DNSKEY', 'AD flag', 'Delegation'],
+  params: ['domain'],
+  features: ['DS digest calculation', 'DNSKEY key tag calculation', 'Cryptographic DS/DNSKEY matching', 'Resolver validation status', 'NS address discovery', 'SOA presence check'],
+  seo: {
+    title: 'DNSSEC & Delegation Checker - DS and DNSKEY Test',
+    keywords: ['dnssec checker', 'dnskey checker', 'ds record checker', 'dns delegation checker', 'dnssec validation', 'key tag calculator', 'nameserver checker'],
+  },
+  storageKeys: [],
+  legacyKeys: [],
+  help: () => import('../../../docs/tools/dnssec-checker/README.md?raw'),
+  island: () => import('./island.jsx'),
+};

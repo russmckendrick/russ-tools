@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Globe, Search, RotateCcw } from 'lucide-react';
 
 const DNS_RECORD_TYPES = [
+  { value: 'OVERVIEW', label: 'Overview (common records)' },
   { value: 'A', label: 'A Record (IPv4)' },
   { value: 'AAAA', label: 'AAAA Record (IPv6)' },
   { value: 'MX', label: 'MX Record (Mail Exchange)' },
@@ -16,12 +17,20 @@ const DNS_RECORD_TYPES = [
   { value: 'SOA', label: 'SOA Record (Start of Authority)' },
   { value: 'PTR', label: 'PTR Record (Reverse DNS)' },
   { value: 'SRV', label: 'SRV Record (Service)' },
-  { value: 'CAA', label: 'CAA Record (Certificate Authority)' }
+  { value: 'CAA', label: 'CAA Record (Certificate Authority)' },
+  { value: 'DS', label: 'DS Record (Delegation Signer)' },
+  { value: 'DNSKEY', label: 'DNSKEY Record (DNSSEC Key)' },
+  { value: 'RRSIG', label: 'RRSIG Record (DNSSEC Signature)' },
+  { value: 'TLSA', label: 'TLSA Record (DANE)' },
+  { value: 'SSHFP', label: 'SSHFP Record (SSH Fingerprint)' },
+  { value: 'SVCB', label: 'SVCB Record (Service Binding)' },
+  { value: 'HTTPS', label: 'HTTPS Record (HTTP Binding)' }
 ];
 
 // Only providers with a public DoH JSON API. OpenDNS and "Browser Default"
 // were listed here and both silently queried Google (BEHAVIOR_CHANGES.md).
 const DNS_PROVIDERS = [
+  { value: 'compare', label: 'Compare Google + Cloudflare' },
   { value: 'google', label: 'Google DNS (8.8.8.8)', server: '8.8.8.8' },
   { value: 'cloudflare', label: 'Cloudflare DNS (1.1.1.1)', server: '1.1.1.1' }
 ];
@@ -50,7 +59,7 @@ const DNSLookupForm = ({
                 placeholder="example.com or mail.example.com"
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
-                onKeyPress={onKeyPress}
+                onKeyDown={onKeyPress}
                 className="pl-9"
               />
             </div>

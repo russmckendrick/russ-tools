@@ -2786,3 +2786,82 @@ No other source file is ignored: `git status --ignored` over `src`, `scripts`,
 
 853 unit + 57 e2e green, lint 0 errors / the same 11 warnings, from a clean
 `dist` in CI's own order (install → build → test → lint).
+
+### 2026-08-23 — Session 14: the network bench fills out (18 → 24)
+
+The network shelf had three points: one-record DNS lookup, one-subnet
+calculation and registration data. The missing work was what happens around
+those answers — mail-policy evidence, DNSSEC chain evidence, set arithmetic,
+route origin, cloud range reference data and the zone change before it ships.
+Six manifest-driven tools now cover that work:
+
+- **Email DNS Analyser** reads MX, SPF, DMARC, an optional DKIM selector,
+  MTA-STS and TLS-RPT together. SPF follows include/redirect graphs, reports
+  loops and the ten-query budget, and exposes the evidence instead of turning
+  unlike findings into a synthetic score.
+- **DNSSEC & Delegation Checker** calculates DNSKEY key tags and DS digests in
+  the browser, matches the parent/child link cryptographically, reports the
+  recursive AD flag, enumerates NS addresses and checks SOA visibility. Its
+  copy is explicit that recursive evidence is not a direct authoritative-server
+  probe, and a healthy unsigned delegation is informational rather than
+  presented as DNSSEC success.
+- **CIDR Workbench** accepts IPv4, IPv6, CIDRs and explicit ranges and performs
+  exact BigInt-backed aggregation, range-to-CIDR conversion, subtraction,
+  intersection, gap and overlap analysis.
+- **BGP & ASN Explorer** separates registration from routing: RIPEstat provides
+  origins, collector visibility, related/announced prefixes and RPKI state for
+  an IP, prefix or ASN.
+- **Azure Service Tags** searches a checked-in Azure Public snapshot by tag,
+  region, service or IP and compares old Microsoft JSON releases locally. The
+  refresh script records provenance and refuses a tag-count collapse greater
+  than 20%. The 2026-08-17 snapshot contains 3,321 tags / 108,863 prefixes.
+- **DNS Zone File Linter** parses common BIND master-file syntax, normalises
+  record sets and finds SOA/NS, CNAME, MX/SRV target, alias-target, duplicate,
+  TTL and CAA faults. Unsupported directives are findings rather than silently
+  expanded. Diff compares canonical record sets so formatting does not mask
+  the change.
+
+**DNS Lookup became the shared front end for the same DNS core.** It now covers
+Overview plus DS, DNSKEY, RRSIG, TLSA, SSHFP, SVCB and HTTPS, can compare Google
+and Cloudflare, names RCODE and AD state, and exports raw evidence. DNSSEC-enabled
+A responses surfaced a subtle presentation fault in the live browser: the
+answer section also carries an RRSIG, which the first cut placed under an “A
+records” heading. The panel is now an “A query” and every row carries its
+actual type badge.
+
+**The homepage dispatcher widened rather than guessing.** A domain offers DNS,
+mail-DNS, DNSSEC, WHOIS, SSL and the Microsoft destinations; a CIDR offers the
+calculator, workbench and BGP; a bare IP adds routing and Azure tag reverse
+lookup; an ASN goes to BGP. The six new tools take the registry to 24 tools and
+44 frozen routes. Documentation tables, sitemap, llms/agents catalogs, WebMCP,
+Open Graph cards and help pages remain manifest-derived.
+
+**Two build/runtime traps were caught at the boundary.** The redirect generator
+aligned columns with `padEnd` but inserted no literal delimiter. Tool paths
+longer than the chosen column fused `/help` and `200` into `/help200`; 66 browser
+tests passed while two help routes failed. Redirect rules now always insert
+spaces and a built-output test pins all three columns. The zone parser also
+removed grouping parentheses with a global regular expression, which damaged
+parentheses inside quoted TXT data; the remover now tracks quotes and escapes.
+
+The privacy copy was corrected with the capability change: compute and pasted
+data are local by default, while query tools name the public resolver/API or
+Worker that receives the queried name or address. No design-system changes were
+needed; the established Stacks components held on desktop and at 390×844 with
+zero document overflow, and the Impeccable detector returned no findings.
+
+The finish review tightened protocol edge cases before the final run: null MX
+is now an explicit no-mail result; SPF ignores mechanisms after `all` and
+reports include/redirect targets with no policy as permanent errors, caps the
+shared traversal budget and aborts in-flight requests; multi-origin BGP prefixes
+validate every origin; resolver comparison includes RCODE while preserving
+case-sensitive opaque RDATA; and DNS deep links persist explicit A/Google
+history defaults. DNSSEC no longer infers “unsigned” from a validating SERVFAIL.
+Zone normalisation preserves quoted whitespace, resolves repeated relative
+`$ORIGIN` directives against the origin active for each record, inherits omitted
+TTL/class fields, rejects invalid common RDATA before export and clears a diff
+as soon as either source changes.
+
+Final verification: 933 Vitest assertions, 68 Playwright tests through
+`wrangler pages dev`, production Astro build, live Google DoH / RIPEstat / mail
+DNS / DNSSEC workflows, and ESLint at 0 errors / the same 11 warnings.

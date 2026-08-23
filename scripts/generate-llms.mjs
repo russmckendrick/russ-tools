@@ -5,7 +5,7 @@
  *
  * Three artefacts, one source. `llms.txt` (llmstxt.org format) is the index
  * an agent reads first; `llms-full.txt` inlines every tool's curated help
- * block so an agent never has to fetch fifteen pages; `agents.md` is the
+ * block so an agent never has to fetch every help page; `agents.md` is the
  * plain-prose front door. All three are generated into `public/` alongside
  * `sitemap.xml`, gitignored, and rebuilt at the head of `pnpm build` — the
  * same one-generator-no-drift policy that retired `@astrojs/sitemap`.
@@ -86,9 +86,9 @@ const agentsMd = [
   '## What this site is',
   '',
   `${tools.length} focused utilities, one page each, no accounts and no analytics. ` +
-    'Everything runs client-side in the browser; the only network calls are three ' +
-    'explicit lookups (WHOIS, SSL certificate checks and Microsoft tenant discovery), ' +
-    'proxied through Cloudflare Workers.',
+    'Local calculations and pasted data stay in the browser. Lookup tools name the ' +
+    'provider they contact: Google or Cloudflare DNS-over-HTTPS, RIPEstat, or one of ' +
+    'the Cloudflare Workers for WHOIS, SSL certificate checks and Microsoft tenant discovery.',
   '',
   '## For AI agents',
   '',

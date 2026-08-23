@@ -1,8 +1,9 @@
 # Cloudflare Workers
 
-Three of the eighteen tools need a server: SSL analysis, WHOIS/RDAP and Microsoft tenant
+Three of the twenty-four tools need a server: SSL analysis, WHOIS/RDAP and Microsoft tenant
 discovery cannot be done from a browser. Each is a small Cloudflare Worker that proxies a
-public upstream and adds CORS. Nothing else on the site talks to a server.
+public upstream and adds CORS. DNS and BGP tools call their named public data providers
+directly; they do not use these Workers.
 
 This document is written from the worker sources in `cloudflare-worker/` and the wrangler
 configs in `cloudflare-worker/configs/`. It describes what the code does, not what it

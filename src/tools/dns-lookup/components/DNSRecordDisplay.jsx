@@ -1,9 +1,11 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Copy, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { dnsTypeName, formatDnsRecord } from '@/core';
 
 const DNSRecordDisplay = ({ record }) => {
   const copyToClipboard = async (text) => {
@@ -21,44 +23,18 @@ const DNSRecordDisplay = ({ record }) => {
     return ipv4Regex.test(str) || ipv6Regex.test(str);
   };
 
-  const formatDNSRecord = (record) => {
-    const formatTTL = (ttl) => ttl ? ` (TTL: ${ttl}s)` : '';
-    
-    switch (record.type) {
-      case 1: // A
-        return `${record.name} → ${record.data}${formatTTL(record.TTL)}`;
-      case 28: // AAAA
-        return `${record.name} → ${record.data}${formatTTL(record.TTL)}`;
-      case 15: // MX
-        return `${record.name} → ${record.priority} ${record.exchange}${formatTTL(record.TTL)}`;
-      case 16: // TXT
-        return `${record.name} → "${record.data}"${formatTTL(record.TTL)}`;
-      case 5: // CNAME
-        return `${record.name} → ${record.data}${formatTTL(record.TTL)}`;
-      case 2: // NS
-        return `${record.name} → ${record.data}${formatTTL(record.TTL)}`;
-      case 6: // SOA
-        return `${record.name} → ${record.mname} ${record.rname} (Serial: ${record.serial})${formatTTL(record.TTL)}`;
-      case 12: // PTR
-        return `${record.name} → ${record.data}${formatTTL(record.TTL)}`;
-      case 33: // SRV
-        return `${record.name} → ${record.priority} ${record.weight} ${record.port} ${record.target}${formatTTL(record.TTL)}`;
-      case 257: // CAA
-        return `${record.name} → ${record.data}${formatTTL(record.TTL)}`;
-      default:
-        return `${record.name} → ${record.data}${formatTTL(record.TTL)}`;
-    }
-  };
-
-  const recordText = formatDNSRecord(record);
+  const recordText = `${record.name} → ${formatDnsRecord(record)}`;
   const isIP = isIPAddress(record.data);
-  
+
   return (
-    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
-      <div className="font-mono text-data-md flex-1 min-w-0 break-words">
-        {recordText}
+    <div className="flex items-center justify-between gap-2 rounded-md border border-outline bg-surface-inset p-3">
+      <div className="flex min-w-0 flex-1 items-start gap-2">
+        <Badge>{dnsTypeName(record.type)}</Badge>
+        <div className="min-w-0 flex-1 break-words font-mono text-data-md">
+          {recordText}
+        </div>
       </div>
-      <div className="flex gap-2 ml-2 flex-shrink-0">
+      <div className="ml-2 flex flex-shrink-0 gap-2">
         {isIP && (
           <Tooltip>
             <TooltipTrigger asChild>

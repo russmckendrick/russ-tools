@@ -17,8 +17,8 @@ a `_redirects` file that handles deep links.
 
 - **JavaScript and JSX only.** This is deliberately not a TypeScript project. JSDoc plus
   editor inference is as far as the type layer goes.
-- **Client-side processing.** Nothing leaves the browser except three lookups that
-  physically cannot run in it, which are proxied through Cloudflare Workers.
+- **Client-side processing by default.** Local calculators and pasted data stay in the
+  browser. Lookup tools send only the queried name or address to the provider they name.
 - **One folder per tool.** `src/tools/<id>/` holds a `manifest.mjs` and an `island.jsx`,
   and everything else — the page, the index card, the sitemap entry, the redirect rules,
   the Open Graph card, the saved-data listing, the documentation tables — is derived from
@@ -31,23 +31,23 @@ Commands: `pnpm dev`, `pnpm build` (output `dist/`), `pnpm preview`.
 | Path | What lives there |
 |---|---|
 | `astro.config.mjs` | The single build configuration. Astro carries its own Vite config; there is no `vite.config.js`. |
-| `src/pages/` | The four pages: `index.astro`, `[tool].astro`, `delete.astro`, `404.astro`. |
+| `src/pages/` | The page sources: `index.astro`, `[tool].astro`, `[tool]/help.astro`, `delete.astro`, `404.astro`. |
 | `src/layouts/` | `BaseLayout.astro` (head, theme, chrome) and `ToolLayout.astro` (the per-tool page furniture). |
-| `src/shell/` | Astro chrome and the plain-JS modules it reads: categories, palettes, site identity, the shared Material icon set. |
+| `src/shell/` | Astro chrome and the plain-JS modules it reads: categories, appearance controls, site identity, the shared Lucide tool icons. |
 | `src/tools/<id>/` | One folder per tool: `manifest.mjs`, `island.jsx`, and whatever `lib/`, `components/` or `hooks/` that tool needs. |
 | `src/tools/registry.mjs` | The registry. `loadManifests.mjs` is its plain-Node twin. |
 | `src/bridge/ToolIsland.jsx` | The one island entry that mounts any tool's React component. |
-| `src/core/` | Framework-agnostic plumbing: storage, cache, clipboard, download, HTTP client, share-link codec. |
-| `src/lib/` | React-level shared code: `useLookupTool.js`, `utils.js` (`cn`, `useLocalStorage`). |
+| `src/core/` | Framework-agnostic plumbing: storage, cache, clipboard, download, HTTP and DNS clients, share-link codec. |
+| `src/lib/` | Shared lookup state, WebMCP registration, help extraction and React utilities. |
 | `src/components/ui/` | The shared component layer every tool renders through. |
 | `src/components/common/` | `StorageManager.jsx`, the island behind `/delete`. |
 | `src/styles/` | `globals.css`, the generated `tokens.generated.css`, and `shell.css`. |
 | `src/utils/` | What remains of the pre-rewrite utilities: `api/apiConfig.json`, `azure/`, `devLog.js`, the Prism loaders. |
 | `src/test/` | Vitest setup, MSW handlers and captured worker fixtures. |
-| `scripts/` | The five generators: sitemap, redirects, tokens, Open Graph cards, documentation tables. |
-| `e2e/` | The Playwright deep-link matrix. |
+| `scripts/` | Build and asset generators, the WebMCP manifest patch, and reference-data refresh jobs. |
+| `e2e/` | The Playwright deep-link, help-page and layout checks. |
 | `cloudflare-worker/` | Worker sources and their `wrangler-*.toml` configs. |
-| `public/` | Static assets, including the committed `og/` cards. `public/sitemap.xml` is generated and gitignored. |
+| `public/` | Static assets and discovery metadata. The sitemap and llms files are generated and gitignored; Open Graph cards are committed. |
 
 ## The Astro shell
 
@@ -57,11 +57,12 @@ is written as `dist/dns-lookup.html` and served by Cloudflare Pages at the exten
 `/dns-lookup`, and `trailingSlash: 'never'` keeps `/dns-lookup` and `/dns-lookup/` from
 becoming two URLs for one page.
 
-The only integration is `@astrojs/react`, declared with no include/exclude filter — React
-is the only island framework, so it claims every `.jsx`. There is no sitemap integration;
-`scripts/generate-sitemap.js` is the single source (see below).
+`@astrojs/react` is declared with no include/exclude filter — React is the only island
+framework, so it claims every `.jsx`. `astro-webmcp` adds site-wide search and navigation
+tools for browsers that support `document.modelContext`. There is no sitemap integration;
+`scripts/generate-sitemap.js` remains the single source (see below).
 
-Four pages exist:
+Five page sources exist:
 
 - **`index.astro`** — the tool index, rendered entirely from the registry. Groups are
   category groups, except that Azure and Microsoft are merged into one "Microsoft & Azure"
@@ -70,6 +71,8 @@ Four pages exist:
   `WebSite` and an `ItemList` node.
 - **`[tool].astro`** — one prerendered page per tool via `getStaticPaths()` over `TOOLS`.
   Its whole body is `<ToolIsland client:only="react" toolId={tool.id} />`.
+- **`[tool]/help.astro`** — one prerendered guide per tool. It renders the marked help
+  block from `docs/tools/<id>/README.md`, reached through the manifest's `help()` loader.
 - **`delete.astro`** — the saved-data page. Prerendered copy plus the `StorageManager`
   island; marked `noindex` because it is a per-browser control panel, not content.
 - **`404.astro`** — a real not-found page, so a mistyped URL does not soft-404 into the
@@ -77,7 +80,7 @@ Four pages exist:
 
 `BaseLayout.astro` owns the `<head>`: canonical, robots, description, keywords, Open Graph
 and Twitter tags, one `<script type="application/ld+json">` per schema node, and an inline
-pre-paint script that applies the stored theme and palette to `<html>` before first paint.
+pre-paint script that applies the stored theme to `<html>` before first paint.
 The canonical default strips `index.html`/`.html` from `Astro.url.pathname`, because during
 a static build that pathname is the *output file* rather than the served URL.
 
@@ -111,8 +114,8 @@ produced by `ToolLayout`, not by the island.
    only knows this one tool's routes, so a cross-tool link would change the address bar and
    render nothing.
 
-The theme needs nothing from the island: it is a class and a `data-palette` attribute on
-`<html>`, written by `BaseLayout`'s pre-paint script.
+The theme needs nothing from the island: it is a class and a `data-theme-pref` attribute
+on `<html>`, written by `BaseLayout`'s pre-paint script.
 
 ## The manifest is the contract
 
@@ -135,6 +138,7 @@ one drives:
 | `seo.title` / `seo.keywords` | The `<title>`, the keywords meta, the schema `keywords`. |
 | `storageKeys` | The `rt:<id>:<slot>` slots the tool owns — enumerated and cleared by `/delete`. |
 | `legacyKeys` | Pre-rewrite localStorage keys the tool reads forward and `/delete` also clears. |
+| `help` | Lazy raw import of `docs/tools/<id>/README.md`, used by the prerendered help page. |
 | `island` | `() => import('./island.jsx')` — the lazy component `ToolIsland` mounts. |
 
 Everything derived from that one object:
@@ -142,6 +146,7 @@ Everything derived from that one object:
 | Derived artefact | Produced by |
 |---|---|
 | The prerendered tool page | `src/pages/[tool].astro` |
+| The prerendered documentation page | `src/pages/[tool]/help.astro` |
 | The index card, category group and filter chip | `src/pages/index.astro`, `src/shell/ToolCard.astro` |
 | The page head, canonical and structured data | `src/layouts/ToolLayout.astro` |
 | `public/sitemap.xml` | `scripts/generate-sitemap.js` |
@@ -149,9 +154,12 @@ Everything derived from that one object:
 | `public/og/<id>.png` | `scripts/generate-og.mjs` |
 | The `/delete` listing and clear actions | `src/components/common/StorageManager.jsx` |
 | The tool tables in `README.md` and `docs/README.md` | `scripts/generate-docs.mjs` |
+| `public/llms.txt`, `public/llms-full.txt` and `public/agents.md` | `scripts/generate-llms.mjs` |
+| The built WebMCP manifest and skills index | `astro-webmcp`, then `scripts/patch-webmcp-manifest.mjs` |
 | The island's router patterns | `src/bridge/ToolIsland.jsx` |
 
-Adding a tool is one new folder. No routing table, no central list, no page edits.
+Adding a tool means adding its tool folder and `docs/tools/<id>/README.md`. No routing
+table, central list or page edit is needed.
 
 ## The registry and its plain-Node twin
 
@@ -192,9 +200,12 @@ from `src/core/index.js`:
   copying work on non-secure origins.
 - **`download.js`** — `downloadFile`/`downloadJSON`/`safeFilename`, revoking the object URL
   on the next frame.
-- **`api.js`** — the HTTP client for the worker lookups: a real `AbortController` deadline,
+- **`api.js`** — the HTTP client for Worker and public-provider lookups: a real
+  `AbortController` deadline,
   retries limited to 5xx/408/425/429 and genuine transport failures, and an `ApiError`
   carrying the status.
+- **`dns.js`** — the shared Google and Cloudflare DNS-over-HTTPS client, record parsers,
+  RCODE names and answer-comparison helpers used by the DNS-facing tools.
 - **`sharelink.js`** — the share-URL codec (see below).
 
 Tools import from `@/core`, not from `src/utils/`.
@@ -210,18 +221,19 @@ Tools import from `@/core`, not from `src/utils/`.
 ### `src/components/ui/`
 
 The design surface. Radix primitives styled against `DESIGN.md`, and the one place a change
-reaches every tool at once. The primary button, focus ring, active tab and default badge
-read `var(--cat)`, which `ToolLayout` sets once per page from the manifest's `category`, so
-a tool never names a colour. There is one `<Toaster/>`, one help affordance
-(`help-dialog.jsx`), and one tool-icon renderer (`tool-icon.jsx`) sharing
-`src/shell/icons.mjs` with the Astro `ToolIcon.astro`.
+reaches every tool at once. Pressable controls use the primary accent; category colour is
+reserved for the icon tile, badges, borders and small labels. `ToolLayout` sets `--cat`
+and `--cat-fill` once from the manifest, so a tool never names a colour. There is one
+`<Toaster/>`, one help link (`ToolHelp.jsx`) to the prerendered guide, and one React tool
+icon renderer (`tool-icon.jsx`) sharing `src/shell/icons.mjs` with the Astro
+`ToolIcon.astro`.
 
 ### `src/shell/`
 
 Astro-side chrome — `SiteMark`, `HeaderActions`, `AppearanceControls`, `ToolCard`,
-`ToolIcon` — plus the plain modules both sides read: `categories.mjs`, `palettes.mjs`,
-`site.mjs` (one site name, one theme colour, one author, the shared schema.org nodes) and
-`icons.mjs`.
+`ToolIcon` and `PastePanel` — plus the plain modules both sides read: `categories.mjs`,
+`site.mjs` (one site name, one theme colour, one author, the shared schema.org nodes),
+`icons.mjs` and `appearance-controls.js`.
 
 Shell CSS classes in `src/styles/shell.css` are all `rt-`-prefixed. An unprefixed class
 here collides with a Tailwind utility of the same name — `.grid` did exactly that, and the
@@ -364,8 +376,8 @@ they must keep decoding forever.
 
 ## The Cloudflare boundary
 
-Everything runs in the browser except three lookups that cannot: WHOIS, SSL analysis and
-Microsoft tenant discovery. Those go through Cloudflare Workers on dedicated subdomains.
+WHOIS, SSL analysis and Microsoft tenant discovery go through Cloudflare Workers on
+dedicated subdomains. DNS and routing data use named public APIs directly from the browser.
 
 | Endpoint | Worker source | Used by |
 |---|---|---|
@@ -380,6 +392,9 @@ a frozen contract — the client changes when a request is given up on, not what
 
 DNS lookups use public DNS-over-HTTPS endpoints directly (`dns.google/resolve` and
 `1.1.1.1/dns-query`), with no worker in between.
+
+The BGP & ASN Explorer calls the public RIPEstat Data API directly. Azure Service Tags
+ships a checked-in Microsoft snapshot and performs its searches and diffs locally.
 
 Each worker enforces a CORS origin allowlist from an `ALLOWED_ORIGINS` secret set per
 worker (`cloudflare-worker/configs/wrangler-*.toml` documents the `wrangler secret put`
@@ -409,13 +424,19 @@ unrelated origin storage are outside that control.
 
 ## Build and hosting
 
-`pnpm build` runs three steps in order:
+`pnpm build` runs five steps in order:
 
 1. `pnpm generate:sitemap` — writes `public/sitemap.xml` from the manifests, with `lastmod`
    taken from each tool's last commit date rather than the build clock.
-2. `astro build` — prerenders every page into `dist/`, including `public/` verbatim.
-3. `pnpm generate:redirects` — writes `dist/_redirects` from the manifests. It fails loudly
+2. `pnpm generate:llms` — writes `public/llms.txt`, `public/llms-full.txt` and
+   `public/agents.md` from the manifests and per-tool help blocks.
+3. `astro build` — prerenders every page into `dist/`, including `public/` verbatim, and
+   lets `astro-webmcp` emit its discovery files.
+4. `pnpm generate:redirects` — writes `dist/_redirects` from the manifests. It fails loudly
    if `dist/` does not exist.
+5. `pnpm patch:webmcp` — replaces the integration's flat-page scan results with manifest
+   titles, descriptions, categories and help-page entries.
 
 The result is a static directory served by Cloudflare Pages. `robots.txt` advertises
-`/sitemap.xml`, which is the only sitemap the site publishes.
+`/sitemap.xml`; the checked-in discovery metadata also points agents at the generated
+llms files and WebMCP manifest.
