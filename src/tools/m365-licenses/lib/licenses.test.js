@@ -115,6 +115,22 @@ describe('searchSkus', () => {
     ]);
   });
 
+  it('never lets a GUID fragment outrank a name', () => {
+    // The index's paste panel sends "E3" here on shape alone, and a GUID is
+    // hex: `06ebc4ee…` *starts* with "e" and two thirds of the catalogue's
+    // ids contain "e3" somewhere. Scoring ids alongside names answered
+    // Microsoft 365 E5 for a query that names E3.
+    const hits = searchSkus(data, 'e3').map((sku) => sku.name);
+    expect(hits).toContain('Microsoft 365 E3');
+    expect(hits).toContain('Office 365 E3');
+    expect(hits).not.toContain('Microsoft 365 E5');
+  });
+
+  it('still finds a SKU by a fragment long enough to be a GUID', () => {
+    expect(searchSkus(data, '05e9a617')[0].partNumber).toBe('SPE_E3');
+    expect(searchSkus(data, '138d3ef5')[0].partNumber).toBe('SPE_E3');
+  });
+
   it('honours the limit', () => {
     expect(searchSkus(data, 'e', 1)).toHaveLength(1);
   });
@@ -133,6 +149,12 @@ describe('searchServicePlans', () => {
     expect(searchServicePlans(data, 'OFFICESUBSCRIPTION')[0].friendly).toBe(
       'Microsoft 365 Apps for enterprise'
     );
+  });
+
+  it('holds plan ids to the same fragment length as SKU GUIDs', () => {
+    // Plan ids are GUIDs too, and the same accidental-hex problem applies.
+    expect(searchServicePlans(data, 'c1ec4a95')[0].name).toBe('INTUNE_A');
+    expect(searchServicePlans(data, '43de0ff5')[0].name).toBe('OFFICESUBSCRIPTION');
   });
 });
 

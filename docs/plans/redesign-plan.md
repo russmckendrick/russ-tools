@@ -2682,3 +2682,107 @@ One incidental find, not fixed here: `microsoft-portals` hardcodes "31 portals"
 in three places while its catalogues hold 91.
 
 835 unit + 53 e2e green, lint 0 errors / the same 11 warnings.
+
+### Session 13 — the cadence replaces the coincidence
+
+The index was reviewed again: "the cards now look unbalanced". Measuring it at
+1440px said exactly why, and it was not a matter of taste.
+
+| Row | Cards | Widths | Right edge |
+|---|---|---|---|
+| 1 | 3 | 397 / 397 / 317 | 1288 ✓ |
+| 2–4 | 2 | 500 / 500 | **1164** ✗ |
+| 5–7 | 3 | ~370 | 1288 ✓ |
+
+Three faults, one cause — Session 11's width steps were read off each tile's
+own text, which is a fact no tile shares with the row it lands in:
+
+1. **Three consecutive rows stopped 124px short of the right edge.**
+   `.rt-card { max-width: 500px }` capped the stretch, so the whole Microsoft &
+   Azure run read as a narrower table indented inside the catalogue.
+2. **The cadence was a coincidence.** All seven Microsoft and Azure titles are
+   long, so all seven took the 400px step together: the stream degenerated into
+   `3 / 2 / 2 / 2 / 3 / 3 / 3`, a block of one shape rather than a varied break.
+3. **The widest tiles were the emptiest.** A 500px tile holding a 57-character
+   one-line description left ~200px unused, and one row collapsed to 98px
+   against 117px everywhere else. Width was being awarded *for* long text and
+   then not used *by* it.
+
+**The fix is that width is now a ratio, not a pixel count.** `src/lib/rowCadence.js`
+authors the break — a row of three thirds or two halves, each written as a
+fraction of the row minus its gutters, so every row flushes to both edges by
+construction and a mixed row is impossible. The pattern repeats `[3, 2, 3, 3, 2]`
+(eighteen tools break `3,2,3,3,2,3,2`) and the index's client script re-runs the
+same function over the *visible* tiles on every filter, so three Security tools
+are one flush row of thirds rather than the middle of a cadence written for
+eighteen. Measured after: `3@1288 2@1288 3@1288 3@1288 2@1288 3@1288 2@1288`,
+and zero ragged rows at 1600 / 1440 / 1280 / 1100 / 1024 / 900 / 768 / 600 / 390.
+
+*The responsive break has no breakpoint.* `min-width: 340px` is derived, not
+chosen: the longest title ("Microsoft 365 License Decoder") measures 253px by
+`Range.getBoundingClientRect()` and the tile spends 81px on its icon and
+padding. Below that a third wraps its title onto two lines, which is what
+actually makes a tile look cramped. 316px was tried first from an estimate and
+wrapped at 1100px wide — measure the glyphs, do not count the characters.
+
+*Two attempts to give the wide tile more to hold were built and withdrawn by
+the owner.* First the manifest's `badges` as a row of keys under the
+description — they read as chips you could press, one control grammar too many
+on a page that opens with a chip row you can. Then the route path pushed to the
+far bottom corner; the path came off every tile entirely, being a third
+statement of what the title and the link already make. The wide step is
+breathing room, and the cadence is what it is for.
+
+*Motion.* The deal-in stagger is now diagonal — the delay is `--rt-r + --rt-c`
+rather than a flat list index, so the catalogue crosses the page as a wave. The
+tile's border also takes its category hue on hover: the only place `--cat`
+leaves the icon tile, and it leaves it only under intent.
+
+**The paste panel learned two more shapes** (owner request, same session). A
+bare GUID is genuinely two answers — an Azure role definition id and a Microsoft
+365 SKU id are the same 36 characters — so it offers both, RBAC first. A SKU
+part number (`SPE_E3`, `ENTERPRISEPACK`) goes to the licence decoder with the
+encoder kept behind it, because `detectQueryKind` is deliberately loose and
+`DEADBEEF` is not a licence. `paste.js` imports that classifier from the tool's
+own lib rather than copying its regex; the 426KB dataset stays behind the
+dynamic import inside `loadLicenses()` and never reaches the index. Both deep
+links are pinned in the e2e matrix by what they *resolve* to — Contributor and
+Microsoft 365 E3 — not just by the rewrite landing.
+
+*The licence branch widened to the shorthand people actually carry.* `SPE_E3`
+was the only thing the first cut recognised; typing `E3` still fell to the
+encoder. A licence code is one or two letters and one or two digits — `E3`,
+`E5`, `F1`, `A5`, `G3`, `P2` — with the family prefix captured away, because
+`/m365-licenses/m365 e3` finds nothing: the decoder searches by literal
+substring, so the link carries the code alone. The digit is what makes the
+shape safe to claim; `BP` for Business Premium is real shorthand but a bare
+pair of letters is also `go`, `id` and `ok`, so it stays text. The encoder
+stays behind every licence suggestion, because no test here consults the
+dataset (426KB is not going on the homepage) and `E7` is code-shaped without
+being a licence anyone sells.
+
+*Which surfaced a ranking fault in the tool itself.* Sending short codes to the
+decoder made `searchSkus` visibly wrong: a GUID is hex, two thirds of the
+catalogue's ids contain "e3" somewhere and some **begin** with it, scoring
+1036 against 2000-and-up for a name substring. Searching "E3" answered
+"Microsoft Teams Phone Resource Account_USGOV_GCCHIGH" before "Microsoft 365
+E3". An id is now matched only by a fragment of eight characters or more — a
+length that could only have been copied from one — and an id-only match sorts
+behind every name and part-number match instead of competing with them. Same
+treatment for service-plan ids, which are GUIDs too.
+
+**The CI failure was not any of this.** `pnpm build` failed on main 20 seconds
+in with `Could not resolve './lib/sample.js'`, and the file is on disk: the
+author's *global* gitignore carries `sample.*`, which silently swallowed
+`src/tools/conditional-access/lib/sample.js` — a real source file the island
+imports for its "load a sample" state. Every local build passed because the
+file was there; CI checks out a tree without it. Reproduced by building
+`git archive HEAD` in a scratch directory (same error) and again with the file
+restored (39 pages, clean). A repo `.gitignore` outranks the global excludes
+file, so `!src/**/sample.*` puts it back and makes the class of mistake
+impossible for anything under `src/`. **The file still has to be committed.**
+No other source file is ignored: `git status --ignored` over `src`, `scripts`,
+`e2e` and `docs` returns one `.DS_Store` and nothing else.
+
+853 unit + 57 e2e green, lint 0 errors / the same 11 warnings, from a clean
+`dist` in CI's own order (install → build → test → lint).
