@@ -18,6 +18,8 @@ Check the DNS records that control mail delivery, authentication and transport p
 - Informational findings describe optional transport and reporting signals.
 - Success means the named record passed the check shown; it is not an end-to-end deliverability guarantee.
 
+The Mail routing section also names the email provider inferred from MX host signatures, including security gateways such as Proofpoint or Mimecast. When mail is routed through a gateway, the SPF include graph is used to suggest the mailbox provider behind it. Hosts that match no known signature are reported as custom or self-hosted.
+
 ## SPF and DKIM limits
 
 The SPF check follows include and redirect references and counts DNS-producing mechanisms across that graph. DKIM selectors cannot be discovered reliably from DNS, so the key check runs only when you provide a selector.

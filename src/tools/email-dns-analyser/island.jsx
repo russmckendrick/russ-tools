@@ -91,6 +91,7 @@ export default function EmailDnsAnalyser() {
               <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
                 <div><h3 className="text-title-sm">{result.domain}</h3><p className="text-body-sm text-muted-foreground">Mail DNS assessment</p></div>
                 <div className="flex flex-wrap gap-2">
+                  {(result.providers ?? []).map((provider) => <Badge key={provider.id} variant="secondary">{provider.name}{provider.via === 'spf' ? ' (via SPF)' : ''}</Badge>)}
                   {Object.entries(result.counts).map(([severity, count]) => <Badge key={severity} variant={VARIANT[severity]}>{count} {severity}</Badge>)}
                 </div>
               </CardHeader>

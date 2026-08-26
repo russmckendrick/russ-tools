@@ -47,6 +47,72 @@ describe('email DNS analysis', () => {
       severity: 'info',
       title: 'Domain does not accept email',
     });
+    expect(result.providers).toEqual([]);
+    expect(result.sections.find((section) => section.id === 'mx').findings).toHaveLength(1);
+  });
+
+  it('names the email provider from MX signatures', async () => {
+    const result = await analyseEmailDns('example.com', '', {
+      query: async (name, type) => name === 'example.com' && type === 'MX'
+        ? { Status: 0, Answer: [
+            { name, type: 15, data: '1 aspmx.l.google.com.' },
+            { name, type: 15, data: '5 alt1.aspmx.l.google.com.' },
+          ] }
+        : { Status: 0, Answer: [] },
+    });
+    expect(result.providers).toEqual([
+      { id: 'google-workspace', name: 'Google Workspace', type: 'mailbox', via: 'mx' },
+    ]);
+    expect(result.sections.find((section) => section.id === 'mx').findings).toEqual(
+      expect.arrayContaining([expect.objectContaining({
+        severity: 'info',
+        title: 'Email provider: Google Workspace',
+        evidence: 'aspmx.l.google.com · alt1.aspmx.l.google.com',
+      })])
+    );
+  });
+
+  it('names the mailbox provider behind a gateway from the SPF graph', async () => {
+    const result = await analyseEmailDns('example.com', '', {
+      query: async (name, type) => {
+        if (name === 'example.com' && type === 'MX') {
+          return { Status: 0, Answer: [{ name, type: 15, data: '10 us-smtp-inbound-1.mimecast.com.' }] };
+        }
+        if (name === 'example.com' && type === 'TXT') {
+          return { Status: 0, Answer: [{ name, type: 16, data: '"v=spf1 include:spf.protection.outlook.com -all"' }] };
+        }
+        if (name === 'spf.protection.outlook.com' && type === 'TXT') {
+          return { Status: 0, Answer: [{ name, type: 16, data: '"v=spf1 ip4:203.0.113.0/24 -all"' }] };
+        }
+        return { Status: 0, Answer: [] };
+      },
+    });
+    expect(result.providers.map((provider) => [provider.id, provider.via])).toEqual([
+      ['mimecast', 'mx'],
+      ['microsoft-365', 'spf'],
+    ]);
+    const providerFinding = result.sections.find((section) => section.id === 'mx').findings
+      .find((item) => item.title.startsWith('Email provider'));
+    expect(providerFinding.title).toBe('Email provider: Mimecast + Microsoft 365');
+    expect(providerFinding.detail).toBe(
+      'Mail is routed through Mimecast (security gateway). SPF suggests mailboxes are hosted on Microsoft 365.'
+    );
+  });
+
+  it('reports unrecognised MX hosts as custom or self-hosted', async () => {
+    const result = await analyseEmailDns('example.com', '', {
+      query: async (name, type) => name === 'example.com' && type === 'MX'
+        ? { Status: 0, Answer: [{ name, type: 15, data: '10 mail.example.com.' }] }
+        : { Status: 0, Answer: [] },
+    });
+    expect(result.providers).toEqual([]);
+    expect(result.sections.find((section) => section.id === 'mx').findings).toEqual(
+      expect.arrayContaining([expect.objectContaining({
+        severity: 'info',
+        title: 'Custom or self-hosted email',
+        evidence: 'mail.example.com',
+      })])
+    );
   });
 
   it('reports an include with no SPF policy as a permanent error', async () => {

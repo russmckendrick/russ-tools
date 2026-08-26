@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Network, Mail, FileText, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { matchEmailProvider } from '@/core';
 
 const DNSAnalysisDisplay = ({ dnsInfo }) => {
   if (!dnsInfo) return null;
@@ -15,17 +16,6 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
     } catch {
       toast.error('Failed to copy to clipboard');
     }
-  };
-
-  const getEmailProviderFromMX = (mxRecord) => {
-    const exchange = mxRecord.exchange.toLowerCase();
-    if (exchange.includes('outlook') || exchange.includes('microsoft')) return 'Microsoft 365';
-    if (exchange.includes('google') || exchange.includes('gmail')) return 'Google Workspace';
-    if (exchange.includes('mimecast')) return 'Mimecast';
-    if (exchange.includes('proofpoint')) return 'Proofpoint';
-    if (exchange.includes('barracuda')) return 'Barracuda';
-    if (exchange.includes('cloudflare')) return 'Cloudflare';
-    return 'Custom';
   };
 
   // Which mail provider a domain uses is identity, not health. These were
@@ -75,7 +65,7 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
           <CardContent>
             <div className="space-y-3">
               {dnsInfo.mxRecords.map((mx, index) => {
-                const provider = getEmailProviderFromMX(mx);
+                const provider = matchEmailProvider(mx.exchange)?.name ?? 'Custom';
                 return (
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex-1">

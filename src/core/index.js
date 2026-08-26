@@ -30,6 +30,7 @@ export {
   queryDns,
   queryDnsMany,
 } from './dns.js';
+export { EMAIL_PROVIDERS, matchEmailProvider, detectEmailProviders } from './email-provider.js';
 export {
   safeStringify,
   compressConfig,

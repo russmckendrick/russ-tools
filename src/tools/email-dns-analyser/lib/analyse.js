@@ -1,4 +1,4 @@
-import { decodeDnsText, dnsRecords, normalizeDnsName, queryDns } from '@/core';
+import { decodeDnsText, detectEmailProviders, dnsRecords, normalizeDnsName, queryDns } from '@/core';
 
 const finding = (severity, title, detail, evidence = '') => ({ severity, title, detail, evidence });
 
@@ -127,6 +127,24 @@ export function analyseDkimRecord(records, selector) {
   return { record, tags, findings };
 }
 
+function providerFinding(detection, mx) {
+  const evidence = mx.map((record) => record.exchange.replace(/\.$/, '')).join(' · ');
+  if (!detection.providers.length) {
+    return finding('info', 'Custom or self-hosted email', 'The MX hosts do not match a known provider signature.', evidence);
+  }
+  const describe = (provider) =>
+    provider.type === 'gateway' ? `${provider.name} (security gateway)`
+      : provider.type === 'routing' ? `${provider.name} (forwarding service)`
+        : provider.name;
+  const viaMx = detection.providers.filter((provider) => provider.via === 'mx');
+  const viaSpf = detection.providers.filter((provider) => provider.via === 'spf');
+  const detail = [
+    viaMx.length ? `Mail is routed through ${viaMx.map(describe).join(' and ')}.` : '',
+    viaSpf.length ? `SPF suggests mailboxes are hosted on ${viaSpf.map((provider) => provider.name).join(' and ')}.` : '',
+  ].filter(Boolean).join(' ');
+  return finding('info', `Email provider: ${detection.providers.map((provider) => provider.name).join(' + ')}`, detail, evidence);
+}
+
 function txtPolicies(response, prefix) {
   return dnsRecords(response, 'TXT').map((record) => decodeDnsText(record.data)).filter((text) => text.toLowerCase().startsWith(prefix));
 }
@@ -165,6 +183,11 @@ export async function analyseEmailDns(input, selector = '', options = {}) {
     : mx.length > 0
       ? [finding('success', 'Mail exchangers published', `${mx.length} MX record${mx.length === 1 ? '' : 's'} found.`)]
       : [finding('warning', 'No MX records', 'The domain publishes no explicit mail exchanger.')];
+  const spfGraphDomains = [...spfState.cache.keys()].filter((name) => name !== domain);
+  const detection = !nullMx && mx.length > 0
+    ? detectEmailProviders(mx.map((record) => record.exchange), spfGraphDomains)
+    : { providers: [], unmatched: [] };
+  if (!nullMx && mx.length > 0) mxFindings.push(providerFinding(detection, mx));
   const dmarc = analyseDmarcRecord(txtPolicies(dmarcResponse, 'v=dmarc1'));
   const dkim = analyseDkimRecord(dkimResponse ? dnsRecords(dkimResponse, 'TXT').map((record) => record.text) : [], cleanSelector);
   const mta = txtPolicies(mtaResponse, 'v=stsv1');
@@ -188,6 +211,7 @@ export async function analyseEmailDns(input, selector = '', options = {}) {
   return {
     domain,
     selector: cleanSelector,
+    providers: detection.providers,
     sections,
     counts: sections.flatMap((section) => section.findings).reduce((counts, item) => ({ ...counts, [item.severity]: (counts[item.severity] ?? 0) + 1 }), {}),
     raw: { mxResponse, spfResponse: spf.response, spfPolicyQueries: spfState.queries, dmarcResponse, dkimResponse, mtaResponse, tlsResponse },

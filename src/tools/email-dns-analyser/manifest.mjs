@@ -8,7 +8,7 @@ export default {
   icon: 'mail-check',
   badges: ['SPF', 'DMARC', 'DKIM', 'MTA-STS'],
   params: ['domain'],
-  features: ['MX routing checks', 'Recursive SPF include analysis', 'DMARC policy parsing', 'Optional DKIM selector inspection', 'MTA-STS and TLS-RPT discovery', 'Evidence-based findings without a synthetic score'],
+  features: ['MX routing checks', 'Email provider detection from MX signatures', 'Recursive SPF include analysis', 'DMARC policy parsing', 'Optional DKIM selector inspection', 'MTA-STS and TLS-RPT discovery', 'Evidence-based findings without a synthetic score'],
   seo: {
     title: 'Email DNS Analyser - SPF, DMARC and DKIM Checks',
     keywords: ['email dns checker', 'spf checker', 'dmarc checker', 'dkim checker', 'mta-sts', 'tls-rpt', 'mail domain analyzer', 'mx lookup'],
