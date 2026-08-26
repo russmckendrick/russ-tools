@@ -252,11 +252,15 @@ Four pieces — the first three manifest-driven, the fourth static:
 
 `dayjs`, `framer-motion`, `d3-force`, `@svgdotjs/svg.js`, `next-themes`,
 `tailwindcss-animate`, `uuid` (use `crypto.randomUUID()`), `autoprefixer`,
-`@radix-ui/react-scroll-area`. Icons: **Lucide is the only icon library** —
-lucide-react for generic UI glyphs, and per-tool icons are stroke-based Lucide glyphs
-vendored in `src/shell/icons.mjs` (Astro `ToolIcon`, React `ui/tool-icon.jsx`) — one
-drawing, both renderers, keyed by kebab-cased Lucide names in the manifests, with no
-`react-icons` runtime dependency. The filled Material set was retired with Stacks.
+`@radix-ui/react-scroll-area`. Icons: **Lucide is the only library for UI/UX glyphs** —
+lucide-react for generic interface glyphs, and per-tool icons are stroke-based Lucide
+glyphs vendored in `src/shell/icons.mjs` (Astro `ToolIcon`, React `ui/tool-icon.jsx`) —
+one drawing, both renderers, keyed by kebab-cased Lucide names in the manifests.
+**`react-icons` is allowed for brand marks only** (vendor/service logos where Lucide has
+none, e.g. the email-provider marks in
+`src/tools/email-dns-analyser/lib/providerIcons.js`) — never for interface glyphs, and
+always via per-set entry points (`react-icons/si`, `react-icons/fa6`) so only imported
+marks reach the bundle. The filled Material set was retired with Stacks.
 `@tabler/icons-react` is **removed**; do not reintroduce it. Also removed at cutover:
 `postcss`, `@tailwindcss/postcss` (Tailwind arrives via `@tailwindcss/vite`),
 `@astrojs/sitemap`, `jwt-decode` (`jose` already exports `decodeJwt`), and

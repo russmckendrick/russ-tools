@@ -47,6 +47,7 @@ describe('matchEmailProvider', () => {
     for (const provider of EMAIL_PROVIDERS) {
       expect(provider.id).toMatch(/^[a-z0-9-]+$/);
       expect(['mailbox', 'gateway', 'routing']).toContain(provider.type);
+      expect(new URL(provider.url).protocol).toBe('https:');
       for (const pattern of [...provider.mx, ...(provider.spf ?? [])]) {
         expect(pattern).toBe(pattern.toLowerCase());
         expect(pattern.endsWith('.')).toBe(false);
@@ -56,10 +57,17 @@ describe('matchEmailProvider', () => {
 });
 
 describe('detectEmailProviders', () => {
-  it('dedupes multiple hosts of one provider', () => {
+  it('dedupes multiple hosts of one provider and collects them as evidence', () => {
     const result = detectEmailProviders(['aspmx.l.google.com', 'alt1.aspmx.l.google.com', 'alt2.aspmx.l.google.com']);
     expect(result.providers).toEqual([
-      { id: 'google-workspace', name: 'Google Workspace', type: 'mailbox', via: 'mx' },
+      {
+        id: 'google-workspace',
+        name: 'Google Workspace',
+        type: 'mailbox',
+        url: 'https://workspace.google.com',
+        via: 'mx',
+        hosts: ['aspmx.l.google.com', 'alt1.aspmx.l.google.com', 'alt2.aspmx.l.google.com'],
+      },
     ]);
     expect(result.unmatched).toEqual([]);
   });
@@ -72,11 +80,16 @@ describe('detectEmailProviders', () => {
     ]);
   });
 
+  it('names the SPF domain as evidence for a via-SPF match', () => {
+    const result = detectEmailProviders(['us-smtp-inbound-1.mimecast.com'], ['spf.protection.outlook.com']);
+    expect(result.providers[1].hosts).toEqual(['spf.protection.outlook.com']);
+    expect(result.providers[1].url).toBe('https://www.microsoft.com/microsoft-365');
+  });
+
   it('skips SPF corroboration when a mailbox provider matched via MX', () => {
     const result = detectEmailProviders(['example-com.mail.protection.outlook.com'], ['_spf.google.com']);
-    expect(result.providers).toEqual([
-      { id: 'microsoft-365', name: 'Microsoft 365', type: 'mailbox', via: 'mx' },
-    ]);
+    expect(result.providers.map((entry) => entry.id)).toEqual(['microsoft-365']);
+    expect(result.providers[0].via).toBe('mx');
   });
 
   it('collects unmatched hosts', () => {

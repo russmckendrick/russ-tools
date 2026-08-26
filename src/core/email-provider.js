@@ -24,33 +24,34 @@
  * @property {string} id stable id, e.g. `microsoft-365`
  * @property {string} name display name
  * @property {'mailbox'|'gateway'|'routing'} type
+ * @property {string} url the service's own page for the product
  * @property {string[]} mx MX host patterns: leading `.` = suffix, else exact
  * @property {string[]} [spf] SPF include-graph domain patterns, same rule
  */
 
 /** @type {EmailProvider[]} */
 export const EMAIL_PROVIDERS = [
-  { id: 'microsoft-365', name: 'Microsoft 365', type: 'mailbox', mx: ['.mail.protection.outlook.com'], spf: ['spf.protection.outlook.com'] },
-  { id: 'google-workspace', name: 'Google Workspace', type: 'mailbox', mx: ['smtp.google.com', 'aspmx.l.google.com', '.aspmx.l.google.com', '.googlemail.com', 'gmail-smtp-in.l.google.com', '.gmail-smtp-in.l.google.com'], spf: ['_spf.google.com'] },
-  { id: 'proofpoint', name: 'Proofpoint', type: 'gateway', mx: ['.pphosted.com', '.ppe-hosted.com'], spf: ['.pphosted.com'] },
-  { id: 'mimecast', name: 'Mimecast', type: 'gateway', mx: ['.mimecast.com', '.mimecast.co.za', '.mimecast-offshore.com'], spf: ['.mimecast.com'] },
-  { id: 'barracuda', name: 'Barracuda', type: 'gateway', mx: ['.barracudanetworks.com'], spf: ['.barracudanetworks.com'] },
-  { id: 'messagelabs', name: 'Symantec MessageLabs', type: 'gateway', mx: ['.messagelabs.com'], spf: ['.messagelabs.com'] },
-  { id: 'hornetsecurity', name: 'Hornetsecurity', type: 'gateway', mx: ['.hornetsecurity.com'], spf: ['.hornetsecurity.com'] },
-  { id: 'trendmicro', name: 'Trend Micro Email Security', type: 'gateway', mx: ['.trendmicro.com'] },
-  { id: 'sophos', name: 'Sophos Email', type: 'gateway', mx: ['.sophos.com'] },
-  { id: 'zoho', name: 'Zoho Mail', type: 'mailbox', mx: ['.zoho.com', '.zoho.eu', '.zoho.in', '.zohomail.com'], spf: ['zoho.com', 'zohomail.com'] },
-  { id: 'fastmail', name: 'Fastmail', type: 'mailbox', mx: ['.messagingengine.com', '.fastmail.com'], spf: ['spf.messagingengine.com'] },
-  { id: 'amazon', name: 'Amazon SES / WorkMail', type: 'mailbox', mx: ['.amazonaws.com', '.mail.awsapps.com'], spf: ['amazonses.com'] },
-  { id: 'cloudflare', name: 'Cloudflare Email Routing', type: 'routing', mx: ['.mx.cloudflare.net'], spf: ['_spf.mx.cloudflare.net'] },
-  { id: 'icloud', name: 'Apple iCloud Mail', type: 'mailbox', mx: ['.mail.icloud.com', '.icloud.com'], spf: ['icloud.com'] },
-  { id: 'yahoo', name: 'Yahoo Mail', type: 'mailbox', mx: ['.yahoodns.net'] },
-  { id: 'yandex', name: 'Yandex Mail', type: 'mailbox', mx: ['mx.yandex.net', '.yandex.net'], spf: ['_spf.yandex.net'] },
-  { id: 'improvmx', name: 'ImprovMX', type: 'routing', mx: ['.improvmx.com'], spf: ['spf.improvmx.com'] },
-  { id: 'rackspace', name: 'Rackspace Email', type: 'mailbox', mx: ['.emailsrvr.com'], spf: ['emailsrvr.com'] },
-  { id: 'godaddy', name: 'GoDaddy / secureserver', type: 'mailbox', mx: ['.secureserver.net'], spf: ['secureserver.net'] },
-  { id: 'proton', name: 'Proton Mail', type: 'mailbox', mx: ['.protonmail.ch'], spf: ['_spf.protonmail.ch'] },
-  { id: 'mailgun', name: 'Mailgun', type: 'routing', mx: ['.mailgun.org'], spf: ['mailgun.org'] },
+  { id: 'microsoft-365', name: 'Microsoft 365', type: 'mailbox', url: 'https://www.microsoft.com/microsoft-365', mx: ['.mail.protection.outlook.com'], spf: ['spf.protection.outlook.com'] },
+  { id: 'google-workspace', name: 'Google Workspace', type: 'mailbox', url: 'https://workspace.google.com', mx: ['smtp.google.com', 'aspmx.l.google.com', '.aspmx.l.google.com', '.googlemail.com', 'gmail-smtp-in.l.google.com', '.gmail-smtp-in.l.google.com'], spf: ['_spf.google.com'] },
+  { id: 'proofpoint', name: 'Proofpoint', type: 'gateway', url: 'https://www.proofpoint.com', mx: ['.pphosted.com', '.ppe-hosted.com'], spf: ['.pphosted.com'] },
+  { id: 'mimecast', name: 'Mimecast', type: 'gateway', url: 'https://www.mimecast.com', mx: ['.mimecast.com', '.mimecast.co.za', '.mimecast-offshore.com'], spf: ['.mimecast.com'] },
+  { id: 'barracuda', name: 'Barracuda', type: 'gateway', url: 'https://www.barracuda.com', mx: ['.barracudanetworks.com'], spf: ['.barracudanetworks.com'] },
+  { id: 'messagelabs', name: 'Symantec MessageLabs', type: 'gateway', url: 'https://www.broadcom.com', mx: ['.messagelabs.com'], spf: ['.messagelabs.com'] },
+  { id: 'hornetsecurity', name: 'Hornetsecurity', type: 'gateway', url: 'https://www.hornetsecurity.com', mx: ['.hornetsecurity.com'], spf: ['.hornetsecurity.com'] },
+  { id: 'trendmicro', name: 'Trend Micro Email Security', type: 'gateway', url: 'https://www.trendmicro.com', mx: ['.trendmicro.com'] },
+  { id: 'sophos', name: 'Sophos Email', type: 'gateway', url: 'https://www.sophos.com', mx: ['.sophos.com'] },
+  { id: 'zoho', name: 'Zoho Mail', type: 'mailbox', url: 'https://www.zoho.com/mail/', mx: ['.zoho.com', '.zoho.eu', '.zoho.in', '.zohomail.com'], spf: ['zoho.com', 'zohomail.com'] },
+  { id: 'fastmail', name: 'Fastmail', type: 'mailbox', url: 'https://www.fastmail.com', mx: ['.messagingengine.com', '.fastmail.com'], spf: ['spf.messagingengine.com'] },
+  { id: 'amazon', name: 'Amazon SES / WorkMail', type: 'mailbox', url: 'https://aws.amazon.com/ses/', mx: ['.amazonaws.com', '.mail.awsapps.com'], spf: ['amazonses.com'] },
+  { id: 'cloudflare', name: 'Cloudflare Email Routing', type: 'routing', url: 'https://developers.cloudflare.com/email-routing/', mx: ['.mx.cloudflare.net'], spf: ['_spf.mx.cloudflare.net'] },
+  { id: 'icloud', name: 'Apple iCloud Mail', type: 'mailbox', url: 'https://www.icloud.com/mail', mx: ['.mail.icloud.com', '.icloud.com'], spf: ['icloud.com'] },
+  { id: 'yahoo', name: 'Yahoo Mail', type: 'mailbox', url: 'https://mail.yahoo.com', mx: ['.yahoodns.net'] },
+  { id: 'yandex', name: 'Yandex Mail', type: 'mailbox', url: 'https://360.yandex.com/mail/', mx: ['mx.yandex.net', '.yandex.net'], spf: ['_spf.yandex.net'] },
+  { id: 'improvmx', name: 'ImprovMX', type: 'routing', url: 'https://improvmx.com', mx: ['.improvmx.com'], spf: ['spf.improvmx.com'] },
+  { id: 'rackspace', name: 'Rackspace Email', type: 'mailbox', url: 'https://www.rackspace.com/email-hosting', mx: ['.emailsrvr.com'], spf: ['emailsrvr.com'] },
+  { id: 'godaddy', name: 'GoDaddy / secureserver', type: 'mailbox', url: 'https://www.godaddy.com/email', mx: ['.secureserver.net'], spf: ['secureserver.net'] },
+  { id: 'proton', name: 'Proton Mail', type: 'mailbox', url: 'https://proton.me/mail', mx: ['.protonmail.ch'], spf: ['_spf.protonmail.ch'] },
+  { id: 'mailgun', name: 'Mailgun', type: 'routing', url: 'https://www.mailgun.com', mx: ['.mailgun.org'], spf: ['mailgun.org'] },
 ];
 
 function normalizeHost(value) {
@@ -74,18 +75,20 @@ export function matchEmailProvider(hostname) {
 /**
  * @param {string[]} mxHosts MX exchange hostnames
  * @param {string[]} [spfDomains] domains seen in the SPF include graph
- * @returns {{ providers: Array<{id: string, name: string, type: string, via: 'mx'|'spf'}>, unmatched: string[] }}
+ * @returns {{ providers: Array<{id: string, name: string, type: string, url: string, via: 'mx'|'spf', hosts: string[]}>, unmatched: string[] }}
  */
 export function detectEmailProviders(mxHosts, spfDomains = []) {
   const providers = [];
   const unmatched = [];
-  for (const host of mxHosts) {
+  for (const host of mxHosts.map(normalizeHost)) {
     const provider = matchEmailProvider(host);
     if (!provider) {
-      unmatched.push(normalizeHost(host));
-    } else if (!providers.some((entry) => entry.id === provider.id)) {
-      providers.push({ id: provider.id, name: provider.name, type: provider.type, via: 'mx' });
+      unmatched.push(host);
+      continue;
     }
+    const entry = providers.find((item) => item.id === provider.id);
+    if (entry) entry.hosts.push(host);
+    else providers.push({ id: provider.id, name: provider.name, type: provider.type, url: provider.url, via: 'mx', hosts: [host] });
   }
 
   if (!providers.some((entry) => entry.type === 'mailbox')) {
@@ -94,9 +97,10 @@ export function detectEmailProviders(mxHosts, spfDomains = []) {
       const provider = EMAIL_PROVIDERS.find(
         (entry) => entry.type === 'mailbox' && entry.spf?.some((pattern) => matchesPattern(domain, pattern))
       );
-      if (provider && !providers.some((entry) => entry.id === provider.id)) {
-        providers.push({ id: provider.id, name: provider.name, type: provider.type, via: 'spf' });
-      }
+      if (!provider) continue;
+      const entry = providers.find((item) => item.id === provider.id);
+      if (entry) entry.hosts.push(domain);
+      else providers.push({ id: provider.id, name: provider.name, type: provider.type, url: provider.url, via: 'spf', hosts: [domain] });
     }
   }
 

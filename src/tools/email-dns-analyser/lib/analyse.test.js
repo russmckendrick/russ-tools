@@ -61,15 +61,18 @@ describe('email DNS analysis', () => {
         : { Status: 0, Answer: [] },
     });
     expect(result.providers).toEqual([
-      { id: 'google-workspace', name: 'Google Workspace', type: 'mailbox', via: 'mx' },
+      expect.objectContaining({
+        id: 'google-workspace',
+        name: 'Google Workspace',
+        type: 'mailbox',
+        via: 'mx',
+        url: 'https://workspace.google.com',
+        hosts: ['aspmx.l.google.com', 'alt1.aspmx.l.google.com'],
+      }),
     ]);
-    expect(result.sections.find((section) => section.id === 'mx').findings).toEqual(
-      expect.arrayContaining([expect.objectContaining({
-        severity: 'info',
-        title: 'Email provider: Google Workspace',
-        evidence: 'aspmx.l.google.com · alt1.aspmx.l.google.com',
-      })])
-    );
+    expect(result.sections.find((section) => section.id === 'mx').findings).toEqual([
+      expect.objectContaining({ severity: 'success', title: 'Mail exchangers published' }),
+    ]);
   });
 
   it('names the mailbox provider behind a gateway from the SPF graph', async () => {
@@ -91,12 +94,8 @@ describe('email DNS analysis', () => {
       ['mimecast', 'mx'],
       ['microsoft-365', 'spf'],
     ]);
-    const providerFinding = result.sections.find((section) => section.id === 'mx').findings
-      .find((item) => item.title.startsWith('Email provider'));
-    expect(providerFinding.title).toBe('Email provider: Mimecast + Microsoft 365');
-    expect(providerFinding.detail).toBe(
-      'Mail is routed through Mimecast (security gateway). SPF suggests mailboxes are hosted on Microsoft 365.'
-    );
+    expect(result.providers[0].hosts).toEqual(['us-smtp-inbound-1.mimecast.com']);
+    expect(result.providers[1].hosts).toEqual(['spf.protection.outlook.com']);
   });
 
   it('reports unrecognised MX hosts as custom or self-hosted', async () => {

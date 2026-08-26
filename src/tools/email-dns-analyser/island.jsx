@@ -8,11 +8,55 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle2, Info, MailCheck, Search, TriangleAlert } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ExternalLink, Inbox, Info, MailCheck, Route, Search, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { analyseEmailDns } from './lib/analyse.js';
+import { PROVIDER_ICONS } from './lib/providerIcons.js';
 
 const VARIANT = { success: 'success', warning: 'warning', error: 'destructive', info: 'info' };
 const ICON = { success: CheckCircle2, warning: TriangleAlert, error: AlertCircle, info: Info };
+const PROVIDER_TYPE = {
+  mailbox: { label: 'Mailbox provider', Icon: Inbox },
+  gateway: { label: 'Security gateway', Icon: ShieldCheck },
+  routing: { label: 'Forwarding service', Icon: Route },
+};
+
+function ProviderMark({ provider, TypeIcon }) {
+  const BrandIcon = PROVIDER_ICONS[provider.id];
+  if (!BrandIcon) return <TypeIcon className="h-5 w-5" aria-hidden="true" />;
+  return <BrandIcon className="h-5 w-5" aria-hidden="true" />;
+}
+
+function ProviderRow({ provider }) {
+  const { label, Icon: TypeIcon } = PROVIDER_TYPE[provider.type] ?? PROVIDER_TYPE.mailbox;
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border-2 border-rule bg-surface-inset p-3">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border-2 border-rule bg-surface-raised">
+          <ProviderMark provider={provider} TypeIcon={TypeIcon} />
+        </div>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-body-lg">{provider.name}</p>
+            {provider.via === 'spf' && <Badge variant="outline">via SPF</Badge>}
+          </div>
+          <p className="mt-0.5 text-label-caps uppercase text-on-surface-faint">{label}</p>
+          {provider.hosts?.length > 0 && (
+            <p className="mt-1 break-all font-mono text-data-sm text-muted-foreground">{provider.hosts.join(' · ')}</p>
+          )}
+        </div>
+      </div>
+      <a
+        href={provider.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex shrink-0 items-center gap-1 text-body-sm text-primary-text hover:underline"
+      >
+        {new URL(provider.url).hostname.replace(/^www\./, '')}
+        <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+      </a>
+    </div>
+  );
+}
 
 export default function EmailDnsAnalyser() {
   const { domain: routeDomain } = useParams();
@@ -100,6 +144,9 @@ export default function EmailDnsAnalyser() {
               <Card key={section.id}>
                 <CardHeader><h3 className="text-title-sm">{section.title}</h3></CardHeader>
                 <CardContent className="space-y-3">
+                  {section.id === 'mx' && (result.providers ?? []).map((provider) => (
+                    <ProviderRow key={provider.id} provider={provider} />
+                  ))}
                   {section.findings.map((item, index) => {
                     const FindingIcon = ICON[item.severity];
                     return <Alert key={`${item.title}-${index}`} variant={VARIANT[item.severity]}><FindingIcon aria-hidden="true" /><AlertTitle>{item.title}</AlertTitle><AlertDescription><p>{item.detail}</p>{item.evidence && <code className="mt-1 block break-all font-mono text-data-sm">{item.evidence}</code>}</AlertDescription></Alert>;

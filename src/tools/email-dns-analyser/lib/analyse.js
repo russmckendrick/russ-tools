@@ -127,24 +127,6 @@ export function analyseDkimRecord(records, selector) {
   return { record, tags, findings };
 }
 
-function providerFinding(detection, mx) {
-  const evidence = mx.map((record) => record.exchange.replace(/\.$/, '')).join(' · ');
-  if (!detection.providers.length) {
-    return finding('info', 'Custom or self-hosted email', 'The MX hosts do not match a known provider signature.', evidence);
-  }
-  const describe = (provider) =>
-    provider.type === 'gateway' ? `${provider.name} (security gateway)`
-      : provider.type === 'routing' ? `${provider.name} (forwarding service)`
-        : provider.name;
-  const viaMx = detection.providers.filter((provider) => provider.via === 'mx');
-  const viaSpf = detection.providers.filter((provider) => provider.via === 'spf');
-  const detail = [
-    viaMx.length ? `Mail is routed through ${viaMx.map(describe).join(' and ')}.` : '',
-    viaSpf.length ? `SPF suggests mailboxes are hosted on ${viaSpf.map((provider) => provider.name).join(' and ')}.` : '',
-  ].filter(Boolean).join(' ');
-  return finding('info', `Email provider: ${detection.providers.map((provider) => provider.name).join(' + ')}`, detail, evidence);
-}
-
 function txtPolicies(response, prefix) {
   return dnsRecords(response, 'TXT').map((record) => decodeDnsText(record.data)).filter((text) => text.toLowerCase().startsWith(prefix));
 }
@@ -187,7 +169,9 @@ export async function analyseEmailDns(input, selector = '', options = {}) {
   const detection = !nullMx && mx.length > 0
     ? detectEmailProviders(mx.map((record) => record.exchange), spfGraphDomains)
     : { providers: [], unmatched: [] };
-  if (!nullMx && mx.length > 0) mxFindings.push(providerFinding(detection, mx));
+  if (!nullMx && mx.length > 0 && detection.providers.length === 0) {
+    mxFindings.push(finding('info', 'Custom or self-hosted email', 'The MX hosts do not match a known provider signature.', detection.unmatched.join(' · ')));
+  }
   const dmarc = analyseDmarcRecord(txtPolicies(dmarcResponse, 'v=dmarc1'));
   const dkim = analyseDkimRecord(dkimResponse ? dnsRecords(dkimResponse, 'TXT').map((record) => record.text) : [], cleanSelector);
   const mta = txtPolicies(mtaResponse, 'v=stsv1');
