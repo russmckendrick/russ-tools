@@ -49,8 +49,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
-    "jose": "^6.2.8",
-    "js-yaml": "^4.3.1",
+    "jose": "^6.2.10",
+    "js-yaml": "^4.3.2",
     "js-yaml-source-map": "^0.2.2",
     "json-parse-even-better-errors": "^4.0.0",
     "lucide-react": "^0.539.0",
@@ -61,21 +61,21 @@
     "react-dropzone": "^14.4.1",
     "react-icons": "^5.7.0",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.18.2",
-    "read-excel-file": "^9.3.8",
-    "sonner": "^2.0.7",
+    "react-router-dom": "^7.18.3",
+    "read-excel-file": "^9.3.10",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "write-excel-file": "^4.1.1",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@astrojs/react": "6.0.2",
     "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "4.3.3",
-    "@testing-library/react": "^16.3.2",
+    "@testing-library/react": "^16.3.3",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "^19.2.5",
     "@vitejs/plugin-react": "^4.7.0",
     "astro": "7.2.0",
     "astro-webmcp": "0.5.0",
@@ -87,6 +87,6 @@
     "jsdom": "^29.1.1",
     "msw": "^2.15.0",
     "tailwindcss": "^4.3.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   }
 }
