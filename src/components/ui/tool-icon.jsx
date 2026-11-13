@@ -4,11 +4,11 @@ import { TOOL_ICONS } from '@/shell/icons.mjs';
 import { cn } from '@/lib/utils';
 
 /**
- * A tool's Lucide icon, in React.
+ * A tool's icon, in React.
  *
  * The drawings come from `src/shell/icons.mjs` — the same module the
  * prerendered Astro `ToolIcon` renders from — so a tool's icon is drawn once
- * and used in both apps. The wrapper attributes here are Lucide's stroke
+ * and used in both apps. The wrapper attributes here are the stroke
  * contract and must agree with `iconSvg` in that module.
  *
  * `currentColor`, per DESIGN.md, makes the glyph take its ink from the
@@ -29,7 +29,7 @@ export const ToolIcon = React.forwardRef(({ name, size, className, ...props }, r
       height={size}
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={1.75}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"

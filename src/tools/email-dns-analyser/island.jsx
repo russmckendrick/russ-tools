@@ -29,9 +29,9 @@ function ProviderMark({ provider, TypeIcon }) {
 function ProviderRow({ provider }) {
   const { label, Icon: TypeIcon } = PROVIDER_TYPE[provider.type] ?? PROVIDER_TYPE.mailbox;
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border-2 border-rule bg-surface-inset p-3">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-rule bg-surface-inset p-3">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border-2 border-rule bg-surface-raised">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-rule bg-surface-raised">
           <ProviderMark provider={provider} TypeIcon={TypeIcon} />
         </div>
         <div className="min-w-0">

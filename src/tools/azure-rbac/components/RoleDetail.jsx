@@ -74,7 +74,7 @@ export function RoleDetail({ role, catalogueSize, onCopy, onExport }) {
 
           return (
             <Collapsible key={bucket} defaultOpen={bucket === 'actions'}>
-              <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 rounded-md border-2 border-rule px-3 py-2 text-left">
+              <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 rounded-md border border-rule px-3 py-2 text-left">
                 <span className="flex flex-wrap items-baseline gap-2">
                   <span className="text-title-sm">{label}</span>
                   <span className="text-body-sm text-muted-foreground">{blurb}</span>

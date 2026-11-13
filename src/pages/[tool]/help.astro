@@ -66,20 +66,20 @@ const schema = [
   image={`/og/${tool.id}.png`}
   schema={schema}
 >
-  <div style={`--cat: var(--color-category-${tool.category}); --cat-fill: var(--color-category-fill-${tool.category})`}>
-    <div class="rt-tool-head">
-      <nav class="rt-crumb" aria-label="Breadcrumb">
+  <div slot="band" class="rt-tool-head">
+      <nav class="rt-crumb rt-rise" aria-label="Breadcrumb">
         <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a> / <a href={tool.path}>{tool.title}</a> / Help
       </nav>
 
-      <div class="rt-tool-id">
-        <ToolIcon icon={tool.icon} size={34} />
+      <div class="rt-tool-id rt-rise" style="--rt-i: 1">
+        <ToolIcon icon={tool.icon} size={30} />
         <h1>{tool.title} help</h1>
       </div>
 
-      <p>Guidance from this tool's documentation.</p>
-    </div>
+      <p class="rt-rise" style="--rt-i: 2">Guidance from this tool's documentation.</p>
+  </div>
 
+  <div style={`--cat: var(--color-category-${tool.category}); --cat-fill: var(--color-category-fill-${tool.category})`}>
     <div class="rt-tool-body">
       <nav class="rt-help-toc" aria-label="On this page">
         <span>On this page</span>

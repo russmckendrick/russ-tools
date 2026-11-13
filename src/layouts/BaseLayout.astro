@@ -8,10 +8,9 @@
  */
 import '../styles/globals.css';
 import '../styles/shell.css';
-import '@fontsource-variable/bricolage-grotesque';
-import '@fontsource-variable/space-grotesk';
-import '@fontsource/space-mono';
-import '@fontsource/space-mono/700.css';
+import '@fontsource-variable/ibm-plex-sans';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
 import HeaderActions from '../shell/HeaderActions.astro';
 import SiteMark from '../shell/SiteMark.astro';
 import { AUTHOR, SITE_NAME, THEME_COLOR } from '../shell/site.mjs';
@@ -138,14 +137,30 @@ const schemaNodes = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
       </div>
     </header>
 
-    <main class="rt-shell" id="main" tabindex="-1">
-      <slot />
+    <!--
+      `band` is the head of the page: it continues the header's ink ground
+      edge to edge, so it sits outside the width-capped shell but inside
+      <main>, where the page's h1 belongs.
+    -->
+    <main id="main" tabindex="-1">
+      {
+        Astro.slots.has('band') && (
+          <div class="rt-band">
+            <div class="rt-shell">
+              <slot name="band" />
+            </div>
+          </div>
+        )
+      }
+      <div class="rt-shell">
+        <slot />
+      </div>
     </main>
 
     <footer class="rt-site-footer">
       <div class="rt-shell rt-footer-inner">
         <a class="rt-footer-brand" href="/">
-          <SiteMark size={19} />
+          <SiteMark size={18} />
           <span>russ<b class="rt-brand-dot">.</b>tools</span>
         </a>
         <nav class="rt-footnav" aria-label="Footer">

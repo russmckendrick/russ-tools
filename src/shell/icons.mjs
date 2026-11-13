@@ -1,69 +1,113 @@
 /**
- * The shared tool icon set, sourced from Lucide — the same library the UI's
- * generic glyphs already come from, so the whole site draws with one pen.
+ * The shared tool icon set — drawn for this site, not taken from a library.
  *
- * Each glyph is stroke-based on the Lucide 24px grid: a 2px `currentColor`
- * stroke, which is exactly the weight of the Stacks structural border, so an
- * icon inside a category tile is drawn with the same line as the tile's own
- * edge. The filled Material set this replaces read as solid slabs inside the
- * tiles once Signal's flat language retired.
+ * Every glyph sits on a 24px grid and is built from the same few moves:
+ * square-cornered boxes, circles, and straight strokes with round caps, at a
+ * 1.75px `currentColor` line. Squared boxes rather than Lucide's rounded
+ * ones are what make the set read as one family beside Datasheet's ruled
+ * rows.
  *
  * The SVG child markup lives here so Astro and React render exactly the same
  * drawing; the stroke attributes live on the wrapper (`iconSvg` below and
- * `ui/tool-icon.jsx`), which must stay in agreement. Keys are kebab-cased
- * Lucide icon names. Lucide is © Lucide Contributors and ISC licensed; the
- * deployed licence copy is at `/licenses/lucide.txt`.
+ * `ui/tool-icon.jsx`), which must stay in agreement.
+ *
+ * The KEYS are the kebab-cased Lucide names the manifests already declared
+ * under Stacks. They are kept as identifiers only, so no manifest and no
+ * `<Tool>Icon.jsx` had to change — the comment beside each says which tool
+ * it is drawn for. Generic interface glyphs inside the tools still come from
+ * lucide-react.
  */
 
 export const TOOL_ICONS = {
-  'search-code':
-    '<path d="m13 13.5 2-2.5-2-2.5"/><path d="m21 21-4.3-4.3"/><path d="M9 8.5 7 11l2 2.5"/><circle cx="11" cy="11" r="8"/>',
-  tag:
-    '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
-  binary:
-    '<rect x="14" y="14" width="4" height="6" rx="2"/><rect x="6" y="4" width="4" height="6" rx="2"/><path d="M6 20h4"/><path d="M14 10h4"/><path d="M6 14h2v6"/><path d="M14 4h2v6"/>',
-  megaphone:
-    '<path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14"/><path d="M8 6v8"/>',
-  'calendar-clock':
-    '<path d="M16 14v2.2l1.6 1"/><path d="M16 2v4"/><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M3 10h5"/><path d="M8 2v4"/><circle cx="16" cy="16" r="6"/>',
-  'arrow-right-left':
-    '<path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>',
-  globe:
-    '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
-  braces:
-    '<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/>',
-  table:
-    '<path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/>',
-  'layout-grid':
-    '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
-  'key-round':
-    '<path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>',
-  'shield-check':
-    '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
-  network:
-    '<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/>',
-  'building-2':
-    '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>',
-  'id-card':
-    '<path d="M16 10h2"/><path d="M16 14h2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><circle cx="9" cy="11" r="2"/><rect x="2" y="5" width="20" height="14" rx="2"/>',
-  'receipt-text':
-    '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M13 16H8"/>',
-  'shield-user':
-    '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M6.376 18.91a6 6 0 0 1 11.249.003"/><circle cx="12" cy="11" r="4"/>',
-  'file-lock-2':
-    '<path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v1"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><rect width="8" height="5" x="2" y="13" rx="1"/><path d="M8 13v-2a2 2 0 1 0-4 0v2"/>',
-  'mail-check':
-    '<path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="m16 19 2 2 4-4"/>',
-  combine:
-    '<path d="M10 18H5a3 3 0 0 1-3-3v-1"/><path d="M14 2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2"/><path d="M20 2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2"/><path d="m7 21 3-3-3-3"/><rect x="14" y="14" width="8" height="8" rx="2"/><rect x="2" y="2" width="8" height="8" rx="2"/>',
+  // bgp-explorer: three peers, fully meshed
   route:
-    '<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
-  tags:
-    '<path d="M13.172 2a2 2 0 0 1 1.414.586l6.71 6.71a2.4 2.4 0 0 1 0 3.408l-4.592 4.592a2.4 2.4 0 0 1-3.408 0l-6.71-6.71A2 2 0 0 1 6 9.172V3a1 1 0 0 1 1-1z"/><path d="M2 7v6.172a2 2 0 0 0 .586 1.414l6.71 6.71a2.4 2.4 0 0 0 3.191.193"/><circle cx="10.5" cy="6.5" r=".5" fill="currentColor"/>',
-  'globe-lock':
-    '<path d="M15.686 15A14.5 14.5 0 0 1 12 22a14.5 14.5 0 0 1 0-20 10 10 0 1 0 9.542 13"/><path d="M2 12h8.5"/><path d="M20 6V4a2 2 0 1 0-4 0v2"/><rect width="8" height="5" x="14" y="6" rx="1"/>',
+    '<circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6h10M6 7.7l5 8.6M18 7.7l-5 8.6"/>',
+  // cidr-workbench: two overlapping sets
+  combine:
+    '<path d="M4 4h11v11H4z"/><path d="M9 9h11v11H9z"/>',
+  // dns-lookup
+  globe:
+    '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  // zone-file-linter: a file that passed
   'file-diff':
-    '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/>',
+    '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 14l2 2 4-4"/>',
+  // email-dns-analyser
+  'mail-check':
+    '<path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/>',
+  // subnet-calculator: one block divided in two
+  network:
+    '<path d="M8 3h8v5H8z"/><path d="M3 16h7v5H3z"/><path d="M14 16h7v5h-7z"/><path d="M12 8v4M6.5 16v-4h11v4"/>',
+  // whois-lookup
+  'id-card':
+    '<path d="M3 5h18v14H3z"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16c.6-1.6 5.4-1.6 6 0M14 10h4M14 14h4"/>',
+  // azure-kql: a query over rows
+  'search-code':
+    '<path d="M4 6h9M4 11h5M4 16h5"/><circle cx="15.5" cy="14.5" r="3.5"/><path d="M18 17l3 3"/>',
+  // azure-rbac
+  'shield-user':
+    '<path d="M12 3l7 3v5c0 5-3 8-7 10c-4-2-7-5-7-10V6z"/><circle cx="12" cy="10" r="2"/><path d="M8.5 16c1-2.5 6-2.5 7 0"/>',
+  // azure-naming
+  tag:
+    '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.2"/>',
+  // azure-service-tags
+  tags:
+    '<path d="M3 11V5h6l9 9-6 6z"/><path d="M13 5l8 8-6 7"/><circle cx="6.5" cy="8.5" r="1"/>',
+  // conditional-access
+  'file-lock-2':
+    '<path d="M6 11h12v9H6z"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/><path d="M12 14.5v2.5"/>',
+  // m365-licenses
+  'receipt-text':
+    '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+  // microsoft-portals
+  'layout-grid':
+    '<path d="M4 4h7v7H4z"/><path d="M13 4h7v7h-7z"/><path d="M4 13h7v7H4z"/><path d="M13 13h7v7h-7z"/>',
+  // tenant-lookup
+  'building-2':
+    '<path d="M5 21V4h9v17"/><path d="M14 9h5v12"/><path d="M3 21h18M8 8h3M8 12h3M8 16h3"/>',
+  // dnssec-checker: a chain of trust
+  'globe-lock':
+    '<path d="M10 14a4 4 0 0 1 0-5.6l3-3a4 4 0 0 1 5.6 5.6l-1.5 1.5"/><path d="M14 10a4 4 0 0 1 0 5.6l-3 3a4 4 0 0 1-5.6-5.6l1.5-1.5"/>',
+  // jwt: three parts between braces
+  braces:
+    '<path d="M8 4c-2 0-3 1-3 3v2c0 1.5-1 3-2 3c1 0 2 1.5 2 3v2c0 2 1 3 3 3"/><path d="M16 4c2 0 3 1 3 3v2c0 1.5 1 3 2 3c-1 0-2 1.5-2 3v2c0 2-1 3-3 3"/><path d="M12 8h.01M12 12h.01M12 16h.01"/>',
+  // password-generator
+  'key-round':
+    '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M13.5 9.5l2 2"/>',
+  // ssl-checker
+  'shield-check':
+    '<path d="M12 3l7 3v5c0 5-3 8-7 10c-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+  // base64
+  binary:
+    '<path d="M6 4v6M18 4v6M14 14v6M18 14v6"/><path d="M10 4h4v6h-4z"/><path d="M6 14h4v6H6z"/>',
+  // cron-builder
+  'calendar-clock':
+    '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  // data-converter
+  'arrow-right-left':
+    '<path d="M4 8h14M15 5l3 3-3 3"/><path d="M20 16H6M9 13l-3 3 3 3"/>',
+  // markdown-table-tool
+  table:
+    '<path d="M3 5h18v14H3z"/><path d="M3 10h18M9 5v14M15 5v14"/>',
+  // buzzword-ipsum: a speech bubble of filler
+  megaphone:
+    '<path d="M4 5h16v11H10l-4 4v-4H4z"/><path d="M8 9h8M8 12h5"/>',
+};
+
+/**
+ * One glyph per index group, keyed by `categoryGroupId`. These head the
+ * sections of the catalogue, where a number or a coloured rule used to.
+ */
+export const GROUP_ICONS = {
+  network:
+    '<circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M12 11.5l-5.6 5.3M12 11.5l5.6 5.3"/>',
+  'microsoft-azure':
+    '<path d="M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 9.5a4.3 4.3 0 0 1 .5 8.5z"/>',
+  security:
+    '<path d="M12 3l7 3v5c0 5-3 8-7 10c-4-2-7-5-7-10V6z"/><circle cx="12" cy="10.5" r="1.5"/><path d="M12 12v3"/>',
+  developer:
+    '<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14"/>',
+  content:
+    '<path d="M4 6h16M4 11h16M4 16h10"/>',
 };
 
 export const ICON_NAMES = Object.keys(TOOL_ICONS);
@@ -71,20 +115,19 @@ export const ICON_NAMES = Object.keys(TOOL_ICONS);
 /**
  * Renders one icon as an inline SVG string.
  *
- * The wrapper carries Lucide's stroke contract — `fill="none"`, 2px
- * `currentColor` stroke, round caps and joins. The two glyphs that need a
- * filled detail (the tag's pin, the key's bow dot) say `fill="currentColor"`
- * on that element themselves.
+ * The wrapper carries the stroke contract — `fill="none"`, a 1.75px
+ * `currentColor` stroke, round caps and joins.
  *
- * @param {string} name  a key of TOOL_ICONS
+ * @param {string} name  a key of TOOL_ICONS (or of `set`)
  * @param {number} [size]
+ * @param {Record<string, string>} [set]
  */
-export function iconSvg(name, size = 17) {
-  const paths = TOOL_ICONS[name];
+export function iconSvg(name, size = 17, set = TOOL_ICONS) {
+  const paths = set[name];
   if (!paths) throw new Error(`unknown tool icon: ${name}`);
   return (
     `<svg viewBox="0 0 24 24" width="${size}" height="${size}" ` +
-    `fill="none" stroke="currentColor" stroke-width="2" ` +
+    `fill="none" stroke="currentColor" stroke-width="1.75" ` +
     `stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`
   );
 }

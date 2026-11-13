@@ -2865,3 +2865,37 @@ as soon as either source changes.
 Final verification: 933 Vitest assertions, 68 Playwright tests through
 `wrangler pages dev`, production Astro build, live Google DoH / RIPEstat / mail
 DNS / DNSSEC workflows, and ESLint at 0 errors / the same 11 warnings.
+
+### 2026-11-13 — Datasheet replaces Stacks
+
+The owner reviewed the site as "not professional enough", chose the Datasheet
+direction from three mock-ups, and then steered it: no numbered sections, more
+presence without gimmicks, motion, custom icons, and no marketing copy.
+
+**What changed.** Tokens were retuned in `DESIGN.md` and regenerated (names
+kept, values changed; new `band-*` and `accent-bright` tokens). Fonts moved to
+self-hosted IBM Plex Sans / Mono. `shell.css` was rewritten: an ink band under
+the header and page head, a home page of five headed sections of ruled rows
+(replacing the flat tile stream and its row cadence, so `rowCadence.js` is
+deleted), pill filter chips, a flat footer. `BaseLayout` gained a `band` slot
+inside `<main>`. `ui/` components lost their 2px borders and offset shadows.
+The icon set in `icons.mjs` is now custom-drawn under the existing keys, plus
+`GROUP_ICONS`. Motion: `.rt-rise`, the subnet illustration, the paste-box
+ticker, row hovers, and `.rt-enter-surface` re-enabled as a short rise.
+
+**Deliberately kept.** Routes, the share codec, localStorage, the filter's URL
+behaviour (`/#network`, `?q=`), the `rt-card` / `data-category` hooks the e2e
+suite reads, and the category hues for badges inside tools.
+
+**Tests.** `tokens.contrast.test.js` now pins the Datasheet radii, fonts and
+flat lip, measures the band inks, and no longer requires `primary-text` to
+differ from `primary` in light (they are the same deep green by design).
+`registry.test.js` pins the 1.75px stroke. Two e2e tests were rewritten for
+the sectioned index.
+
+**Verified.** 963 Vitest assertions, 68 Playwright tests through
+`wrangler pages dev`, the production build, ESLint at 0 errors / 11 warnings,
+and the OG cards regenerated from the redrawn `scripts/generate-og.mjs`.
+
+**Not done.** Tool bodies were restyled only through tokens and `ui/`; none
+was recomposed.

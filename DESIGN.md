@@ -1,55 +1,48 @@
 ---
-version: stacks-1
+version: datasheet-1
 name: russ.tools
 description: >-
-  Stacks: a warm, chunky, high-contrast interface language. Structure comes
-  from a 2px ink border and a hard offset shadow — nothing blurs, nothing
-  floats, and the shadow is a statement of pressability, not of elevation.
-  One green accent does every action; six candy category hues label and never
-  fill large areas. Paper light is the house ground; the dark peer is a warm
-  espresso that keeps the same physics — cards lighter than the page, shadows
-  darker — rather than an inversion into cream-on-black.
+  Datasheet: a flat, ruled, typographic interface language. Structure comes
+  from a 1px rule and white space rather than from boxes and shadows. The
+  site header and the head of every page sit on one deep ink-green band; the
+  working area below is plain paper with ruled rows. One green accent does
+  every action. IBM Plex Sans reads, IBM Plex Mono carries data.
 
 # ---------------------------------------------------------------------------
 # COLOURS
-# Two themes only, unchanged from Signal's economy: the alternate palettes
-# stay retired.
+# Two themes only: the alternate palettes stay retired.
 #
 # Every value here is measured by src/styles/tokens.contrast.test.js. The
 # binding constraint is the light theme: a category or status hue used as
-# TEXT must clear 4.5:1 on the inset ground (#f1ead9), which is why the
+# TEXT must clear 4.5:1 on the inset ground (#f4f6f3), which is why the
 # light text hues are so much deeper than the fills.
 # ---------------------------------------------------------------------------
 colors:
-  # ---- Espresso dark (peer values, unsuffixed because dark stays the CSS
-  #      default theme; see "Which theme is the house" in the prose).
-  #      The dark theme keeps the LIGHT theme's physics: the page is a warm
-  #      cocoa, cards sit visibly LIGHTER on it, and the press shadow is
-  #      darker than the page — not an inversion into cream-on-black, which
-  #      collapsed every card into a wire outline. ----
-  surface: "#241f18"
-  surface-raised: "#2e2820"
-  surface-inset: "#383025"
-  outline: "#453c2c"
-  outline-strong: "#8f8670"  # a control boundary needs 3:1 on every ground
-  rule: "#7d735e"            # a quiet warm taupe — full cream borders glowed
-  on-surface: "#f5efe0"
-  on-surface-muted: "#bab19c"
-  on-surface-faint: "#a59c86"
-  on-surface-dim: "#877e66"  # non-text metadata only — held to 3:1, never 4.5:1
+  # ---- Ink dark (peer values, unsuffixed because dark stays the CSS
+  #      default theme). A green-black page with panels one step lighter. ----
+  surface: "#0c1410"
+  surface-raised: "#121c17"
+  surface-inset: "#18251e"
+  outline: "#223229"
+  outline-strong: "#6c8577"
+  rule: "#5f7a6b"
+  on-surface: "#eef4ef"
+  on-surface-muted: "#b4c3b9"
+  on-surface-faint: "#9bada1"
+  on-surface-dim: "#7b8f83"
   primary: "#6ee787"
   primary-hover: "#8bf09e"
-  on-primary: "#17150f"
-  nav-active: "#332c22"
-  footer: "#191510"
+  on-primary: "#0b1f16"
+  nav-active: "#18251e"
+  footer: "#080e0b"
   success: "#6ee787"
   warning: "#ffc857"
   error: "#ff6b6b"
   info: "#5aa7ff"
-  success-subtle: "#2b3b26"
-  warning-subtle: "#423a28"
-  info-subtle: "#2b3547"
-  error-subtle: "#422b26"
+  success-subtle: "#17301f"
+  warning-subtle: "#332b17"
+  info-subtle: "#17263a"
+  error-subtle: "#3a1d1b"
   category-network: "#2dd4bf"
   category-azure: "#5aa7ff"
   category-microsoft: "#b393ff"
@@ -57,35 +50,35 @@ colors:
   category-developer: "#ff9f43"
   category-content: "#ff7eb6"
 
-  # ---- Paper light (the house ground; `-light` suffix) ----
-  surface-light: "#faf4e8"
-  surface-raised-light: "#fffdf7"
-  surface-inset-light: "#f1ead9"
-  outline-light: "#e8e0cd"
-  outline-strong-light: "#7b7359"    # 3.95:1 on the inset, 4.66:1 on a card
-  rule-light: "#17150f"              # the 2px structural border is ink on paper
-  on-surface-light: "#17150f"
-  on-surface-muted-light: "#4d493e"
-  on-surface-faint-light: "#5d5748"
-  on-surface-dim-light: "#6e6855"
-  primary-light: "#6ee787"
-  primary-hover-light: "#4fd96f"
-  on-primary-light: "#17150f"
-  nav-active-light: "#eee5d0"
-  footer-light: "#efe7d3"            # a deepened paper band, not an ink slab
-  success-light: "#14793a"           # 4.58:1 on the inset
-  warning-light: "#975c07"           # 4.55:1 on the inset
-  error-light: "#ce2121"             # 4.53:1 on the inset
-  info-light: "#1e5eea"              # 4.55:1 on the inset
+  # ---- Paper light (white; `-light` suffix) ----
+  surface-light: "#ffffff"
+  surface-raised-light: "#ffffff"
+  surface-inset-light: "#f4f6f3"
+  outline-light: "#d7dcd6"
+  outline-strong-light: "#788379"
+  rule-light: "#869088"
+  on-surface-light: "#111411"
+  on-surface-muted-light: "#454d46"
+  on-surface-faint-light: "#566056"
+  on-surface-dim-light: "#6b756c"
+  primary-light: "#0b6b43"
+  primary-hover-light: "#095a38"
+  on-primary-light: "#ffffff"
+  nav-active-light: "#f4f6f3"
+  footer-light: "#f4f6f3"
+  success-light: "#14793a"
+  warning-light: "#975c07"
+  error-light: "#ce2121"
+  info-light: "#1e5eea"
   success-subtle-light: "#e2efe0"
   warning-subtle-light: "#f4ead6"
   info-subtle-light: "#e4eafb"
   error-subtle-light: "#f8e6e0"
-  category-network-light: "#0e766b"    # 4.59:1 on the inset
+  category-network-light: "#0e766b"
   category-azure-light: "#1e5eea"
   category-microsoft-light: "#7c3aed"
   category-security-light: "#975c07"
-  category-developer-light: "#9c5205"  # 4.84:1 on the inset
+  category-developer-light: "#9c5205"
   category-content-light: "#be185d"
 
   # ---- Category FILL hues -------------------------------------------------
@@ -100,142 +93,143 @@ colors:
   category-fill-security: "#ffc857"
   category-fill-developer: "#ff9f43"
   category-fill-content: "#ff7eb6"
-  on-category-fill: "#17150f"
+  on-category-fill: "#111411"
 
   # ---- Accent as TEXT -----------------------------------------------------
-  # #6ee787 as text on paper is ~1.6:1. Light mode therefore uses a deep
-  # green for accent text, links and the focus ring, and keeps #6ee787 for
-  # fills only. Dark mode uses the raw accent.
+  # Dark mode uses the mint for fills and text alike. Light mode's accent is
+  # a deep green that clears 4.5:1 on paper, so fill and text share a value.
   primary-text: "#6ee787"
-  primary-text-light: "#1b7038"  # 4.9:1 on nav-active-light, 5.1:1 on the inset
+  primary-text-light: "#0b6b43"
 
   # ---- Ink on a solid status fill -----------------------------------------
-  # NOT `on-primary`. The accent is bright and takes graphite ink in both
-  # themes; the status hues are bright in dark mode and deep in light mode,
-  # so their ink has to flip.
-  on-status: "#17150f"
+  # The status hues are bright in dark mode and deep in light mode, so their
+  # ink flips with them.
+  on-status: "#111411"
   on-status-light: "#ffffff"
 
-  # ---- The press shadow ---------------------------------------------------
-  # The offset shadow's colour. In light it is the ink; in dark it is the
-  # same taupe as the rule — the offset is drawn with the border pen, a
-  # printed second edge rather than a cast shadow. (True black was tried and
-  # vanished into the cocoa grounds; cream read as a glow.) The token stays
-  # separate from `rule` so the two can diverge again without a refactor.
-  shadow-ink: "#7d735e"
-  shadow-ink-light: "#17150f"
+  # ---- The lip -------------------------------------------------------------
+  # The colour of the 1px lip that is all that remains of the press shadow —
+  # a hairline tint in light, a step darker than the page in dark.
+  shadow-ink: "#070c09"
+  shadow-ink-light: "#d7dcd6"
 
-  # ---- Ink on the footer --------------------------------------------------
-  # The footer ground follows the theme (a deepened step of each theme's own
-  # ground), so its ink follows too. The ink-slab footer was tried and read
-  # as jarring against the paper page.
-  on-footer: "#f5efe0"
-  on-footer-muted: "#b5ad99"
-  on-footer-light: "#17150f"
-  on-footer-muted-light: "#4d493e"
+  # ---- Ink on the footer ---------------------------------------------------
+  on-footer: "#eef4ef"
+  on-footer-muted: "#a9b9ae"
+  on-footer-light: "#111411"
+  on-footer-muted-light: "#566056"
+
+  # ---- The ink band -------------------------------------------------------
+  # The site header and the head of every page sit on one deep ink-green
+  # band, identical in both themes. `accent-bright` is the mint that acts on
+  # it: the light theme's `primary` is a deep green and would vanish there.
+  band: "#0b1f16"
+  band-raised: "#12301f"
+  band-outline: "#2e6b48"
+  on-band: "#ffffff"
+  on-band-muted: "#c5d8cc"
+  accent-bright: "#6ee787"
+  on-accent-bright: "#0b1f16"
 
 # ---------------------------------------------------------------------------
 # TYPOGRAPHY
-# Bricolage Grotesque replaces Instrument Sans for display and headings;
-# Space Grotesk replaces it for body and labels; Space Mono replaces
-# Red Hat Mono for data. Three families, strictly separated jobs.
+# One superfamily: IBM Plex Sans for everything that is read, IBM Plex Mono
+# for data and small uppercase labels. Headings are medium weight, set tight.
 #
 # Step names are load-bearing in five other places — scripts/generate-tokens.mjs
 # (LINE_HEIGHTS), src/lib/utils.js (TYPE_SCALE), src/lib/utils.test.js (STEPS),
 # eslint.config.js (the off-scale message) and tokens.contrast.test.js. Adding
-# or renaming a step means editing all five. The names are unchanged from
-# Signal for exactly that reason.
+# or renaming a step, or changing a line-height, means editing them.
 # ---------------------------------------------------------------------------
 typography:
   display:
-    fontFamily: Bricolage Grotesque
+    fontFamily: IBM Plex Sans
     fontSize: 56px
-    fontWeight: 800
-    lineHeight: 1
-    letterSpacing: -0.02em
-  headline-lg:
-    fontFamily: Bricolage Grotesque
-    fontSize: 40px
-    fontWeight: 800
-    lineHeight: 1.05
-    letterSpacing: -0.02em
-  headline-md:
-    fontFamily: Bricolage Grotesque
-    fontSize: 22px
-    fontWeight: 700
-    lineHeight: 1.15
-    letterSpacing: -0.01em
-  title-sm:
-    fontFamily: Bricolage Grotesque
-    fontSize: 17px
-    fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: -0.01em
-  body-lg:
-    fontFamily: Space Grotesk
-    fontSize: 15px
     fontWeight: 500
+    lineHeight: 1
+    letterSpacing: -0.03em
+  headline-lg:
+    fontFamily: IBM Plex Sans
+    fontSize: 40px
+    fontWeight: 500
+    lineHeight: 1.05
+    letterSpacing: -0.025em
+  headline-md:
+    fontFamily: IBM Plex Sans
+    fontSize: 22px
+    fontWeight: 500
+    lineHeight: 1.15
+    letterSpacing: -0.015em
+  title-sm:
+    fontFamily: IBM Plex Sans
+    fontSize: 16px
+    fontWeight: 500
+    lineHeight: 1.2
+    letterSpacing: -0.005em
+  body-lg:
+    fontFamily: IBM Plex Sans
+    fontSize: 15px
+    fontWeight: 400
     lineHeight: 1.5
   body-md:
-    fontFamily: Space Grotesk
+    fontFamily: IBM Plex Sans
     fontSize: 14px
     fontWeight: 400
     lineHeight: 1.5
   body-sm:
-    fontFamily: Space Grotesk
+    fontFamily: IBM Plex Sans
     fontSize: 13px
     fontWeight: 400
     lineHeight: 1.45
   label-caps:
-    fontFamily: Space Grotesk
+    fontFamily: IBM Plex Sans
     fontSize: 11px
-    fontWeight: 600
+    fontWeight: 500
     lineHeight: 1
-    letterSpacing: 0.07em
+    letterSpacing: 0.06em
   label-caps-sm:
-    fontFamily: Space Grotesk
+    fontFamily: IBM Plex Sans
     fontSize: 10px
-    fontWeight: 600
+    fontWeight: 500
     lineHeight: 1
     letterSpacing: 0.06em
   data-xl:
-    fontFamily: Space Mono
+    fontFamily: IBM Plex Mono
     fontSize: 30px
-    fontWeight: 700
+    fontWeight: 500
     lineHeight: 1.2
   data-lg:
-    fontFamily: Space Mono
+    fontFamily: IBM Plex Mono
     fontSize: 15px
     fontWeight: 400
     lineHeight: 1.4
   data-md:
-    fontFamily: Space Mono
+    fontFamily: IBM Plex Mono
     fontSize: 13px
     fontWeight: 400
     lineHeight: 1.5
   data-sm:
-    fontFamily: Space Mono
+    fontFamily: IBM Plex Mono
     fontSize: 11px
     fontWeight: 400
     lineHeight: 1.4
-  # The grade / hero numeral. Display voice, not mono — it is a verdict.
+  # The grade / hero numeral. Sans, not mono — it is a verdict.
   verdict:
-    fontFamily: Bricolage Grotesque
+    fontFamily: IBM Plex Sans
     fontSize: 96px
-    fontWeight: 800
+    fontWeight: 500
     lineHeight: 1
     letterSpacing: -0.04em
 
 # ---------------------------------------------------------------------------
-# SHAPE — rounded is back, and it is chunky rather than soft. The radius is
-# always paired with the 2px ink border; a radius on a borderless region is
-# not part of the language.
+# SHAPE — small radii. A radius softens a corner; it never makes a pill
+# except `full`, which is for filter chips, the toggle knob and status dots.
 # ---------------------------------------------------------------------------
 rounded:
-  sm: 8px
-  md: 10px
-  lg: 14px
-  xl: 18px
+  sm: 4px
+  md: 6px
+  lg: 8px
+  xl: 12px
   full: 9999px
 
 # ---------------------------------------------------------------------------
@@ -249,22 +243,16 @@ rounded:
 # ---------------------------------------------------------------------------
 borderWidth:
   hairline: 1px
-  control: 2px
-  structural: 2px
+  control: 1px
+  structural: 1px
 
-# The offset shadow is hard-edged (no blur) and its colour is always the
-# `shadow-ink` token — the ink in light, the border taupe in dark (a
-# printed second edge, not a cast shadow); never grey and never translucent.
-# It means exactly one thing: THIS IS PRESSABLE.
-# Pressing an element sinks it: translate by the offset, shadow to none.
-# The one exception is `press-lg`, which also marks the page's one emphasis
-# panel (the result you came for), because that panel is the page's object.
-# (Offsets only here; the colour is always `colors.rule`, stated in prose
-# because the exporter cannot carry a reference inside a shadow string.)
+# Datasheet is flat. What is left of the press shadow is a 1–2px lip straight
+# down, in `shadow-ink`, on the few components still classed against these
+# names. Overlays (dialog, select menu, toast) use a soft drop shadow instead.
 shadow:
-  press-sm: 3px 3px 0
-  press: 4px 4px 0
-  press-lg: 5px 5px 0
+  press-sm: 0px 1px 0
+  press: 0px 1px 0
+  press-lg: 0px 2px 0
 
 spacing:
   xs: 4px
@@ -280,135 +268,74 @@ spacing:
   max-width: 1200px
 
 components:
-  # ---- shell ----
   site-header:
-    borderBottomColor: "{colors.rule}"
-    borderBottomWidth: 2px
-    padding: 0
-  # Nav items are folder TABS standing on the header's bottom rule: bordered
-  # on three sides, top corners rounded, no bottom border. The active tab
-  # opens into the page — its ground and bottom edge are the page surface.
+    backgroundColor: "{colors.band}"
+    textColor: "{colors.on-band}"
   nav-item:
-    typography: "{typography.body-sm}"
-    textColor: "{colors.on-surface-muted}"
-    backgroundColor: "{colors.nav-active}"
-    borderColor: "{colors.rule}"
-    borderWidth: 2px
-    rounded: 10px 10px 0 0
-    padding: 10px 17px
+    typography: "{typography.body-md}"
+    textColor: "{colors.on-band-muted}"
   nav-item-active:
-    backgroundColor: "{colors.surface}"
-    borderColor: "{colors.rule}"
-    textColor: "{colors.on-surface}"
-  site-footer:
-    backgroundColor: "{colors.footer}"
-    textColor: "{colors.on-footer}"
-    borderTopColor: "{colors.rule}"
-    borderTopWidth: 2px
-    padding: 28px 32px 44px
-
-  # ---- panels ----
-  # The offset shadow is on `panel-emphasis`, NOT on `panel`. A page here
-  # stacks five to ten panels; a shadow under every one of them stops meaning
-  # anything. See "Panels" in the prose.
+    textColor: "{colors.on-band}"
+    borderBottomColor: "{colors.accent-bright}"
+    borderBottomWidth: 2px
+  band:
+    backgroundColor: "{colors.band}"
+    textColor: "{colors.on-band}"
+  paste-panel:
+    backgroundColor: "{colors.band-raised}"
+    borderColor: "{colors.band-outline}"
+    borderWidth: 1px
+    rounded: "{rounded.lg}"
+  button-on-band:
+    backgroundColor: "{colors.accent-bright}"
+    textColor: "{colors.on-accent-bright}"
+    rounded: "{rounded.md}"
+  tool-row:
+    borderBottomColor: "{colors.outline}"
+    borderBottomWidth: 1px
+    padding: 14px 10px
+  tool-row-hover:
+    backgroundColor: "{colors.surface-inset}"
+  section-head:
+    borderBottomColor: "{colors.on-surface}"
+    borderBottomWidth: 1px
   panel:
     backgroundColor: "{colors.surface-raised}"
     borderColor: "{colors.rule}"
-    borderWidth: 2px
+    borderWidth: 1px
     rounded: "{rounded.lg}"
-    padding: 0
   panel-emphasis:
-    backgroundColor: "{colors.surface-raised}"
-    borderColor: "{colors.rule}"
-    borderWidth: 2px
-    rounded: "{rounded.lg}"
-    shadow: 5px 5px 0
-
-  # ---- the tool tile ----
-  card:
-    backgroundColor: "{colors.surface-raised}"
-    borderColor: "{colors.rule}"
-    borderWidth: 2px
-    textColor: "{colors.on-surface}"
-    rounded: "{rounded.lg}"
-    padding: 18px 20px 16px
-  card-hover:
-    shadow: 4px 4px 0
-
-  # ---- controls ----
+    borderColor: "{colors.on-surface}"
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
-    borderColor: "{colors.rule}"
-    borderWidth: 2px
-    typography: "{typography.body-lg}"
     rounded: "{rounded.md}"
-    shadow: 3px 3px 0
-    padding: 0 22px
-  button-primary-hover:
-    backgroundColor: "{colors.primary-hover}"
   button-secondary:
     backgroundColor: "{colors.surface-raised}"
     textColor: "{colors.on-surface}"
-    borderColor: "{colors.rule}"
-    borderWidth: 2px
-    typography: "{typography.body-sm}"
+    borderColor: "{colors.outline-strong}"
+    borderWidth: 1px
     rounded: "{rounded.md}"
-    shadow: 3px 3px 0
-    padding: 0 18px
   input:
     backgroundColor: "{colors.surface-raised}"
-    borderColor: "{colors.rule}"
-    borderWidth: 2px
-    textColor: "{colors.on-surface}"
+    borderColor: "{colors.outline-strong}"
+    borderWidth: 1px
     typography: "{typography.data-md}"
     rounded: "{rounded.md}"
-    padding: 10px 13px
-  select:
-    backgroundColor: "{colors.surface-raised}"
-    borderColor: "{colors.rule}"
-    borderWidth: 2px
-    textColor: "{colors.on-surface}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.md}"
-    padding: 10px 12px
   chip:
-    backgroundColor: "{colors.surface-raised}"
-    textColor: "{colors.on-surface-muted}"
-    borderColor: "{colors.rule}"
-    borderWidth: 2px
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.sm}"
-    padding: 7px 14px
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.on-surface}"
+    borderColor: "{colors.outline}"
+    borderWidth: 1px
+    rounded: "{rounded.full}"
   chip-active:
     backgroundColor: "{colors.on-surface}"
     textColor: "{colors.surface}"
-
-  # ---- markers ----
   badge-category:
     backgroundColor: "{colors.category-fill-network}"
     textColor: "{colors.on-category-fill}"
-    borderColor: "{colors.rule}"
-    borderWidth: 2px
     typography: "{typography.label-caps-sm}"
     rounded: "{rounded.sm}"
-    padding: 3px 8px
-  badge-status:
-    backgroundColor: "{colors.success-subtle}"
-    textColor: "{colors.success}"
-    typography: "{typography.label-caps-sm}"
-    rounded: "{rounded.sm}"
-    padding: 3px 8px
-  key-cell:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.on-surface-faint}"
-    typography: "{typography.label-caps}"
-    padding: 13px 24px
-  value-cell:
-    backgroundColor: "{colors.surface-raised}"
-    textColor: "{colors.on-surface}"
-    typography: "{typography.data-md}"
-    padding: 13px 24px
 
 motion:
   duration-fast: 90ms
@@ -417,426 +344,121 @@ motion:
   easing: ease-out
 ---
 
-# russ.tools Design System — Stacks
+# russ.tools Design System — Datasheet
+
+Datasheet replaced Stacks in November 2026. The token **names** survived so that
+no component had to be re-classed; nearly every value changed. This file is the
+single source of truth for colour, type, layout, shape and components. The YAML
+above is machine-read (`pnpm generate:tokens`); this prose is the rationale.
 
 ## Overview
 
-Stacks is **playful and structural at once**: every region is a rounded
-rectangle drawn with a real 2px ink border, and every pressable thing sits on
-a hard offset shadow that vanishes when pressed. There are no blurs, no
-gradients, no translucency and no grey shadows — depth is a flat, honest
-offset in the structural colour, and it is a statement of *pressability*, not
-of elevation.
+The site is a set of working tools, and it should look like the documentation
+for a piece of equipment: quiet, ruled, exact. Three ideas carry it.
 
-Three rules produce the whole language:
+1. **A rule, not a box.** Structure is a 1px line and white space. Panels have
+   a hairline edge and no shadow. The catalogue is ruled rows, not cards.
+2. **One ink band.** The site header and the head of every page share a deep
+   ink-green ground with a faint 40px grid. It is the only dark, textured
+   surface, and it is the same in both themes.
+3. **One accent, and it acts.** Green marks what can be pressed. It is mint on
+   the band and in dark mode, and a deep green on paper.
 
-1. **The border is the structure.** A 2px border in the `rule` colour (ink
-   on paper, a quiet warm taupe on espresso — full cream glowed) bounds
-   every panel, control and badge. The 1px
-   `outline` hairline organises peers *inside* a bordered region — table
-   rows, list items, a panel's header bar. Nothing else draws a boundary.
-2. **Shadow means pressable; pressing sinks it.** The offset shadow
-   (`press-sm` on buttons, `press` on a hovered tile, `press-lg` on the one
-   emphasis panel) is hard-edged, offset down-right, and always the `rule`
-   colour. `:active` translates the element by the offset and removes the
-   shadow — the press is the animation. Panels at rest have **no** shadow.
-3. **The accent acts, the category labels.** Green `#6ee787` is the only
-   colour on a thing you can press. The six category hues appear as solid
-   badge blocks, icon tiles, crumbs and small labels — never as a large fill,
-   never on a control, and never as the shadow of anything but a tool tile.
+Nothing on a page sells the site to someone already using it: no taglines, no
+stat strips, no feature claims. A heading says what the page is.
 
-### What changed from Signal
+## Colors
 
-| Signal | Stacks |
-|---|---|
-| Square, `rounded: 0` everywhere, no shadow scale | Chunky radii (8–14px) + hard offset shadows on pressables |
-| Rule *weight* (3px vs 1px) as the structural grammar | Rule *colour* at 2px as the structural grammar; hairlines stay 1px |
-| Graphite dark house ground, bone light peer | **Paper light house ground**, ink dark peer |
-| Chartreuse `#c6f232` accent | Green `#6ee787` accent |
-| Instrument Sans + Red Hat Mono | **Bricolage Grotesque** (display) + **Space Grotesk** (body/labels) + **Space Mono** (data) |
-| Shared-edge index grid, no gap | Separated tiles with gap — the border belongs to the tile again |
-| Mono small labels | Sans small labels; mono is data only again |
+- **Grounds.** Light is white (`surface`), with `surface-inset` (#f4f6f3) for
+  wells, table headers and hover. Dark is a green-black page with panels one
+  step lighter.
+- **Rules.** `outline` is the decorative hairline between peers. `rule` is the
+  structural edge of a panel and clears 3:1 on its ground. `outline-strong` is
+  the boundary of a form control and clears 3:1 everywhere. Section heads close
+  with a 1px rule in `on-surface`.
+- **Accent.** `primary` is the fill for buttons, toggles and sliders;
+  `primary-text` is the same role as text, links and the focus ring. On the
+  band use `accent-bright` and `on-accent-bright` instead: the light theme's
+  `primary` is a deep green and disappears there.
+- **Band.** `band`, `band-raised`, `band-outline`, `on-band`, `on-band-muted`.
+  These do not change with the theme.
+- **Category hues.** The six `category-*` text hues and `category-fill-*`
+  blocks still exist and still label badges and record types **inside** tools
+  through `--cat` / `--cat-fill`. The shell no longer draws them: the catalogue
+  and the tool header are green only. The two slots remain non-interchangeable.
+- **Status.** `success`, `warning`, `error`, `info`, each with a `-subtle` tint
+  and `on-status` ink.
 
-What did **not** change: the two-theme economy (no alternate palettes), the
-category fill/text two-slot system, the `on-status` / `on-footer` roles, the
-accent-as-fill-never-as-text rule, the spacing scale, and every token *name*.
-
-### Which theme is the house
-
-Paper light is the house ground — the OG cards, screenshots and first-run
-default should read as paper. The CSS layer keeps **dark as the unsuffixed
-default** purely as plumbing: the `-light` suffix convention, the theme
-toggle, the pre-paint script and the test matrix all assume it, and flipping
-the plumbing would churn every consumer for zero visual difference. The
-browser `theme_color` follows the dark surface because the manifest cannot
-switch per theme.
-
-## Colours
-
-### The accent
-
-`#6ee787` is a fill colour. It is ~1.6:1 as text on paper, so **light mode
-never uses it for text, links or the focus ring** — it uses
-`primary-text-light: #1b7038` there, while dark mode uses the raw accent
-(`primary-text: #6ee787`). Buttons and toggles are the same `#6ee787` in both
-themes, always with `#17150f` ink and a 2px `rule` border.
-
-The accent deliberately shares its hue family with `success`: a confirmation
-and an action rhyme. It is **not** the developer category hue — that is
-orange `#ff9f43` — so a primary button never reads as a category signal.
-(The design-canvas mockups had developer green; the coded system moved it to
-orange precisely because green was already spoken for by the accent.)
-
-### The category hues
-
-Each category has **two** values, and they are not interchangeable:
-
-- **`category-fill-*`** — the bright candy hue, used as a solid badge block
-  or icon tile with `#17150f` ink and a 2px `rule` border. Identical in both
-  themes.
-- **`category-*`** — the text hue for breadcrumbs and small labels. Bright in
-  dark mode, deepened in light mode (`#0e766b` rather than `#2dd4bf`) so it
-  clears 4.5:1 on paper.
-
-A category hue is still never a button, a large panel fill, or a page ground.
-`--cat` carries a `category-*` **text** hue and never a `category-fill-*`
-value. `category-accent.test.js` enforces both directions.
-
-(An earlier dark theme let tool tiles cast category-hued hover shadows.
-That flourish is retired with the Espresso rework: the shadow is `shadow-ink`
-in both themes, because a coloured shadow undermined the press metaphor the
-whole elevation story rests on.)
-
-### Status colour has three roles, not one
-
-- **`success` / `warning` / `error` / `info`** — the hue as *text*, over any
-  of the three grounds.
-- **`*-subtle`** — a quiet tint used as the ground of an alert or a status
-  badge. Its own hue must stay legible on it.
-- **`on-status`** — the ink on a *solid* status fill. Not `on-primary`: the
-  accent is bright in both themes and takes graphite ink, while the status
-  hues flip (bright in dark, deep in light), so their ink flips too
-  (`#17150f` dark, `#ffffff` light).
-
-Colour is never the sole carrier of a status — the literal word goes with it.
-An alert marks itself with a solid status icon block (2px-bordered square of
-the status fill with `on-status` ink), never with a tinted left border.
-
-### The footer follows the theme
-
-The footer is a deepened band of the theme's own ground (`#efe7d3` on paper,
-`#191510` on espresso), closed above by the 2px rule — a step down, not a slab.
-An ink footer on the paper page was tried and read as jarring. Because the
-ground now flips, its ink flips with it: `on-footer` / `on-footer-muted`
-carry `-light` peers like every other surface role.
-
-### The dim step is not body text
-
-`on-surface-dim` is the fourth and last step of the text ramp, held to **3:1
-rather than 4.5:1**. It is for non-essential metadata duplicated elsewhere —
-a counter, a placeholder, a keyboard hint. Anything a reader has to read is
-`on-surface-faint` or above.
+Every pair is measured in `src/styles/tokens.contrast.test.js`. Do not hand-edit
+a hex in CSS; change it here and regenerate.
 
 ## Typography
 
-Three families, strictly separated jobs:
-
-- **Bricolage Grotesque** — display, headlines, titles, the verdict numeral.
-  Heavy (700–800) and tight (`-0.01em` to `-0.04em`). This is the voice that
-  makes Stacks recognisable; do not set a heading below 700 or letterspace
-  one positively.
-- **Space Grotesk** — body, UI copy, and **all small labels**. `label-caps`
-  and `label-caps-sm` are sans now (600 weight, modest tracking), not mono:
-  Stacks labels are friendly signage, not machine tags.
-- **Space Mono** — data and only data: IPs, tokens, hashes, cron fields,
-  code, the route path. If a human typed it or a machine emitted it, it is
-  mono; if the site is speaking, it is not.
-
-**One class applies one step.** `text-title-sm` carries its own weight,
-line-height and letter-spacing; never put a `font-*`, `leading-*` or
-`tracking-*` beside it. Tailwind's stock sizes are off-scale and ESLint
-blocks them.
-
-Install via fontsource, matching the existing pattern in `BaseLayout.astro`:
-
-```js
-import '@fontsource-variable/bricolage-grotesque';
-import '@fontsource-variable/space-grotesk';
-import '@fontsource/space-mono';
-import '@fontsource/space-mono/700.css';
-```
+IBM Plex Sans for everything that is read; IBM Plex Mono for data, paths,
+counts and the small uppercase labels on the band. Both are self-hosted.
+Headings are weight 500 with tight tracking — never bold display type. One
+class applies one step: `text-title-sm` carries its own weight, line-height and
+tracking.
 
 ## Layout
 
-- One content column, `max-width: 1200px`, `32px` gutters.
-- **The tool index** is one flowing stream of separated tiles — `flex-wrap`
-  with a `14px` gap, not a fixed track count — and the width of a tile is
-  **authored by a cadence, not read off its own text**. Two steps only: a
-  third of a row or a half of one, each written as a fraction of the row minus
-  its gutters, so three thirds and two halves flush to exactly the same two
-  edges. `src/lib/rowCadence.js` repeats `[3, 2, 3, 3, 2]` over the catalogue
-  (eighteen tools break `3,2,3,3,2,3,2`) and the index's client script re-runs
-  it over the visible tiles on every filter, so a filtered view is its own
-  cadence rather than a slice of one written for eighteen. `min-width: 340px`
-  — the longest title, plus the tile's icon and padding — breaks the row down
-  to two and then to one as the viewport closes, so the composition needs no
-  breakpoint of its own above the phone.
+A 1200px column with a 32px gutter. The band is full-bleed; its content sits in
+the same column. Tool pages are one full-width column under the band; a tool
+composes its own body. The two-column control/result split stays withdrawn.
 
-  Three px steps chosen from title and description length were tried first and
-  withdrawn: every Microsoft and Azure title is long, so all seven took the
-  widest step at once and the middle of the page became a block of 2-up rows,
-  and a 2-up row of tiles capped at `max-width: 500px` stopped **124px short
-  of the right edge** — three consecutive rows reading as a narrower table
-  indented inside the catalogue. Two further attempts to give the wide tile
-  more to hold were also withdrawn: the manifest's badge terms as a row of
-  keys (they read as chips you could press, on a page that opens with a chip
-  row you can) and the route path (`/dns-lookup`) under the description, which
-  was a third statement of what the title and the link already say. The wide
-  step is breathing room; the cadence is what it is for.
+The index is five sections (Network, Microsoft & Azure, Security, Developer,
+Content). Each is headed by its group glyph on an ink tile, the name and a
+count, over an ink rule, with the tools beneath as ruled rows in two columns.
+Sections are never numbered.
 
-  The index carries **no category headings** — the filter chips name the
-  categories and the icon tile carries the hue — and tools stay in category
-  order so the hues cluster and drift down the page. /404 keeps the 3-column
-  grid, which is right for three suggestions under one heading.
-  Signal's shared-edge idiom is retired: the border belongs to the tile again,
-  because the tile is a pressable object.
-- **Controls above results, stacked.** The two-column control/result split
-  was tried and withdrawn (Session 6); Stacks does not resurrect it. A tool
-  page is: head, input band, result panels, in one column.
-- **Key/value results** are a 2-column grid, `200px 1fr`, key cells at
-  `label-caps` on the page ground, value cells at `data-md` on the panel
-  ground, hairline rows.
-- Vertical rhythm between major regions is `56px` inside a page and `88px`
-  between pages/sections.
+## Elevation & Depth
 
-## Shape
+Flat. No offset shadows. Overlays that float above the page — dialog, select
+menu, toast — take a soft drop shadow, because they do float. The `press-*`
+shadow names survive as a 1–2px lip for the components still classed against
+them.
 
-The scale is `8 / 10 / 14 / 18px` — badge and chip, control, panel, sheet.
-A radius always travels with the 2px border; a borderless rounded region is
-not in the language. `rounded.full` is for pills: nav items, the toggle
-knob, status dots, keycap hints.
+## Shapes
 
-## Elevation
-
-There is no elevation. The offset shadow is not "height"; it is
-**pressability**, drawn flat in `shadow-ink` with zero blur — the ink in
-light, the border taupe in dark, like a printed second edge:
-
-- `press-sm` (3px) — buttons, chips, small controls.
-- `press` (4px) — a hovered/focused tool tile.
-- `press-lg` (5px) — the one `panel-emphasis` per page, and nothing else.
-
-`:active` on any shadowed control translates it by its offset and removes
-the shadow. Panels at rest, inputs, badges, tables and rows carry **no**
-shadow — a page dense with data goes quiet, and the chunk stays on the
-frame and the controls.
-
-## Components
-
-### Navigation
-
-The header is a full-width bar closed by a 2px `rule`, and the rule is a
-**shelf**: the nav items are folder tabs standing on it. A tab is bordered
-on three sides with rounded top corners and the `nav-active` ground; the
-active tab takes the page ground and erases the rule beneath itself, so it
-reads as open into the page. On a page none of the tabs own (a tool page),
-every tab sits closed. The theme control renders as the last tab and keeps
-its three-state system → light → dark cycle button with `aria-live`
-labelling.
-
-The brand is **signage, not a chip**: the toolbox mark in `primary-text`
-beside `russ.tools` set in the display face at the `headline-md` step — no
-box, no border, no shadow, and no off-ramp size. The wordmark competes with
-nothing because it is the only display type in the bar.
-
-Nav tabs may carry a small leading Lucide glyph where it names the
-destination — the GitHub mark on Source, the disc on Saved data — never a
-trailing arrow.
-
-### Panels
-
-A panel is `surface-raised` inside a 2px `rule` border at `rounded.lg`, with
-**no shadow at rest**. Its header bar sits on the page ground behind a
-hairline, title at `label-caps`. **One panel per page** — the result, the
-output, the thing you came for — takes `press-lg` via `<Card emphasis>`.
-That is the whole emphasis system; do not stack it.
-
-An error panel swaps its border colour to `error` and says the word ERROR;
-colour never carries the state alone.
-
-### The tool tile
-
-A bordered card, laid out horizontally: the icon in a small `category-fill`
-tile (2px border, `rounded.sm`) beside a column of title at `title-sm`,
-description at `body-sm` in `on-surface-muted`, and the route path at
-`data-sm`. Hover lifts nothing and tints nothing: the tile gains the `press`
-shadow and moves up-left by 2px, exactly as if it had risen under the finger,
-and the route path turns `primary-text`. Reduced motion: shadow only, no
-translate.
-
-**No category badge.** With the index's section headings gone the icon tile is
-where the category is stated, once. The badge restated it — and fifteen solid
-`category-fill` pills were the loudest thing on the page, worst in dark where
-they floated on espresso. The route path is `on-surface-dim` at rest for the
-same reason: in `primary-text` it put the accent on fifteen things nobody had
-touched, and the accent marks what you are about to press.
-
-### Inputs
-
-A 2px `rule` border on `surface-raised` at `rounded.md`, content at
-`data-md` (input is data). Focus is the ring (`--color-ring` →
-`primary-text`), not a border swap. The primary input row on a tool page may
-join the field and its submit button flush, sharing the border.
-
-### Buttons
-
-- **Primary**: accent ground, graphite ink, 2px border, `press-sm` shadow.
-  Hover to `primary-hover`; press sinks it.
-- **Secondary**: panel ground, same border and shadow. It does not invert on
-  hover — Signal's inversion flourish is retired; the press is the flourish.
-- **Ghost/link**: borderless, shadowless, `primary-text` for links.
-- **Destructive**: `error` fill with `on-status` ink, same chrome as primary.
-
-### Chips (the index category filter)
-
-Bordered pills with `press-sm` shadows — they read as keyboard keys. With the
-section headings gone they are the only place the category names appear, which
-is also the only place the counts appear. The
-active chip inverts to `on-surface` (ink chip on paper, cream chip on
-espresso) with the page ground as its text — the theme's strongest
-contrast, which the demoted taupe rule no longer provides in dark. Counts ride inside the chip in
-`on-surface-dim`.
-
-### Badges
-
-Category badges are solid `category-fill-*` blocks with `#17150f` ink, a 2px
-`rule` border and `rounded.sm`, at `label-caps-sm`. Status badges are the
-status hue on its own `*-subtle` tint (hairline border, no shadow), plus the
-literal word. The quiet default badge stays: hairline outline, category
-*text* hue, `data-sm` — for record types, counts and keys.
-
-### Loading, error and empty
-
-A loading state is a `panel` with the message at `body-md` and a mono
-progress line. An error is a `panel` with its border swapped to `error` and
-the word ERROR at `label-caps`. Empty states keep their copy and take
-`on-surface-muted`.
-
-**The ghost** is the other kind of empty state, for a tool that rests as a
-small control panel over a screenful of nothing. It is not a drawn skeleton:
-it renders the tool's *real* result component with a small sample, and a
-redaction layer turns every run of text into a bar. So the shape is never
-described twice, and cannot drift from the panel that replaces it.
-
-Three rules govern it. It carries **no copy** — the shape is the whole
-message, and a caption would be a second statement of it. It carries **no
-colour that states anything**: category hues and status tints are neutralised
-at the wrapper, because a green grade badge above an empty form claims a
-certificate passed. And it **never animates** — unlike a loading skeleton this
-is not temporary, it sits on screen for as long as someone reads the form
-above it, and a rectangle that throbs indefinitely is an irritation rather
-than a signal.
-
-Its size comes from the sample data rather than from a reserved height: the
-ghost fills the empty region, it does not reserve the whole result. Two tools
-whose answers run past 1200px pass deliberately less data, because a
-full-height ghost would make the empty page longer than the gap it replaces.
+Radii are 4 / 6 / 8 / 12px: badge, control, panel, sheet. `full` is for filter
+chips, the toggle knob and status dots. Borders are 1px.
 
 ## Iconography
 
-One library for everything: **Lucide**, stroke-based on the 24px grid with a
-2px `currentColor` stroke — the same weight as the structural border, so an
-icon is drawn with the same pen as the panel it sits in. Per-tool glyphs are
-vendored in `src/shell/icons.mjs` (one drawing, rendered by both the Astro
-`ToolIcon` and the React `ui/tool-icon.jsx`), keyed by kebab-cased Lucide
-names from the manifests; generic UI glyphs come from lucide-react directly.
-The filled Material set is retired — solid slabs fought the stroke language.
-
-In a tool tile the glyph sits in a `category-fill` icon tile at 20px with
-`on-category-fill` ink; beside a tool-page `h1` it renders at 30px in the
-category *text* hue, no tile.
+Tool and group glyphs are **custom-drawn** in `src/shell/icons.mjs`: a 24px
+grid, square-cornered boxes, circles and straight strokes with round caps, at a
+1.75px `currentColor` line. One drawing serves the Astro `ToolIcon` and the
+React `ui/tool-icon.jsx`. Two tools never share a glyph. In a catalogue row the
+glyph sits on a soft accent tile that fills on hover; at the head of a tool
+page it sits on the bright accent. Generic interface glyphs inside tools come
+from lucide-react; `react-icons` is for brand marks only.
 
 ## Motion
 
-Snappy and physical, still minimal: hover and ground changes at
-`90–140ms ease-out`; the press (translate + shadow removal) is instant on
-`:active`. No ambient motion, no parallax, no glow — nothing loops, and
-nothing moves that the reader did not touch.
+Motion says that something arrived or that something can be pressed.
 
-Motion is **the object behaving like an object**, never decoration laid over
-one. That admits exactly three things beyond hover and press, all at
-`duration-settle` (240ms) or faster:
+- **Arriving.** `.rt-rise`: 14px and opacity over 600ms, staggered by `--rt-i`
+  and capped. Used by the head of each page and the index sections.
+  `.rt-enter-surface` / `.rt-enter-content` give tool panels a shorter 8px
+  rise on mount. Table rows do not animate.
+- **The index illustration** draws its connectors in order, once.
+- **The paste box** steps through one example at a time while empty.
+- **Pressable.** A catalogue row tints, fills its tile and slides in an arrow.
+  Buttons sink 1px on `:active`.
+- **Refiltering** uses view transitions so surviving rows travel.
 
-1. **Reflow settles; it does not cut.** When a filter changes which tiles are
-   on screen, the survivors *travel* to their new positions — they are the
-   same pieces of paper being resorted, and teleporting them denies that.
-   Implemented as a same-document view transition, so a browser without one
-   falls back to the instant reflow and loses nothing but the continuity.
-   Only discrete choices earn it: a category chip transitions, a keystroke in
-   a search field does not, because a transition per character is a stutter,
-   not a settle.
-2. **First paint sets the tiles down.** A catalogue may deal itself in once
-   per load: each tile starts 3px raised carrying the `press` shadow and
-   lands flat and shadowless, which is the press vocabulary run backwards —
-   the page assembles out of things that are visibly pressable. Strictly
-   bounded: 240ms per tile, and the stagger runs on the
-   diagonal — the delay is the tile's row plus its column in the cadence, so
-   the catalogue crosses the page as a wave rather than running down it in one
-   line. 26ms a step, each term capped, so the last tile has landed inside
-   420ms. It is pure CSS on prerendered markup, so it
-   delays no content and survives with JavaScript off. Nothing else on the
-   site animates on entry.
-3. **A swapped value fades in.** Where text is replaced under the reader —
-   a live count, a list of matches recomputed as they type — the new value
-   arrives over `duration-fast` instead of blinking. 90ms, opacity only.
+Everything is disabled or collapsed under `prefers-reduced-motion`.
 
-`prefers-reduced-motion` removes the hover translate and keeps the shadow
-change, which conveys the same state without movement. It also removes all
-three of the above outright: no view transition, no entrance, no fade. Every
-one of them is continuity for people who track movement, and for the people
-who asked us to stop moving things, the instant result was never the worse
-outcome.
+## Components
 
-## Accessibility
-
-The CI floors are enforced by `src/styles/tokens.contrast.test.js` against
-the real stylesheet, in both themes:
-
-1. `primary` is validated only as a **fill** (with `on-primary`), never as
-   text. The text role is `primary-text` / `primary-text-light`, which also
-   backs the focus ring.
-2. `category-fill-*` is validated against `on-category-fill` (`#17150f`);
-   `category-*` is validated as text against all three grounds.
-3. `on-status` is validated against each solid status fill.
-4. `on-footer` / `on-footer-muted` are validated against `footer`.
-5. `on-surface-dim` is validated at **3:1**, and is documented above as a
-   non-text role.
-6. `nav-active` is a fourth ground for `primary-text` and `on-surface`.
-7. The 2px `rule` border and `outline-strong` are validated at 3:1 as
-   component boundaries (WCAG 1.4.11).
-
-`category-accent.test.js` keeps guarding the "no action colour in a text
-slot" rule in both directions.
+`src/components/ui/` is the design surface — change the component, not the call
+site. `src/styles/shell.css` holds the shell (header, band, catalogue, tool
+head, footer) and its classes are `rt-`-prefixed.
 
 ## Do's and Don'ts
 
-### Do
-
-- Draw every panel, control and badge with the 2px `rule` border.
-- Reserve the offset shadow for pressables (and the one emphasis panel);
-  sink the element on press.
-- Put category hues in badges, icon tiles and small labels; put the accent
-  on actions.
-- Set data in Space Mono and headings in Bricolage at 700+.
-- Keep tables, rows and inputs shadow-free so dense tools stay quiet.
-
-### Don't
-
-- Add blur, gradients, translucency, grey shadows or glows anywhere.
-- Fill anything large with a category hue, or put one on a control.
-- Use `#6ee787` as text or as the focus ring on the light ground.
-- Give a rounded region no border, or a border no radius.
-- Stack `press-lg` panels, or shadow a panel at rest.
-- Letterspace headings positively, or set them below 700 weight.
-- Hand-edit `src/styles/tokens.generated.css`, or a hex in `globals.css` —
-  change this file and run `pnpm generate:tokens`.
+- Do use semantic tokens. Raw Tailwind palette classes are an ESLint error.
+- Do put anything that sits on the band in band tokens.
+- Don't add a shadow to make something look pressable; use the accent.
+- Don't number sections, and don't add marketing copy to a page head.
+- Don't fill a large area with a category hue.

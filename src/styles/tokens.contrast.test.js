@@ -292,52 +292,66 @@ describe('token layer integrity', () => {
       expect(tokens.ring, `ring resolves in ${mode}`).toBe(tokens['primary-text']);
     }
     expect(css).toMatch(/--color-ring:\s*var\(--color-primary-text\)/);
-    expect(light['primary-text']).not.toBe(light.primary);
   });
 
   it('does not reintroduce a remote font import', () => {
     expect(css).not.toMatch(/@import\s+url\(['"]?https?:/);
   });
 
-  it('reserves the mono family for data by self-hosting it', () => {
-    // DESIGN.md sets Bricolage Grotesque for display, Space Grotesk for body
-    // and labels, Space Mono for data — all self-hosted so first paint makes
-    // no third-party request.
-    expect(css).toMatch(/--font-mono:\s*"Space Mono"/);
-    expect(css).toMatch(/--font-sans:\s*"Space Grotesk Variable"/);
-    expect(css).toMatch(/--font-display:\s*"Bricolage Grotesque Variable"/);
+  it('self-hosts the Plex superfamily', () => {
+    // DESIGN.md sets IBM Plex Sans for everything that is read and IBM Plex
+    // Mono for data — both self-hosted so first paint makes no third-party
+    // request.
+    expect(css).toMatch(/--font-mono:\s*"IBM Plex Mono"/);
+    expect(css).toMatch(/--font-sans:\s*"IBM Plex Sans Variable"/);
+    expect(css).toMatch(/--font-display:\s*"IBM Plex Sans Variable"/);
   });
 
-  it('carries the Stacks shape scale and the press shadows', () => {
+  it('carries the Datasheet shape scale and the flat lip', () => {
     // Radius is a token, so one wrong step here reshapes the whole app. The
-    // scale is 8/10/14/18 — badge and chip, control, panel, sheet — and
-    // `full` is for pills: nav items, the toggle knob, status dots.
-    for (const [step, value] of [['sm', '8px'], ['md', '10px'], ['lg', '14px'], ['xl', '18px'], ['full', '9999px']]) {
+    // scale is 4/6/8/12 — badge, control, panel, sheet — and `full` is for
+    // pills: filter chips, the toggle knob, status dots.
+    for (const [step, value] of [['sm', '4px'], ['md', '6px'], ['lg', '8px'], ['xl', '12px'], ['full', '9999px']]) {
       expect(generated, `--radius-${step}`).toContain(`--radius-${step}: ${value};`);
     }
 
-    // The offset shadow is not elevation: it is pressability, hard-edged and
-    // always in the structural `rule` colour. The exporter drops `shadow`, so
-    // the three steps are hand-transcribed into globals.css — and there is
-    // still no shadow scale in the generated file to drift against.
+    // Datasheet is flat. What is left of the press shadow is a 1–2px lip
+    // straight down, with no horizontal offset and no blur, in `shadow-ink`.
+    // The exporter drops `shadow`, so the steps are hand-transcribed into
+    // globals.css.
     expect(generated, 'the exporter emits no shadow scale').not.toMatch(/--shadow-press/);
     for (const step of ['press-sm', 'press', 'press-lg']) {
       expect(css, `--shadow-${step}`).toMatch(
-        new RegExp(`--shadow-${step}:\\s*\\d+px \\d+px 0 var\\(--color-shadow-ink\\);`)
+        new RegExp(`--shadow-${step}:\\s*0px [12]px 0 var\\(--color-shadow-ink\\);`)
       );
     }
 
-    // In light the shadow is genuinely darker than every ground — the ink.
-    // In dark it is deliberately NOT: true black vanished into the cocoa
-    // grounds, so the offset is drawn with the border taupe instead, a
-    // printed second edge rather than a cast shadow (the user's call).
-    for (const ground of ['surface', 'surface-raised']) {
-      expect(
-        luminance(light['shadow-ink']),
-        `shadow-ink is darker than ${ground} in light`
-      ).toBeLessThan(luminance(light[ground]));
+    // The lip is darker than the ground it sits on, in both themes.
+    for (const [mode, tokens] of themes) {
+      for (const ground of ['surface', 'surface-raised']) {
+        expect(
+          luminance(tokens['shadow-ink']),
+          `shadow-ink is darker than ${ground} in ${mode}`
+        ).toBeLessThan(luminance(tokens[ground]));
+      }
     }
-    expect(dark['shadow-ink'], 'the dark offset is drawn with the border pen').toBe(dark.rule);
+  });
+
+  it('keeps the ink band legible in both themes', () => {
+    // The band is the same ground in light and dark, so its inks are measured
+    // once, against it and against the raised well the paste box sits in.
+    for (const [mode, tokens] of themes) {
+      for (const ground of ['band', 'band-raised']) {
+        for (const ink of ['on-band', 'on-band-muted', 'accent-bright']) {
+          expect(
+            contrast(tokens[ink], tokens[ground]),
+            `${ink} on ${ground} in ${mode}`
+          ).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+      expect(contrast(tokens['on-accent-bright'], tokens['accent-bright'])).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(tokens.band, tokens['on-band']), 'the paste field').toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it('carries the rule and motion values the exporter drops', () => {

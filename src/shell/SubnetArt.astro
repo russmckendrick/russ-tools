@@ -1,0 +1,48 @@
+---
+/**
+ * The index's one illustration: a /22 dividing into two /23s and four /24s,
+ * with the address line beneath. It is the subnet calculator's own divide
+ * table, drawn — decoration, so `aria-hidden`, and it leaves below 900px.
+ *
+ * `--rt-s` is the step each piece belongs to. The boxes pop in and the
+ * connectors draw between them in order; see `.rt-art-*` in shell.css.
+ */
+const quarters = [
+  { x: 6, label: '10.0.0.0/24' },
+  { x: 112, label: '10.0.1.0/24' },
+  { x: 216, label: '10.0.2.0/24' },
+  { x: 322, label: '10.0.3.0/24' },
+];
+---
+
+<svg class="rt-hero-art" viewBox="0 0 420 290" width="420" height="290" aria-hidden="true">
+  <g class="rt-art-node">
+    <rect class="rt-art-box" x="130" y="8" width="160" height="40" rx="6"></rect>
+    <text class="rt-art-text" x="210" y="33" text-anchor="middle">10.0.0.0/22</text>
+  </g>
+  <path class="rt-art-line" d="M210 48v26H105v26"></path>
+  <path class="rt-art-line" d="M210 48v26h105v26"></path>
+  <g class="rt-art-node" style="--rt-s: 1">
+    <rect class="rt-art-box" x="30" y="100" width="150" height="40" rx="6"></rect>
+    <text class="rt-art-text" x="105" y="125" text-anchor="middle">10.0.0.0/23</text>
+    <rect class="rt-art-box" x="240" y="100" width="150" height="40" rx="6"></rect>
+    <text class="rt-art-text" x="315" y="125" text-anchor="middle">10.0.2.0/23</text>
+  </g>
+  <path class="rt-art-line" style="--rt-s: 1" d="M105 140v26H52v26"></path>
+  <path class="rt-art-line" style="--rt-s: 1" d="M105 140v26h53v26"></path>
+  <path class="rt-art-line" style="--rt-s: 1" d="M315 140v26h-53v26"></path>
+  <path class="rt-art-line" style="--rt-s: 1" d="M315 140v26h53v26"></path>
+  <g class="rt-art-node" style="--rt-s: 2">
+    {
+      quarters.map((q) => (
+        <>
+          <rect class="rt-art-box" x={q.x} y="192" width="92" height="36" rx="6" />
+          <text class="rt-art-text" x={q.x + 46} y="215" text-anchor="middle">{q.label}</text>
+        </>
+      ))
+    }
+  </g>
+  <path class="rt-art-line" style="--rt-s: 2" d="M6 258h408"></path>
+  <path class="rt-art-line" style="--rt-s: 2" d="M6 252v12M112 254v8M216 252v12M322 254v8M414 252v12"></path>
+  <text class="rt-art-text rt-art-node" style="--rt-s: 2" x="6" y="284">1,024 addresses</text>
+</svg>

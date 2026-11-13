@@ -37,9 +37,12 @@ const catalogue = TOOLS.map((t) => ({ id: t.id, path: t.path, title: t.title }))
   canonical={null}
   noindex
 >
-  <div class="rt-notfound">
-    <h1>That page does not exist.</h1>
-    <p class="rt-notfound-path" id="rt-404-path" hidden></p>
+  <div slot="band" class="rt-hero-stack">
+    <div class="rt-notfound">
+      <h1>That page does not exist.</h1>
+      <p class="rt-notfound-path" id="rt-404-path" hidden></p>
+    </div>
+    <PastePanel label="What were you looking for?" />
   </div>
 
   <!--
@@ -47,10 +50,7 @@ const catalogue = TOOLS.map((t) => ({ id: t.id, path: t.path, title: t.title }))
     the URL has already failed, so it asks what you were actually after — and
     if the failed path carried a value, that value is already in the field.
   -->
-  <PastePanel
-    label="What were you looking for?"
-    hint="Paste a domain, IP, CIDR, JWT or cron expression —"
-  />
+  
 
   <script type="application/json" id="rt-404-catalogue" set:html={JSON.stringify(catalogue)} />
 

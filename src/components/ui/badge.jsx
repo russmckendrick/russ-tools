@@ -40,7 +40,7 @@ const badgeVariants = cva(
         default:
           "border-outline bg-transparent text-[var(--cat,var(--color-primary-text))]",
         category:
-          "border-2 border-rule bg-[var(--cat-fill,var(--color-primary))] px-2 py-[3px] font-sans text-label-caps-sm uppercase text-on-category-fill",
+          "border border-transparent bg-[var(--cat-fill,var(--color-primary))] px-2 py-[3px] font-sans text-label-caps-sm uppercase text-on-category-fill",
         secondary: "border-outline bg-surface-inset text-on-surface-muted",
         outline: "border-outline text-on-surface-muted",
         destructive: "border-danger/40 bg-danger-subtle text-danger",

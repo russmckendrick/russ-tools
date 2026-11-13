@@ -1,32 +1,28 @@
 /* =============================================================================
-   The shell — index and tool-page composition.
+   The shell — index and tool-page composition, in the Datasheet language.
 
-   This is DESIGN.md's "Layout", "Elevation & Depth", "Shapes" and
-   "Components" sections written down. Every colour is a token; there is not
-   a raw hex in this file. The category hue arrives as `--cat`, set once on a
-   container, so nothing here knows which of the six it is.
+   Every colour is a token; there is not a raw hex in this file. Structure is
+   a 1px rule and white space, not a box around everything: the site header
+   and the head of each page sit on one deep ink band, and the working area
+   below it is plain paper with ruled rows.
 
    Plain CSS rather than utility classes because these are compositional
-   rules with pseudo-elements, container queries and hue arithmetic — the
-   things utilities express worst.
+   rules with pseudo-elements, container queries and keyframes — the things
+   utilities express worst.
    ========================================================================== */
 
 .rt-shell {
   /* `width: 100%` is load-bearing, not belt-and-braces. `body` is a column
      flex container (below), and an auto cross-axis margin on a flex item
-     makes it shrink-to-fit its content instead of stretching — so without
-     this, `main` sizes itself to whatever the tool happens to render and
-     the page is silently narrower than the 1120px it claims. It only shows
-     up once the main column holds something narrow. */
+     makes it shrink-to-fit its content instead of stretching. */
   width: 100%;
   max-width: var(--rt-space-max-width);
   margin: 0 auto;
   padding-inline: var(--rt-space-gutter);
 }
 
-/* "Empty vertical space below the content is a bug." Short pages push the
-   footer to the bottom of the viewport rather than leaving it stranded
-   halfway down with dead ground beneath it. */
+/* Short pages push the footer to the bottom of the viewport rather than
+   leaving it stranded halfway down with dead ground beneath it. */
 body {
   min-height: 100vh;
   display: flex;
@@ -36,165 +32,148 @@ body > main {
   flex: 1;
 }
 
-/* --- Topbar ---------------------------------------------------------------
-   Stacks' header is a full-width bar closed by the 2px rule, and the rule is
-   a SHELF: the nav items are folder tabs standing on it, and the active tab
-   opens into the page by erasing the rule beneath itself. The brand is
-   signage — the toolbox mark plus the wordmark in display type, no box —
-   because a boxed chip next to naked links used half the page's chunk
-   vocabulary on one corner. The bar is opaque: no translucency, no blur. */
+/* --- The ink band ---------------------------------------------------------
+   One deep green ground, the same in both themes, carrying the site header
+   and whatever heads the page: the index's paste box, a tool's title. The
+   faint 40px grid is the only texture on the site and it stops where the band
+   stops. The header itself is solid so the grid does not slide under it as
+   the page scrolls. */
 
 .rt-site-header {
   position: sticky;
   top: 0;
   z-index: 40;
-  border-bottom: var(--border-structural) solid var(--color-rule);
-  background: var(--color-surface);
+  background: var(--color-band);
+  color: var(--color-on-band);
+}
+
+.rt-band {
+  background-color: var(--color-band);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-on-band) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-on-band) 4%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: var(--color-on-band);
+  border-bottom: var(--border-hairline) solid var(--color-outline);
+}
+
+/* Anything focusable on the band rings in the bright accent: the themed ring
+   is a deep green in light mode and would vanish here. */
+.rt-site-header :focus-visible,
+.rt-band :focus-visible {
+  outline: 2px solid var(--color-accent-bright);
+  outline-offset: 2px;
 }
 
 .rt-topbar {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: stretch;
-  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rt-space-lg);
+  min-height: 64px;
+  border-bottom: var(--border-hairline) solid
+    color-mix(in srgb, var(--color-band-outline) 60%, transparent);
 }
 
 .rt-brand {
   display: inline-flex;
   align-items: center;
-  align-self: center;
-  justify-self: start;
   gap: 10px;
-  padding-block: 12px;
-  font-family: var(--font-display);
-  /* The headline-md step, applied whole — the signage sits on the ramp
-     rather than inventing a size between its steps. */
-  font-size: var(--text-headline-md);
-  font-weight: var(--font-weight-headline-md);
-  letter-spacing: var(--tracking-headline-md);
-  color: var(--color-on-surface);
+  min-height: 44px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-on-band);
   text-decoration: none;
 }
-
-/* The mark is two-tone: its body fill is the accent token, and its stroke is
-   `currentColor` — set here to `on-surface` (ink on paper, cream on
-   espresso), the strongest ink, so the brand stays crisp now that the dark
-   rule is a demoted taupe. The wordmark's dot takes the accent's TEXT role
-   (`primary-text`, never raw `primary`, which is ~1.6:1 on paper). */
-.rt-site-mark {
-  color: var(--color-on-surface);
+.rt-site-mark,
+.rt-brand-dot {
+  color: var(--color-accent-bright);
 }
 .rt-brand-dot {
-  color: var(--color-primary-text);
   font-weight: inherit;
 }
 
 .rt-header-actions-wrap {
   position: relative;
-  justify-self: end;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .rt-menu-toggle {
   display: none;
-  width: 40px;
-  height: 40px;
-  align-self: center;
+  width: 44px;
+  height: 44px;
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  color: var(--color-on-surface-muted);
+  border: var(--border-hairline) solid var(--color-band-outline);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-on-band);
   cursor: pointer;
-  transition: color var(--duration-fast) var(--ease-signal),
-    background-color var(--duration-fast) var(--ease-signal);
+  transition: background-color var(--duration-fast) var(--ease-signal);
 }
 .rt-menu-toggle:hover,
 .rt-menu-toggle[aria-expanded='true'] {
-  color: var(--color-on-surface);
-  background: var(--color-nav-active);
-}
-.rt-menu-toggle:focus-visible {
-  outline: 2px solid var(--color-ring);
-  outline-offset: 2px;
+  background: var(--color-band-raised);
 }
 
 .rt-header-actions {
-  justify-self: end;
   display: flex;
-  align-items: flex-end;
-  gap: 6px;
+  align-items: center;
+  gap: var(--rt-space-2xl);
 }
 
 .rt-topnav {
   display: flex;
-  align-items: flex-end;
-  gap: 6px;
+  align-items: center;
+  gap: var(--rt-space-2xl);
 }
 
-/* One rule for every tab in the row — nav links and the theme button alike,
-   which is why the theme button is a sibling of the links rather than
-   sitting inside a wrapper of its own. A tab is bordered on three sides,
-   top corners rounded, standing on the header's bottom rule. */
+/* One rule for every item in the row — nav links and the theme button alike.
+   Plain words; the current one is underlined in the bright accent. */
 .rt-topnav a,
 .rt-theme-toggle {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 11px 17px 12px;
-  border: var(--border-structural) solid var(--color-rule);
-  border-bottom: 0;
-  border-radius: 10px 10px 0 0;
-  background: var(--color-nav-active);
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
   font-family: inherit;
-  font-size: var(--text-body-sm);
-  font-weight: 500;
+  font-size: var(--text-body-md);
+  font-weight: 400;
   line-height: 1;
-  color: var(--color-on-surface-muted);
+  color: var(--color-on-band-muted);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
   transition: color var(--duration-fast) var(--ease-signal),
-    background-color var(--duration-fast) var(--ease-signal);
+    border-color var(--duration-fast) var(--ease-signal);
 }
 
 .rt-topnav a:hover,
 .rt-theme-toggle:hover {
-  color: var(--color-on-surface);
-  background: var(--color-surface-raised);
+  color: var(--color-on-band);
 }
 
-.rt-topnav a:focus-visible,
-.rt-theme-toggle:focus-visible {
-  outline: 2px solid var(--color-ring);
-  outline-offset: -3px;
-}
-
-/* The open tab: page ground, and its own bottom edge overwrites the header
-   rule (2px taller, pulled 2px below the bar) so the tab and the page read
-   as one surface. Ink text, not accent — the opening IS the signal.
-
-   Bare `[aria-current]`, not `[aria-current='page']`. A tool page and its
+/* Bare `[aria-current]`, not `[aria-current='page']`. A tool page and its
    help page set `true` rather than `page` — the Tools link points at the
-   index, not at the document being read, so `page` there would be a lie
-   (see `HeaderActions.astro`) — and keying on the exact value left the tab
-   shut on every page but three. */
+   index, not at the document being read (see `HeaderActions.astro`). */
 .rt-topnav a[aria-current] {
-  background: var(--color-surface);
-  border-bottom: var(--border-structural) solid var(--color-surface);
-  margin-bottom: calc(-1 * var(--border-structural));
-  color: var(--color-on-surface);
+  color: var(--color-on-band);
   font-weight: 600;
+  border-bottom-color: var(--color-accent-bright);
 }
 
 /* --- Theme toggle ---------------------------------------------------------
    All three icons and all three labels ship in the markup; exactly one pair
    is revealed from `:root[data-theme-pref]`, which the pre-paint script has
-   already written. So the control is correct on the first frame rather than
-   after hydration, and never briefly shows the wrong state. */
+   already written. So the control is correct on the first frame. */
 
 .rt-theme-icon {
   display: none;
@@ -215,9 +194,8 @@ body > main {
 }
 
 /* --- Header on a phone ----------------------------------------------------
-   Below 720px the cell row collapses behind the hamburger into a stacked
-   panel, which keeps the square ruled idiom: hairline between rows, a 3px
-   rule closing the top, no radius and no shadow. */
+   Below 720px the row collapses behind the menu button into a stacked panel
+   on the band's raised ground. */
 
 @media (max-width: 720px) {
   .rt-menu-toggle {
@@ -231,13 +209,12 @@ body > main {
     display: none;
     flex-direction: column;
     align-items: stretch;
-    gap: 4px;
+    gap: 2px;
     width: min(280px, calc(100vw - (var(--rt-space-gutter) * 2)));
     padding: 8px;
-    border: var(--border-structural) solid var(--color-rule);
+    border: var(--border-hairline) solid var(--color-band-outline);
     border-radius: var(--radius-lg);
-    background: var(--color-surface-raised);
-    box-shadow: var(--shadow-press-lg);
+    background: var(--color-band-raised);
   }
   .rt-menu-toggle[aria-expanded='true'] + .rt-header-actions {
     display: flex;
@@ -245,22 +222,18 @@ body > main {
   .rt-topnav {
     flex-direction: column;
     align-items: stretch;
-    gap: 4px;
+    gap: 2px;
   }
-  /* Inside the dropdown card the folder-tab shape makes no sense — the rows
-     revert to bordered list items, and the open tab becomes a marked row. */
   .rt-topnav a,
   .rt-theme-toggle {
-    border: var(--border-structural) solid var(--color-rule);
+    padding: 0 12px;
+    border-bottom: 0;
     border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-    padding: 13px 16px;
   }
+  .rt-topnav a:hover,
+  .rt-theme-toggle:hover,
   .rt-topnav a[aria-current] {
-    margin-bottom: 0;
-    background: var(--color-nav-active);
-    border-bottom: var(--border-structural) solid var(--color-rule);
-    color: var(--color-on-surface);
+    background: var(--color-band);
   }
 }
 
@@ -270,34 +243,42 @@ body > main {
   }
 }
 
-
-/* --- No ambient wash ------------------------------------------------------
-   There was a broad radial wash of the accent behind the top of the page.
-   Signal has no glow, no gradient and no floating surface, so it is gone.
-
-   The stacking rule it documented still stands, which is why this note does:
-   the page sections carry `position: relative` and deliberately **no**
+/* --- Stacking note --------------------------------------------------------
+   The page sections carry `position: relative` and deliberately **no**
    `z-index`. They only need to paint in tree order, and a positioned element
-   with `z-index: auto` does exactly that *without* creating a stacking
-   context.
+   with `z-index: auto` does exactly that without creating a stacking context.
+   A `z-index: 1` on two of them once let the footer's rule draw across every
+   toast that reached the bottom of the page. Do not add `z-index` back to a
+   page section. */
 
-   They each used to say `z-index: 1`, which did create one, and it took two
-   of them to produce the bug. The toaster asks for `z-index: 999999999`, but
-   it renders inside the island, so inside `.rt-tool-body`'s context that
-   counts for nothing outside it — the whole subtree is worth 1. The footer
-   was also 1 and comes later in the document, so it won, and its top rule
-   drew straight across every toast that reached the bottom of the page.
+/* --- Arriving -------------------------------------------------------------
+   The one entrance the shell owns: a short rise. The head of the page and
+   each section of the catalogue use it, staggered by `--rt-i`, capped so a
+   longer catalogue does not arrive more slowly. `backwards` fill holds the
+   first frame through the delay and guarantees nothing is left invisible;
+   the reduced-motion floor in `globals.css` collapses all of it. */
 
-   Neither element was wrong on its own, which is why fixing one of them still
-   left the bug: the pair was. Do not add `z-index` back to a page section. */
+@keyframes rt-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
 
+.rt-rise {
+  animation: rt-rise-in 600ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(min(var(--rt-i, 0), 6) * 80ms);
+}
 
-/* --- The 404 head ---------------------------------------------------------
-   Three lines: what happened, where everything is, and the path that failed. */
+@keyframes rt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* --- The 404 head --------------------------------------------------------- */
 
 .rt-notfound {
-  position: relative;
-  padding-block: var(--rt-space-xl) var(--rt-space-md);
   display: grid;
   gap: var(--rt-space-sm);
   max-width: 60ch;
@@ -308,20 +289,13 @@ body > main {
   font-weight: var(--font-weight-headline-lg);
   letter-spacing: var(--tracking-headline-lg);
 }
-.rt-notfound p {
-  margin: 0;
-  color: var(--color-on-surface-muted);
-  font-size: var(--text-body-md);
-}
-/* The URL that failed, set as data because it is data. Worth drawing: on a
-   soft 404 in an in-app browser, or on a phone that has scrolled the bar
-   away, this is the only place the visitor can see what was actually
-   requested. It wraps rather than ellipsises — a truncated path answers
-   nothing. */
+/* The URL that failed, set as data because it is data. It wraps rather than
+   ellipsises — a truncated path answers nothing. */
 .rt-notfound-path {
+  margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  color: var(--color-on-surface-dim);
+  font-size: var(--text-data-md);
+  color: var(--color-on-band-muted);
   overflow-wrap: anywhere;
 }
 
@@ -347,10 +321,9 @@ body > main {
   z-index: 60;
   transform: translateY(calc(-100% - var(--rt-space-xl)));
   padding: 9px 14px;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-sm);
+  border: var(--border-hairline) solid var(--color-outline-strong);
+  border-radius: var(--radius-md);
   background: var(--color-surface-raised);
-  box-shadow: var(--shadow-press-sm);
   color: var(--color-on-surface);
   font-size: var(--text-body-sm);
   text-decoration: none;
@@ -360,20 +333,39 @@ body > main {
   transform: none;
 }
 
-/* --- Index head -----------------------------------------------------------
-   `Tools` at the display step, sharing its band with one mono line. The h1
-   used to sit alone above 90px of nothing; the line beside it is orientation,
-   not a subtitle, so it is set as data on the same baseline. */
+/* --- Index hero -----------------------------------------------------------
+   `Tools`, the live count beside it, and the paste box. Nothing here sells
+   the site: the heading says what the page is and the box is the fastest way
+   through it. The subnet drawing on the right is the page's one illustration
+   and leaves below 900px, where it would only push the catalogue down. */
 
-.rt-index-head {
-  position: relative;
+.rt-hero {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--rt-space-gutter);
-  padding: 44px 0 var(--rt-space-xl);
+  align-items: center;
+  gap: var(--rt-space-4xl);
+  padding-block: 48px 56px;
+}
+.rt-hero-main {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  gap: var(--rt-space-xl);
+}
+.rt-hero-main > *,
+.rt-hero-stack > * {
+  min-width: 0;
+}
+.rt-hero-stack {
+  display: grid;
+  gap: var(--rt-space-xl);
+  padding-block: 40px 44px;
 }
 
+.rt-index-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--rt-space-lg);
+}
 .rt-index-title {
   margin: 0;
   font-size: var(--text-display);
@@ -381,182 +373,237 @@ body > main {
   letter-spacing: var(--tracking-display);
   line-height: 1;
 }
-
-.rt-index-note {
-  font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
-  color: var(--color-on-surface-dim);
-  padding-bottom: var(--rt-space-sm);
-}
-
-/* The count was the one number on the page that never moved while the page
-   moved constantly — fifteen tiles filtered down to three and the line still
-   read `15 tools`. It ticks now, and `tabular-nums` is what stops the tick
-   from shoving `tools · nothing leaves the browser` sideways by a glyph.
-
-   Not a live region: `#rt-status` already announces the filter, and a second
-   one would say the same thing twice into the same ear. This is the sighted
-   half of an announcement that was already being made. */
+/* Not a live region: `#rt-status` already announces the filter. This is the
+   sighted half of that announcement, and `tabular-nums` stops it shifting. */
 .rt-index-count {
+  font-family: var(--font-mono);
+  font-size: 18px;
   font-variant-numeric: tabular-nums;
+  color: var(--color-accent-bright);
 }
-/* Filtered, so the count is no longer the whole catalogue and says so. */
-.rt-index-count[data-filtered] {
-  color: var(--color-on-surface-muted);
+
+.rt-hero-art {
+  flex: 0 1 420px;
+  min-width: 0;
+  height: auto;
+}
+.rt-art-line {
+  fill: none;
+  stroke: var(--color-accent-bright);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: rt-art-draw 900ms ease-out forwards;
+  animation-delay: calc(var(--rt-s, 0) * 500ms + 200ms);
+}
+.rt-art-box {
+  fill: var(--color-band-raised);
+  stroke: var(--color-band-outline);
+  stroke-width: 1;
+}
+.rt-art-text {
+  fill: var(--color-on-band-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.rt-art-node {
+  animation: rt-art-pop 450ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(var(--rt-s, 0) * 550ms);
+}
+@keyframes rt-art-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes rt-art-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@media (max-width: 900px) {
+  .rt-hero-art {
+    display: none;
+  }
+}
+/* The blanket floor in `globals.css` shortens the draw to nothing but leaves
+   the line at its dashed start, so the finished drawing is stated here. */
+@media (prefers-reduced-motion: reduce) {
+  .rt-art-line {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
 }
 
 /* --- The paste panel ------------------------------------------------------
-   DESIGN.md allows one `panel-emphasis` per page and the index used to spend
-   none, which is most of why it sat flat. It is spent on a control rather
-   than a banner: paste what you already have and it opens the tool that reads
-   it. `press-lg`, and nothing else on this page carries a shadow at rest. */
+   Paste what you already have and it opens the tool that reads it. It lives
+   on the band, so it is drawn in band tokens: a raised well, a white field
+   and the one bright button on the page. */
 
 .rt-jump {
   display: block;
-  border: var(--border-structural) solid var(--color-rule);
+  border: var(--border-hairline) solid var(--color-band-outline);
   border-radius: var(--radius-lg);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-press-lg);
-  padding: var(--rt-space-xl) 22px 18px;
-  margin: var(--rt-space-xs) 0 var(--rt-space-md);
+  background: var(--color-band-raised);
+  padding: var(--rt-space-xl);
 }
 
 .rt-jump-label {
   display: block;
-  font-size: var(--text-label-caps);
-  font-weight: var(--font-weight-label-caps);
-  letter-spacing: var(--tracking-label-caps);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-on-surface-muted);
+  color: var(--color-on-band-muted);
 }
 
 .rt-jump-row {
   display: flex;
-  gap: 10px;
+  gap: var(--rt-space-md);
   margin-top: var(--rt-space-md);
 }
 
 .rt-jump-field {
   flex: 1;
   min-width: 0;
+  height: 52px;
   font-family: var(--font-mono);
-  font-size: var(--text-data-md);
-  padding: var(--rt-space-md) 14px;
-  border: var(--border-structural) solid var(--color-rule);
+  font-size: var(--text-data-lg);
+  padding: 0 var(--rt-space-lg);
+  border: 0;
   border-radius: var(--radius-md);
-  /* The page ground, not the panel ground: the field is a well cut into the
-     panel rather than another card sitting on it. */
-  background: var(--color-surface);
-  color: var(--color-on-surface);
+  background: var(--color-on-band);
+  color: var(--color-band);
 }
 .rt-jump-field::placeholder {
-  color: var(--color-on-surface-faint);
-}
-.rt-jump-field:focus {
-  outline: 2px solid var(--color-ring);
-  outline-offset: 2px;
+  color: color-mix(in srgb, var(--color-band) 66%, var(--color-on-band));
 }
 
-/* The one accent fill on the page — an action, which is the only thing the
-   accent is ever allowed to be. */
 .rt-jump-go {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rt-space-sm);
+  height: 52px;
   font-family: inherit;
-  font-size: var(--text-body-sm);
+  font-size: var(--text-body-lg);
   font-weight: 600;
   line-height: 1;
-  padding: var(--rt-space-md) var(--rt-space-xl);
-  border: var(--border-structural) solid var(--color-rule);
+  padding: 0 var(--rt-space-2xl);
+  border: 0;
   border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  box-shadow: var(--shadow-press-sm);
+  background: var(--color-accent-bright);
+  color: var(--color-on-accent-bright);
   cursor: pointer;
-  transition: background-color var(--duration-fast) var(--ease-signal),
-    box-shadow var(--duration-fast) var(--ease-signal),
+  transition: filter var(--duration-fast) var(--ease-signal),
     transform var(--duration-fast) var(--ease-signal);
 }
+.rt-jump-go svg {
+  transition: transform var(--duration-base) var(--ease-signal);
+}
 .rt-jump-go:hover {
-  background: var(--color-primary-hover);
+  filter: brightness(1.08);
+}
+.rt-jump-go:hover svg {
+  transform: translateX(3px);
 }
 .rt-jump-go:active {
-  transform: translate(3px, 3px);
-  box-shadow: none;
-}
-.rt-jump-go:focus-visible {
-  outline: 2px solid var(--color-ring);
-  outline-offset: 2px;
+  transform: translateY(1px);
 }
 /* Empty field, nothing to open. The panel keeps its shape rather than the
    button disappearing out of the row. */
 .rt-jump-go:disabled {
-  background: var(--color-surface-inset);
-  color: var(--color-on-surface-dim);
-  box-shadow: none;
+  background: color-mix(in srgb, var(--color-on-band) 12%, transparent);
+  color: var(--color-on-band-muted);
+  filter: none;
   cursor: default;
+}
+.rt-jump-go:disabled svg {
+  transform: none;
 }
 
 .rt-jump-hint {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 6px 10px;
+  min-height: 26px;
   margin-top: var(--rt-space-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-data-md);
+  color: var(--color-on-band-muted);
 }
 .rt-jump-hint b {
-  font-size: var(--text-body-md);
   font-weight: 400;
-  color: var(--color-on-surface-dim);
-  margin-right: 2px;
 }
 
-/* A keycap, not a chip: hairline and shadowless, because these are examples
-   and matches rather than controls. As matches they become links, and the
-   first one is what Enter follows. */
+/* The resting state: one example at a time, stepping through what the box
+   accepts. The track holds the first line again at the end so the loop has
+   no seam. Under reduced motion it simply shows the first. */
+.rt-jump-hint[data-resting] {
+  flex-wrap: nowrap;
+}
+.rt-ticker {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  overflow: hidden;
+}
+.rt-ticker-track {
+  display: flex;
+  flex-direction: column;
+  line-height: 24px;
+  color: var(--color-on-band);
+  white-space: nowrap;
+  animation: rt-tick 15s cubic-bezier(0.7, 0, 0.2, 1) infinite;
+}
+@keyframes rt-tick {
+  0%, 16% { transform: translateY(0); }
+  20%, 36% { transform: translateY(-24px); }
+  40%, 56% { transform: translateY(-48px); }
+  60%, 76% { transform: translateY(-72px); }
+  80%, 96% { transform: translateY(-96px); }
+  100% { transform: translateY(-120px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rt-ticker-track {
+    animation: none;
+  }
+}
+
+/* A match: a link to the tool that can read what was pasted. The first one
+   is what Enter follows. */
 .rt-kbd {
   font-family: var(--font-mono);
   font-size: var(--text-data-sm);
   line-height: 1;
-  color: var(--color-on-surface-muted);
-  padding: var(--rt-space-xs) var(--rt-space-sm);
-  border: var(--border-hairline) solid var(--color-outline);
+  color: var(--color-on-band-muted);
+  padding: 6px var(--rt-space-sm);
+  border: var(--border-hairline) solid var(--color-band-outline);
   border-radius: var(--radius-sm);
-  background: var(--color-surface-inset);
   text-decoration: none;
   white-space: nowrap;
 }
 a.rt-kbd:hover {
-  color: var(--color-on-surface);
-  border-color: var(--color-rule);
-}
-a.rt-kbd:focus-visible {
-  outline: 2px solid var(--color-ring);
-  outline-offset: 2px;
+  color: var(--color-on-band);
+  border-color: var(--color-on-band-muted);
 }
 a.rt-kbd[data-first] {
-  color: var(--color-primary-text);
-  border-color: var(--color-primary-text);
+  color: var(--color-accent-bright);
+  border-color: var(--color-accent-bright);
 }
-
-/* The hint row is rebuilt on every keystroke, so each keycap here is a brand
-   new node and starts this on insertion — no re-trigger dance needed.
-
-   Scoped off `data-resting` so it is matches only. The resting examples are
-   the prerendered markup restored, and the panel is `hidden` until its script
-   runs: fading those would mean the paste panel dealing itself in on load
-   beside the tiles, which is one entrance more than the page has earned.
-
-   Opacity only, 90ms — the row answers faster than the reader can type, and
-   anything that moved here would read as lag. */
+/* The row is rebuilt on every keystroke, so each match is a new node and
+   starts this on insertion. Opacity only — anything that moved would read as
+   lag. */
 .rt-jump-hint:not([data-resting]) a.rt-kbd {
   animation: rt-fade-in var(--duration-fast) var(--ease-signal);
 }
 
 /* --- The filter row -------------------------------------------------------
-   Chips are bordered pills with press shadows — they read as keyboard keys.
-   The active chip inverts to the rule colour (ink chip on paper, cream chip
-   on ink) with the opposing ground as its text, so selection is unmistakable
-   without putting a category hue on a control, which Stacks still forbids. */
+   Pills. The selected one inverts to the theme's ink; none of them carries a
+   hue. */
 
 .rt-filters {
   position: relative;
@@ -564,44 +611,43 @@ a.rt-kbd[data-first] {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--rt-space-md);
-  padding-block: var(--rt-space-2xl) 0;
+  padding-block: var(--rt-space-3xl) 0;
 }
 
 .rt-chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--rt-space-sm);
   min-width: 0;
 }
 
 .rt-chip {
   font-family: inherit;
-  font-size: var(--text-body-sm);
+  font-size: var(--text-body-md);
   font-weight: 500;
   line-height: 1;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 14px;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-press-sm);
-  color: var(--color-on-surface-muted);
+  gap: var(--rt-space-sm);
+  min-height: 40px;
+  padding: 0 14px;
+  border: var(--border-hairline) solid var(--color-outline);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
   cursor: pointer;
   transition: color var(--duration-fast) var(--ease-signal),
     background-color var(--duration-fast) var(--ease-signal),
-    box-shadow var(--duration-fast) var(--ease-signal),
+    border-color var(--duration-fast) var(--ease-signal),
     transform var(--duration-fast) var(--ease-signal);
 }
 .rt-chip:hover {
-  color: var(--color-on-surface);
+  border-color: var(--color-on-surface);
   background: var(--color-surface-inset);
 }
 .rt-chip:active {
-  transform: translate(3px, 3px);
-  box-shadow: none;
+  transform: translateY(1px);
 }
 .rt-chip:focus-visible {
   outline: 2px solid var(--color-ring);
@@ -612,25 +658,19 @@ a.rt-kbd[data-first] {
   font-family: var(--font-mono);
   font-size: var(--text-data-sm);
   font-variant-numeric: tabular-nums;
-  color: var(--color-on-surface-dim);
+  color: var(--color-on-surface-faint);
 }
 
-/* The pressed key: the chip inverts to the theme's strongest ink and stays
-   down — background, no shadow. `on-surface`, not `rule`: the dark rule is
-   a demoted taupe, and the pressed key needs the full-contrast inversion
-   (ink chip on paper, cream chip on espresso). */
 .rt-chip[aria-checked='true'] {
   color: var(--color-surface);
-  font-weight: 600;
   background: var(--color-on-surface);
-  box-shadow: none;
+  border-color: var(--color-on-surface);
 }
 .rt-chip[aria-checked='true'] .rt-chip-count {
   color: var(--color-surface);
 }
 
-/* --- Name filter ----------------------------------------------------------
-   Pushed to the end of the chip row rather than sitting above it. */
+/* --- Name filter ---------------------------------------------------------- */
 
 .rt-find {
   position: relative;
@@ -640,71 +680,92 @@ a.rt-kbd[data-first] {
 .rt-find-input {
   width: 100%;
   max-width: 300px;
+  height: 40px;
   font-family: var(--font-mono);
-  font-size: var(--text-data-sm);
+  font-size: var(--text-data-md);
   line-height: 1;
-  padding: 10px 13px;
+  padding: 0 13px;
   border-radius: var(--radius-md);
-  background: var(--color-surface-raised);
-  border: var(--border-structural) solid var(--color-rule);
+  background: var(--color-surface);
+  border: var(--border-hairline) solid var(--color-outline-strong);
   color: var(--color-on-surface);
-  transition: background-color var(--duration-base) var(--ease-signal);
 }
 .rt-find-input::placeholder {
   color: var(--color-on-surface-faint);
 }
-.rt-find-input:hover {
-  background: var(--color-surface-inset);
-}
 .rt-find-input:focus {
   outline: 2px solid var(--color-ring);
   outline-offset: 2px;
-  background: var(--color-surface-raised);
 }
 .rt-find-input::-webkit-search-cancel-button {
   cursor: pointer;
 }
 
-/* --- The stream -----------------------------------------------------------
-   One flow of fifteen tiles, not five sections of three.
-
-   The category headings are gone: the chips name the categories and the icon
-   tile carries the hue, so a heading above each run stated the same fact a
-   third time — and the bands it created were what made a catalogue of fifteen
-   read as five stacked tables. Tools stay in category order, so the hues
-   cluster and drift teal → blue → purple → amber → orange → pink down the
-   page. The grouping is drawn rather than labelled.
-
-   Tiles carry their own `flex-basis` in three distinct steps (see
-   `index.astro`'s `widthStep`), so rows break at 3, 2, 3, 3 and 4 rather than
-   snapping to three tracks — which is also what removed the three holes the
-   fixed grid used to manufacture at the tail of every short category. */
+/* --- The catalogue --------------------------------------------------------
+   Five sections, each headed by its group's glyph on an ink tile, a name and
+   a count, over an ink rule. Inside a section the tools are ruled rows in two
+   columns — a list to scan, not a wall of cards. Filtering hides rows and
+   then any section left empty. */
 
 .rt-stream {
   position: relative;
   display: flex;
-  flex-wrap: wrap;
-  /* The tiles are sized as a fraction of the row minus the gutters between
-     them, so the gap has to be readable by that calc rather than written
-     twice. */
-  --rt-stream-gap: 14px;
-  gap: var(--rt-stream-gap);
-  padding-block: var(--rt-space-2xl) var(--rt-space-4xl);
-  /*
-    Filtering fifteen tools down to three necessarily shortens the page, and a
-    bottom-pinned footer turns the difference into trapped space. Only a floor,
-    so a full catalogue still grows past it.
-  */
+  flex-direction: column;
+  gap: 44px;
+  padding-block: var(--rt-space-3xl) var(--rt-space-4xl);
+  /* Filtering down to three tools shortens the page, and a bottom-pinned
+     footer turns the difference into trapped space. Only a floor. */
   min-height: 46vh;
-  align-content: flex-start;
+}
+
+.rt-section {
+  display: flex;
+  flex-direction: column;
+}
+.rt-section-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: var(--border-hairline) solid var(--color-on-surface);
+}
+.rt-section-ico {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: var(--border-hairline) solid var(--color-band-outline);
+  border-radius: var(--radius-lg);
+  background: var(--color-band);
+  color: var(--color-accent-bright);
+}
+.rt-section-title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--text-headline-md);
+  font-weight: var(--font-weight-headline-md);
+  letter-spacing: var(--tracking-headline-md);
+  line-height: 1.15;
+}
+.rt-section-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-md);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-on-surface-faint);
+}
+.rt-section-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+  column-gap: var(--rt-space-gutter);
 }
 
 .rt-empty {
-  flex: 1 0 100%;
   margin: 0;
   padding: var(--rt-space-xl) 0;
   color: var(--color-on-surface-muted);
   font-size: var(--text-body-md);
+  animation: rt-fade-in var(--duration-fast) var(--ease-signal);
 }
 .rt-empty b {
   color: var(--color-on-surface);
@@ -717,81 +778,18 @@ a.rt-kbd[data-first] {
   padding: 0;
   border: 0;
   background: none;
-  /* `primary-text`, never `primary`: the raw accent as text is ~1.6:1 on
-     the paper ground. */
   color: var(--color-primary-text);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-/* --- The stream settles ---------------------------------------------------
-   Three behaviours, all of them the catalogue behaving like objects rather
-   than like a slideshow. DESIGN.md's Motion section is the authority; this is
-   where they are drawn.
-
-   1. THE DEAL-IN. Each tile starts 3px raised carrying the `press` shadow and
-      lands flat and shadowless — the press vocabulary run backwards, so the
-      page assembles out of visibly pressable things instead of fading up like
-      any other card grid. Pure CSS on prerendered markup: it blocks no
-      content, needs no JavaScript, and cannot leave a tile stuck invisible if
-      a script fails, because there is no script.
-
-      `backwards` fill is what holds the first frame during the stagger delay.
-      Without it every tile paints flat, then jumps back up to start.
-
-   2. THE STAGGER, capped, and diagonal. `--rt-r` and `--rt-c` are the tile's
-      row and column in the cadence and the delay is their sum, so the
-      catalogue crosses the page as a wave rather than running down it in one
-      line. `min()` stops each term, so the last tile is down inside 420ms
-      however long the catalogue grows — an uncapped ramp is how a nineteenth
-      tool would have made the page feel slower than an eighteenth.
-
-   3. THE EMPTY STATE fades rather than blinks — it replaces fifteen tiles
-      with one sentence, which is a big enough change to deserve the 90ms. */
-
-@keyframes rt-card-in {
-  from {
-    opacity: 0;
-    transform: translate(-3px, -3px);
-    box-shadow: var(--shadow-press);
-  }
-}
-
-/* The deal-in runs on the diagonal: the delay is row plus column, so the
-   catalogue arrives as a wave crossing the page rather than as one straight
-   line down it. Both terms are capped here rather than in the template, so a
-   catalogue of thirty lands inside the same window as a catalogue of
-   eighteen. */
-.rt-stream .rt-card {
-  animation: rt-card-in var(--duration-settle) var(--ease-signal) backwards;
-  animation-delay: calc((min(var(--rt-r, 0), 7) + min(var(--rt-c, 0), 2)) * 26ms);
-}
-
-.rt-empty {
-  animation: rt-fade-in var(--duration-fast) var(--ease-signal);
-}
-
-@keyframes rt-fade-in {
-  from {
-    opacity: 0;
-  }
-}
-
 /* --- The refilter travels -------------------------------------------------
-   A category chip rearranges the stream, and until now the survivors
-   teleported: `hidden` toggles, flex re-wraps, done. Each tile carries a
-   `view-transition-name` (see `ToolCard.astro`), so the browser FLIPs the
-   reflow for us — the tiles that stay slide to their new rows, the ones that
-   leave fade out where they stood.
-
-   The root group is silenced deliberately. Its default is a full-page
-   cross-fade, which would dissolve the header, the paste panel and the chip
-   row — none of which changed — and turn a precise rearrangement into a
-   wash. Only the named tiles animate; everything else is simply repainted.
-
-   `index.astro` starts these for chip presses alone. A transition per
-   keystroke in the name filter is a stutter, not a settle. */
+   Each row carries a `view-transition-name` (see `ToolCard.astro`), so when a
+   chip rearranges the catalogue the rows that stay slide to their new place
+   and the ones that leave fade out where they stood. The root group is
+   silenced so the header and band, which did not change, are not dissolved.
+   `index.astro` starts these for chip presses alone. */
 
 ::view-transition-group(*) {
   animation-duration: var(--duration-settle);
@@ -804,12 +802,8 @@ a.rt-kbd[data-first] {
   mix-blend-mode: normal;
 }
 
-/* --- The 404 grid ---------------------------------------------------------
-   /404 still renders the index's old group markup for its "Popular tools"
-   block — one heading over a fixed grid, which is right for three suggestions
-   and wrong for a catalogue. These rules exist for that page alone; the
-   `--cat` fallback on the label is there because its one group spans three
-   categories and so has no hue of its own. */
+/* --- The 404 guess --------------------------------------------------------
+   One heading over the same ruled rows. */
 
 .rt-board {
   position: relative;
@@ -819,227 +813,126 @@ a.rt-kbd[data-first] {
 }
 .rt-group {
   display: grid;
-  gap: 11px;
 }
 .rt-group-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: var(--border-hairline) solid var(--color-on-surface);
 }
 .rt-group-label {
   margin: 0;
-  font-family: inherit;
-  font-size: var(--text-label-caps);
-  font-weight: var(--font-weight-label-caps);
-  line-height: 1;
-  letter-spacing: var(--tracking-label-caps);
-  text-transform: uppercase;
-  color: var(--cat, var(--color-on-surface-muted));
+  font-size: var(--text-headline-md);
+  font-weight: var(--font-weight-headline-md);
+  letter-spacing: var(--tracking-headline-md);
+  line-height: 1.15;
+  color: var(--color-on-surface);
 }
 .rt-group-head hr {
-  flex: 1;
-  height: 1px;
-  border: 0;
-  margin: 0;
-  background: var(--color-outline);
+  display: none;
 }
 .rt-grid {
   display: grid;
-  gap: 18px;
-}
-@media (min-width: 600px) {
-  .rt-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (min-width: 940px) {
-  .rt-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-/* The stream sizes its own tiles; inside the 404 grid the track does it. */
-.rt-grid .rt-card {
-  flex-basis: auto;
-  max-width: none;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+  column-gap: var(--rt-space-gutter);
 }
 
-/* --- Card: the tool tile, and the workhorse -------------------------------
-   A bordered card on the raised ground, laid out horizontally: the icon tile
-   beside a column of title, description and route.
-
-   The category badge is gone with the section headings. It restated what the
-   heading above it already said and what the icon tile still says, and
-   fifteen bright pastel slabs were the loudest thing on the page — worst in
-   dark, where they floated on espresso.
-
-   Hover is the press affordance arriving: the tile gains the `press` shadow
-   and moves up-left by the same 2px, exactly as if it had risen under the
-   finger. */
+/* --- The tool row ---------------------------------------------------------
+   Glyph tile, name and one sentence, and an arrow that only appears under
+   intent. The row is the link. Hover tints the row and fills the tile with
+   the accent — the one place the accent appears in the catalogue, and only
+   on the thing about to be pressed. */
 
 .rt-card {
   position: relative;
-  flex: 1 1 auto;
   min-width: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 15px 17px 14px;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-lg);
-  background-color: var(--color-surface-raised);
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 20px;
+  column-gap: 14px;
+  align-items: center;
+  padding: 14px 10px;
+  border-bottom: var(--border-hairline) solid var(--color-outline);
   color: var(--color-on-surface);
   text-decoration: none;
-  transition: box-shadow var(--duration-base) var(--ease-signal),
-    transform var(--duration-base) var(--ease-signal),
-    border-color var(--duration-base) var(--ease-signal);
+  transition: background-color var(--duration-base) var(--ease-signal);
 }
-
-/* --- The two width steps --------------------------------------------------
-   A tile is a third of a row or a half of one, and both are written as a
-   fraction of the row minus its gutters — so three thirds and two halves
-   flush to exactly the same two edges, at every container width and in every
-   filter state. This replaces three px steps (235/315/400) chosen from the
-   tile's own text length, which had no way to know what else was in its row:
-   all seven Microsoft and Azure titles are long, so all seven took the widest
-   step together, and a 2-up row of tiles capped at 500px stopped 124px short
-   of the right edge.
-
-   `min-width` is what makes the composition responsive without a breakpoint:
-   once a third would be narrower than a readable tile, the row breaks itself
-   down to two, then to one. `max-width` only ever catches the degenerate case
-   — a single search hit, which would otherwise stretch the full 1136px.
-
-   The cadence that assigns the step lives in `src/lib/rowCadence.js` and runs
-   again per filter in the index's client script. */
-
-.rt-stream .rt-card {
-  /* The floor is set by the longest title in the catalogue, not by taste:
-     the longest, "Microsoft 365 License Decoder", measures 253px and the
-     tile spends 81px on its icon and padding. Below 340px it wraps onto two
-     lines, and a wrapped title is what actually makes a tile look cramped. The row breaks itself down to two and then to one as the
-     viewport closes, so the composition needs no breakpoint of its own. */
-  min-width: 340px;
-  /* Only ever catches the degenerate case: a single search hit, which would
-     otherwise stretch the whole 1136px. */
-  max-width: 620px;
-}
-.rt-stream .rt-card[data-span='third'] {
-  flex-basis: calc((100% - 2 * var(--rt-stream-gap)) / 3);
-}
-.rt-stream .rt-card[data-span='half'] {
-  flex-basis: calc((100% - var(--rt-stream-gap)) / 2);
-}
-
-/* The half tile is the same two lines as a third with more air around them.
-   Two attempts at giving it more to hold were withdrawn: the manifest's badge
-   terms as a row of keys (they read as chips you could press, on a page that
-   already opens with a chip row you can) and the route path pushed to the far
-   corner (a fact the title and the link both already make). The wide step is
-   breathing room, and the cadence is what it is for. */
-.rt-stream .rt-card[data-span='half'] {
-  padding: 17px 19px 16px;
-}
-
-/* Hover answers in the tool's own colour: the 2px border — the structure
-   itself — takes the category TEXT hue for as long as the pointer is on the
-   tile, and the keys follow it. `--cat`, never `--cat-fill`: the fill hues
-   are pastel blocks meant to sit behind graphite ink and would read as a
-   1.6:1 wire outline on paper. This is the only place the category hue leaves
-   the icon tile, and it leaves it only under intent. */
 .rt-card:hover,
 .rt-card:focus-visible {
-  box-shadow: var(--shadow-press);
-  transform: translate(-2px, -2px);
-  border-color: var(--cat, var(--color-rule));
-}
-/* The tile is the page's primary pressable and it was the one pressable on
-   the site that did not press: it rose on hover and then absorbed the click
-   without moving. Same sink as `.rt-chip:active`, one step past the hover
-   lift, and the shadow goes with it — DESIGN.md's second rule, which the
-   tile was quietly exempt from. */
-.rt-card:active {
-  box-shadow: none;
-  transform: translate(2px, 2px);
+  background: var(--color-surface-inset);
 }
 .rt-card:focus-visible {
   outline: 2px solid var(--color-ring);
-  outline-offset: 3px;
+  outline-offset: -2px;
 }
 
 .rt-card-text {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
-
 .rt-card-name {
-  font-family: var(--font-display);
   font-size: var(--text-title-sm);
   font-weight: var(--font-weight-title-sm);
   letter-spacing: var(--tracking-title-sm);
-  line-height: 1.2;
+  line-height: 1.3;
   min-width: 0;
 }
 .rt-card p {
   margin: 0;
-  font-size: var(--text-body-sm);
+  font-size: var(--text-body-md);
   line-height: 1.45;
-  color: var(--color-on-surface-muted);
+  color: var(--color-on-surface-faint);
+}
+
+.rt-card-go {
+  color: var(--color-primary-text);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity var(--duration-base) var(--ease-signal),
+    transform var(--duration-base) var(--ease-signal);
+}
+.rt-card:hover .rt-card-go,
+.rt-card:focus-visible .rt-card-go {
+  opacity: 1;
+  transform: none;
 }
 
 /* --- Tool icon ------------------------------------------------------------
-   In a tile the glyph sits in a small solid `category-fill` icon tile with
-   graphite ink and the 2px border — the tile is the category's swatch, and
-   with the badge gone it is the only place the category is drawn. In the
-   tool-page head (below) the glyph stands alone in the category TEXT hue.
-   Nothing animates on hover: the card's own shadow is the response. */
+   One glyph, two settings. In a catalogue row it sits on a soft accent tile
+   that fills on hover. At the head of a tool page it sits on the bright
+   accent, the band's one solid block. The category hue (`--cat`) is no
+   longer drawn by the shell; it still labels badges inside the tools. */
 
 .rt-ico {
   flex: none;
-  width: 29px;
-  height: 32px;
   display: grid;
-  place-items: center start;
-  color: var(--cat, var(--color-on-surface-muted));
+  place-items: center;
 }
 .rt-ico svg {
   display: block;
 }
-/* The tile treatment applies only where a category fill is guaranteed —
-   inside a tool card. Everywhere else the glyph stands alone. */
 .rt-card .rt-ico {
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border: var(--border-structural) solid var(--color-rule);
-  border-radius: var(--radius-sm);
-  background: var(--cat-fill);
-  color: var(--color-on-category-fill);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-primary-text) 11%, var(--color-surface));
+  color: var(--color-primary-text);
+  transition: background-color var(--duration-base) var(--ease-signal),
+    color var(--duration-base) var(--ease-signal);
+}
+.rt-card:hover .rt-ico,
+.rt-card:focus-visible .rt-ico {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 /* --- Index on a phone ----------------------------------------------------- */
 
 @media (max-width: 600px) {
-  /*
-    The chip row wrapped to three rows and 129px — a third of the viewport
-    before the first card, on the control whose whole job is to shorten the
-    page. One scroll-snapped line instead, stuck under the header so it is
-    still reachable three screens down.
-
-    The band is opaque here rather than a blurred wash: it is a sticky ruled
-    edge, and blurring hairlines as they pass under it is exactly the smear
-    the header dropped its backdrop-filter to avoid.
-  */
-  /*
-    The band still wraps: the chips are the one nowrap line (they scroll),
-    and the find field's 100% basis drops it onto its own row beneath them.
-    `nowrap` here once forced both onto one line and crushed the chips to
-    nothing — the search field ate the row and the categories vanished.
-  */
+  /* One scroll-snapped line of chips, stuck under the header so it is still
+     reachable three screens down. The find field takes its own row. */
   .rt-filters {
     position: sticky;
-    top: 0;
+    top: 64px;
     z-index: 20;
     background: var(--color-surface);
     padding-block: var(--rt-space-md);
@@ -1055,7 +948,6 @@ a.rt-kbd[data-first] {
   }
   .rt-chip {
     flex: none;
-    /* A moving thumb needs more than the 29px this used to be. */
     min-height: 44px;
     scroll-snap-align: start;
   }
@@ -1063,91 +955,59 @@ a.rt-kbd[data-first] {
     flex: 1 0 100%;
     margin-left: 0;
     padding-left: 0;
-    padding-block: var(--rt-space-sm);
-    border-top: var(--border-hairline) solid var(--color-outline);
   }
   .rt-find-input {
     max-width: none;
-    min-height: 44px;
+    height: 44px;
   }
-  .rt-index-head {
-    flex-wrap: wrap;
-    gap: var(--rt-space-sm);
-    padding-block: var(--rt-space-3xl) var(--rt-space-lg);
+  .rt-hero {
+    padding-block: var(--rt-space-3xl) var(--rt-space-3xl);
   }
-  /* 64px is a desktop step. Below 600px it eats the fold on its own. */
   .rt-index-title {
     font-size: var(--text-headline-lg);
     letter-spacing: var(--tracking-headline-lg);
   }
-  .rt-index-note {
-    padding-bottom: 0;
-  }
-  /* The paste row stacks: a field and a button sharing a 390px line crushes
-     the field to a few characters, which is the same bug the tool pages'
-     lookup rows already fixed by stacking. */
+  /* A field and a button sharing a 390px line crushes the field to a few
+     characters, so the row stacks. */
   .rt-jump-row {
     flex-wrap: wrap;
   }
   .rt-jump-field,
   .rt-jump-go {
     flex: 1 0 100%;
-    min-height: 44px;
   }
-  .rt-jump-go {
-    justify-content: center;
-  }
-  /* The resting examples cost three wrapped rows on a 390px screen, in front
-     of the catalogue — the opposite of what the band above them is for. They
-     come back the moment they are real matches, which is when they are worth
-     the space. */
-  .rt-jump-hint[data-resting] {
-    display: none;
-  }
-  /* The width steps are a desktop composition. At 390px they would produce
-     two cramped columns instead of one readable one, so every tile takes the
-     full line and the half tile's wide-only treatment comes off with it. */
-  .rt-stream .rt-card[data-span] {
-    flex-basis: 100%;
-    min-width: 0;
-    max-width: none;
+  .rt-stream {
+    padding-top: var(--rt-space-lg);
   }
 }
 
 /* --- Tool page ------------------------------------------------------------
-   Three lines and no more: crumb, icon + h1, one factual sentence. The head
-   is closed by a 3px rule — it is the "new thing" boundary above the tool.
-   No entrance animation; Signal has none. */
+   Three lines on the band: crumb, glyph + h1, one factual sentence. */
 
 .rt-tool-head {
   position: relative;
-  padding-block: var(--rt-space-3xl) var(--rt-space-2xl);
-  border-bottom: var(--border-structural) solid var(--color-rule);
+  padding-block: 40px 44px;
   display: grid;
   gap: var(--rt-space-md);
 }
 .rt-crumb {
-  font-size: var(--text-label-caps);
-  font-weight: var(--font-weight-label-caps);
+  font-family: var(--font-mono);
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: var(--tracking-label-caps);
-  color: var(--color-on-surface-faint);
+  letter-spacing: 0.06em;
+  color: var(--color-on-band-muted);
 }
 .rt-crumb a {
   color: inherit;
   text-decoration: none;
 }
 .rt-crumb a:hover {
-  color: var(--color-on-surface-muted);
+  color: var(--color-on-band);
 }
 .rt-crumb b {
-  /* Fallback for /delete, which has a crumb but no category. */
-  color: var(--cat, var(--color-on-surface));
-  font-weight: 600;
+  color: var(--color-accent-bright);
+  font-weight: 500;
 }
-/* The category crumb is a link to its group on the index, so it needs its own
-   hover: the rule above paints the `b` inside it and would otherwise swallow
-   the anchor's. */
 .rt-crumb a:hover b {
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1155,14 +1015,14 @@ a.rt-kbd[data-first] {
 .rt-tool-id {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
 }
-/* 30px beside an h1, per DESIGN.md's Iconography. No tile, ring or ground
-   behind it — the glyph carries the category hue on its own. */
 .rt-tool-id .rt-ico {
-  width: 30px;
-  height: 30px;
-  place-items: center start;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-xl);
+  background: var(--color-accent-bright);
+  color: var(--color-on-accent-bright);
 }
 .rt-tool-id h1 {
   margin: 0;
@@ -1170,14 +1030,27 @@ a.rt-kbd[data-first] {
   font-size: clamp(var(--text-headline-md), 4vw, var(--text-headline-lg));
   font-weight: var(--font-weight-headline-lg);
   letter-spacing: var(--tracking-headline-lg);
-  line-height: 1.05;
+  line-height: 1.1;
 }
 .rt-tool-head > p {
   margin: 0;
   max-width: 62ch;
-  font-size: var(--text-body-lg);
-  font-weight: var(--font-weight-body-lg);
-  color: var(--color-on-surface-muted);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-on-band-muted);
+}
+@media (max-width: 600px) {
+  .rt-tool-head {
+    padding-block: var(--rt-space-2xl) var(--rt-space-2xl);
+  }
+  .rt-tool-id {
+    gap: 14px;
+  }
+  .rt-tool-id .rt-ico {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-lg);
+  }
 }
 
 /* Actions and alerts a bridged tool still owns, hoisted above its body. */
@@ -1189,21 +1062,16 @@ a.rt-kbd[data-first] {
   padding-bottom: var(--rt-space-md);
 }
 
-/* One full-width column. A tool composes its own body inside it — the
-   fifteen tools are not one shape, and a fixed control column imposed on
-   all of them is what Session 6 reverted. */
+/* One full-width column. A tool composes its own body inside it. */
 .rt-tool-body {
   position: relative;
-  padding-block: var(--rt-space-2xl) var(--rt-space-4xl);
+  padding-block: var(--rt-space-3xl) var(--rt-space-4xl);
   display: grid;
   gap: var(--rt-space-lg);
 }
 
 /* --- Panel ----------------------------------------------------------------
-   `panel` in DESIGN.md's Components: raised ground inside the 2px rule
-   border at the panel radius, with NO shadow at rest — the offset shadow
-   belongs to pressables and to the one `panel-emphasis` per page. The
-   radius means corners exist again, so the panel clips its own header. */
+   Raised ground inside a 1px rule at the panel radius, flat. */
 
 .rt-panel {
   border: var(--border-structural) solid var(--color-rule);
@@ -1217,7 +1085,7 @@ a.rt-kbd[data-first] {
   gap: 10px;
   padding: 11px 16px;
   border-bottom: var(--border-hairline) solid var(--color-outline);
-  background: var(--color-surface);
+  background: var(--color-surface-inset);
   font-size: var(--text-label-caps);
   font-weight: var(--font-weight-label-caps);
   letter-spacing: var(--tracking-label-caps);
@@ -1235,54 +1103,47 @@ a.rt-kbd[data-first] {
   gap: var(--rt-space-md);
 }
 
-/* An error panel swaps its whole border to the error hue, so the region
-   reads as failed before its text is parsed. Colour is never the sole
-   carrier — the word ERROR goes with it. */
+/* An error panel swaps its whole border to the error hue. Colour is never
+   the sole carrier — the word ERROR goes with it. */
 .rt-panel[data-state='error'] {
   border-color: var(--color-error);
 }
 
 /* --- Footer ---------------------------------------------------------------
-   A deepened band of the theme's own ground, closed by the 2px rule — a
-   step down, not a slab. The ink-slab footer was tried under Stacks and the
-   hard black band read as jarring against the paper page; `on-footer` and
-   `on-footer-muted` now remap per theme like every other surface role. */
+   A quiet step of the theme's own ground under a hairline. */
 
 .rt-site-footer {
   margin-top: var(--rt-space-4xl);
-  border-top: var(--border-structural) solid var(--color-rule);
+  border-top: var(--border-hairline) solid var(--color-outline);
   background: var(--color-footer);
   color: var(--color-on-footer);
 }
 .rt-footer-inner {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--rt-space-lg);
-  padding-block: var(--rt-space-2xl) 44px;
+  padding-block: var(--rt-space-2xl);
 }
 .rt-footer-brand {
-  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: var(--rt-space-sm);
   color: var(--color-on-footer);
   text-decoration: none;
   font-size: var(--text-body-lg);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
-.rt-footer-brand svg {
-  /* Same two-tone mark as the header: the strongest ink on both footer
-     grounds. */
-  color: var(--color-on-surface);
+.rt-footer-brand svg,
+.rt-footer-brand .rt-brand-dot {
+  color: var(--color-primary-text);
 }
 .rt-footnav {
-  justify-self: end;
   display: flex;
   gap: var(--rt-space-2xl);
   font-size: var(--text-body-sm);
-  font-weight: 500;
 }
 .rt-footnav a {
   color: var(--color-on-footer-muted);
@@ -1314,18 +1175,16 @@ a.rt-kbd[data-first] {
 }
 .rt-island-retry {
   justify-self: start;
-  border: var(--border-structural) solid var(--color-rule);
+  border: var(--border-structural) solid var(--color-outline-strong);
   border-radius: var(--radius-md);
   background: var(--color-surface-raised);
-  box-shadow: var(--shadow-press-sm);
   color: var(--color-on-surface);
   padding: 8px 15px;
   font-size: var(--text-body-sm);
   cursor: pointer;
 }
 .rt-island-retry:active {
-  transform: translate(3px, 3px);
-  box-shadow: none;
+  transform: translateY(1px);
 }
 
 /* --- Tool help page (/:tool/help) ----------------------------------------
@@ -1478,7 +1337,7 @@ a.rt-kbd[data-first] {
   /*
     The bar's weight, kept as a lever because it is the one value here that is
     a judgement rather than a consequence: the strike sits on the font's own
-    strikeout metric, and Bricolage, Space Grotesk and Space Mono do not agree
+    strikeout metric, and Plex Sans and Plex Mono do not agree
     on where that is.
   */
   --rt-ghost-bar: 0.92em;

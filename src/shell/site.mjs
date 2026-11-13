@@ -13,7 +13,7 @@ export const SITE_URL = 'https://russ.tools';
 export const SITE_NAME = 'russ.tools';
 
 export const SITE_DESCRIPTION =
-  'Eighteen focused tools for network, cloud and platform work — subnetting, ' +
+  'Twenty-four focused tools for network, cloud and platform work — subnetting, ' +
   'DNS, WHOIS, SSL, JWT, Azure naming and KQL, and more. Everything runs in ' +
   'your browser: no accounts, no analytics, nothing uploaded.';
 
@@ -32,7 +32,7 @@ export const AUTHOR = {
  * `public/site.webmanifest` carries the same value twice, and
  * `src/layouts/seo.test.js` fails if the three ever disagree.
  */
-export const THEME_COLOR = '#241f18';
+export const THEME_COLOR = '#0b1f16';
 
 /** @param {string} path @returns {string} absolute, no trailing slash */
 export const absolute = (path) => new URL(path, SITE_URL).href.replace(/\/$/, '');

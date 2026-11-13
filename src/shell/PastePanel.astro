@@ -14,11 +14,7 @@
  * index asks what you arrived with; /404 already knows the URL failed and is
  * asking what you were actually after.
  */
-const {
-  label = 'Start with what you have',
-  hint = 'Paste anything and it opens the tool that reads it —',
-  value = '',
-} = Astro.props;
+const { label = 'Start with what you have', value = '' } = Astro.props;
 ---
 
 <form class="rt-jump" id="rt-jump" hidden>
@@ -31,24 +27,37 @@ const {
       autocomplete="off"
       spellcheck="false"
       value={value}
-      placeholder="example.com  ·  10.0.0.0/22  ·  eyJhbGciOi…  ·  b24988ac-…  ·  SPE_E3"
+      placeholder="Domain, IP, CIDR, ASN, JWT, cron, GUID or SKU"
       aria-describedby="rt-jump-desc"
     />
-    <button class="rt-jump-go" type="submit">Open &rarr;</button>
+    <button class="rt-jump-go" type="submit">
+      Open
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </button>
   </div>
   <p class="rt-visually-hidden" id="rt-jump-desc">
     Paste a domain, IP address, CIDR, ASN, JWT, cron expression, GUID, or a
     licence code or SKU part number. The tools that can read it are listed below the
     field; Enter opens the first.
   </p>
+  <!--
+    At rest the row steps through one example at a time. `wirePastePanel`
+    swaps it for real matches as soon as something is typed, and restores
+    this markup when the field is cleared.
+  -->
   <div class="rt-jump-hint" id="rt-jump-hint" data-resting>
-    <b>{hint}</b>
-    <span class="rt-kbd">domain &rarr; /dns-lookup</span>
-    <span class="rt-kbd">CIDR &rarr; /cidr-workbench</span>
-    <span class="rt-kbd">ASN &rarr; /bgp-explorer</span>
-    <span class="rt-kbd">JWT &rarr; /jwt</span>
-    <span class="rt-kbd">host &rarr; /ssl-checker</span>
-    <span class="rt-kbd">GUID &rarr; /azure-rbac</span>
-    <span class="rt-kbd">SKU &rarr; /m365-licenses</span>
+    <b>e.g.</b>
+    <span class="rt-ticker" aria-hidden="true">
+      <span class="rt-ticker-track">
+        <span>example.com &rarr; DNS Lookup</span>
+        <span>10.0.0.0/22 &rarr; CIDR Workbench</span>
+        <span>AS13335 &rarr; BGP &amp; ASN Explorer</span>
+        <span>eyJhbGciOi… &rarr; JWT Decoder</span>
+        <span>SPE_E3 &rarr; Microsoft 365 License Decoder</span>
+        <span>example.com &rarr; DNS Lookup</span>
+      </span>
+    </span>
   </div>
 </form>

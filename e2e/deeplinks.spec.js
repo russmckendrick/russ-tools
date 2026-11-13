@@ -46,13 +46,14 @@ test.describe('home and shell pages', () => {
     }
   });
 
-  test('the index presents Microsoft and Azure together in one stream', async ({ page }) => {
+  test('the index presents Microsoft and Azure together in one section', async ({ page }) => {
     await page.goto('/');
 
-    // One stream, no sections: the chips name the categories and the icon tile
-    // carries the hue, so there are no group heads left to assert on.
+    // Five headed sections inside one catalogue. Azure and Microsoft share
+    // one, so there are five and not six.
     await expect(page.locator('.rt-stream')).toBeVisible();
-    await expect(page.locator('.rt-group')).toHaveCount(0);
+    await expect(page.locator('.rt-section')).toHaveCount(5);
+    await expect(page.getByRole('heading', { level: 2, name: 'Microsoft & Azure' })).toBeVisible();
     await expect(page.locator('.rt-card-badge')).toHaveCount(0);
 
     const platformFilter = page.getByRole('radio', { name: 'Microsoft & Azure 8' });
@@ -65,9 +66,10 @@ test.describe('home and shell pages', () => {
     await expect(platformFilter).toHaveAttribute('aria-checked', 'true');
     await expect(page).toHaveURL(/#microsoft-azure$/);
 
-    // Filtering is now "hide what does not match" — the promote-one-group,
-    // demote-the-rest model went with the sections.
+    // Filtering hides the rows that do not match, and a section left with
+    // none goes with them.
     await expect(page.locator('.rt-card:visible')).toHaveCount(8);
+    await expect(page.locator('.rt-section:visible')).toHaveCount(1);
 
     // Back clears the filter instead of leaving the site.
     await page.goBack();
@@ -75,35 +77,29 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('.rt-card:visible')).toHaveCount(24);
   });
 
-  test('the tiles vary in width and every row still flushes to both edges', async ({ page }) => {
+  test('the catalogue rows sit in two flush columns', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/');
-    // The tiles deal in on a stagger; measure where they land, not where the
-    // animation had them at first paint.
-    await page.waitForTimeout(800);
+    // The sections rise in on a stagger; measure where they land.
+    await page.waitForTimeout(1400);
 
-    // Two width steps are what make this a stream rather than a grid, and the
-    // flush edge is what makes it one stream rather than two tables — a 2-up
-    // row used to stop 124px short of the right edge because the tiles were
-    // capped at 500px. A regression to one width repacks the page into a
-    // uniform 3xN, and a regression on the cap leaves three rows indented;
-    // every other assertion here would still pass through both.
-    const { rows, ragged } = await page.evaluate(() => {
-      const edge = Math.round(document.getElementById('board').getBoundingClientRect().right);
-      const byTop = new Map();
-      for (const card of document.querySelectorAll('.rt-stream .rt-card')) {
-        const box = card.getBoundingClientRect();
-        const top = Math.round(box.top);
-        const row = byTop.get(top) ?? { n: 0, right: 0 };
-        byTop.set(top, { n: row.n + 1, right: Math.max(row.right, Math.round(box.right)) });
-      }
-      const all = [...byTop.entries()].sort((a, b) => a[0] - b[0]).map(([, r]) => r);
-      return { rows: all.map((r) => r.n), ragged: all.filter((r) => r.right !== edge).map((r) => r.right) };
+    // Every row is the same width and starts on one of exactly two left
+    // edges. A regression to a single column, or to rows sized by their own
+    // text, would pass every other assertion here.
+    const { lefts, widths, total } = await page.evaluate(() => {
+      const boxes = [...document.querySelectorAll('.rt-stream .rt-card')].map((card) =>
+        card.getBoundingClientRect()
+      );
+      return {
+        total: boxes.length,
+        lefts: [...new Set(boxes.map((box) => Math.round(box.left)))],
+        widths: [...new Set(boxes.map((box) => Math.round(box.width)))],
+      };
     });
 
-    expect(rows.reduce((a, b) => a + b, 0)).toBe(24);
-    expect(new Set(rows).size, `every row held the same count: ${rows}`).toBeGreaterThan(1);
-    expect(ragged, `rows stopped short of the right edge: ${ragged}`).toEqual([]);
+    expect(total).toBe(24);
+    expect(lefts, `row left edges: ${lefts}`).toHaveLength(2);
+    expect(widths, `row widths: ${widths}`).toHaveLength(1);
   });
 
   test('the name filter narrows the index and is readable off the URL', async ({ page }) => {
@@ -136,7 +132,7 @@ test.describe('home and shell pages', () => {
       'true'
     );
     await expect(page.locator('.rt-card:visible')).toHaveCount(4);
-    // The anchor rides on the first tile of the run, so the breadcrumb link
+    // The anchor rides on the first row of the group, so the breadcrumb link
     // every tool page carries still has something to scroll to.
     await expect(page.locator('#security')).toHaveClass(/rt-card/);
   });

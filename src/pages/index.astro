@@ -8,7 +8,8 @@ import PastePanel from '../shell/PastePanel.astro';
 import ToolCard from '../shell/ToolCard.astro';
 import { TOOLS } from '../tools/registry.mjs';
 import { categoryGroupId, categoryLabel } from '../shell/categories.mjs';
-import { placements } from '../lib/rowCadence.js';
+import SubnetArt from '../shell/SubnetArt.astro';
+import { GROUP_ICONS, iconSvg } from '../shell/icons.mjs';
 import { PERSON_SCHEMA, SITE_DESCRIPTION, SITE_NAME, SITE_URL, WEBSITE_ID } from '../shell/site.mjs';
 
 /**
@@ -60,46 +61,26 @@ const groups = [];
 for (const tool of TOOLS) {
   const id = categoryGroupId(tool.category);
   const group = groups.find((g) => g.id === id);
-  if (group) group.count += 1;
-  else groups.push({ id, label: id === 'microsoft-azure' ? 'Microsoft & Azure' : categoryLabel(tool.category), count: 1 });
+  if (group) {
+    group.count += 1;
+    group.tools.push(tool);
+  } else {
+    groups.push({
+      id,
+      label: id === 'microsoft-azure' ? 'Microsoft & Azure' : categoryLabel(tool.category),
+      count: 1,
+      tools: [tool],
+    });
+  }
 }
-
-/**
- * The tile's width comes from the cadence, not from its own text.
- *
- * It used to come from its own text — three px steps chosen from title and
- * description length — and that produced two faults at once. Every Microsoft
- * and Azure title is long, so all seven took the widest step together and the
- * middle of the page became a block of 2-up rows; and a 2-up row of tiles
- * capped at 500px stopped 124px short of the right edge, so those rows read
- * as a narrower table indented inside the catalogue.
- *
- * `placements` authors the break instead — a row of three thirds or a row of
- * two halves, both exactly 100% of the stream — and the half tile earns its
- * width by carrying the tool's badge terms. See `src/lib/rowCadence.js`.
- */
-const layout = placements(TOOLS.length);
 
 /**
  * `/#network` is a compatibility contract: every tool page's breadcrumb links
  * it, `seo.test.js` walks those links against the built HTML, and the id has
- * to be on something the browser can scroll to. With the sections gone it goes
- * on the first tile of each run — which lands the reader on the tool rather
- * than on a heading above it — and a visually-hidden h2 goes beside it so a
- * heading rotor still has more than one entry.
+ * to be on something the browser can scroll to. It goes on the first row of
+ * each group, which lands the reader on the tool rather than on the heading.
  */
-const seen = new Set();
-const cards = TOOLS.map((tool, i) => {
-  const id = categoryGroupId(tool.category);
-  const first = !seen.has(id);
-  seen.add(id);
-  return {
-    tool,
-    anchor: first ? id : null,
-    label: groups.find((g) => g.id === id).label,
-    ...layout[i],
-  };
-});
+const plural = (n) => `${n} ${n === 1 ? 'tool' : 'tools'}`;
 ---
 
 <BaseLayout
@@ -109,24 +90,23 @@ const cards = TOOLS.map((tool, i) => {
   schema={schema}
 >
   <!--
-    No hero and no stat strip. Both were selling the site to someone already
-    on it. The h1 stays because the page needs one; it says what the page is
-    and stops, and it shares its band with one mono line so the head does work
-    instead of floating over 90px of nothing.
+    The head of the page, on the ink band: what the page is, how many, and
+    the paste box. Nothing here sells the site to someone already on it.
   -->
-  <div class="rt-index-head">
-    <h1 class="rt-index-title">Tools</h1>
-    <span class="rt-index-note">
-      <span class="rt-index-count" id="rt-count">{TOOLS.length}</span> tools · local by default
-    </span>
+  <div slot="band" class="rt-hero">
+    <div class="rt-hero-main">
+      <div class="rt-index-head rt-rise">
+        <h1 class="rt-index-title">Tools</h1>
+        <span class="rt-index-count">
+          <span id="rt-count">{TOOLS.length}</span><span class="rt-visually-hidden"> tools</span>
+        </span>
+      </div>
+      <div class="rt-rise" style="--rt-i: 1">
+        <PastePanel />
+      </div>
+    </div>
+    <SubnetArt />
   </div>
-
-  <!--
-    The page's one emphasis panel, and it is a control rather than a slogan:
-    paste what you already have and it opens the tool that reads it. Shared
-    with /404, which asks the same question from the other end.
-  -->
-  <PastePanel />
 
   <!--
     A radio group, not six toggles. The categories are mutually exclusive, so
@@ -179,19 +159,23 @@ const cards = TOOLS.map((tool, i) => {
   <p class="rt-visually-hidden" id="rt-status" role="status" aria-live="polite"></p>
 
   <!--
-    One stream, no sections. The chips name the categories and the icon tile
-    carries the hue, so a heading above each run was the third statement of the
-    same fact — and the bands it created were what made the catalogue
-    read as five stacked tables. Tools stay in category order, so the hues
-    cluster and drift down the page: the grouping is drawn, not labelled.
+    Five sections, each headed by its group's glyph, name and count. Tools are
+    ruled rows beneath. The chips above filter by hiding rows, and a section
+    left with none hides with them.
   -->
   <div class="rt-stream" id="board">
     {
-      cards.map(({ tool, anchor, label, span, row, col }) => (
-        <>
-          {anchor && <h2 class="rt-visually-hidden">{label}</h2>}
-          <ToolCard tool={tool} span={span} row={row} col={col} anchor={anchor} />
-        </>
+      groups.map((g, i) => (
+        <section class="rt-section rt-rise" data-group={g.id} style={`--rt-i: ${i + 2}`} aria-labelledby={`rt-group-${g.id}`}>
+          <div class="rt-section-head">
+            <span class="rt-section-ico" set:html={iconSvg(g.id, 20, GROUP_ICONS)} />
+            <h2 class="rt-section-title" id={`rt-group-${g.id}`}>{g.label}</h2>
+            <span class="rt-section-count" data-total={g.count}>{plural(g.count)}</span>
+          </div>
+          <div class="rt-section-rows">
+            {g.tools.map((tool, j) => <ToolCard tool={tool} anchor={j === 0 ? g.id : null} travel />)}
+          </div>
+        </section>
       ))
     }
     <p class="rt-empty" id="rt-empty" hidden>
@@ -215,12 +199,11 @@ const cards = TOOLS.map((tool, i) => {
    * tile.
    */
   import { wirePastePanel } from '../lib/pastePanel.js';
-  import { placements } from '../lib/rowCadence.js';
-
   const board = document.getElementById('board');
   const filters = document.getElementById('filters');
   const chips = [...filters.querySelectorAll('.rt-chip')];
   const cards = [...board.querySelectorAll('.rt-card')];
+  const sections = [...board.querySelectorAll('.rt-section')];
   const status = document.getElementById('rt-status');
   const empty = document.getElementById('rt-empty');
   const emptyQ = document.getElementById('rt-empty-q');
@@ -280,18 +263,15 @@ const cards = TOOLS.map((tool, i) => {
       if (hit) shown.push(card);
     }
 
-    /*
-      The cadence is a function of what is on screen, not of what was
-      prerendered. Widths are ratios — a third or a half of a row — so a
-      filtered view left holding the widths written for the full catalogue would
-      wrap at the wrong places: three Security tools would be a row of two and
-      an orphan rather than one flush row of thirds. Re-running the same
-      function over the survivors is the whole fix, and it is cheap enough to
-      sit in the keystroke path.
-    */
-    placements(shown.length).forEach(({ span }, i) => {
-      shown[i].dataset.span = span;
-    });
+    // A section with no surviving rows goes with them, and its count says
+    // how many of its own are showing.
+    for (const section of sections) {
+      const n = section.querySelectorAll('.rt-card:not([hidden])').length;
+      const label = section.querySelector('.rt-section-count');
+      const total = Number(label.dataset.total);
+      section.hidden = n === 0;
+      label.textContent = n === total ? plural(total) : `${n} of ${total}`;
+    }
 
     const visible = shown.length;
     empty.hidden = !(searching && visible === 0);
