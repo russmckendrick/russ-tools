@@ -30,16 +30,19 @@ any styling.** It follows the [Stitch DESIGN.md spec](https://stitch.withgoogle.
 (YAML token front matter + prose rationale) and is the single source of truth for colour,
 type, layout, shape and components.
 
-Short version — the language is **Stacks** (it replaced Signal in August 2026; the
-token *names* survived, every value changed): **chunky rounded** (8/10/14/18px, always
-paired with a 2px `rule` border — ink on paper, quiet taupe on espresso), a hard **offset shadow**
-that appears only on pressables and the one `panel-emphasis` per page (`:active` sinks
-the element and removes it), **paper light** as the house ground with an **ink dark**
-peer and *no other palettes*, one green accent (`#6ee787`) that only ever appears on
-something you can press (as text/ring it is `primary-text`, a deep green in light mode),
-six candy category hues that label and never fill, **Bricolage Grotesque** for display
-and headings, **Space Grotesk** for body and every small label, **Space Mono** for data
-and only data. Use semantic tokens, never raw Tailwind palette classes (`bg-green-50`) —
+Short version — the language is **Datasheet** (it replaced Stacks in November 2026;
+the token *names* survived, every value changed): **flat and ruled** — structure is a 1px
+`rule` and white space, no offset shadows, radii of 4/6/8/12px. The site header and the
+head of every page sit on one deep **ink band** (`band`, `band-raised`, `band-outline`,
+`on-band`, `on-band-muted`), identical in both themes; anything on it uses band tokens and
+acts in `accent-bright`, never `primary`. Below the band the ground is white in light and
+green-black in dark, *no other palettes*. One green accent that only ever appears on
+something you can press: mint in dark, a deep green (`#0b6b43`) in light, where fill and
+text share the value. The six category hues still label badges **inside** tools; the shell
+(catalogue, tool header) no longer draws them. **IBM Plex Sans** for everything that is
+read, **IBM Plex Mono** for data and small uppercase labels. Tool and group glyphs are
+**custom-drawn** in `src/shell/icons.mjs`. No section numbering and no marketing copy in a
+page head. Use semantic tokens, never raw Tailwind palette classes (`bg-green-50`) —
 ESLint **errors** on those across `src/tools/` and `src/components/ui/`.
 
 **`src/components/ui/` is the design surface — change the component, not the call site.**
@@ -252,15 +255,17 @@ Four pieces — the first three manifest-driven, the fourth static:
 
 `dayjs`, `framer-motion`, `d3-force`, `@svgdotjs/svg.js`, `next-themes`,
 `tailwindcss-animate`, `uuid` (use `crypto.randomUUID()`), `autoprefixer`,
-`@radix-ui/react-scroll-area`. Icons: **Lucide is the only library for UI/UX glyphs** —
-lucide-react for generic interface glyphs, and per-tool icons are stroke-based Lucide
-glyphs vendored in `src/shell/icons.mjs` (Astro `ToolIcon`, React `ui/tool-icon.jsx`) —
-one drawing, both renderers, keyed by kebab-cased Lucide names in the manifests.
+`@radix-ui/react-scroll-area`. Icons: **lucide-react is the only library for generic
+interface glyphs** inside tools. Per-tool and per-group icons are **custom drawings** in
+`src/shell/icons.mjs` (Astro `ToolIcon`, React `ui/tool-icon.jsx`) — one drawing, both
+renderers, at a 1.75px stroke. Their keys are the Lucide names the manifests declared under
+Stacks, kept as identifiers only.
 **`react-icons` is allowed for brand marks only** (vendor/service logos where Lucide has
 none, e.g. the email-provider marks in
 `src/tools/email-dns-analyser/lib/providerIcons.js`) — never for interface glyphs, and
 always via per-set entry points (`react-icons/si`, `react-icons/fa6`) so only imported
-marks reach the bundle. The filled Material set was retired with Stacks.
+marks reach the bundle. The filled Material set was retired with Stacks, and the
+`@fontsource` Bricolage Grotesque / Space Grotesk / Space Mono packages with Datasheet.
 `@tabler/icons-react` is **removed**; do not reintroduce it. Also removed at cutover:
 `postcss`, `@tailwindcss/postcss` (Tailwind arrives via `@tailwindcss/vite`),
 `@astrojs/sitemap`, `jwt-decode` (`jose` already exports `decodeJwt`), and
@@ -269,6 +274,11 @@ marks reach the bundle. The filled Material set was retired with Stacks.
 > The *why* behind the xlsx choice (`write-excel-file` + `read-excel-file`, **not**
 > exceljs or SheetJS) and the removal history lives in the `dependency-policy` skill —
 > read it before swapping or removing a package.
+
+**Diagrams are drawn by `pele`** (Mermaid syntax to themeable SVG, zero dependencies), via
+`src/components/ui/tree-diagram.jsx`. Import from `pele/core` and register only the diagram
+types in use — the bare `pele` entry pulls in every type (about 230 kB gzipped against
+about 63 kB for flowchart alone). Do not add `mermaid` itself.
 
 ## Traps and open issues
 
@@ -287,10 +297,13 @@ marks reach the bundle. The filled Material set was retired with Stacks.
   bright in both themes and takes graphite ink; the status hues flip, so their ink flips
   too. `src/styles/tokens.contrast.test.js` measures every pair in both themes, so a
   hand-tuned hex in `globals.css` will fail `pnpm test`.
-- **Gotcha:** `--color-ring` is legitimately different in light and dark, and now points at
-  `primary-text` rather than `primary`. No single value clears 3:1 against both a light and
-  a dark card, and the chartreuse accent is 1.18:1 on bone. Don't "simplify" it to one value
-  and don't point it back at `primary`.
+- **Gotcha:** `--color-ring` is `primary-text`, which is a deep green in light and mint in
+  dark. On the ink band neither is right in light mode, so `shell.css` rings everything on
+  the header and band in `accent-bright` instead.
+- **Gotcha:** entrance animations use `backwards` fill, so a tab that loads in the
+  background holds its first (invisible) frame until it is shown. In the in-app browser
+  pane this looks like a blank band; `document.getAnimations().forEach(a => a.finish())`
+  shows the settled page.
 
 All six bugs found in the Phase 0 audit are **fixed** (Microsoft Portals `undefined/…` URLs,
 azure-kql missing `persist`, markdown-table undo/redo + tab delimiter, sharelink

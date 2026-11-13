@@ -184,24 +184,6 @@ const SslCheckerTool = () => {
         </Card>
 
         {/* Loading State */}
-        {loading && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center p-8">
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className="flex items-center gap-3">
-                    <RotateCcw className="h-5 w-5 animate-spin-ccw" />
-                    <span>Analyzing SSL certificate for {domain}...</span>
-                  </div>
-                  <p className="text-body-sm text-muted-foreground max-w-md">
-                    This may take up to 2 minutes as we perform comprehensive SSL Labs analysis.
-                    Please wait while we analyze the certificate configuration.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Error Display */}
         {error && !loading && (
@@ -232,8 +214,8 @@ const SslCheckerTool = () => {
           the selected tab, so one endpoint and an empty `details` is enough —
           the five other tabs cost nothing until something is checked for real.
         */}
-        {!certificateData && !loading && !error && (
-          <Ghost>
+        {(loading || (!certificateData && !error)) && (
+          <Ghost loading={loading} label={`Analysing SSL certificate for ${domain}…`} hint="This can take up to 2 minutes while SSL Labs completes its analysis.">
             <SSLResultsDisplay data={GHOST_SSL} />
           </Ghost>
         )}

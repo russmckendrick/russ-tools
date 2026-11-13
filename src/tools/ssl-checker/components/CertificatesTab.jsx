@@ -1,7 +1,9 @@
 import React from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ValidityBar } from '@/components/ui/validity-bar';
 import { formatDate } from '../lib/sslUtils';
+import CertChain from './CertChain.jsx';
 
 const CertificatesTab = ({ data }) => {
   const endpoint = data.endpoints?.[0];
@@ -9,6 +11,8 @@ const CertificatesTab = ({ data }) => {
 
   return (
     <div className="space-y-4">
+      <CertChain certs={certs} />
+
       {/* Certificate Chains */}
       {endpoint?.details?.certChains && (
         <Card>
@@ -65,7 +69,10 @@ const CertificatesTab = ({ data }) => {
           <CardContent>
             <div className="space-y-4">
               {certs.map((cert, index) => (
-                <div key={index} className="border rounded-lg p-4">
+                <div key={index} className="border rounded-lg p-4 space-y-4">
+                  {cert.notBefore && cert.notAfter && (
+                    <ValidityBar start={cert.notBefore} end={cert.notAfter} />
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-body-sm text-muted-foreground">Subject</p>

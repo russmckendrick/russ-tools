@@ -18,10 +18,10 @@
  * site does, so a card is drawn with the real families by the same engine
  * that draws the page.
  *
- * The card is drawn in Stacks' paper light — DESIGN.md names paper the house
- * ground and says link cards should read as paper — with every value read out
- * of the generated token layer rather than retyped, so `pnpm generate:tokens`
- * followed by this stays consistent with DESIGN.md.
+ * The card is drawn on Datasheet's ink band — the same ground as the site
+ * header — with every value read out of the generated token layer rather than
+ * retyped, so `pnpm generate:tokens` followed by this stays consistent with
+ * DESIGN.md.
  */
 
 import { readFileSync, mkdirSync } from 'node:fs';
@@ -45,141 +45,115 @@ const token = (name) => {
 };
 
 const C = {
-  surface: token('color-surface-light'),
-  raised: token('color-surface-raised-light'),
-  outline: token('color-outline-light'),
-  rule: token('color-rule-light'),
-  text: token('color-on-surface-light'),
-  muted: token('color-on-surface-muted-light'),
-  faint: token('color-on-surface-faint-light'),
-  onFill: token('color-on-category-fill'),
+  band: token('color-band'),
+  raised: token('color-band-raised'),
+  outline: token('color-band-outline'),
+  text: token('color-on-band'),
+  muted: token('color-on-band-muted'),
+  accent: token('color-accent-bright'),
+  onAccent: token('color-on-accent-bright'),
 };
 
-/** The FILL hue, for the badge block and icon tile — always with graphite ink. */
-const fillHue = (category) => token(`color-category-fill-${category}`);
-
 /**
- * All three families, inlined. Stacks draws headings in Bricolage, labels in
- * Space Grotesk and the footer strip in Space Mono, so a card drawn with one
- * face is drawn wrong.
+ * Both families, inlined. Datasheet reads in IBM Plex Sans and sets data and
+ * small labels in IBM Plex Mono, so a card drawn with one face is drawn wrong.
  */
-const displayData = readFileSync(
-  'node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2'
-).toString('base64');
 const sansData = readFileSync(
-  'node_modules/@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2'
+  'node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2'
 ).toString('base64');
 const monoData = readFileSync(
-  'node_modules/@fontsource/space-mono/files/space-mono-latin-400-normal.woff2'
+  'node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2'
 ).toString('base64');
 
 // The toolbox mark, lifted from SiteMark.astro: the inner markup of its one
-// <svg>. The drawing is two-tone — accent fill via a var() with a literal
-// fallback (which is what resolves here, outside the token layer) and a
-// currentColor stroke the card sets to ink.
+// <svg>. It draws in currentColor, which the card sets to the bright accent.
 const siteMark = readFileSync('src/shell/SiteMark.astro', 'utf8')
   .match(/<svg[^>]*>([\s\S]*?)<\/svg>/)[1];
 
-/** @param {{title: string, sub: string, icon: string|null, category: string|null}} card */
-const cardHtml = ({ title, sub, icon, category }) => {
-  const fill = category ? fillHue(category) : token('color-primary');
+/** @param {{title: string, sub: string, icon: string|null, category: string|null, path: string}} card */
+const cardHtml = ({ title, sub, icon, category, path }) => {
   return `<!doctype html>
 <meta charset="utf-8">
 <style>
   @font-face {
-    font-family: 'Bricolage Grotesque Variable';
-    src: url(data:font/woff2;base64,${displayData}) format('woff2');
-    font-weight: 200 800;
-    font-display: block;
-  }
-  @font-face {
-    font-family: 'Space Grotesk Variable';
+    font-family: 'IBM Plex Sans Variable';
     src: url(data:font/woff2;base64,${sansData}) format('woff2');
-    font-weight: 300 700;
+    font-weight: 100 700;
     font-display: block;
   }
   @font-face {
-    font-family: 'Space Mono';
+    font-family: 'IBM Plex Mono';
     src: url(data:font/woff2;base64,${monoData}) format('woff2');
     font-weight: 400;
     font-display: block;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  /*
+    Datasheet: the card is the site's ink band — the deep green ground with
+    its faint grid, the tool's glyph on the one bright tile, and type in
+    white. No frame and no shadow.
+  */
   body {
     width: ${WIDTH}px; height: ${HEIGHT}px;
-    font-family: 'Space Grotesk Variable', sans-serif;
-    background: ${C.surface};
+    font-family: 'IBM Plex Sans Variable', sans-serif;
+    background-color: ${C.band};
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.04) 2px, transparent 2px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 2px, transparent 2px);
+    background-size: 60px 60px;
     color: ${C.text};
     position: relative; overflow: hidden;
     -webkit-font-smoothing: antialiased;
-  }
-  /*
-    Stacks: the whole card is one chunky panel — the 2px-rule border scaled
-    up for the 1200px canvas, the panel radius, and the press-lg offset
-    shadow in the rule colour. The hue appears only as the solid badge block
-    and the icon tile, exactly as on a tool tile.
-  */
-  .frame {
-    position: absolute; inset: 30px 42px 42px 30px;
-    border: 4px solid ${C.rule};
-    border-radius: 30px;
-    background: ${C.raised};
-    box-shadow: 12px 12px 0 ${C.rule};
     display: flex; flex-direction: column;
-    padding: 48px 64px 40px;
+    padding: 56px 72px 48px;
   }
   header {
     display: flex; align-items: center; gap: 14px;
-    color: ${C.text}; font-size: 27px; font-weight: 600; letter-spacing: -0.01em;
-    font-family: 'Bricolage Grotesque Variable', sans-serif;
+    font-size: 28px; font-weight: 600; letter-spacing: -0.01em;
   }
-  header svg { width: 32px; height: 32px; color: ${C.text}; }
+  header svg {
+    width: 34px; height: 34px; color: ${C.accent};
+    stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
+  }
   main { margin-top: auto; }
-  .mark { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; }
+  .mark { display: flex; align-items: center; gap: 22px; margin-bottom: 34px; }
   .tile {
     display: flex; align-items: center; justify-content: center;
-    width: 78px; height: 78px;
-    background: ${fill}; color: ${C.onFill};
-    border: 4px solid ${C.rule}; border-radius: 18px;
+    width: 92px; height: 92px;
+    background: ${C.accent}; color: ${C.onAccent};
+    border-radius: 20px;
   }
   .badge {
-    background: ${fill}; color: ${C.onFill};
-    border: 3px solid ${C.rule}; border-radius: 12px;
-    font-size: 19px; font-weight: 600; letter-spacing: 0.07em;
-    text-transform: uppercase; padding: 7px 15px; white-space: nowrap;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 21px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: ${C.accent}; white-space: nowrap;
   }
   h1 {
-    font-family: 'Bricolage Grotesque Variable', sans-serif;
-    font-size: ${title.length > 26 ? 62 : 74}px; font-weight: 800;
-    letter-spacing: -0.02em; line-height: 1.04;
+    font-size: ${title.length > 26 ? 64 : 78}px; font-weight: 500;
+    letter-spacing: -0.03em; line-height: 1.04;
   }
-  p { margin-top: 20px; font-size: 29px; line-height: 1.4; color: ${C.muted}; max-width: 900px; font-weight: 400; }
+  p { margin-top: 22px; font-size: 30px; line-height: 1.4; color: ${C.muted}; max-width: 940px; font-weight: 400; }
   footer {
-    margin-top: 38px; padding-top: 24px;
-    border-top: 1px solid ${C.outline};
-    display: flex; align-items: center; gap: 16px;
-    font-family: 'Space Mono', monospace;
-    font-size: 18px; letter-spacing: 0.06em; text-transform: uppercase;
-    color: ${C.faint};
+    margin-top: 40px; padding-top: 24px;
+    border-top: 2px solid ${C.outline};
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px; letter-spacing: 0.04em;
+    color: ${C.muted};
   }
 </style>
-<div class="frame">
-  <header>
-    <svg viewBox="0 0 24 24" fill="none">${siteMark}</svg>
-    <span>${SITE_NAME}</span>
-  </header>
-  <main>
-    <div class="mark">
-      ${icon ? `<span class="tile">${iconSvg(icon, 44)}</span>` : ''}
-      ${category ? `<span class="badge">${categoryLabel(category)}</span>` : ''}
-    </div>
-    <h1>${title}</h1>
-    <p>${sub}</p>
-  </main>
-  <footer>
-    <span>Runs entirely in your browser</span>
-  </footer>
-</div>`;
+<header>
+  <svg viewBox="0 0 24 24" fill="none">${siteMark}</svg>
+  <span>${SITE_NAME}</span>
+</header>
+<main>
+  <div class="mark">
+    ${icon ? `<span class="tile">${iconSvg(icon, 52)}</span>` : ''}
+    ${category ? `<span class="badge">${categoryLabel(category)}</span>` : ''}
+  </div>
+  <h1>${title}</h1>
+  <p>${sub}</p>
+</main>
+<footer>russ.tools${path}</footer>`;
 };
 
 const tools = await loadManifests();
@@ -190,6 +164,7 @@ const cards = [
     sub: SITE_DESCRIPTION.split('. ')[0] + '.',
     icon: null,
     category: null,
+    path: '',
   },
   ...tools.map((tool) => ({
     name: tool.id,
@@ -197,6 +172,7 @@ const cards = [
     sub: tool.shortDescription,
     icon: tool.icon,
     category: tool.category,
+    path: tool.path,
   })),
 ];
 

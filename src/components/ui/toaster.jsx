@@ -24,7 +24,7 @@ export function Toaster(props) {
       toastOptions={{
         classNames: {
           toast:
-            'rounded-lg border-2 border-rule bg-surface-raised text-on-surface shadow-press',
+            'rounded-lg border border-rule bg-surface-raised text-on-surface shadow-lg',
           title: 'text-body-sm font-medium',
           description: 'text-body-sm text-on-surface-muted',
           actionButton: 'bg-primary text-on-primary',

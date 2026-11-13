@@ -30,8 +30,8 @@ const Card = React.forwardRef(({ className, emphasis = false, ...props }, ref) =
   <div
     ref={ref}
     className={cn(
-      "overflow-hidden rounded-lg border-2 border-rule bg-surface-raised text-on-surface",
-      emphasis && "shadow-press-lg",
+      "overflow-hidden rounded-lg border border-rule bg-surface-raised text-on-surface",
+      emphasis && "border-on-surface",
       "transition-[border-color,background-color,box-shadow] duration-140 ease-out",
       className
     )}

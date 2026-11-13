@@ -1,3 +1,4 @@
+import QuerySequence from './QuerySequence.jsx';
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -123,6 +124,7 @@ export default function DNSResultsDisplay({ results, domain, recordType }) {
       </TabsList>
 
       <TabsContent value="records" className="space-y-4">
+        <QuerySequence queries={queries} domain={domain} />
         <Card emphasis>
           <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
             <div>

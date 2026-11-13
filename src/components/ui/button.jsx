@@ -16,17 +16,16 @@ import { cn } from "@/lib/utils"
  *    primary button on every security tool. The hue still reaches the icon
  *    tile, badges, borders and text, where it codes the category without
  *    becoming the loudest thing on the page.
- * 2. **The label is `on-primary` (near-black in dark), never white.** White
- *    on any accent in this palette measures near 2:1. Phase 1 caught the
- *    approved mockup doing exactly this.
+ * 2. **The label is `on-primary`, which flips with the theme.** The accent
+ *    is a deep green in light (white ink) and mint in dark (ink-green ink).
+ *    `tokens.contrast.test.js` measures both.
  *
- * Under Stacks a solid button is a pressable chunk: 2px `rule` border,
- * `rounded-md`, and the `press-sm` offset shadow that vanishes as `:active`
- * sinks the button by the offset — the press IS the animation. The accent's
- * hover state is the explicit `primary-hover` token rather than a
- * `brightness()` filter, which would drift the hue off the value measured
- * against its ink. Ghost and link stay chromeless; `outline` is the quiet
- * bordered middle (no shadow).
+ * Under Datasheet a solid button is flat: no border of its own, `rounded-md`,
+ * and a 1px sink on `:active`. The accent's hover state is the explicit
+ * `primary-hover` token rather than a `brightness()` filter, which would
+ * drift the hue off the value measured against its ink. `outline` and
+ * `secondary` take the 3:1 `outline-strong` boundary; ghost and link stay
+ * chromeless.
  */
 const buttonVariants = cva(
   cn(
@@ -40,16 +39,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "rounded-md border-2 border-rule bg-primary text-on-primary shadow-press-sm hover:bg-primary-hover active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
+          "rounded-md border border-transparent bg-primary text-on-primary hover:bg-primary-hover active:translate-y-px",
         // `on-status`, not `on-primary`. The ink on a status fill flips with
         // the theme — graphite on the bright dark hue, white on the deep
         // light one — while the accent's ink is graphite in both.
         destructive:
-          "rounded-md border-2 border-rule bg-error text-on-status shadow-press-sm hover:brightness-110 active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
+          "rounded-md border border-transparent bg-error text-on-status hover:brightness-110 active:translate-y-px",
         outline:
-          "rounded-md border-2 border-rule bg-transparent text-on-surface hover:bg-surface-inset",
+          "rounded-md border border-outline-strong bg-transparent text-on-surface hover:bg-surface-inset active:translate-y-px",
         secondary:
-          "rounded-md border-2 border-rule bg-surface-raised text-on-surface shadow-press-sm hover:bg-surface-inset active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
+          "rounded-md border border-outline-strong bg-surface-raised text-on-surface hover:bg-surface-inset active:translate-y-px",
         ghost: "rounded-md text-on-surface-muted hover:bg-surface-inset hover:text-on-surface",
         // `primary-text`, never `primary`: the raw accent as text is ~1.6:1
         // on the paper ground.

@@ -69,20 +69,22 @@
   --color-danger-subtle: var(--color-error-subtle);
 
   /* --- typography ---------------------------------------------------------
-     Three families, strictly separated jobs: Bricolage Grotesque for display
-     and headings, Space Grotesk for body and every small label, Space Mono
-     for data and only data. All self-hosted — a font-CDN request on first
-     paint would contradict the site's privacy claim. */
-  --font-sans: "Space Grotesk Variable", "Space Grotesk", system-ui,
+     One superfamily, two jobs: IBM Plex Sans for everything that is read,
+     IBM Plex Mono for data and the small uppercase labels. `--font-display`
+     is kept as a name because headings and the shell reach for it; it is the
+     same family as the body at a lighter weight than Stacks ever used. All
+     self-hosted — a font-CDN request on first paint would contradict the
+     site's privacy claim. */
+  --font-sans: "IBM Plex Sans Variable", "IBM Plex Sans", system-ui,
     -apple-system, sans-serif;
-  --font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque",
-    "Space Grotesk Variable", system-ui, sans-serif;
-  --font-mono: "Space Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo,
+  --font-display: "IBM Plex Sans Variable", "IBM Plex Sans", system-ui,
+    -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo,
     Consolas, monospace;
 
   /* --- radius -------------------------------------------------------------
-     DESIGN.md's scale arrives generated as --radius-sm..xl: 8/10/14/18px
-     under Stacks — badge, control, panel, sheet. This is the unsuffixed
+     DESIGN.md's scale arrives generated as --radius-sm..xl: 4/6/8/12px
+     under Datasheet — badge, control, panel, sheet. This is the unsuffixed
      default shadcn components reach for; it stays wired up so the scale
      remains the single lever. */
   --radius: var(--radius-lg);
@@ -93,17 +95,15 @@
      and drops them silently. They are transcribed here by hand; keep them in
      step with DESIGN.md's front matter.
 
-     The offset shadow is hard-edged, in the `shadow-ink` colour — the ink in
-     light, a near-black deeper than the cocoa page in dark; never the cream
-     rule, because a pale shadow on a dark ground reads as a glow — and it
-     means exactly one thing: this is pressable. Pressing sinks the element
-     (translate by the offset, shadow to none). `press-lg` additionally marks
-     the one emphasis panel per page. Panels at rest carry no shadow. */
+     Datasheet is flat. Structure is a 1px rule, and the only "shadow" left
+     is a 1px lip under a pressable, drawn in `shadow-ink` — a hairline tint
+     in light, a step darker than the page in dark. The three step names are
+     kept because the components are classed against them. */
   --border-hairline: 1px;
-  --border-structural: 2px;
-  --shadow-press-sm: 3px 3px 0 var(--color-shadow-ink);
-  --shadow-press: 4px 4px 0 var(--color-shadow-ink);
-  --shadow-press-lg: 5px 5px 0 var(--color-shadow-ink);
+  --border-structural: 1px;
+  --shadow-press-sm: 0px 1px 0 var(--color-shadow-ink);
+  --shadow-press: 0px 1px 0 var(--color-shadow-ink);
+  --shadow-press-lg: 0px 2px 0 var(--color-shadow-ink);
   --duration-fast: 90ms;
   --duration-base: 140ms;
   /* Reflow, and the index's one entrance. Everything a reader touches is
@@ -244,9 +244,9 @@
     transition: background-color 240ms ease, color 180ms ease;
   }
 
-  /* Headings are the display voice — Bricolage, heavy and tight. The type
-     steps carry size/weight/tracking but not family (the generator strips
-     per-step family tokens), so the family is assigned to the elements. */
+  /* Headings are Plex Sans at a medium weight, set tight. The type steps
+     carry size/weight/tracking but not family (the generator strips per-step
+     family tokens), so the family is assigned to the elements. */
   h1,
   h2,
   h3,
@@ -294,31 +294,49 @@
   }
 
   ::selection {
-    background: var(--color-info-subtle);
-    color: var(--color-info);
+    background: var(--color-accent-bright);
+    color: var(--color-on-accent-bright);
   }
 }
 
 /*
-  The entrance animations are gone.
+  Surfaces arrive.
 
-  `rt-surface-enter` (panels and cards) and `rt-content-enter` (page regions)
-  faded and lifted every surface into place, with a nth-child stagger across
-  the first rows. Signal's Motion section retires all of it: the index is now
-  one shared-edge ruled grid, and a ruled grid arriving cell by cell reads as
-  a rendering fault rather than as polish.
+  `.rt-enter-surface` and `.rt-enter-content` sit on about fifty panels and
+  page regions across `src/components/ui/` and the tools. Under Stacks they
+  were no-ops; Datasheet gives them one short rise, so a result settles into
+  place instead of blinking in. Opacity and 8px, once, on mount. Rows stay
+  still: a table arriving line by line reads as a rendering fault.
 
-  `.rt-enter-surface`, `.rt-enter-content` and `.rt-enter-row` are kept as
-  no-op class names so the ~50 call sites in `src/components/ui/` and the
-  tools do not all have to change in one commit, and so a stray one cannot
-  reintroduce an animation that no longer exists. They mark "this is a
-  surface" and nothing more; new code should not add them.
+  The reduced-motion block at the foot of this file collapses the duration,
+  and `backwards` fill means nothing is ever left invisible.
 */
 @layer components {
+  @keyframes rt-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
   .rt-enter-surface,
-  .rt-enter-content,
+  .rt-enter-content {
+    animation: rt-rise var(--duration-settle) cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  }
   .rt-enter-row {
     animation: none;
+  }
+
+  /* A bar or segment in a chart growing out from its left edge, once. Used
+     by the visual components (address map, range map, validity bar). */
+  @keyframes rt-grow {
+    from {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+  }
+  .rt-grow {
+    transform-origin: left center;
+    animation: rt-grow 500ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
   }
 }
 

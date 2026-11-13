@@ -2,7 +2,7 @@ import React from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Ghost } from "@/components/ui/ghost";
-import { AlertCircle, RotateCcw } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { queryDns } from '@/core';
 import { useLookupTool } from '@/lib/useLookupTool';
@@ -151,14 +151,6 @@ const DnsLookupTool = () => {
         />
 
         {/* Loading State */}
-        {loading && (
-          <div className="flex items-center justify-center p-8 border rounded-md">
-            <div className="flex items-center gap-3">
-              <RotateCcw className="h-5 w-5 animate-spin-ccw" />
-              <span>Performing DNS lookup for {domain}...</span>
-            </div>
-          </div>
-        )}
 
         {/* Error Display */}
         {error && (
@@ -176,8 +168,8 @@ const DnsLookupTool = () => {
           with a sample response and redacted by `.rt-ghosted`, so it cannot
           drift from the panel that replaces it.
         */}
-        {!lookupResults && !loading && !error && (
-          <Ghost>
+        {(loading || (!lookupResults && !error)) && (
+          <Ghost loading={loading} label={`Performing DNS lookup for ${domain}…`}>
             <DNSResultsDisplay
               results={{
                 version: 2,

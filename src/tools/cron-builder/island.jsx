@@ -21,6 +21,7 @@ import {
 import { toast } from 'sonner';
 import { copyText } from '@/core';
 import { validateCronExpression } from './lib/cron.js';
+import CronFlow from './components/CronFlow.jsx';
 
 const defaultFields = {
   minute: '*',
@@ -394,6 +395,7 @@ const CronBuilderTool = () => {
                         </TooltipContent>
                       </Tooltip>
                     </div>
+                    <CronFlow fields={fields} />
                     {validation.valid ? (
                       <div className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-success mt-0.5" />

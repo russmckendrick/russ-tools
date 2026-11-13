@@ -94,16 +94,16 @@ const schema = [
   image={`/og/${tool.id}.png`}
   schema={schema}
 >
-  <!-- The hue is set once, here. Everything below inherits it. Both roles:
-       `--cat` is the text hue, `--cat-fill` the solid badge block. -->
-  <div style={`--cat: var(--color-category-${tool.category}); --cat-fill: var(--color-category-fill-${tool.category})`}>
-    <div class="rt-tool-head">
-      <nav class="rt-crumb" aria-label="Breadcrumb">
+  <!-- The head sits on the ink band and is drawn in band tokens. The
+       category hue is set once on the body wrapper below it: `--cat` is the
+       text hue, `--cat-fill` the solid badge block. -->
+  <div slot="band" class="rt-tool-head">
+      <nav class="rt-crumb rt-rise" aria-label="Breadcrumb">
         <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a>
       </nav>
 
-      <div class="rt-tool-id">
-        <ToolIcon icon={tool.icon} size={34} />
+      <div class="rt-tool-id rt-rise" style="--rt-i: 1">
+        <ToolIcon icon={tool.icon} size={30} />
         <h1>{tool.title}</h1>
       </div>
 
@@ -112,9 +112,10 @@ const schema = [
         one is written for a SERP snippet and reads like a brochure on the
         page; it stays as the meta description above and nowhere else.
       -->
-      <p>{tool.shortDescription}</p>
-    </div>
+      <p class="rt-rise" style="--rt-i: 2">{tool.shortDescription}</p>
+  </div>
 
+  <div style={`--cat: var(--color-category-${tool.category}); --cat-fill: var(--color-category-fill-${tool.category})`}>
     <div class="rt-tool-body">
       <slot />
     </div>

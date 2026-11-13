@@ -273,6 +273,7 @@ const SubnetCalculatorTool = () => {
           <SubnetDetails
             cidr={GHOST_DETAILS.cidr}
             family={4}
+            details={GHOST_DETAILS}
             detailRows={GHOST_ROWS}
             onCopyDetails={() => {}}
             onCopyCidr={() => {}}
@@ -296,6 +297,7 @@ const SubnetCalculatorTool = () => {
           <SubnetDetails
             cidr={details.cidr}
             family={result.family}
+            details={details}
             detailRows={detailRows}
             onCopyDetails={() => handleCopy(detailsAsText(), 'Details')}
             onCopyCidr={() => handleCopy(details.cidr, 'CIDR')}

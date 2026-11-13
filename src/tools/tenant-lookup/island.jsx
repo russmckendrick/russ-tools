@@ -229,18 +229,6 @@ const TenantLookupTool = () => {
         </Card>
 
         {/* Loading State */}
-        {loading && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center p-8">
-                <div className="flex items-center gap-3">
-                  <RotateCcw className="h-5 w-5 animate-spin-ccw" />
-                  <span>Looking up tenant information for {domain}...</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Error Display */}
         {error && (
@@ -260,8 +248,8 @@ const TenantLookupTool = () => {
           verification and API tabs are each conditional on what came back, so
           drawing five would promise tabs a real answer often does not have.
         */}
-        {!result && !loading && !error && (
-          <Ghost>
+        {(loading || (!result && !error)) && (
+          <Ghost loading={loading} label={`Looking up tenant information for ${domain}…`}>
             <Tabs defaultValue="tenant" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="tenant">Tenant Info</TabsTrigger>
