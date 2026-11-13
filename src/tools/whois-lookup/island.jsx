@@ -175,18 +175,6 @@ const WhoisLookupTool = () => {
         </Card>
 
         {/* Loading State */}
-        {loading && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center p-8">
-                <div className="flex items-center gap-3">
-                  <RotateCcw className="h-5 w-5 animate-spin-ccw" />
-                  <span>Performing WHOIS lookup for {query}...</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Error Display */}
         {error && (
@@ -210,8 +198,8 @@ const WhoisLookupTool = () => {
           page longer than the gap it replaces. The lever is the sample: two
           nameservers rather than four, three dates rather than five.
         */}
-        {!lookupResults && !loading && !error && (
-          <Ghost>
+        {(loading || (!lookupResults && !error)) && (
+          <Ghost loading={loading} label={`Performing WHOIS lookup for ${query}…`}>
             <Tabs defaultValue="info" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="info">Information</TabsTrigger>

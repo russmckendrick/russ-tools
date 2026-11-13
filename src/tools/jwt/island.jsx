@@ -30,6 +30,9 @@ import {
 } from 'lucide-react';
 import { jwtVerify, importJWK, importSPKI, decodeJwt } from 'jose';
 import { copyText, readText } from '@/core';
+import { ValidityBar } from '@/components/ui/validity-bar';
+import TokenAnatomy from './components/TokenAnatomy';
+import ValidationFlow from './components/ValidationFlow.jsx';
 
 const JWTTool = () => {
   const [jwtToken, setJwtToken] = useState('');
@@ -392,6 +395,8 @@ const JWTTool = () => {
               <CardTitle>Decoded JWT Token</CardTitle>
             </CardHeader>
             <CardContent>
+              <TokenAnatomy token={jwtToken} />
+              <ValidationFlow analysis={tokenAnalysis} checking={validateSignature} validation={validationResult} />
               <Tabs defaultValue="decoded" className="w-full">
                 <TabsList className="flex w-full sm:grid sm:grid-cols-3">
                   <TabsTrigger value="decoded" className="flex items-center gap-2">
@@ -499,6 +504,16 @@ const JWTTool = () => {
                           </Alert>
                         );
                       })()}
+
+                      {tokenAnalysis.expiresAt && (tokenAnalysis.issuedAt || tokenAnalysis.notBefore) && (
+                        <ValidityBar
+                          start={tokenAnalysis.notBefore ?? tokenAnalysis.issuedAt}
+                          end={tokenAnalysis.expiresAt}
+                          startLabel={tokenAnalysis.notBefore ? 'Not before' : 'Issued'}
+                          endLabel="Expires"
+                          format={(d) => d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                        />
+                      )}
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Token Information */}

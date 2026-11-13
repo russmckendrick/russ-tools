@@ -4,7 +4,7 @@ import { compressIPv6, maskFromPrefix6, parseIPv6, parseIPv6Cidr } from '../../s
 const MAX4 = (1n << 32n) - 1n;
 const MAX6 = (1n << 128n) - 1n;
 
-function formatAddress(value, family) {
+export function formatAddress(value, family) {
   return family === 4 ? formatIPv4(Number(value)) : compressIPv6(value);
 }
 

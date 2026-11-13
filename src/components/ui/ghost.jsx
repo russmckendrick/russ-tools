@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Loader2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -49,10 +50,38 @@ import { cn } from '@/lib/utils';
  * that throbs indefinitely is an irritation rather than a signal. There is
  * therefore nothing here for `prefers-reduced-motion` to switch off.
  */
-export function Ghost({ className, children, ...props }) {
+/**
+ * `loading` keeps the ghost on screen while the lookup it stands in for is
+ * running, instead of swapping it for a spinner and swapping back. The shape
+ * of the answer stays put, a sweep runs across it, and `label` says what is
+ * happening in a live region above — the redacted panel itself is inert and
+ * hidden from assistive tech, so the words have to live outside it.
+ *
+ * @param {object} props
+ * @param {boolean} [props.loading]
+ * @param {React.ReactNode} [props.label] what is being fetched, shown while loading
+ * @param {React.ReactNode} [props.hint] a second, quieter line (a long wait, say)
+ */
+export function Ghost({ className, loading = false, label, hint, children, ...props }) {
   return (
-    <div className={cn('rt-ghosted', className)} aria-hidden="true" inert={true} {...props}>
-      {children}
-    </div>
+    <>
+      {loading && label && (
+        <div className="rt-ghost-status" role="status" aria-live="polite">
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
+          <div className="min-w-0">
+            <p className="text-body-md text-on-surface">{label}</p>
+            {hint && <p className="text-body-sm text-on-surface-faint">{hint}</p>}
+          </div>
+        </div>
+      )}
+      <div
+        className={cn('rt-ghosted', loading && 'rt-ghosted-loading', className)}
+        aria-hidden="true"
+        inert={true}
+        {...props}
+      >
+        {children}
+      </div>
+    </>
   );
 }

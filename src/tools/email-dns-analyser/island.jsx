@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, CheckCircle2, ExternalLink, Inbox, Info, MailCheck, Route, Search, ShieldCheck, TriangleAlert } from 'lucide-react';
+import MailFlow from './components/MailFlow.jsx';
 import { analyseEmailDns } from './lib/analyse.js';
 import { PROVIDER_ICONS } from './lib/providerIcons.js';
 
@@ -140,6 +141,7 @@ export default function EmailDnsAnalyser() {
                 </div>
               </CardHeader>
             </Card>
+            <MailFlow result={result} />
             {result.sections.map((section) => (
               <Card key={section.id}>
                 <CardHeader><h3 className="text-title-sm">{section.title}</h3></CardHeader>

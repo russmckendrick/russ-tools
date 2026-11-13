@@ -46,12 +46,26 @@ describe('subnet-calculator island', () => {
 
     await waitFor(() => expect(screen.getAllByText('10.0.0.0/24').length).toBeGreaterThan(0));
 
+    // Each block is drawn twice — in the tree and in the table — so the
+    // assertions look in the table, which is the part that states the detail.
     fireEvent.click(screen.getByRole('button', { name: 'Split 10.0.0.0/24' }));
-    expect(screen.getByText('10.0.0.0/25')).toBeDefined();
-    expect(screen.getByText('10.0.0.128/25')).toBeDefined();
+    const table = within(screen.getAllByRole('table').at(-1));
+    expect(table.getByText('10.0.0.0/25')).toBeDefined();
+    expect(table.getByText('10.0.0.128/25')).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: /join 10\.0\.0\.0\/25/i }));
     expect(screen.queryByText('10.0.0.0/25')).toBe(null);
+  });
+
+  it('builds the divide by pressing the tree', async () => {
+    renderAt('/subnet-calculator/10.0.0.0/24');
+    await waitFor(() => expect(screen.getAllByText('10.0.0.0/24').length).toBeGreaterThan(0));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Divide 10.0.0.0/24 in two' }));
+    expect(within(screen.getAllByRole('table').at(-1)).getByText('10.0.0.128/25')).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Merge the halves of 10.0.0.0/24' }));
+    expect(screen.queryByText('10.0.0.128/25')).toBe(null);
   });
 
   it('restores a shared divide tree from the ?config payload', async () => {
@@ -66,10 +80,11 @@ describe('subnet-calculator island', () => {
       renderAt('/subnet-calculator');
 
       await waitFor(() => {
-        expect(screen.getByText('10.0.0.0/25')).toBeDefined();
+        expect(within(screen.getAllByRole('table').at(-1)).getByText('10.0.0.0/25')).toBeDefined();
       });
-      expect(screen.getByText('10.0.0.128/26')).toBeDefined();
-      expect(screen.getByText('10.0.0.192/26')).toBeDefined();
+      const table = within(screen.getAllByRole('table').at(-1));
+      expect(table.getByText('10.0.0.128/26')).toBeDefined();
+      expect(table.getByText('10.0.0.192/26')).toBeDefined();
     } finally {
       window.history.replaceState(null, '', '/');
     }

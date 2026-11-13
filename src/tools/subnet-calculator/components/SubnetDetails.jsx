@@ -4,7 +4,11 @@ import { Copy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Stat, StatStrip } from '@/components/ui/stat-strip';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+
+import { formatCount, formatTotal } from '../lib/format';
+import PrefixBits from './PrefixBits';
 
 /**
  * The subnet's full detail table — network address through reverse DNS.
@@ -25,7 +29,7 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
  * @param {() => void} props.onCopyDetails
  * @param {() => void} props.onCopyCidr
  */
-export default function SubnetDetails({ cidr, family, detailRows, onCopyDetails, onCopyCidr }) {
+export default function SubnetDetails({ cidr, family, details, detailRows, onCopyDetails, onCopyCidr }) {
   return (
     <Card>
       <CardHeader>
@@ -47,6 +51,25 @@ export default function SubnetDetails({ cidr, family, detailRows, onCopyDetails,
         </div>
       </CardHeader>
       <CardContent>
+        {details && (
+          <div className="mb-4 flex flex-col gap-4">
+            {family === 4 ? (
+              <StatStrip>
+                <Stat label="Network" value={details.cidr} accent />
+                <Stat label="Usable hosts" value={formatCount(details.usableHosts)} />
+                <Stat label="Netmask" value={details.netmask} />
+                <Stat label="Broadcast" value={details.broadcastAddress ?? '—'} />
+              </StatStrip>
+            ) : (
+              <StatStrip compact>
+                <Stat label="Network" value={details.cidr} accent />
+                <Stat label="Addresses" value={formatTotal(details.totalAddresses, details.prefix, 128)} />
+                <Stat label="Prefix length" value={`/${details.prefix}`} />
+              </StatStrip>
+            )}
+            <PrefixBits family={family} prefix={details.prefix} binaryAddress={details.binaryNetmask ? details.binaryAddress : undefined} />
+          </div>
+        )}
         <Table>
           <TableBody>
             {detailRows.map(([label, value]) => (

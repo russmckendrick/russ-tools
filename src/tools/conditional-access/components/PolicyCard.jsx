@@ -1,3 +1,4 @@
+import PolicyFlow from './PolicyFlow.jsx';
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +52,7 @@ export function PolicyCard({ policy }) {
       </CardHeader>
 
       <CardContent>
+        <PolicyFlow policy={policy} />
         <dl className="space-y-3">
           <Row label="Who">
             <Scope include={who.include} exclude={who.exclude} emptyInclude="No users targeted" />

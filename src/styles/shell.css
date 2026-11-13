@@ -1159,6 +1159,237 @@ a.rt-kbd[data-first] {
   outline-offset: 3px;
 }
 
+/* --- Diagrams ---------------------------------------------------------------
+   A diagram is a piece of the ink band inside a tool, drawn by Pele
+   (`ui/tree-diagram.jsx`). Pele themes its SVG through `--pele-*` variables,
+   so the whole look is set here by pointing those at the band tokens: raised
+   nodes, a quiet outline, and connectors in the bright accent.
+
+   State is a class Pele copies from the source (`:::ok`) onto the node group,
+   and it is always backed by the node's own second line of text. */
+
+.rt-diagram {
+  --pele-bg: var(--color-band);
+  --pele-fg: var(--color-on-band);
+  --pele-muted: var(--color-on-band-muted);
+  --pele-line: var(--color-accent-bright);
+  --pele-surface: var(--color-band-raised);
+  --pele-surface-alt: color-mix(in srgb, var(--color-on-band) 6%, var(--color-band));
+  --pele-border: var(--color-band-outline);
+  --pele-accent: var(--color-accent-bright);
+  --pele-radius: 6px;
+  --pele-font: var(--font-mono);
+  --pele-bold-weight: 500;
+
+  border-radius: var(--radius-lg);
+  background-color: var(--color-band);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-on-band) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-on-band) 4%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: var(--color-on-band);
+  font-family: var(--font-mono);
+}
+.rt-diagram-scroll {
+  overflow-x: auto;
+  padding: var(--rt-space-2xl) var(--rt-space-xl);
+}
+.rt-diagram-scroll > svg {
+  display: block;
+  margin-inline: auto;
+}
+.rt-diagram-caption {
+  padding: 0 var(--rt-space-xl) var(--rt-space-lg);
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  color: var(--color-on-band-muted);
+}
+
+.rt-diagram .pele-edge path {
+  stroke-width: 1.5;
+}
+/* The second line of a node is its detail: quieter than its name. */
+.rt-diagram .pele-label tspan + tspan {
+  fill: var(--color-on-band-muted);
+}
+.rt-diagram .pele-edge-label rect {
+  fill: var(--color-band);
+}
+.rt-diagram .pele-edge-label text {
+  fill: var(--color-on-band-muted);
+}
+
+.rt-diagram .pele-node.accent > :not(text),
+.rt-diagram .pele-node.ok > :not(text) {
+  stroke: var(--color-accent-bright);
+}
+.rt-diagram .pele-node.accent .pele-label tspan:first-child,
+.rt-diagram .pele-node.ok .pele-label tspan + tspan {
+  fill: var(--color-accent-bright);
+}
+.rt-diagram .pele-node.warn > :not(text) {
+  stroke: var(--color-band-warning);
+}
+.rt-diagram .pele-node.warn .pele-label tspan + tspan {
+  fill: var(--color-band-warning);
+}
+.rt-diagram .pele-node.bad > :not(text) {
+  stroke: var(--color-band-error);
+}
+.rt-diagram .pele-node.bad .pele-label tspan + tspan {
+  fill: var(--color-band-error);
+}
+.rt-diagram .pele-node.muted > :not(text) {
+  stroke-dasharray: 4 3;
+}
+.rt-diagram .pele-node.muted .pele-label tspan {
+  fill: var(--color-on-band-muted);
+}
+
+/* A node that does something. */
+.rt-diagram .pele-node[role='button'] {
+  cursor: pointer;
+}
+.rt-diagram .pele-node[role='button'] > :not(text) {
+  transition: fill var(--duration-fast) var(--ease-signal),
+    stroke var(--duration-fast) var(--ease-signal);
+}
+.rt-diagram .pele-node[role='button']:hover > :not(text),
+.rt-diagram .pele-node[role='button']:focus-visible > :not(text) {
+  fill: color-mix(in srgb, var(--color-accent-bright) 16%, var(--color-band-raised));
+  stroke: var(--color-accent-bright);
+}
+.rt-diagram .pele-node[role='button']:focus-visible {
+  outline: none;
+}
+.rt-diagram .pele-node[role='button']:focus-visible > :not(text) {
+  stroke-width: 2.5;
+}
+
+/* Ranges on a line (the CIDR workbench) are a Pele Gantt chart. Inputs are
+   quiet bars, the result is the bright one, and the axis numbers — offsets
+   that mean nothing to a reader — are hidden in favour of the caption. */
+.rt-diagram .pele-gantt {
+  --pele-accent: var(--color-on-band-muted);
+  --pele-critical: var(--color-accent-bright);
+  --pele-surface: color-mix(in srgb, var(--color-on-band) 4%, transparent);
+}
+.rt-diagram .pele-gantt .pele-axis,
+.rt-diagram .pele-gantt .pele-today {
+  display: none;
+}
+.rt-diagram .pele-gantt .pele-grid path {
+  stroke: color-mix(in srgb, var(--color-on-band) 10%, transparent);
+}
+.rt-diagram .pele-gantt .pele-section-label {
+  fill: var(--color-on-band-muted);
+}
+.rt-diagram .pele-task rect {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: rt-grow 520ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+.rt-ghosted .rt-diagram .pele-task rect {
+  animation: none;
+}
+
+/* Groups in a flowchart, and the furniture of a sequence diagram. */
+.rt-diagram .pele-cluster-label,
+.rt-diagram .pele-lifeline {
+  fill: var(--color-on-band-muted);
+  stroke: color-mix(in srgb, var(--color-on-band) 22%, transparent);
+}
+.rt-diagram .pele-cluster-label {
+  stroke: none;
+}
+.rt-diagram .pele-note > :not(text) {
+  fill: var(--color-band-raised);
+  stroke: var(--color-band-outline);
+}
+
+/* --- Diagram motion --------------------------------------------------------
+   `FlowDiagram` marks each new drawing up for these rules: `--i` is the order
+   a node or connector appears in, `data-old` is a node that was already on
+   screen, `rt-draw` a solid connector, `rt-flow` a dotted one.
+
+   Nodes pop in order. `scale` is the individual transform property, which
+   composes with the `transform` attribute Pele positions each node with —
+   animating `transform` itself would throw every node to the origin.
+
+   Solid connectors draw themselves, a beat behind the nodes, using a path
+   length normalised to 1. Dotted connectors carry a slow drift along their
+   direction, so a dependency reads as something flowing.
+
+   The reduced-motion floor in `globals.css` collapses all of it. */
+
+@keyframes rt-node-in {
+  from {
+    opacity: 0;
+    scale: 0.88;
+  }
+}
+@keyframes rt-edge-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes rt-edge-flow {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+.rt-diagram .pele-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rt-node-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(min(var(--i, 0), 16) * 45ms);
+}
+.rt-diagram .pele-node[data-old] {
+  animation: none;
+}
+.rt-diagram .rt-draw {
+  stroke-dasharray: 1;
+  animation: rt-edge-draw 520ms ease-out backwards;
+  animation-delay: calc(160ms + min(var(--i, 0), 16) * 45ms);
+}
+.rt-diagram .pele-marker,
+.rt-diagram .pele-edge-label,
+.rt-diagram .pele-cluster,
+.rt-diagram .pele-note {
+  animation: rt-fade-in 300ms var(--ease-signal) backwards;
+  animation-delay: calc(420ms + min(var(--i, 0), 16) * 45ms);
+}
+.rt-diagram .rt-flow {
+  animation: rt-edge-flow 1.4s linear infinite;
+}
+/* After the first drawing, connectors appear with the redraw. */
+.rt-diagram [data-settled] .rt-draw,
+.rt-diagram [data-settled] .pele-marker,
+.rt-diagram [data-settled] .pele-edge-label,
+.rt-diagram [data-settled] .pele-cluster {
+  animation: none;
+}
+
+/* In a ghost the diagram keeps its shape and gives up the band and its
+   words: a dark slab on an empty page would be the loudest thing there. */
+.rt-ghosted .rt-diagram {
+  --pele-fg: transparent;
+  --pele-muted: transparent;
+  --pele-line: var(--color-outline);
+  --pele-surface: var(--color-surface-raised);
+  --pele-border: var(--color-outline);
+  background: var(--color-surface-inset);
+}
+.rt-ghosted .rt-diagram .pele-label tspan {
+  fill: transparent;
+}
+.rt-ghosted .rt-diagram .pele-node,
+.rt-ghosted .rt-diagram .rt-draw,
+.rt-ghosted .rt-diagram .rt-flow {
+  animation: none;
+}
+
 /* --- Bridge island --------------------------------------------------------
    Phase 2 only. The tool bodies are still the SPA's components, classed
    against shadcn's token names (aliased in globals.css) rather than the
@@ -1429,6 +1660,16 @@ a.rt-kbd[data-first] {
 }
 
 /*
+  Charts in a ghost keep their shape and lose their colour, for the same
+  reason a badge does: a filled bar states a value, and a ghost has none.
+  Visual components mark each filled piece `data-viz-fill`.
+*/
+.rt-ghosted [data-viz-fill] {
+  background-color: var(--rt-ghost-ink);
+  animation: none;
+}
+
+/*
   Icons are drawings, and a ghost has nothing to draw. `visibility` rather
   than `display` so they keep their footprint — an icon is usually what sets
   the height of the row it sits in.
@@ -1445,6 +1686,52 @@ a.rt-kbd[data-first] {
 */
 .rt-ghosted * {
   box-shadow: none;
+}
+
+/*
+  A ghost that is waiting for its answer.
+
+  The lookup tools used to drop the ghost the moment a lookup started, show a
+  spinner in its place, and then draw the result where the ghost had been —
+  three layouts for one action. The ghost stays now, and a light sweeps across
+  it: a mask rather than an overlay, so it dims the bars themselves and needs
+  no extra element and no knowledge of the ground beneath.
+
+  Under reduced motion the blanket floor in `globals.css` stops the sweep; the
+  status line above the ghost still says what is happening.
+*/
+.rt-ghosted-loading {
+  -webkit-mask-image: linear-gradient(100deg, #000 35%, rgb(0 0 0 / 0.3) 50%, #000 65%);
+  mask-image: linear-gradient(100deg, #000 35%, rgb(0 0 0 / 0.3) 50%, #000 65%);
+  -webkit-mask-size: 300% 100%;
+  mask-size: 300% 100%;
+  animation: rt-ghost-sweep 1.6s linear infinite;
+}
+@keyframes rt-ghost-sweep {
+  from {
+    -webkit-mask-position: 150% 0;
+    mask-position: 150% 0;
+  }
+  to {
+    -webkit-mask-position: -50% 0;
+    mask-position: -50% 0;
+  }
+}
+
+/* What the waiting ghost is waiting for, said in words above it. */
+.rt-ghost-status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rt-space-md);
+  padding: var(--rt-space-md) var(--rt-space-lg);
+  border: var(--border-hairline) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inset);
+  color: var(--color-primary-text);
+  animation: rt-fade-in var(--duration-base) var(--ease-signal);
+}
+.rt-ghost-status svg {
+  margin-top: 3px;
 }
 
 /* A field with no value in it still shows its own prompt otherwise. */

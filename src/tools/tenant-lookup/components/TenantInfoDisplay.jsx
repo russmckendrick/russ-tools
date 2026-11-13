@@ -1,3 +1,4 @@
+import TenantMap from './TenantMap.jsx';
 import React from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,8 @@ const TenantInfoDisplay = ({ data, onSave }) => {
 
   return (
     <div className="space-y-6">
+      <TenantMap data={data} />
+
       {/* Basic Tenant Information */}
       <Card>
         <CardHeader>

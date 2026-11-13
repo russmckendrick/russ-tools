@@ -15,6 +15,7 @@ import {
 import { formatIPv4, ipv4Details, maskFromPrefix } from '../lib/ipv4';
 import { compressIPv6, ipv6Details } from '../lib/ipv6';
 import { FAMILIES, formatCount, formatTotal } from '../lib/format';
+import SplitTree from './SplitTree';
 
 /**
  * The davidc.net-style divide table: split a subnet in two, join halves back.
@@ -58,6 +59,7 @@ export default function SubnetDivide({ family, rows, joinable, onSplit, onJoin, 
         </div>
       </CardHeader>
       <CardContent>
+        <SplitTree family={family} rows={rows} onSplit={onSplit} onJoin={onJoin} />
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

@@ -24,6 +24,7 @@ import PortalFilters from './components/PortalFilters';
 import PortalCard from './components/PortalCard';
 import { Ghost } from '@/components/ui/ghost';
 import PortalTable from './components/PortalTable';
+import PortalMap from './components/PortalMap.jsx';
 import EmptyState from './components/EmptyState';
 
 /**
@@ -325,6 +326,10 @@ const MicrosoftPortalsTool = () => {
               </CardContent>
             </Card>
           </Ghost>
+        )}
+
+        {portalLinks && (
+          <PortalMap portalLinks={portalLinks} tenant={tenantInfo?.displayName || tenantInfo?.domain} />
         )}
 
         {portalLinks && (

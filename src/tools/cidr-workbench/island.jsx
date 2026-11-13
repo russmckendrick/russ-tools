@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, Combine, Copy, Download, TriangleAlert } from 'lucide-react';
 import { copyText, downloadFile } from '@/core';
-import { gapRanges, intersectRanges, normalizeCidrs, overlapPairs, parseCidrList, renderRanges, subtractRanges } from './lib/cidr.js';
+import { gapRanges, intersectRanges, mergeRanges, overlapPairs, parseCidrList, renderRanges, subtractRanges } from './lib/cidr.js';
+import RangeMap from './components/RangeMap.jsx';
 
 const SAMPLE = '10.0.0.0/25\n10.0.0.128/26\n10.0.0.192 - 10.0.0.255\n2001:db8::/49\n2001:db8:0:8000::/49';
 
@@ -19,10 +20,23 @@ export default function CidrWorkbench() {
   const result = useMemo(() => {
     const a = parseCidrList(left);
     const b = parseCidrList(right);
-    if (mode === 'normalize') return { cidrs: normalizeCidrs(left).cidrs, errors: a.errors, overlaps: overlapPairs(a.ranges) };
-    if (mode === 'subtract') return { cidrs: renderRanges(subtractRanges(a.ranges, b.ranges)), errors: [...a.errors, ...b.errors], overlaps: [] };
-    if (mode === 'intersect') return { cidrs: renderRanges(intersectRanges(a.ranges, b.ranges)), errors: [...a.errors, ...b.errors], overlaps: [] };
-    return { cidrs: renderRanges(gapRanges(a.ranges)), errors: a.errors, overlaps: overlapPairs(a.ranges) };
+    const two = mode === 'subtract' || mode === 'intersect';
+    const ranges =
+      mode === 'normalize' ? mergeRanges(a.ranges)
+      : mode === 'subtract' ? subtractRanges(a.ranges, b.ranges)
+      : mode === 'intersect' ? intersectRanges(a.ranges, b.ranges)
+      : gapRanges(a.ranges);
+    const lanes = [
+      { label: two ? 'First set' : 'Input', ranges: a.ranges },
+      ...(two ? [{ label: mode === 'subtract' ? 'Remove' : 'Second set', ranges: b.ranges }] : []),
+      { label: mode === 'gaps' ? 'Gaps' : 'Result', ranges, result: true },
+    ];
+    return {
+      cidrs: renderRanges(ranges),
+      errors: two ? [...a.errors, ...b.errors] : a.errors,
+      overlaps: two ? [] : overlapPairs(a.ranges),
+      lanes,
+    };
   }, [left, right, mode]);
   const output = result.cidrs.join('\n');
 
@@ -34,7 +48,7 @@ export default function CidrWorkbench() {
         <TabsContent value={mode} className="space-y-4">
           {result.errors.length > 0 && <Alert variant="destructive"><AlertCircle aria-hidden="true" /><AlertTitle>{result.errors.length} input line{result.errors.length === 1 ? '' : 's'} could not be read</AlertTitle><AlertDescription>{result.errors.map((error) => `Line ${error.line}: ${error.message}`).join(' · ')}</AlertDescription></Alert>}
           {result.overlaps.length > 0 && <Alert variant="warning"><TriangleAlert aria-hidden="true" /><AlertTitle>{result.overlaps.length} overlap{result.overlaps.length === 1 ? '' : 's'} found</AlertTitle><AlertDescription>{result.overlaps.map(([a, b]) => `${a} overlaps ${b}`).join(' · ')}</AlertDescription></Alert>}
-          <Card emphasis><CardHeader className="flex-row flex-wrap items-center justify-between gap-2"><div><h3 className="text-title-sm">Result</h3><p className="text-body-sm text-muted-foreground">{result.cidrs.length} minimal CIDR block{result.cidrs.length === 1 ? '' : 's'}</p></div><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => copyText(output)} disabled={!output}><Copy aria-hidden="true" /> Copy</Button><Button variant="outline" size="sm" onClick={() => downloadFile(output, 'cidr-result.txt', 'text/plain')} disabled={!output}><Download aria-hidden="true" /> Export</Button></div></CardHeader><CardContent>{output ? <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-data-md">{output}</pre> : <div className="flex items-center gap-2 text-body-sm text-muted-foreground"><Combine aria-hidden="true" /> No CIDR blocks in the result.</div>}</CardContent></Card>
+          <Card emphasis><CardHeader className="flex-row flex-wrap items-center justify-between gap-2"><div><h3 className="text-title-sm">Result</h3><p className="text-body-sm text-muted-foreground">{result.cidrs.length} minimal CIDR block{result.cidrs.length === 1 ? '' : 's'}</p></div><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => copyText(output)} disabled={!output}><Copy aria-hidden="true" /> Copy</Button><Button variant="outline" size="sm" onClick={() => downloadFile(output, 'cidr-result.txt', 'text/plain')} disabled={!output}><Download aria-hidden="true" /> Export</Button></div></CardHeader><CardContent className="space-y-4"><RangeMap lanes={result.lanes} />{output ? <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-data-md">{output}</pre> : <div className="flex items-center gap-2 text-body-sm text-muted-foreground"><Combine aria-hidden="true" /> No CIDR blocks in the result.</div>}</CardContent></Card>
         </TabsContent>
       </Tabs>
     </div>

@@ -54,6 +54,7 @@
     "json-parse-even-better-errors": "^4.0.0",
     "lucide-react": "^0.539.0",
     "pako": "^2.2.0",
+    "pele": "^1.13.0",
     "prismjs": "^1.30.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

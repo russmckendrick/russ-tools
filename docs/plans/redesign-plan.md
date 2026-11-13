@@ -2899,3 +2899,79 @@ and the OG cards regenerated from the redrawn `scripts/generate-og.mjs`.
 
 **Not done.** Tool bodies were restyled only through tokens and `ui/`; none
 was recomposed.
+
+### 2026-11-13 — One hue, and the first visual tools
+
+**Category colours unified.** All six `category-*` text tokens and
+`category-fill-*` blocks now resolve to the accent green, so badges inside
+tools match the shell. The tokens and `--cat` plumbing are kept.
+
+**Shared visual components** in `src/components/ui/`: `stat-strip.jsx` (a
+ruled row of headline figures) and `validity-bar.jsx` (a lifetime with a "now"
+marker). `.rt-grow` in `globals.css` grows a bar from its left edge once.
+Filled chart pieces carry `data-viz-fill` so `.rt-ghosted` can neutralise them.
+Tabs became underlined rather than a pill tray.
+
+**Tools given a visual.** Subnet calculator: headline strip, a 32-cell prefix
+bit map (a split bar for IPv6) and an address-space bar above the divide
+table. CIDR workbench: input, comparison and result drawn as lanes on one
+address line per family. JWT: the token's three parts in three inks with a
+share bar, and a lifetime bar on the analysis tab. Cron: the five fields as
+named cells. SSL checker: a validity bar per certificate.
+
+Every chart restates data that is also present as text, and is `aria-hidden`.
+
+**Verified.** 963 Vitest, 68 Playwright, build, lint 0 errors / 11 warnings,
+and the subnet, CIDR, JWT and cron visuals in the browser. The SSL validity
+bar was not seen with live data: it needs the certificate lookup.
+
+
+**The ghost stays through a lookup.** WHOIS, DNS, SSL and tenant lookups used
+to drop the ghost for a spinner card and then draw the result. `<Ghost>` now
+takes `loading`, `label` and `hint`: the redacted shape stays, a mask sweep
+runs across it, and the status line above it is the live region.
+
+### 2026-11-13 — Diagrams in place of cards
+
+The owner liked the index's subnet illustration and asked for the same idiom
+inside tools. `ui/tree-diagram.jsx` draws a nested list as a tree on a piece of
+the ink band (`.rt-diagram`, `.rt-tree`, `.rt-node` in shell.css); connectors
+are pure CSS from the list structure, nodes arrive level by level, and a node
+with an action is a real button. New tokens `band-warning` / `band-error`
+carry status on the band.
+
+- **Subnet calculator:** the divide is an interactive tree — press a block to
+  split it, press a dashed parent to join. It replaces the address bar added
+  earlier the same day (`AddressMap.jsx`, deleted). The table stays beneath.
+- **DNSSEC checker:** parent zone, zone, then keys and name servers; the key
+  the parent's DS matches is drawn in the accent.
+- **BGP explorer:** covering prefix, the prefix, its origin AS with RPKI state
+  and more specifics; for an ASN, the AS and its prefixes (capped at six).
+
+The subnet island test now looks in the table for row text, since each block
+appears in the tree as well, and gained a test that drives the tree.
+
+**Diagrams moved to Pele.** At the owner's suggestion the hand-rolled CSS list
+tree was replaced the same day by `pele` (flowchart type only, ~63 kB gzipped,
+loaded only by tools that draw). `TreeDiagram` kept its props, so the subnet,
+DNSSEC and BGP diagrams changed by a few lines each and gained edge labels and
+second-line detail. `FlowDiagram` takes raw Mermaid, used first by the Email
+DNS analyser: the six checks grouped as routing / authentication / transport,
+with SPF and DKIM pointing at DMARC. Actionable nodes are given button
+semantics after each render and answer click, Enter and Space.
+
+**Diagrams everywhere they fit, and they move.** After adopting Pele the owner
+asked for the rest. Added: Conditional Access (each policy as who → what → when
+→ outcome, with exclusions and the policy state on the last link), SSL
+(certificate chain ordered by issuer, days left per link), Tenant Lookup
+(tenant → domains, sign-in, type), Microsoft Portals (tenant → portal families
+with counts), Cron (the per-minute checks; day-of-month and day-of-week drawn
+in parallel when both are set, because cron ORs them), JWT (format → algorithm
+→ time claims → signature, with "not checked" drawn as plainly as "invalid"),
+and DNS Lookup (a sequence diagram of each resolver query and answer). The
+CIDR workbench's range lanes became a Pele Gantt chart with addresses for
+dates. Sequence and Gantt are registered only by the tools that use them.
+
+`FlowDiagram` now choreographs every drawing: nodes pop in order, solid
+connectors draw themselves, dotted ones drift, Gantt bars grow. A redraw only
+animates nodes whose text is new. All verified in the browser with live data.

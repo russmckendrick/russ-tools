@@ -275,6 +275,11 @@ marks reach the bundle. The filled Material set was retired with Stacks, and the
 > exceljs or SheetJS) and the removal history lives in the `dependency-policy` skill —
 > read it before swapping or removing a package.
 
+**Diagrams are drawn by `pele`** (Mermaid syntax to themeable SVG, zero dependencies), via
+`src/components/ui/tree-diagram.jsx`. Import from `pele/core` and register only the diagram
+types in use — the bare `pele` entry pulls in every type (about 230 kB gzipped against
+about 63 kB for flowchart alone). Do not add `mermaid` itself.
+
 ## Traps and open issues
 
 - **Gotcha:** TOML integers come back from `@ltd/j-toml` as **`BigInt`**, and `JSON.stringify`

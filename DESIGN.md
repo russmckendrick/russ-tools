@@ -43,12 +43,12 @@ colors:
   warning-subtle: "#332b17"
   info-subtle: "#17263a"
   error-subtle: "#3a1d1b"
-  category-network: "#2dd4bf"
-  category-azure: "#5aa7ff"
-  category-microsoft: "#b393ff"
-  category-security: "#ffc857"
-  category-developer: "#ff9f43"
-  category-content: "#ff7eb6"
+  category-network: "#6ee787"
+  category-azure: "#6ee787"
+  category-microsoft: "#6ee787"
+  category-security: "#6ee787"
+  category-developer: "#6ee787"
+  category-content: "#6ee787"
 
   # ---- Paper light (white; `-light` suffix) ----
   surface-light: "#ffffff"
@@ -74,26 +74,23 @@ colors:
   warning-subtle-light: "#f4ead6"
   info-subtle-light: "#e4eafb"
   error-subtle-light: "#f8e6e0"
-  category-network-light: "#0e766b"
-  category-azure-light: "#1e5eea"
-  category-microsoft-light: "#7c3aed"
-  category-security-light: "#975c07"
-  category-developer-light: "#9c5205"
-  category-content-light: "#be185d"
+  category-network-light: "#0b6b43"
+  category-azure-light: "#0b6b43"
+  category-microsoft-light: "#0b6b43"
+  category-security-light: "#0b6b43"
+  category-developer-light: "#0b6b43"
+  category-content-light: "#0b6b43"
 
   # ---- Category FILL hues -------------------------------------------------
-  # A category badge is a solid block of hue behind #17150f ink, identical in
-  # both themes: the bright hue is the fill in light mode too, because the
-  # ink on it is always graphite. The `category-*` values above are the TEXT
-  # hues (crumbs, icons, small labels) and differ per theme. The two slots
-  # are not interchangeable — a text hue behind the badge ink measures 1.6:1.
-  category-fill-network: "#2dd4bf"
-  category-fill-azure: "#5aa7ff"
-  category-fill-microsoft: "#b393ff"
-  category-fill-security: "#ffc857"
-  category-fill-developer: "#ff9f43"
-  category-fill-content: "#ff7eb6"
-  on-category-fill: "#111411"
+  # The solid badge block, identical in both themes. All six are the bright
+  # accent: the category is named by the badge text, not by a hue.
+  category-fill-network: "#6ee787"
+  category-fill-azure: "#6ee787"
+  category-fill-microsoft: "#6ee787"
+  category-fill-security: "#6ee787"
+  category-fill-developer: "#6ee787"
+  category-fill-content: "#6ee787"
+  on-category-fill: "#0b1f16"
 
   # ---- Accent as TEXT -----------------------------------------------------
   # Dark mode uses the mint for fills and text alike. Light mode's accent is
@@ -130,6 +127,10 @@ colors:
   on-band-muted: "#c5d8cc"
   accent-bright: "#6ee787"
   on-accent-bright: "#0b1f16"
+  # Status on the band. The themed status hues are deep in light mode and
+  # unreadable on the ink ground, so the band carries its own bright pair.
+  band-warning: "#ffc857"
+  band-error: "#ff6b6b"
 
 # ---------------------------------------------------------------------------
 # TYPOGRAPHY
@@ -382,10 +383,12 @@ stat strips, no feature claims. A heading says what the page is.
   `primary` is a deep green and disappears there.
 - **Band.** `band`, `band-raised`, `band-outline`, `on-band`, `on-band-muted`.
   These do not change with the theme.
-- **Category hues.** The six `category-*` text hues and `category-fill-*`
-  blocks still exist and still label badges and record types **inside** tools
-  through `--cat` / `--cat-fill`. The shell no longer draws them: the catalogue
-  and the tool header are green only. The two slots remain non-interchangeable.
+- **Category hues.** There is one hue. The six `category-*` text tokens and
+  `category-fill-*` blocks all resolve to the accent green, so badges, record
+  types and stars inside every tool match the shell. The tokens and the
+  `--cat` / `--cat-fill` plumbing are kept so a category could be given its
+  own hue again by changing a value here; the two slots are still not
+  interchangeable.
 - **Status.** `success`, `warning`, `error`, `info`, each with a `-subtle` tint
   and `on-status` ink.
 
@@ -454,6 +457,34 @@ Everything is disabled or collapsed under `prefers-reduced-motion`.
 `src/components/ui/` is the design surface — change the component, not the call
 site. `src/styles/shell.css` holds the shell (header, band, catalogue, tool
 head, footer) and its classes are `rt-`-prefixed.
+
+### Visuals inside tools
+
+A chart earns its place when the result is a quantity or a span: a share of
+an address space, a lifetime, a set of ranges. Use `ui/stat-strip.jsx` for
+headline figures and `ui/validity-bar.jsx` for a lifetime; tool-specific
+drawings live beside the tool. Fills are `primary`, `band` or the neutral
+inks — pieces are told apart by lightness and position, never by a second
+hue. Every chart restates something also present as text, is `aria-hidden`,
+marks its filled pieces `data-viz-fill`, and may use `.rt-grow` once.
+
+### Diagrams
+
+When a result is a hierarchy or a graph — a block and its halves, a chain of
+trust, a route and its origins, checks that depend on one another — draw it
+instead of stacking cards. Diagrams are rendered by **Pele**
+(https://pele.run), which turns Mermaid flowchart syntax into SVG, through
+`ui/tree-diagram.jsx`: `TreeDiagram` takes a nested object, `FlowDiagram`
+takes Mermaid source.
+
+A diagram is a small piece of the ink band inside the tool: `band` ground
+with the grid, `band-raised` nodes, rounded right-angle connectors in
+`accent-bright`. Pele themes through `--pele-*` variables, which
+`.rt-diagram` in shell.css points at the band tokens — never set colours in
+the Mermaid source. Node state is a class from the source (`:::accent`,
+`ok`, `warn`, `bad`, `muted`) and is always backed by the node's own second
+line. A node with an action becomes a focusable button. Only Pele's
+flowchart type is registered; adding another type is a bundle-size decision.
 
 ## Do's and Don'ts
 
