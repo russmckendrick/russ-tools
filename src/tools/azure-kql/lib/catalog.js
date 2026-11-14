@@ -1,10 +1,19 @@
+import { APPS } from './catalog/apps.js';
 import { COMPUTE } from './catalog/compute.js';
+import { DATA } from './catalog/data.js';
+import { EDGE } from './catalog/edge.js';
 import { IDENTITY } from './catalog/identity.js';
+import { M365 } from './catalog/m365.js';
+import { MACHINES } from './catalog/machines.js';
 import { NETWORK } from './catalog/network.js';
 import { PLATFORM } from './catalog/platform.js';
+import { SECURITY } from './catalog/security.js';
 
-export const SERVICES = [...NETWORK, ...IDENTITY, ...PLATFORM, ...COMPUTE];
-export const GROUPS = ['Network', 'Identity', 'Platform', 'Compute'];
+export const GROUPS = ['Network', 'Identity', 'Security', 'Microsoft 365', 'Platform', 'Data', 'Compute', 'Applications'];
+
+const ALL = [...NETWORK, ...EDGE, ...IDENTITY, ...SECURITY, ...M365, ...PLATFORM, ...DATA, ...COMPUTE, ...MACHINES, ...APPS];
+
+export const SERVICES = GROUPS.flatMap((group) => ALL.filter((service) => service.group === group));
 
 export const DEFAULT_LIMIT = { rows: '100', top: '20', series: '' };
 

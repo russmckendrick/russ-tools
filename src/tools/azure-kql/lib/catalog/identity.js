@@ -62,6 +62,14 @@ export const IDENTITY = [
         output: rows(['TimeGenerated', 'UserPrincipalName', 'AppDisplayName', 'ResourceDisplayName', 'IPAddress', 'ResultType', 'ResultDescription']),
       },
       {
+        id: 'managed-identities',
+        name: 'Managed identity sign-ins',
+        table: 'AADManagedIdentitySignInLogs',
+        reads: 'Managed identity sign-ins',
+        description: 'Token requests made by managed identities.',
+        output: rows(['TimeGenerated', 'ServicePrincipalName', 'ResourceDisplayName', 'IPAddress', 'ResultType', 'ResultDescription']),
+      },
+      {
         id: 'service-principals',
         name: 'Service principal sign-ins',
         table: 'AADServicePrincipalSignInLogs',
@@ -96,6 +104,28 @@ export const IDENTITY = [
         extend: initiator,
         output: top([count('Events')], ['InitiatedByUser', 'InitiatedByApp']),
       },
+    ],
+  },
+  {
+    id: 'entra-id-protection',
+    name: 'Entra ID Protection',
+    group: 'Identity',
+    scenarios: [
+      { id: 'risk-detections', name: 'Risk detections', table: 'AADUserRiskEvents', reads: 'User risk detections', description: 'Each risk detection raised against a user.', output: rows(['TimeGenerated', 'UserPrincipalName', 'RiskEventType', 'RiskLevel', 'RiskState', 'IpAddress', 'Source']) },
+      { id: 'high-risk', name: 'High-risk detections', table: 'AADUserRiskEvents', reads: 'User risk detections', description: 'Detections scored high.', filters: [where('RiskLevel', 'eq', 'high')], output: rows(['TimeGenerated', 'UserPrincipalName', 'RiskEventType', 'RiskState', 'RiskDetail', 'IpAddress']) },
+      { id: 'by-type', name: 'Detections by type', table: 'AADUserRiskEvents', reads: 'User risk detections counted by type and level', description: 'Which kinds of risk are being detected.', output: top([count('Detections'), ['Users', 'dcount(UserPrincipalName)']], ['RiskEventType', 'RiskLevel']) },
+      { id: 'risky-users', name: 'Risky users', table: 'AADRiskyUsers', reads: 'Risky user records', description: 'Users whose risk state changed.', output: rows(['TimeGenerated', 'UserPrincipalName', 'RiskLevel', 'RiskState', 'RiskDetail', 'RiskLastUpdatedDateTime']) },
+    ],
+  },
+  {
+    id: 'graph-activity',
+    name: 'Microsoft Graph activity',
+    group: 'Identity',
+    scenarios: [
+      { id: 'requests', name: 'Requests', table: 'MicrosoftGraphActivityLogs', reads: 'Microsoft Graph requests', description: 'Every Graph API call made in the tenant.', output: rows(['TimeGenerated', 'RequestMethod', 'RequestUri', 'ResponseStatusCode', 'AppId', 'UserId', 'IPAddress', 'DurationMs']) },
+      { id: 'errors', name: 'Failed requests', table: 'MicrosoftGraphActivityLogs', reads: 'Microsoft Graph requests', description: 'Calls answered with a 400 or 500-range status.', filters: [where('ResponseStatusCode', 'gte', '400')], output: rows(['TimeGenerated', 'RequestMethod', 'RequestUri', 'ResponseStatusCode', 'AppId', 'UserId', 'IPAddress']) },
+      { id: 'throttled', name: 'Throttled apps', table: 'MicrosoftGraphActivityLogs', reads: 'Microsoft Graph requests counted by application', description: 'Applications receiving 429 Too Many Requests.', filters: [where('ResponseStatusCode', 'eq', '429')], output: top([count('Requests')], ['AppId']) },
+      { id: 'by-app', name: 'Requests by application', table: 'MicrosoftGraphActivityLogs', reads: 'Microsoft Graph requests counted by application and status', description: 'Which applications call Graph most.', output: top([count('Requests')], ['AppId', 'ResponseStatusCode']) },
     ],
   },
 ];

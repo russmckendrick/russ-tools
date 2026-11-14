@@ -22,6 +22,13 @@ describe('the catalogue against the Azure Monitor table reference', () => {
         expect(known(name), `${name} in ${scenario.table}`).toBe(true);
       }
       if (output.kind === 'rows') expect(known(output.by), `${output.by} in ${scenario.table}`).toBe(true);
+      const names = (output.aggregates ?? []).map(([name]) => name);
+      for (const [, expression] of output.aggregates ?? []) {
+        for (const [, word, call] of expression.matchAll(/([A-Za-z_][A-Za-z0-9_]*)(\()?/g)) {
+          if (!call) expect(known(word), `${word} in ${expression} on ${scenario.table}`).toBe(true);
+        }
+      }
+      if (output.kind === 'top') expect(names, `${output.metric} is an aggregate`).toContain(output.metric);
       for (const filter of scenario.filters ?? []) {
         const column = findColumn(scenario.table, filter.column);
         expect(column, `${filter.column} in ${scenario.table}`).not.toBe(null);

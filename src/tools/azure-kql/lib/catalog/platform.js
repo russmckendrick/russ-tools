@@ -2,6 +2,7 @@ import { count, rows, top, where } from './shapes.js';
 
 const activityColumns = ['TimeGenerated', 'OperationNameValue', 'ActivityStatusValue', 'Caller', 'CallerIpAddress', 'ResourceGroup', '_ResourceId'];
 const vaultColumns = ['TimeGenerated', 'OperationName', 'ResultSignature', 'HttpStatusCode', 'CallerIpAddress', 'RequestUri', 'DurationMs', '_ResourceId'];
+const shareColumns = ['TimeGenerated', 'OperationName', 'StatusText', 'StatusCode', 'AuthenticationType', 'CallerIpAddress', 'Uri', 'DurationMs'];
 const blobColumns = ['TimeGenerated', 'OperationName', 'StatusText', 'StatusCode', 'AuthenticationType', 'CallerIpAddress', 'Uri', 'DurationMs'];
 
 export const PLATFORM = [
@@ -77,13 +78,16 @@ export const PLATFORM = [
   },
   {
     id: 'storage',
-    name: 'Storage (blobs)',
+    name: 'Storage',
     group: 'Platform',
     scenarios: [
       { id: 'requests', name: 'Request log', table: 'StorageBlobLogs', reads: 'Blob storage requests', description: 'Every request to the blob service.', output: rows(blobColumns) },
       { id: 'failed', name: 'Failed requests', table: 'StorageBlobLogs', reads: 'Blob storage requests', description: 'Requests whose status is anything but Success.', filters: [where('StatusText', 'ncontains', 'Success')], output: rows(blobColumns) },
       { id: 'anonymous', name: 'Anonymous access', table: 'StorageBlobLogs', reads: 'Blob storage requests', description: 'Requests served to unauthenticated callers.', filters: [where('AuthenticationType', 'eq', 'Anonymous')], output: rows(blobColumns) },
       { id: 'deletes', name: 'Blob deletes', table: 'StorageBlobLogs', reads: 'Blob storage requests', description: 'Who deleted which blob.', filters: [where('OperationName', 'eq', 'DeleteBlob')], output: rows([...blobColumns, 'RequesterUpn']) },
+      { id: 'file-requests', name: 'File share requests', table: 'StorageFileLogs', reads: 'File share requests', description: 'Requests to Azure Files, SMB and REST.', output: rows(shareColumns) },
+      { id: 'queue-requests', name: 'Queue requests', table: 'StorageQueueLogs', reads: 'Queue storage requests', description: 'Requests to the queue service.', output: rows(shareColumns) },
+      { id: 'table-requests', name: 'Table requests', table: 'StorageTableLogs', reads: 'Table storage requests', description: 'Requests to the table service.', output: rows(shareColumns) },
       {
         id: 'by-operation',
         name: 'Operations by count',
