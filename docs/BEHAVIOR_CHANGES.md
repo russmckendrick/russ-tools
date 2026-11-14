@@ -32,6 +32,38 @@ the guaranteed characters from the filtered classes.
 
 ## Landed
 
+### JWT: verify against the issuer's published keys, and an honest signature state (2026-11-14)
+
+**The tool can now make network requests, on a button press only.** For an
+RS, PS or ES token whose `iss` is an `https` address, **Fetch issuer keys**
+GETs `<iss>/.well-known/openid-configuration` and then the `jwks_uri` it
+names, picks the key by `kid`, and verifies with `jose`. The token is not
+sent; the requests carry no credentials and no referrer, refuse redirects,
+and a `jwks_uri` on a different host from the issuer needs a second, explicit
+press. A CORS or network failure names the address and points at the paste
+route. The manifest's "No data sent to servers" / "100% client-side
+processing" features were reworded to what is now true: the token never
+leaves the browser.
+
+Changed behaviour in the existing validation, all in `lib/signature.js`:
+
+- **The key box also takes a JWKS** (`{"keys": [...]}`), searched by `kid`.
+- **Validation re-runs when anything changes.** It used to run only when the
+  token changed, so pasting the key after the token did nothing until the
+  token was edited.
+- **The signature and the time claims are separate.** Verification used
+  `jwtVerify`, which also enforces `exp` and `nbf`, so a correctly signed but
+  expired token read "Signature validation failed". It now uses
+  `compactVerify`: that token is "verified", and the diagram's Time claims
+  step still says "expired".
+- **Three states, from the real result.** The diagram's Signature step read
+  "verified" for an unsigned (`alg: none`) token, because "no validation
+  required" was returned as valid, and "invalid" for an HMAC token that was
+  never tested. It now reads **verified**, **failed** or **not checked**:
+  unsigned, HMAC, no key, an unreadable key and a missing `kid` are all "not
+  checked", and only a signature that was tested and did not match is
+  "failed". The old "waiting for a key" label is folded into "not checked".
+
 ### Password Generator: a passphrase mode, and the maths moved to `lib/` (2026-11-14)
 
 A **Password / Passphrase** switch sits above the settings. Passphrase mode

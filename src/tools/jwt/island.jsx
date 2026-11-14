@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,17 +22,18 @@ import {
   CheckCircle, 
   X, 
   AlertTriangle,
-  Shield,
   Clock,
   User,
-  Fingerprint,
-  Info
+  Fingerprint
 } from 'lucide-react';
-import { jwtVerify, importJWK, importSPKI, decodeJwt } from 'jose';
+import { decodeJwt } from 'jose';
 import { copyText, readText } from '@/core';
 import { ValidityBar } from '@/components/ui/validity-bar';
 import TokenAnatomy from './components/TokenAnatomy';
 import ValidationFlow from './components/ValidationFlow.jsx';
+import SignaturePanel from './components/SignaturePanel.jsx';
+import { discoverJwksUri, fetchJwks, httpsIssuer } from './lib/issuer.js';
+import { verifySignature } from './lib/signature.js';
 
 const JWTTool = () => {
   const [jwtToken, setJwtToken] = useState('');
@@ -45,6 +46,8 @@ const JWTTool = () => {
   const [validateSignature, setValidateSignature] = useState(false);
   const [error, setError] = useState(null);
   const [tokenAnalysis, setTokenAnalysis] = useState(null);
+  const [issuerKeys, setIssuerKeys] = useState({ status: 'idle' });
+  const issuerRun = useRef(0);
 
   // Example JWT tokens for testing
   const exampleTokens = {
@@ -114,11 +117,6 @@ const JWTTool = () => {
       // Analyze the token
       analyzeToken(header, payload);
 
-      // If validation is enabled, validate the signature
-      if (validateSignature && publicKey) {
-        validateJWTSignature(token, header);
-      }
-
     } catch (err) {
       setError(`Error processing JWT: ${err.message}`);
       setIsValidFormat(false);
@@ -152,45 +150,78 @@ const JWTTool = () => {
     setTokenAnalysis(analysis);
   };
 
-  const validateJWTSignature = async (token, header) => {
+  const issuer = useMemo(() => httpsIssuer(decodedPayload), [decodedPayload]);
+
+  useEffect(() => {
+    issuerRun.current += 1;
+    setIssuerKeys({ status: 'idle' });
+  }, [issuer]);
+
+  const loadIssuerKeys = async (found, run) => {
+    const jwks = await fetchJwks(found.jwksUri);
+    if (issuerRun.current !== run) return;
+    setIssuerKeys({ ...found, status: 'ready', jwks });
+  };
+
+  const handleFetchIssuerKeys = async () => {
+    if (!issuer) return;
+    const run = ++issuerRun.current;
+    setIssuerKeys({ status: 'loading' });
     try {
-      let result = { valid: false, error: null };
-
-      if (header.alg === 'none') {
-        result = { valid: true, message: 'No signature validation required for "none" algorithm' };
-      } else if (header.alg.startsWith('HS')) {
-        // HMAC algorithms - browser limitation
-        result = { valid: false, error: 'HMAC signature validation not supported in browser environment. Use server-side validation for HMAC tokens.' };
-      } else if (header.alg.startsWith('RS') || header.alg.startsWith('ES') || header.alg.startsWith('PS')) {
-        // RSA/ECDSA algorithms - use public key
-        if (!publicKey) {
-          result = { valid: false, error: 'Public key required for RSA/ECDSA algorithms' };
-        } else {
-          try {
-            // Try to import and verify with jose library for better support
-            let keyLike;
-            if (publicKey.includes('BEGIN')) {
-              keyLike = await importSPKI(publicKey, header.alg);
-            } else {
-              // Assume it's a JWK
-              keyLike = await importJWK(JSON.parse(publicKey), header.alg);
-            }
-            
-            await jwtVerify(token, keyLike);
-            result = { valid: true, message: 'Signature is valid' };
-          } catch (err) {
-            result = { valid: false, error: `Signature validation failed: ${err.message}` };
-          }
-        }
-      } else {
-        result = { valid: false, error: `Unsupported algorithm: ${header.alg}` };
+      const found = await discoverJwksUri(issuer);
+      if (issuerRun.current !== run) return;
+      if (!found.sameHost) {
+        setIssuerKeys({ ...found, status: 'confirm' });
+        return;
       }
-
-      setValidationResult(result);
+      await loadIssuerKeys(found, run);
     } catch (err) {
-      setValidationResult({ valid: false, error: `Validation error: ${err.message}` });
+      if (issuerRun.current === run) setIssuerKeys({ status: 'error', error: err });
     }
   };
+
+  const handleConfirmOtherHost = async () => {
+    const { discoveryUrl, jwksUri, jwksHost, sameHost } = issuerKeys;
+    const run = ++issuerRun.current;
+    setIssuerKeys({ status: 'loading' });
+    try {
+      await loadIssuerKeys({ discoveryUrl, jwksUri, jwksHost, sameHost }, run);
+    } catch (err) {
+      if (issuerRun.current === run) setIssuerKeys({ status: 'error', error: err });
+    }
+  };
+
+  const handleForgetIssuerKeys = () => {
+    issuerRun.current += 1;
+    setIssuerKeys({ status: 'idle' });
+  };
+
+  const fetchedJwks = issuerKeys.status === 'ready' ? issuerKeys.jwks : null;
+  const fetchedFrom = issuerKeys.status === 'ready' ? issuerKeys.jwksHost : null;
+
+  useEffect(() => {
+    if (!validateSignature || !isValidFormat || !decodedHeader) {
+      setValidationResult(null);
+      return undefined;
+    }
+    let cancelled = false;
+    verifySignature({
+      token: jwtToken.trim(),
+      header: decodedHeader,
+      keyText: publicKey,
+      jwks: fetchedJwks,
+      jwksSource: `the key set published at ${fetchedFrom}`,
+    })
+      .then((result) => {
+        if (!cancelled) setValidationResult(result);
+      })
+      .catch((err) => {
+        if (!cancelled) setValidationResult({ status: 'not-checked', message: `The check could not run: ${err.message}` });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [validateSignature, isValidFormat, decodedHeader, jwtToken, publicKey, fetchedJwks, fetchedFrom]);
 
   const copyToClipboard = async (text, label = 'Content') => {
     if (await copyText(text)) {
@@ -347,43 +378,18 @@ const JWTTool = () => {
           </CardHeader>
           {validateSignature && (
             <CardContent className="space-y-4">
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  <div className="text-body-sm font-semibold mb-1">Browser Limitations & Security</div>
-                  <div className="text-body-sm">
-                    HMAC (HS256/HS384/HS512) signature validation requires server-side processing for security reasons. 
-                    Only RSA and ECDSA public key validation is supported in the browser. Your secret keys remain secure as they never leave your environment.
-                  </div>
-                </AlertDescription>
-              </Alert>
-
-              <div className="space-y-2">
-                <Label htmlFor="public-key">Public Key (for RSA/ECDSA algorithms)</Label>
-                <Textarea
-                  id="public-key"
-                  placeholder="Enter PEM-formatted public key or JWK..."
-                  value={publicKey}
-                  onChange={(e) => setPublicKey(e.target.value)}
-                  className="min-h-[120px] font-mono text-data-md"
-                />
-                <p className="text-body-sm text-muted-foreground">
-                  Supports PEM format (-----BEGIN PUBLIC KEY-----) or JWK format
-                </p>
-              </div>
-
-              {validationResult && (
-                <Alert className={validationResult.valid ? 'border-success/40 bg-success-subtle' : 'border-danger/40 bg-danger-subtle'}>
-                  {validationResult.valid ? (
-                    <Shield className="h-4 w-4 text-success" />
-                  ) : (
-                    <AlertTriangle className="h-4 w-4 text-danger" />
-                  )}
-                  <AlertDescription>
-                    {validationResult.message || validationResult.error}
-                  </AlertDescription>
-                </Alert>
-              )}
+              <SignaturePanel
+                header={isValidFormat ? decodedHeader : null}
+                rawIssuer={decodedPayload?.iss}
+                issuer={issuer}
+                issuerKeys={issuerKeys}
+                onFetchIssuerKeys={handleFetchIssuerKeys}
+                onConfirmOtherHost={handleConfirmOtherHost}
+                onForgetIssuerKeys={handleForgetIssuerKeys}
+                publicKey={publicKey}
+                onPublicKeyChange={setPublicKey}
+                result={validationResult}
+              />
             </CardContent>
           )}
         </Card>
@@ -396,7 +402,7 @@ const JWTTool = () => {
             </CardHeader>
             <CardContent>
               <TokenAnatomy token={jwtToken} />
-              <ValidationFlow analysis={tokenAnalysis} checking={validateSignature} validation={validationResult} />
+              <ValidationFlow analysis={tokenAnalysis} signature={validationResult} />
               <Tabs defaultValue="decoded" className="w-full">
                 <TabsList>
                   <TabsTrigger value="decoded" className="flex items-center gap-2">

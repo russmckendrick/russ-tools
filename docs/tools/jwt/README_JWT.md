@@ -1,6 +1,6 @@
 # 🔐 JWT Decoder/Validator Tool
 
-A comprehensive JWT (JSON Web Token) decoder and validator that works entirely in your browser without sending tokens to external services.
+A comprehensive JWT (JSON Web Token) decoder and validator that works in your browser without sending tokens to external services. The one network feature, fetching an issuer's public keys, runs only when you press its button and does not send the token; see [README.md](README.md).
 
 ## Features
 
@@ -24,7 +24,8 @@ A comprehensive JWT (JSON Web Token) decoder and validator that works entirely i
 ### ✅ Signature Validation (Limited)
 - **RSA/ECDSA Support**: Validates tokens signed with RSA or ECDSA algorithms using public keys
 - **PEM Format**: Supports standard PEM-formatted public keys
-- **JWK Support**: Can validate using JSON Web Key (JWK) format
+- **JWK and JWKS Support**: Can validate using a JSON Web Key (JWK) or a pasted key set (JWKS), picking the key by `kid`
+- **Issuer Keys**: On request, fetches the issuer's published keys through OpenID discovery (two GET requests; the token is not sent)
 - **Browser Limitation**: HMAC (HS256/HS384/HS512) validation not supported due to browser security constraints
 
 ## Usage
@@ -50,8 +51,8 @@ A comprehensive JWT (JSON Web Token) decoder and validator that works entirely i
 ### Signature Validation
 1. Enable signature validation with the toggle switch
 2. For RSA/ECDSA tokens:
-   - Paste your public key in PEM format or JWK format
-   - The tool will attempt to validate the signature
+   - Press **Fetch issuer keys**, or paste your public key in PEM, JWK or JWKS format
+   - The tool reports the signature as verified, failed, or not checked
 3. Note: HMAC validation requires server-side processing
 
 ## Example Tokens
@@ -63,8 +64,9 @@ The tool includes example tokens for testing:
 
 ## Security Features
 
-- **Client-Side Only**: All processing happens in your browser
-- **No External Calls**: Tokens are never sent to external services
+- **Client-Side Only**: All decoding and verification happens in your browser
+- **Tokens Stay Put**: Tokens are never sent to external services
+- **Network Only On Request**: The only requests are the two GETs for an issuer's public keys, made when you press **Fetch issuer keys**
 - **Privacy Focused**: Your sensitive tokens remain on your device
 - **Open Source**: Full transparency of the decoding process
 
