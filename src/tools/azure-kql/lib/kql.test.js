@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { datetimeLiteral, identifier, isTimespan, numberLiteral, stringLiteral, verbatimLiteral } from './kql.js';
+import { datetimeLiteral, isIdentifier, isTimespan, numberLiteral, stringLiteral, verbatimLiteral } from './kql.js';
 
 describe('stringLiteral', () => {
   it('escapes the quote that used to break out of the literal', () => {
@@ -50,8 +50,9 @@ describe('the other literals', () => {
     expect(['', '0h', '24', '1w', '24h) | take 1', 'h'].some(isTimespan)).toBe(false);
   });
 
-  it('refuses a column name that is not an identifier', () => {
-    expect(identifier('_ResourceId')).toBe('_ResourceId');
-    expect(() => identifier('a b')).toThrow();
+  it('knows an identifier from an expression', () => {
+    expect(isIdentifier('_ResourceId')).toBe(true);
+    expect(isIdentifier('a b')).toBe(false);
+    expect(isIdentifier('T | take 1')).toBe(false);
   });
 });

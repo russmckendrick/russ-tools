@@ -37,8 +37,3 @@ export function isTimespan(value) {
 export function isIdentifier(value) {
   return IDENTIFIER.test(String(value));
 }
-
-export function identifier(name) {
-  if (!isIdentifier(name)) throw new Error(`Not a column or table name: ${name}`);
-  return name;
-}

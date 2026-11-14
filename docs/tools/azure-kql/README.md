@@ -15,20 +15,18 @@ There is no Generate button and nothing is sent anywhere: the query is built in 
 
 ## What it covers
 
-| Area | Service | Tables |
-|---|---|---|
-| Network | Azure Firewall | `AZFWNetworkRule`, `AZFWApplicationRule`, `AZFWNatRule`, `AZFWDnsQuery`, `AZFWThreatIntel`, `AZFWIdpsSignature` |
-| Network | Application Gateway | `AGWAccessLogs`, `AGWFirewallLogs`, and `AzureDiagnostics` for gateways still logging there |
-| Network | VNet flow logs | `NTANetAnalytics` (traffic analytics) |
-| Identity | Entra ID sign-ins | `SigninLogs`, `AADNonInteractiveUserSignInLogs`, `AADServicePrincipalSignInLogs` |
-| Identity | Entra ID audit log | `AuditLogs` |
-| Platform | Activity log | `AzureActivity` |
-| Platform | Key Vault | `AZKVAuditLogs` |
-| Platform | Storage (blobs) | `StorageBlobLogs` |
-| Compute | App Service | `AppServiceHTTPLogs`, `AppServiceConsoleLogs`, `AppServiceAppLogs` |
-| Compute | Kubernetes (AKS) | `ContainerLogV2`, `KubeEvents`, `KubePodInventory`, `AKSAudit`, `AKSControlPlane` |
-| Compute | Azure Virtual Desktop | `WVDConnections`, `WVDErrors` |
-| Compute | Virtual machines | `Heartbeat` |
+- **Azure Firewall**: `AZFWNetworkRule`, `AZFWApplicationRule`, `AZFWNatRule`, `AZFWDnsQuery`, `AZFWThreatIntel`, `AZFWIdpsSignature`
+- **Application Gateway**: `AGWAccessLogs`, `AGWFirewallLogs`, and `AzureDiagnostics` for gateways still logging there
+- **VNet flow logs**: `NTANetAnalytics` (traffic analytics)
+- **Entra ID sign-ins**: `SigninLogs`, `AADNonInteractiveUserSignInLogs`, `AADServicePrincipalSignInLogs`
+- **Entra ID audit log**: `AuditLogs`
+- **Activity log**: `AzureActivity`
+- **Key Vault**: `AZKVAuditLogs`
+- **Storage (blobs)**: `StorageBlobLogs`
+- **App Service**: `AppServiceHTTPLogs`, `AppServiceConsoleLogs`, `AppServiceAppLogs`
+- **Kubernetes (AKS)**: `ContainerLogV2`, `KubeEvents`, `KubePodInventory`, `AKSAudit`, `AKSControlPlane`
+- **Azure Virtual Desktop**: `WVDConnections`, `WVDErrors`
+- **Virtual machines**: `Heartbeat`
 
 Scenarios come in three shapes: **rows** (newest first, or slowest first), **top-N summaries** (counts by caller, by rule, by status), and **time charts** (a count per bucket, with the bucket sized to the time range).
 

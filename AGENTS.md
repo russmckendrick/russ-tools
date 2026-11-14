@@ -183,7 +183,7 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
 - `pnpm test:e2e` — Playwright deep-link, help and API matrix (91 tests) against
   `wrangler pages dev`. It reuses whatever is already listening on :8788, so a stale
   server gets tested instead of the build — `PW_PORT=8798 pnpm test:e2e` moves it.
-- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 11 warnings remain
+- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 6 warnings remain
   (exhaustive-deps and react-refresh) — the raw-palette and off-scale-type warnings are
   all cleared. Don't add errors, and don't let the warning count climb.
 - `pnpm generate:sitemap` — regenerate `public/sitemap.xml` **from the manifests**

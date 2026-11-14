@@ -3379,3 +3379,94 @@ question, the key set) and against a refusal.
 Left for whoever merges the parallel branches: the test and tool counts in
 `AGENTS.md` (other branches add tests and tools too, so they want counting
 once).
+
+### 2026-11-14 — The Azure KQL Query Builder, rebuilt
+
+The owner's brief was one line: the tool is horrible, rebuild it from the ground up.
+No specifics, so the first job was finding out what "horrible" was made of.
+
+**What was wrong.** Using it at 390px and 1440px turned up more than taste:
+
+- Application Gateway could not produce a query at all. Its own default
+  (`Category: ApplicationGatewayAccessLog`) failed its own validation, because the
+  template's options were strings and the validator read `option.value`. The same
+  mismatch drew two dropdowns with four blank options.
+- The AVD client-address filter named `ClientIPAddress`, a column `WVDConnections` does
+  not have.
+- Nothing was escaped: a user name of `bob" or 1==1 //` closed the literal.
+- Editing a favourite deleted it. The handler removed it from the store and pushed the
+  edited copy onto the props array in a timeout.
+- The flow was four tabs and a Generate button around four templates of one shape.
+  At 390px the query began 1,474px down the page, after a button press.
+- Labels were regexed out of column names ("Client I P Address", "http Status_d"), the
+  query block was a hard-coded dark Prism theme in both site themes, and the page still
+  used the two-column split that was withdrawn everywhere else.
+
+**The shape of the replacement.** One column, no Generate button: service and scenario,
+time range and rows, filters, and the query directly under them, rebuilt on every
+change, with one sentence saying what it returns. A second tab, **Write KQL**, is a
+plain editor with the same highlighting; **Edit as KQL** carries a built query into it.
+Saved and recent queries sit below as two lists. The order is controls then query on
+purpose: with the query above the filters, a filter becoming valid adds a line above
+the field being typed in and moves it.
+
+**Typed filters, from a schema that is data.** `scripts/refresh-kql-schemas.mjs` reads
+each table's page in the Azure Monitor table reference on Microsoft Learn and writes
+`src/data/microsoft/azure-monitor-tables.json`: 28 tables and 997 columns with their
+types. `lib/columns.js` adds only what the reference cannot say in a type: which
+string columns are IP addresses or ports, and which take one of a documented set of
+values. Operators follow the type. A value that is wrong says why and its filter is
+left out, so the output always parses; a value that is right is written through
+`stringLiteral` or `verbatimLiteral`, which follow the Kusto string rules as Learn
+states them. `catalog.test.js` fails if any scenario, filter or note names a column
+the reference does not list, and it earned its place inside the first hour by catching
+a `DestinationIp` note on `AZFWApplicationRule`, which has no such column.
+
+**Coverage.** Twelve services and 73 scenarios, in three shapes: rows, top-N
+summaries and time charts whose bucket follows the time range. Every scenario's exact
+query is pinned in `lib/fixtures/scenarios.json`, read once by eye before pinning.
+
+**Three things left out, each on the evidence.**
+
+- *Open in Log Analytics.* Microsoft documents no deep-link format. The ones the
+  portal emits (`.../LogsBlade/resourceId/<id>/source/LogsBlade.AnalyticsShareLinkToQuery/q/<gzip+base64>`)
+  are known only from community posts and all need a workspace resource ID.
+- *A pipeline diagram.* The query is already a top-to-bottom pipeline of five to
+  eight lines and the sentence above it does the explaining. A diagram would restate
+  it and push it off a phone.
+- *NSG flow logs.* `AzureNetworkAnalytics_CL` is a custom table outside the table
+  reference. VNet flow logs (`NTANetAnalytics`) are in.
+
+**Where the documentation disagrees with itself, the query hedges.** The traffic
+analytics schema page gives `FlowStatus` as both a letter and a word depending on the
+section, so the denied-flows scenario filters `in ("Denied", "D")`. The activity log
+schema says a status is `Failed`; workspaces also hold `Failure`. That scenario takes
+both. Sets of values documented in lower case (`member`, `failure`) compare with `=~`
+because the data is not reliably that case.
+
+**Contracts.** The three routes and the four old ids resolve. A share link and a store
+captured from the old tool in a browser, before a line changed, are a fixture replayed
+by unit and e2e tests. Old data is read once into `rt:azure-kql:library` and left
+where it was. Custom templates could not survive as templates, since their fields were
+free-text column names with nothing behind them, so each becomes a saved KQL query.
+The ledger entry lists every visible difference.
+
+**Smaller things.** `build_kql_query` is registered through `useWebMCPTool` and lists
+the catalogue when called with nothing. Radix's empty `onValueChange` echo, which bit
+the Subnet Calculator, is guarded on every select here. `zustand` had no other user and
+is removed, as is the shared `prism-kql.js` grammar nothing loaded. The five
+`exhaustive-deps` warnings went with the old island: lint is 0 errors, 6 warnings.
+
+Verified on the branch with `main` (through PR 41) merged in: `pnpm test` 1846 passing,
+`pnpm lint` 0 errors and 6 warnings (was 11), `pnpm build`, `PW_PORT=8829 pnpm test:e2e`
+93 passing, `pnpm generate:docs` and `pnpm generate:og` run (one card changed). The tool
+was used in a browser at 390px and 1440px in both themes: building, an invalid then a
+valid filter, a custom range, a time chart, saving, renaming, deleting, copying, sharing,
+and opening the captured old share link and an old store with a favourite, a history
+entry and a custom template.
+
+Not verified: no query was run against a real Log Analytics workspace. Names are from
+Microsoft Learn; data in a given workspace depends on its diagnostic settings. The phone
+checks were an emulated 390px touch viewport, not a handset.
+
+Left for whoever merges the parallel branches: the test and tool counts in `AGENTS.md`.
