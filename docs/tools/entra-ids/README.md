@@ -40,14 +40,9 @@ Pasting a GUID into the box on the home page lists this tool first when the GUID
 
 ## Data freshness
 
-`pnpm refresh:entra-ids` rebuilds the dataset from Microsoft's documentation:
+The identifiers are re-pulled from Microsoft's documentation every week, and the date of the copy you are searching is shown under the search box.
 
-- Directory roles: the Microsoft Entra built-in roles reference (`MicrosoftDocs/entra-docs`, `permissions-reference.md`)
-- Graph permissions: the Microsoft Graph permissions reference (`microsoftgraph/microsoft-graph-docs-contrib`, `concepts/permissions-reference.md`)
-- Error codes: the Microsoft Entra authentication and authorization error codes reference (`MicrosoftDocs/entra-docs`, `reference-error-codes.md`)
-- Applications, merged from six pages: Power Platform's "Commonly used Microsoft first-party services and portal apps", "Verify first-party Microsoft applications in sign-in reports", the mandatory multifactor authentication page, the Conditional Access target resources page, the Microsoft Dev Box Conditional Access page, and the Microsoft 365 client application IDs table. Microsoft Graph's own ID is read from the permissions reference.
-
-The fetch date is shown under the search box. Microsoft documents only a subset of AADSTS codes and rewords them; for a code that is not here, `https://login.microsoftonline.com/error` is the live source.
+Microsoft documents only a subset of AADSTS codes and rewords them. For a code that is not listed here, `https://login.microsoftonline.com/error` is the live source.
 
 ## Privacy and saved data
 
@@ -56,6 +51,15 @@ Nothing you paste leaves the browser. The tool does not use localStorage and mak
 <!-- help:end -->
 
 ## Implementation notes
+
+`pnpm refresh:entra-ids` rebuilds the dataset from Microsoft's documentation:
+
+- Directory roles: the Microsoft Entra built-in roles reference (`MicrosoftDocs/entra-docs`, `docs/identity/role-based-access-control/permissions-reference.md`)
+- Graph permissions: the Microsoft Graph permissions reference (`microsoftgraph/microsoft-graph-docs-contrib`, `concepts/permissions-reference.md`)
+- Error codes: the Microsoft Entra authentication and authorization error codes reference (`MicrosoftDocs/entra-docs`, `docs/identity-platform/reference-error-codes.md`)
+- Applications, merged from six pages: Power Platform's "Commonly used Microsoft first-party services and portal apps", "Verify first-party Microsoft applications in sign-in reports", the mandatory multifactor authentication page, the Conditional Access target resources page, the Microsoft Dev Box Conditional Access page, and the Microsoft 365 client application IDs table. Microsoft Graph's own ID is read from the permissions reference.
+
+The exact URLs are in the header and `APP_SOURCES` of `scripts/refresh-entra-ids.mjs`. Counts are not written down anywhere: the tool reports them from the data.
 
 - `lib/entraIds.js` flattens the dataset into searchable entries and classifies the query (GUID, GUID prefix, error code, text).
 - `lib/idIndex.js` reads `entra-id-index.json`, the GUIDs alone (about 65 kB), which `src/lib/paste.js` loads on demand to rank this tool for a pasted GUID.
