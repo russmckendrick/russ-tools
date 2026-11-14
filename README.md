@@ -38,10 +38,13 @@ documentation states its boundary explicitly.
 | **Base64 Encoder/Decoder** | Developer | Encode and decode text and files, including URL-safe output. | `/base64` | [Docs](docs/tools/base64/) |
 | **CRON Expression Builder** | Developer | Build and read cron expressions in plain English. | `/cron` | [Docs](docs/tools/cron-builder/) |
 | **Data Converter** | Developer | Convert between JSON, YAML and TOML, with validation. | `/data-converter` | [Docs](docs/tools/data-converter/) |
+| **Hash & HMAC Generator** | Developer | MD5 and SHA digests of text or a file, with HMAC and a compare check. | `/hash` | [Docs](docs/tools/hash/) |
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](docs/tools/markdown-table-tool/) |
+| **Timestamp Converter** | Developer | Convert Unix epoch seconds, milliseconds and ISO 8601 in any time zone. | `/timestamp` | [Docs](docs/tools/timestamp/) |
+| **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](docs/tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](docs/tools/buzzword-ipsum/) |
 
-24 tools.
+27 tools.
 <!-- TOOLS:END -->
 
 ## Quick start

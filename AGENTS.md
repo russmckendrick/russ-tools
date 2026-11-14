@@ -56,7 +56,9 @@ the raw accent is ~1.6:1 on paper and cannot be a ring or text there. There is o
 (`ui/toaster.jsx`, mounted by `ToolIsland`), one tool-level help affordance (the prerendered
 `/<tool>/help` page — `src/pages/[tool]/help.astro`, linked from the band by `ToolLayout.astro`; the
 old drawer `ui/help-dialog.jsx` and `ui/sheet.jsx` are deleted), one field-level hint
-(`ui/help-hint.jsx`), and
+(`ui/help-hint.jsx`), one copy control (`ui/copy-button.jsx`, which confirms in place with a
+tick and only toasts on failure), one ruled list of named, copyable values
+(`ui/value-list.jsx`), and
 one source for the Material tool icons (`src/shell/icons.mjs`, rendered by the Astro
 `ToolIcon` and the React `ui/tool-icon.jsx`).
 
@@ -131,7 +133,7 @@ or if any pair drops below its WCAG floor — it has caught five real contrast f
 
 A prior version of this file misdescribed the codebase. Corrected facts:
 
-- There are **24 tools** (2026-11-14). Don't take a count from prose anywhere — the generated tables
+- There are **27 tools** (2026-11-14). Don't take a count from prose anywhere — the generated tables
   in the READMEs are the only inventory that is checked (`src/tools/docs.test.js`).
 - Theming is a **pre-paint inline script** in `BaseLayout.astro` reading `vite-ui-theme`
   from localStorage, plus `src/shell/appearance-controls.js`. There is no React theme
@@ -173,11 +175,11 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
   stable contract and an unpinned upgrade would fail the drift test on an untouched file.
   It reads only `colors`, `typography`, `rounded` and `spacing`; `borderWidth`, `shadow`,
   `motion` and `components` are documentation, transcribed by hand into `globals.css`.
-- `pnpm test` — Vitest (1080 tests; **keep these green**) · `pnpm test:watch` to iterate.
+- `pnpm test` — Vitest (1247 tests; **keep these green**) · `pnpm test:watch` to iterate.
   The count dropped from ~1000 when the palettes were retired: `tokens.contrast.test.js`
   ran its pair list over 12 palette/mode combinations and now runs it over 2. It measures
   *more* roles than before, against fewer themes.
-- `pnpm test:e2e` — Playwright deep-link, help and API matrix (90 tests) against
+- `pnpm test:e2e` — Playwright deep-link, help and API matrix (98 tests) against
   `wrangler pages dev`. It reuses whatever is already listening on :8788, so a stale
   server gets tested instead of the build — `PW_PORT=8798 pnpm test:e2e` moves it.
 - `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 11 warnings remain

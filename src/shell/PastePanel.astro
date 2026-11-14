@@ -27,7 +27,7 @@ const { label = 'Start with what you have', value = '' } = Astro.props;
       autocomplete="off"
       spellcheck="false"
       value={value}
-      placeholder="Domain, IP, CIDR, ASN, JWT, cron, GUID or SKU"
+      placeholder="Domain, IP, CIDR, ASN, JWT, cron, GUID, timestamp or SKU"
       aria-describedby="rt-jump-desc"
     />
     <button class="rt-jump-go" type="submit">
@@ -38,8 +38,8 @@ const { label = 'Start with what you have', value = '' } = Astro.props;
     </button>
   </div>
   <p class="rt-visually-hidden" id="rt-jump-desc">
-    Paste a domain, IP address, CIDR, ASN, JWT, cron expression, GUID, or a
-    licence code or SKU part number. The tools that can read it are listed below the
+    Paste a domain, IP address, CIDR, ASN, JWT, cron expression, GUID, Unix
+    timestamp, or a licence code or SKU part number. The tools that can read it are listed below the
     field; Enter opens the first.
   </p>
   <!--

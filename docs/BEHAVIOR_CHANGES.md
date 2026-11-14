@@ -24,6 +24,22 @@ Two rules:
 
 ## Landed
 
+### The paste panel reads timestamps, and a GUID gets a third answer (2026-11-14)
+
+Two inputs to the index's paste panel now dispatch differently, both because of tools that
+did not exist before.
+
+- A bare **ten-digit number** used to be one chip, BGP Explorer, because ten digits is a
+  legal 32-bit AS number. It is now Timestamp Converter first and BGP Explorer second, and
+  Enter opens the converter. A ten-digit number above 4294967295 gets the converter alone.
+  A bare **thirteen-digit number** used to fall through to the Base64 encoder and now opens
+  the converter. Numbers of any other length, and anything prefixed `AS`, are unchanged.
+- A bare **GUID** still offers Azure RBAC and M365 Licences, in that order, and now offers
+  the UUID decoder third. Enter still opens Azure RBAC.
+
+`src/lib/paste.test.js` and the paste-panel test in `e2e/deeplinks.spec.js` assert the new
+lists.
+
 ### The three lookup workers are retired (2026-11-14)
 
 `ssl.russ.tools`, `whois.russ.tools` and `tenant.russ.tools` no longer exist. The

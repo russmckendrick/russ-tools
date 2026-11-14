@@ -32,10 +32,13 @@ network, cloud and platform work.
 | **Base64 Encoder/Decoder** | Developer | Encode and decode text and files, including URL-safe output. | `/base64` | [Docs](tools/base64/) |
 | **CRON Expression Builder** | Developer | Build and read cron expressions in plain English. | `/cron` | [Docs](tools/cron-builder/) |
 | **Data Converter** | Developer | Convert between JSON, YAML and TOML, with validation. | `/data-converter` | [Docs](tools/data-converter/) |
+| **Hash & HMAC Generator** | Developer | MD5 and SHA digests of text or a file, with HMAC and a compare check. | `/hash` | [Docs](tools/hash/) |
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](tools/markdown-table-tool/) |
+| **Timestamp Converter** | Developer | Convert Unix epoch seconds, milliseconds and ISO 8601 in any time zone. | `/timestamp` | [Docs](tools/timestamp/) |
+| **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](tools/buzzword-ipsum/) |
 
-24 tools.
+27 tools.
 <!-- TOOLS:END -->
 
 Tools without a linked document work the same way as the rest; nobody has written one up
