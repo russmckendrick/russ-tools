@@ -74,11 +74,11 @@ test.describe('home and shell pages', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Microsoft & Azure' })).toBeVisible();
     await expect(page.locator('.rt-card-badge')).toHaveCount(0);
 
-    const platformFilter = page.getByRole('radio', { name: 'Microsoft & Azure 8' });
+    const platformFilter = page.getByRole('radio', { name: 'Microsoft & Azure 10' });
     await expect(platformFilter).toBeVisible();
     await expect(page.locator('.rt-card[data-category="azure"]')).toHaveCount(0);
     await expect(page.locator('.rt-card[data-category="microsoft"]')).toHaveCount(0);
-    await expect(page.locator('.rt-card[data-category="microsoft-azure"]')).toHaveCount(8);
+    await expect(page.locator('.rt-card[data-category="microsoft-azure"]')).toHaveCount(10);
 
     await platformFilter.click();
     await expect(platformFilter).toHaveAttribute('aria-checked', 'true');
@@ -86,13 +86,13 @@ test.describe('home and shell pages', () => {
 
     // Filtering hides the rows that do not match, and a section left with
     // none goes with them.
-    await expect(page.locator('.rt-card:visible')).toHaveCount(8);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(10);
     await expect(page.locator('.rt-section:visible')).toHaveCount(1);
 
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
   });
 
   test('the catalogue rows sit in two flush columns', async ({ page }) => {
@@ -115,7 +115,7 @@ test.describe('home and shell pages', () => {
       };
     });
 
-    expect(total).toBe(33);
+    expect(total).toBe(35);
     expect(lefts, `row left edges: ${lefts}`).toHaveLength(2);
     expect(widths, `row widths: ${widths}`).toHaveLength(1);
   });
@@ -139,7 +139,7 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
   });
 
   test('a shared category link arrives filtered', async ({ page }) => {
@@ -173,12 +173,14 @@ test.describe('home and shell pages', () => {
     await expect(chips).toHaveCount(3);
     await expect(chips.first()).toHaveAttribute('href', '/subnet-calculator/10.0.0.0/22');
 
-    // A GUID names either an Azure role definition or a Microsoft 365 SKU,
-    // and nothing in the string says which — so the panel says both. The
-    // UUID decoder sits third: it reads any GUID, but says what kind of
-    // identifier it is rather than what it identifies.
+    // A GUID names an Azure role definition, a Microsoft 365 SKU or an Entra
+    // identifier, and nothing in the string says which — so the panel says
+    // all of them. The UUID decoder sits third: it reads any GUID, but says
+    // what kind of identifier it is rather than what it identifies. The
+    // Entra lookup is last for a GUID its data does not hold, which this one
+    // (Contributor, an RBAC role id) is not.
     await input.fill('b24988ac-6180-42a0-ab88-20f7382dd24c');
-    await expect(chips).toHaveCount(3);
+    await expect(chips).toHaveCount(4);
     await expect(chips.first()).toHaveAttribute(
       'href',
       '/azure-rbac/b24988ac-6180-42a0-ab88-20f7382dd24c'
@@ -190,6 +192,25 @@ test.describe('home and shell pages', () => {
     await expect(chips.nth(2)).toHaveAttribute(
       'href',
       '/uuid/b24988ac-6180-42a0-ab88-20f7382dd24c'
+    );
+    await expect(chips.nth(3)).toHaveAttribute(
+      'href',
+      '/entra-ids/b24988ac-6180-42a0-ab88-20f7382dd24c'
+    );
+
+    // A GUID the Entra lookup does hold is not a guess: once its index has
+    // loaded the lookup moves to the front and says what it recognised, and
+    // the other three keep their order behind it. Microsoft Graph's app id.
+    await input.fill('00000003-0000-0000-c000-000000000000');
+    await expect(chips).toHaveCount(4);
+    await expect(chips.first()).toHaveAttribute(
+      'href',
+      '/entra-ids/00000003-0000-0000-c000-000000000000'
+    );
+    await expect(chips.first()).toHaveAttribute('title', 'Microsoft application ID');
+    await expect(chips.nth(1)).toHaveAttribute(
+      'href',
+      '/azure-rbac/00000003-0000-0000-c000-000000000000'
     );
 
     // Ten digits is a Unix timestamp first and a 32-bit AS number second;
@@ -421,7 +442,7 @@ test.describe('the index remembers', () => {
     await expect(group(page, 'Pinned')).toBeHidden();
     await expect(group(page, 'Recent').getByRole('link').first()).toHaveAttribute('href', '/jwt');
     // The catalogue beneath is untouched.
-    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
   });
 
   test('a tool can be pinned, unpinned and reordered by pinning again', async ({ page }) => {
@@ -461,7 +482,7 @@ test.describe('the index remembers', () => {
     await pin('JWT Decoder/Validator').click();
     await expect(page.locator('#rt-mine')).toBeHidden();
     expect(await stored(page)).toEqual({ pinned: null, recent: null });
-    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
   });
 
   test('the pin works from the keyboard', async ({ page }) => {
@@ -497,7 +518,7 @@ test.describe('the index remembers', () => {
     await seed(page, { recent: ['base64'] });
     await page.getByRole('button', { name: 'Clear recent tools' }).click();
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.getByRole('radio', { name: 'All 33' })).toBeFocused();
+    await expect(page.getByRole('radio', { name: 'All 35' })).toBeFocused();
   });
 
   test('a stored id the registry no longer has is ignored', async ({ page }) => {
@@ -514,7 +535,7 @@ test.describe('the index remembers', () => {
     // Nothing left to show is the same as nothing stored.
     await seed(page, { pinned: ['network-designer'], recent: ['a-tool-that-never-existed'] });
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
   });
 
   test('damaged storage leaves the index standing', async ({ page }) => {
@@ -525,7 +546,7 @@ test.describe('the index remembers', () => {
     });
     await page.reload();
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
     await expect(page.getByRole('searchbox', { name: 'Filter tools by name' })).toBeVisible();
   });
 
@@ -543,7 +564,7 @@ test.describe('the index remembers', () => {
 
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
     await expect(strip(page).getByRole('link')).toHaveCount(3);
   });
 
@@ -829,6 +850,63 @@ test.describe('param deep links — rewrite + island application', () => {
     // out of a template has to land on the role, not on a search box.
     await expectRewrite(page, '/azure-rbac/b24988ac-6180-42a0-ab88-20f7382dd24c', 'Azure RBAC Role Explorer');
     await expect(page.getByText('Contributor').first()).toBeVisible();
+  });
+
+  test('/azure-regions/:query opens the region the link names', async ({ page }) => {
+    await expectRewrite(page, '/azure-regions/uksouth', 'Azure Regions and VM Sizes');
+    await expect(page.locator('#region-query')).toHaveValue('uksouth');
+    // The region is selected, not merely filtered to: its pair is on screen.
+    await expect(page.getByRole('heading', { name: 'UK South', exact: true })).toBeVisible();
+    await expect(page.getByText('UK West (ukwest)')).toBeVisible();
+  });
+
+  test('the region map frames what the list is filtered to and opens a region', async ({ page }) => {
+    await page.goto('/azure-regions');
+    const map = page.getByRole('group', { name: 'Map of Azure regions' });
+    await expect(map).toBeVisible();
+    const whole = await map.getAttribute('viewBox');
+
+    // Narrowing the list zooms the map, which is also what separates two
+    // markers that sit on top of each other at world scale.
+    await page.locator('#region-query').fill('japan');
+    await expect(map).not.toHaveAttribute('viewBox', whole);
+
+    await map.getByRole('button', { name: /^Japan West \(japanwest\)/ }).click();
+    await expect(page.getByRole('heading', { name: 'Japan West', exact: true })).toBeVisible();
+    await expect(page.getByText('Japan East (japaneast)')).toBeVisible();
+    // The pair is drawn, not just named.
+    await expect(map.locator('line')).toHaveCount(1);
+  });
+
+  test('/azure-regions/:query opens a VM size on the sizes tab, decoded', async ({ page }) => {
+    // The same param carries a region or a size; the shape decides the tab.
+    await expectRewrite(page, '/azure-regions/Standard_D4s_v5', 'Azure Regions and VM Sizes');
+    await expect(page.getByRole('tab', { name: 'VM sizes' })).toHaveAttribute('data-state', 'active');
+    await expect(page.locator('#size-query')).toHaveValue('Standard_D4s_v5');
+    const decoded = page.getByRole('region', { name: 'Name decoded' });
+    await expect(decoded).toContainText('compatible with any Premium SSD type');
+    await expect(page.getByRole('region', { name: 'Published specification' })).toContainText('16 GiB');
+  });
+
+  test('/entra-ids/:query says what a GUID is', async ({ page }) => {
+    // Microsoft Graph's application id: the GUID most often pasted here.
+    await expectRewrite(page, '/entra-ids/00000003-0000-0000-c000-000000000000', 'Entra ID Lookup');
+    await expect(page.locator('#entra-query')).toHaveValue('00000003-0000-0000-c000-000000000000');
+    await expect(page.getByText('is the application (client) ID of Microsoft Graph')).toBeVisible();
+  });
+
+  test('/entra-ids/:query names the side of a Graph permission', async ({ page }) => {
+    // User.Read's delegated scope id. "It is User.Read" is half an answer.
+    await expectRewrite(page, '/entra-ids/e1fe6dd8-ba31-4d61-89e7-88639da4683d', 'Entra ID Lookup');
+    await expect(
+      page.getByText('is the delegated scope ID of the Microsoft Graph permission User.Read')
+    ).toBeVisible();
+    await expect(page.getByText('Sign in and read user profile').first()).toBeVisible();
+  });
+
+  test('/entra-ids/:query reads an AADSTS code', async ({ page }) => {
+    await expectRewrite(page, '/entra-ids/AADSTS50076', 'Entra ID Lookup');
+    await expect(page.getByText('UserStrongAuthClientAuthNRequired').first()).toBeVisible();
   });
 
   test('/m365-licenses/:query resolves a SKU part number', async ({ page }) => {

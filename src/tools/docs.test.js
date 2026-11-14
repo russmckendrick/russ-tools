@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { toolTable } from '../../scripts/generate-docs.mjs';
+import { extractHelpMarkdown } from '../lib/helpMarkdown.js';
 
 /**
  * The tool inventory in the READMEs, pinned to the registry.
@@ -39,5 +40,23 @@ describe('generated tool tables', () => {
     expect(tableIn('README.md')).toContain('](docs/tools/');
     expect(tableIn('docs/README.md')).toContain('](tools/');
     expect(tableIn('docs/README.md')).not.toContain('](docs/tools/');
+  });
+});
+
+describe('help blocks', () => {
+  /**
+   * The help page renders CommonMark, without the GFM extension, so a pipe
+   * table in a help block reaches the reader as a paragraph of pipes. Two
+   * tools shipped one before anyone opened their help page. Use a list, or
+   * put the table below `help:end`, where GitHub renders it.
+   */
+  const docs = readdirSync('docs/tools', { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => `docs/tools/${entry.name}/README.md`);
+
+  it.each(docs)('%s has no table the help page cannot draw', (file) => {
+    const help = extractHelpMarkdown(readFileSync(file, 'utf8'));
+    const rows = help.split('\n').filter((line) => /^\s*\|.*\|\s*$/.test(line));
+    expect(rows, `pipe-table rows in the help block of ${file}`).toEqual([]);
   });
 });

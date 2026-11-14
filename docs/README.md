@@ -19,9 +19,11 @@ network, cloud and platform work.
 | **WHOIS Lookup Tool** | Network | Registration and ownership detail for domains and IPs. | `/whois-lookup` | [Docs](tools/whois-lookup/) |
 | **Azure KQL Query Builder** | Azure | Build Log Analytics queries from scenarios with typed filters. | `/azure-kql` | [Docs](tools/azure-kql/) |
 | **Azure RBAC Role Explorer** | Azure | Search 504 built-in Azure roles by name or by the action they grant. | `/azure-rbac` | [Docs](tools/azure-rbac/) |
+| **Azure Regions and VM Sizes** | Azure | Look up Azure regions, their pairs and zones, and decode VM size names. | `/azure-regions` | [Docs](tools/azure-regions/) |
 | **Azure Resource Naming Tool** | Azure | Generate and validate names against Microsoft CAF rules. | `/azure-naming` | [Docs](tools/azure-naming/) |
 | **Azure Service Tags** | Azure | Search and compare Microsoft Azure service-tag IP ranges. | `/azure-service-tags` | [Docs](tools/azure-service-tags/) |
 | **Conditional Access Analyser** | Microsoft | Explain exported Conditional Access policies and spot the gaps. | `/conditional-access` | [Docs](tools/conditional-access/) |
+| **Entra ID Lookup** | Microsoft | Identify Entra app IDs, Graph permission IDs, role IDs and AADSTS codes. | `/entra-ids` | [Docs](tools/entra-ids/) |
 | **Microsoft 365 License Decoder** | Microsoft | Turn licence GUIDs and SKU part numbers into names and service plans. | `/m365-licenses` | [Docs](tools/m365-licenses/) |
 | **Microsoft Portals (GDAP)** | Microsoft | Deep links into 91 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](tools/microsoft-portals/) |
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](tools/tenant-lookup/) |
@@ -44,7 +46,7 @@ network, cloud and platform work.
 | **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](tools/buzzword-ipsum/) |
 
-33 tools.
+35 tools.
 <!-- TOOLS:END -->
 
 Tools without a linked document work the same way as the rest; nobody has written one up

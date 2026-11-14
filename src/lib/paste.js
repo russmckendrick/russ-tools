@@ -25,12 +25,13 @@ import { parseIPv6, parseIPv6Cidr } from '../tools/subnet-calculator/lib/ipv6.js
 import { looksLikeCron } from '../tools/cron-builder/lib/cron.js';
 import { detectQueryKind } from '../tools/m365-licenses/lib/licenses.js';
 import { hasPem, splitPem, toFragment } from '../tools/cert-decoder/lib/pem.js';
+import { kindsOf, loadIdIndex } from '../tools/entra-ids/lib/idIndex.js';
 import { cleanHostname, isHostname } from './hostname.js';
 
 /** A pasted value long enough to be a file is not a link. */
 const MAX_LENGTH = 2000;
 
-/** The one shape two tools share: an Azure role id and a Microsoft 365 SKU id. */
+/** The one shape four tools share: role ids, SKU ids and Entra's own identifiers. */
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ASN = /^(?:AS)?\d{1,10}$/i;
 
@@ -125,7 +126,8 @@ const tool = (toolId, label, path, href, why) => ({ toolId, label, path, href, w
  *     parsers run before the hostname pattern.
  *   - a cron expression is only digits and punctuation in five fields, which
  *     nothing else here satisfies.
- *   - a GUID is dashed hex and matches nothing above it; a SKU part number is
+ *   - a GUID is dashed hex and matches nothing above it, and is the one shape
+ *     whose order `refine()` may change afterwards; a SKU part number is
  *     upper-case and underscored and a licence code is two letters and a
  *     digit, and both are offered ahead of — not instead of — the encoder,
  *     because neither test consults the licence dataset.
@@ -220,22 +222,29 @@ function route(input) {
   }
 
   /*
-    A bare GUID is genuinely two answers, which is the case this panel was
-    built for. Azure role definitions and Microsoft 365 SKUs and service plans
-    are all identified by one, and nothing in the string says which — an RBAC
-    id copied out of a Bicep template and a SKU id copied out of a Graph
-    response are the same 36 characters. Both are offered; RBAC leads because
-    role ids are the ones people paste from something they are editing.
+    A bare GUID is genuinely several answers, which is the case this panel was
+    built for. Azure role definitions, Microsoft 365 SKUs and service plans,
+    and Entra applications, Graph permissions and directory roles are all
+    identified by one, and nothing in the string says which — an RBAC id
+    copied out of a Bicep template and a SKU id copied out of a Graph response
+    are the same 36 characters. All are offered; RBAC leads because role ids
+    are the ones people paste from something they are editing.
 
     The UUID decoder comes third. It can read any GUID, which is exactly why
     it does not lead: it says what kind of identifier this is, where the two
     above say what it identifies.
+
+    The Entra lookup is last here and is the one entry whose place is not
+    final. This function cannot know whether the GUID is one that tool holds
+    without its index, and the index is a download; `refine()` below loads it
+    and moves the lookup to the front when it recognises the value.
   */
   if (GUID.test(value)) {
     return [
       tool('azure-rbac', 'Azure RBAC', '/azure-rbac', `/azure-rbac/${seg(value)}`, 'GUID'),
       tool('m365-licenses', 'M365 Licences', '/m365-licenses', `/m365-licenses/${seg(value)}`, 'GUID'),
       tool('uuid', 'UUID Decoder', '/uuid', `/uuid/${seg(value)}`, 'GUID'),
+      tool('entra-ids', 'Entra ID Lookup', '/entra-ids', `/entra-ids/${seg(value)}`, 'GUID'),
     ];
   }
 
@@ -340,4 +349,44 @@ export function suggest(input) {
   const raw = input.trim();
   if (!isDetailedUrl(raw)) return matches;
   return [tool('url', 'URL Parser', '/url', `/url#url=${encodeURIComponent(raw)}`, 'URL'), ...matches];
+}
+
+const ENTRA_WHY = {
+  application: 'Microsoft application ID',
+  permission: 'Microsoft Graph permission ID',
+  role: 'Entra directory role ID',
+};
+
+/**
+ * The second pass over `suggest()`'s answer, for the one question it cannot
+ * settle from the string: is this GUID one the Entra lookup holds?
+ *
+ * When it is, that tool is no longer one guess among four. It moves to the
+ * front and its reason names what was recognised, so Enter lands on the
+ * answer. When it is not, or the value is not a GUID, or the index cannot be
+ * loaded, the list comes back untouched: a failed download must never cost
+ * the panel the suggestions it already had.
+ *
+ * Kept apart from `suggest()` so that function stays synchronous and pure,
+ * and so the 65 kB of ids are fetched only by someone who pastes a GUID.
+ *
+ * @param {string} input
+ * @param {ReturnType<typeof suggest>} matches
+ * @param {() => Promise<Record<string, string>>} [loadIndex]
+ * @returns {Promise<ReturnType<typeof suggest>>}
+ */
+export async function refine(input, matches, loadIndex = loadIdIndex) {
+  const at = matches.findIndex((match) => match.toolId === 'entra-ids');
+  if (at === -1) return matches;
+
+  let kinds = [];
+  try {
+    kinds = kindsOf(await loadIndex(), subject(String(input ?? '').trim()));
+  } catch {
+    return matches;
+  }
+  if (kinds.length === 0) return matches;
+
+  const recognised = { ...matches[at], why: ENTRA_WHY[kinds[0]] };
+  return [recognised, ...matches.filter((_, index) => index !== at)];
 }

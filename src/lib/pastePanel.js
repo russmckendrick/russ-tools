@@ -7,7 +7,7 @@
  * exercise. Neither imports React, because neither page ships any.
  */
 
-import { suggest } from './paste.js';
+import { refine, suggest } from './paste.js';
 
 /**
  * Wire up the panel rendered by `shell/PastePanel.astro`.
@@ -28,17 +28,7 @@ export function wirePastePanel({ autofocus = false } = {}) {
   const go = form.querySelector('.rt-jump-go');
   const resting = hint.innerHTML;
 
-  const render = () => {
-    const matches = suggest(input.value);
-    go.disabled = matches.length === 0;
-
-    if (!input.value.trim()) {
-      hint.innerHTML = resting;
-      hint.setAttribute('data-resting', '');
-      return matches;
-    }
-
-    hint.removeAttribute('data-resting');
+  const draw = (matches) => {
     // The tool's own path, not the full href: five chips each repeating
     // `example.com` is five near-identical strings of noise, and the value is
     // already sitting in the field directly above them.
@@ -47,21 +37,46 @@ export function wirePastePanel({ autofocus = false } = {}) {
         const link = document.createElement('a');
         link.className = 'rt-kbd';
         link.href = match.href;
+        link.title = match.why;
         link.textContent = `${match.label} → ${match.path}`;
         if (i === 0) link.setAttribute('data-first', '');
         return link;
       })
     );
-    return matches;
+  };
+
+  // Resolves to the settled answer for what is in the field now. `suggest()`
+  // is instant; `refine()` may reorder a GUID's chips once the Entra index
+  // has loaded.
+  const render = () => {
+    const value = input.value;
+    const matches = suggest(value);
+    go.disabled = matches.length === 0;
+
+    if (!value.trim()) {
+      hint.innerHTML = resting;
+      hint.setAttribute('data-resting', '');
+      return Promise.resolve(matches);
+    }
+
+    hint.removeAttribute('data-resting');
+    draw(matches);
+
+    return refine(value, matches).then((refined) => {
+      // Typing carried on while the index loaded: this answer is stale.
+      if (input.value === value && refined !== matches) draw(refined);
+      return refined;
+    });
   };
 
   input.addEventListener('input', render);
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     // Recomputed rather than read off the last input event: autofill, a
-    // programmatic `.value`, and /404's prefill never fire one.
-    const matches = render();
+    // programmatic `.value`, and /404's prefill never fire one. Awaited so
+    // that Enter pressed straight after a paste follows the refined order.
+    const matches = await render();
     if (matches.length) location.assign(matches[0].href);
   });
 

@@ -3865,3 +3865,139 @@ The one real overlap was the paste panel, where both branches had a rule for a p
 The headers chip still carries the host alone, so a pasted page URL checks the site's
 root. `pnpm test` is 2982, `pnpm test:e2e` is 144, `pnpm lint` is 0 errors and 6 warnings,
 and the build is clean.
+
+### 2026-11-14 — Two reference tools: Azure Regions and VM Sizes, Entra ID Lookup (28 → 30)
+
+Second wave of the tools the catalogue lacked. Both follow the snapshot pattern
+of `azure-rbac`: a refresh script reads Microsoft's published pages, the output
+is committed with its fetch date, and the browser searches it. Nothing in
+either dataset is typed by hand.
+
+**Azure Regions and VM Sizes (`/azure-regions`, `/azure-regions/:query`).**
+`pnpm refresh:azure-regions` writes two files. `regions.json` (59 regions) comes
+from the Learn regions list, requested with `Accept: text/markdown`: the
+article's repository is private, but Learn serves any article as markdown on
+that header, and the per-continent tabs on the page are where `area` comes
+from. `vm-sizes.json` (1,274 sizes in 163 series) comes from the series
+articles in `MicrosoftDocs/azure-compute-docs`, listed through one
+unauthenticated GitHub tree request; each article's tables are merged by size
+name. The letter meanings come from the naming-conventions article and the
+family list from the sizes overview.
+
+What is not there, and the tool says so on the page: which sizes a region
+offers, zone restrictions and prices. Those need the Resource SKUs API and a
+subscription. Sovereign-cloud regions are on other pages and are not read.
+
+The decoder was checked against every published name, which found the case the
+convention does not cover: Dv2, DSv2 and Av2 number their sizes, so
+`Standard_D3_v2` has four vCPUs. `decodeSizeName` takes the published record
+and reports a disagreeing number as a size number with the real count beside
+it. A letter or segment the convention does not list (`cc`, `Promo`) is shown
+as unlisted, not guessed.
+
+Region short codes are the Azure Naming tool's, read through the module it
+already used (`src/utils/azure/region-parser.js`, which now also returns the
+file's `geo_code` map), so there is one list. Eleven newer regions have no
+code in that file yet and the tool says so per region.
+
+Upstream mistakes are kept visible, not patched: six names that appear only in
+a storage or network table (a row missing its family letter, for instance) are
+dropped by the script and logged; `Standard_B1ls2` and `Standard_L80s_v26` are
+footnote digits glued to a name in the source and are published as they stand.
+
+**Entra ID Lookup (`/entra-ids`, `/entra-ids/:query`).** One search over four
+kinds of identifier, with a row of tabs to narrow it: 288 first-party
+application IDs, 1,031 Microsoft Graph permissions (delegated, application and
+resource-specific, each with its own ID), 139 directory role template IDs and
+352 AADSTS codes. A pasted GUID gets a sentence saying what it is, including
+which side of a permission. One unified list read better at 390px than three
+separate tabbed tables, and the tabs scroll as a row there.
+
+`scripts/refresh-entra-ids.mjs` was extended, not replaced. It still writes
+`entra-well-known-ids.json` for the Conditional Access explainer, and now also
+`entra-ids.json` and `entra-id-index.json`. AADSTS codes made it in because the
+error-code reference is one markdown table that parses reliably.
+
+Microsoft no longer publishes one list of first-party application IDs: the
+support article that carried it now lists four. The applications are the union
+of five documentation pages that tabulate IDs, plus Microsoft Graph's own ID
+from the permissions reference. That is a few hundred of several thousand, and
+the no-match state says a miss does not mean "not Microsoft". The script's
+older inline application list stays out of the new dataset; eight of its 22
+GUIDs are in none of the fetched pages, and the script prints them on each run.
+
+**Paste panel.** A bare GUID now offers four tools. `suggest()` is unchanged in
+kind (synchronous, lookup last); a new `refine()` loads the 65 kB id index the
+first time a GUID is pasted and moves Entra ID Lookup to the front when the
+GUID is one it holds. Enter waits for that. Logged in `BEHAVIOR_CHANGES.md`.
+
+**Shared.** `scripts/lib/markdown-tables.mjs` holds the table parsing both
+scripts need. Icons `map-pinned` and `scan-text` were drawn. Bundle cost, all
+behind dynamic imports: regions 12.7 kB (2.0 kB gzip), VM sizes 222 kB
+(16.7 kB), Entra dataset 629 kB (115 kB), Entra id index 65 kB (37.5 kB).
+
+Checked at 390px and 1440px in both themes. `pnpm test` 1821, `pnpm lint` 0
+errors and 11 warnings, `pnpm build` clean, `pnpm test:e2e` 106 with five new
+deep-link tests. The frozen list is 55 routes.
+
+Not done: per-region VM availability and prices (authenticated), sovereign
+regions, GPU counts in the size table, permissions of APIs other than Graph,
+and a complete first-party application list (not published).
+
+**A map of the regions, added the same day.** The Regions view now opens on an
+interactive map above the table: a marker per region (filled where there are
+availability zones), a click selects the region, and its pair gets a dashed
+ring and a line. Filtering the list zooms the map to what is left; three
+buttons and a drag do the rest.
+
+It is drawn without a mapping library and without map tiles. A tile server
+would see every visitor's address, which the site promises not to do, and a
+library is most of a megabyte to place fifty dots. Instead `lib/map.js` holds
+an Equal Earth projection and the `viewBox` arithmetic; the refresh script
+imports the same `project()` to turn Natural Earth's 1:110m land outline
+(public domain) into one SVG path, `world-land.json`, 50 kB (19.8 kB gzip) and
+loaded after the island. Markers and coastline therefore cannot disagree.
+
+Coordinates are Microsoft's, from the data file behind its datacentre globe
+(`datacenters.microsoft.com/globe/data/geo/regions.json`), matched by
+programmatic name and then by display name. It places 48 of the 59 regions.
+The other eleven, mostly restricted pairs, are listed under the map by name
+and open from there; none was positioned by hand.
+
+On a phone a world map 350px wide is 150px tall and its markers cannot be
+pressed, so there the frame is a fixed 256px and `minZoom(aspect)` raises the
+floor: the map fills the frame top to bottom, opens on Europe and Africa, and
+pans sideways for the rest. At that floor the drawing only needs horizontal
+drags, so `touch-action` is `pan-y` and the page still scrolls under a thumb;
+it becomes `none` once zoomed in. The zoom buttons sit above the map, not on
+it, after covering Japan in the first attempt. Markers are not tab stops: the
+table under the map is the keyboard route to every region, and 48 extra stops
+before it would be a worse one.
+
+`pnpm test` 1844, `pnpm test:e2e` 107, lint unchanged. Checked at 390px and
+1440px in both themes, including a real drag.
+
+**Help tables.** Both new help blocks used a pipe table, and the help page
+renders CommonMark without GFM, so each reached the reader as a paragraph of
+pipes. They are lists now, and `docs.test.js` fails on a table row inside any
+tool's `help:start` / `help:end` block. `pnpm test` is 1874 with that check.
+
+**After taking `main` in.** This branch landed behind the Azure KQL rebuild,
+the dependency updates, the index's pinned and recent strip, and the URL
+Parser, Regex Tester and Text Diff. The counts above were this branch alone;
+together the registry holds 33 tools and the frozen list 59 routes, `pnpm test`
+is 2712 and `pnpm test:e2e` is 132. The overlaps were additive. In
+`src/lib/paste.js`, `suggest()` became a wrapper over `route()` that offers the
+URL Parser for an address with a path or query; `refine()` sits after it
+unchanged, and the GUID branch it reorders now lives in `route()`. Both sides
+had moved the frozen route count from 51 to 55, so git saw no conflict there
+and the number was simply wrong until the test said 59.
+
+**After taking `main` in a third time.** The HTTP Security Headers checker and
+the SAML Decoder landed first, so this branch is the last of the wave. With
+everything together the registry holds 35 tools and the frozen list 62 routes,
+`pnpm test` is 3129 and `pnpm test:e2e` is 152. The same trap as before, twice
+over: both branches had independently written 33 for the tool count in the
+registry and e2e tests, so git merged them without complaint and every one of
+those numbers was two short. The paste panel's GUID order is unchanged beside
+the new URL and domain rules.

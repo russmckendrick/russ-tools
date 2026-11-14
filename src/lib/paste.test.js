@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { suggest } from './paste.js';
+import { refine, suggest } from './paste.js';
 import { allRoutes } from '../tools/registry.mjs';
 import { fromFragment, splitPem } from '../tools/cert-decoder/lib/pem.js';
 
@@ -150,13 +150,15 @@ describe('suggest', () => {
    * The four collisions the ordering exists to resolve. Each of these inputs
    * satisfies more than one detector; the assertion is which one wins.
    */
-  it('offers Azure RBAC and the licence decoder for a bare GUID, with the UUID decoder behind them', () => {
+  it('offers Azure RBAC and the licence decoder for a bare GUID, with the UUID decoder and the Entra lookup behind them', () => {
     // Contributor's role definition id. Nothing in the string says whether it
-    // names a role or a SKU, so the panel says both rather than guessing.
+    // names a role or a SKU, so the panel says both rather than guessing. The
+    // Entra lookup is last until `refine()` has had a look at its index.
     expect(ids('b24988ac-6180-42a0-ab88-20f7382dd24c')).toEqual([
       'azure-rbac',
       'm365-licenses',
       'uuid',
+      'entra-ids',
     ]);
     expect(first('b24988ac-6180-42a0-ab88-20f7382dd24c').href).toBe(
       '/azure-rbac/b24988ac-6180-42a0-ab88-20f7382dd24c'
@@ -165,10 +167,72 @@ describe('suggest', () => {
       'azure-rbac',
       'm365-licenses',
       'uuid',
+      'entra-ids',
     ]);
     expect(suggest('b24988ac-6180-42a0-ab88-20f7382dd24c')[2].href).toBe(
       '/uuid/b24988ac-6180-42a0-ab88-20f7382dd24c'
     );
+    expect(suggest('b24988ac-6180-42a0-ab88-20f7382dd24c')[3].href).toBe(
+      '/entra-ids/b24988ac-6180-42a0-ab88-20f7382dd24c'
+    );
+  });
+
+  /**
+   * `refine()` is the half of the GUID branch that needs data. These run
+   * against the checked-in index, so they also prove the index is the one the
+   * panel will actually load.
+   */
+  describe('refine', () => {
+    const refined = async (value, loadIndex) => {
+      const matches = suggest(value);
+      return { matches, result: await refine(value, matches, loadIndex) };
+    };
+
+    it('puts the Entra lookup first for a GUID it recognises, and says what it recognised', async () => {
+      // Microsoft Graph's application id, a Graph permission (User.Read,
+      // delegated) and the Global Administrator role template.
+      const cases = [
+        ['00000003-0000-0000-c000-000000000000', 'Microsoft application ID'],
+        ['e1fe6dd8-ba31-4d61-89e7-88639da4683d', 'Microsoft Graph permission ID'],
+        ['62e90394-69f5-4237-9190-012177145e10', 'Entra directory role ID'],
+      ];
+      for (const [guid, why] of cases) {
+        const { result } = await refined(guid);
+        expect(result.map((m) => m.toolId), guid).toEqual(['entra-ids', 'azure-rbac', 'm365-licenses', 'uuid']);
+        expect(result[0].why, guid).toBe(why);
+        expect(result[0].href, guid).toBe(`/entra-ids/${guid}`);
+      }
+    });
+
+    it('recognises a GUID however it was cased', async () => {
+      const { result } = await refined('62E90394-69F5-4237-9190-012177145E10');
+      expect(result[0].toolId).toBe('entra-ids');
+    });
+
+    it('leaves the order alone for a GUID the lookup does not hold', async () => {
+      // An Azure RBAC role id: real, and not an Entra identifier.
+      const { matches, result } = await refined('b24988ac-6180-42a0-ab88-20f7382dd24c');
+      expect(result).toBe(matches);
+    });
+
+    it('does not touch a list with no Entra entry, and does not load the index for it', async () => {
+      let loads = 0;
+      const loadIndex = async () => {
+        loads += 1;
+        return {};
+      };
+      const { matches, result } = await refined('example.com', loadIndex);
+      expect(result).toBe(matches);
+      expect(loads).toBe(0);
+    });
+
+    it('keeps the suggestions it had when the index cannot be loaded', async () => {
+      const { matches, result } = await refined('00000003-0000-0000-c000-000000000000', async () => {
+        throw new Error('offline');
+      });
+      expect(result).toBe(matches);
+      expect(result.map((m) => m.toolId)).toEqual(['azure-rbac', 'm365-licenses', 'uuid', 'entra-ids']);
+    });
   });
 
   it('routes a SKU part number to the licence decoder, encoder behind it', () => {
@@ -212,6 +276,7 @@ describe('suggest', () => {
         'azure-rbac',
         'm365-licenses',
         'uuid',
+        'entra-ids',
       ]);
       // One character short of a GUID is just text again.
       expect(ids('b24988ac-6180-42a0-ab88-20f7382dd24')).toEqual(['base64']);

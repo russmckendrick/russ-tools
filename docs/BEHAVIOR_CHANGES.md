@@ -24,6 +24,31 @@ Two rules:
 
 ## Landed
 
+### The paste panel knows an Entra identifier when it sees one (2026-11-14)
+
+A bare **GUID** in the index's paste panel used to offer three tools in a fixed order: Azure
+RBAC, M365 Licences, UUID Decoder. It now offers four, and the order depends on the GUID.
+
+- A GUID the Entra ID Lookup's data holds (a first-party application ID, a Microsoft Graph
+  permission ID or a directory role template ID) lists **Entra ID Lookup first**, with the
+  other three behind it in their old order. Enter opens the lookup. The chip's tooltip says
+  which kind was recognised.
+- Any other GUID lists the three as before with **Entra ID Lookup fourth**. Enter still
+  opens Azure RBAC.
+
+`suggest()` in `src/lib/paste.js` still answers at once and always puts the lookup last; a
+new `refine()` loads the lookup's 65 kB id index the first time a GUID is pasted and moves
+it forward. The chips can therefore reorder a moment after they appear, and Enter waits for
+that. If the index cannot be loaded the first answer stands.
+
+`src/lib/paste.test.js` and the paste-panel test in `e2e/deeplinks.spec.js` assert both
+orders. Nothing else the panel reads is affected.
+
+The same refresh also rewrote `src/data/microsoft/entra-well-known-ids.json`, which the
+Conditional Access explainer reads: four directory roles Microsoft has added since August
+now resolve to names there (Resource Policy Evaluator, Reader and Administrator, and Entra
+SOC Identity Responder).
+
 ### A fourth server-side lookup: `/api/headers` (2026-11-14)
 
 The HTTP Security Headers tool (`/http-headers`) cannot work in the browser: a page is not

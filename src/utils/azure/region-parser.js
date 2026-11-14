@@ -5,6 +5,7 @@
 const REGIONS_REGEX = /regions\s*=\s*{([^}]+)}/;
 const SHORT_NAMES_REGEX = /short_names\s*=\s*{([^}]+)}/;
 const CLI_NAMES_REGEX = /cli_names\s*=\s*{([^}]+)}/;
+const GEO_CODE_REGEX = /geo_code\s*=\s*{([^}]+)}/;
 
 /**
  * Parses a Terraform map string into a JavaScript object
@@ -51,11 +52,18 @@ export async function loadAzureRegionData() {
     const shortNames = parseTerraformMap(shortNamesMatch[1]);
     const cliNames = parseTerraformMap(cliNamesMatch[1]);
 
+    const geoCodeMatch = content.match(GEO_CODE_REGEX);
+    const geoCodesBySlug = geoCodeMatch ? parseTerraformMap(geoCodeMatch[1]) : {};
+
     // Create a lookup map for region abbreviations
     const regionAbbreviations = {};
+    const geoCodes = {};
     Object.entries(cliNames).forEach(([slug, cliName]) => {
       if (shortNames[slug]) {
         regionAbbreviations[cliName] = shortNames[slug];
+      }
+      if (geoCodesBySlug[slug]) {
+        geoCodes[cliName] = geoCodesBySlug[slug];
       }
     });
 
@@ -63,7 +71,8 @@ export async function loadAzureRegionData() {
       regions,
       shortNames,
       cliNames,
-      regionAbbreviations
+      regionAbbreviations,
+      geoCodes
     };
   } catch (error) {
     console.error('Error loading Azure region data:', error);
