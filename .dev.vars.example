@@ -1,0 +1,21 @@
+# Local secrets for the same-origin API (functions/api/), read by
+# `wrangler pages dev` only. Copy to .dev.vars and fill in; .dev.vars is
+# gitignored and is never deployed. Production and preview values are set on
+# the Cloudflare Pages project (Settings > Variables and Secrets).
+#
+# All of these are optional locally:
+#   /api/whois   needs nothing.
+#   /api/ssl     without both SSL_LABS_* values skips SSL Labs and falls back
+#                to HackerTarget, then a basic connectivity check. The email
+#                is sent to SSL Labs as its `email` header and must already
+#                be registered there (POST /api/v4/register, once; free mail
+#                providers are refused). See docs/cloudflare-workers/README.md.
+#   /api/tenant  without all three GRAPH_* values skips Microsoft Graph and
+#                answers from the public endpoints, so there is no tenant ID.
+
+SSL_LABS_EMAIL=
+SSL_LABS_USER_AGENT=
+
+GRAPH_CLIENT_ID=
+GRAPH_CLIENT_SECRET=
+GRAPH_TENANT_ID=

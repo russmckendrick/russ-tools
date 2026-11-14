@@ -3051,3 +3051,97 @@ Plex Mono wordmark was not either: the header keeps Plex Sans.
 
 Seen in the header and footer in both themes, at 16-48px as a favicon, and on
 an OG card. Not seen on a real phone home screen.
+
+### 2026-11-14 — One same-origin API for the three lookups
+
+The owner asked whether the WHOIS, SSL and tenant workers could become a
+single API that works from the local dev server and is otherwise callable only
+by the website. Until now they could not be exercised locally at all: each
+worker refused `http://localhost:4321` and `http://127.0.0.1:8788`, so those
+three tools were never seen working in development.
+
+**What changed.** The three lookups are Cloudflare Pages Functions in
+`functions/api/` (`ssl.js`, `whois.js`, `tenant.js`), served by the Pages
+project itself at `/api/*`, with one shared guard in `functions-lib/http.js`.
+`apiConfig.json` points at the relative paths and `buildUrl` learned to resolve
+them. `astro dev` proxies `/api` to `pnpm dev:api` (`wrangler pages dev`);
+secrets come from a gitignored `.dev.vars`. The API catalog, the generated
+`agents.md` text, the docs and `AGENTS.md` describe the new layout. The old
+workers and their configs were not touched and are still deployed.
+
+**Checked against Cloudflare's documentation before building.** `_redirects`
+is not applied to requests a Function serves, and no rule in the generated
+file matches `/api/*`, so the param rewrites and the API do not meet. Pages
+generates `_routes.json` from `functions/`; compiled locally it includes
+exactly `/api/whois`, `/api/tenant` and `/api/ssl`, so every page and asset is
+still a free static request. `build.format: 'file'` has no interaction with
+Functions routing. Nothing blocked the recommended shape.
+
+**Decisions worth keeping.**
+
+- *The shared module is outside `functions/`.* Every file in that directory is
+  a route; the docs give no convention for excluding helpers, and they do show
+  importing from outside it. Tests live in `src/test/functions/` for the same
+  reason, which also needed no Vitest config change.
+- *No `ALLOWED_ORIGINS`.* "The site" is the origin of the request URL, so
+  production, `www` and every preview accept exactly themselves. One secret
+  per worker, set three times and able to drift, became none.
+- *Local mode is read off the request, not configured.* A loopback `Origin` is
+  accepted only when the function's own URL is loopback — true under
+  `wrangler pages dev`, impossible once deployed. Nothing that mentions
+  localhost ships.
+- *No `wrangler.toml`.* With `pages_build_output_dir` it becomes the source of
+  truth and locks the dashboard's fields; the build settings and secrets
+  already live there.
+- *The port is a replay, not a rewrite.* Each test rebuilds the upstream data
+  from a response captured from the production worker and requires the handler
+  to return that response. The suite passed on its first run against all seven
+  fixtures, which is the evidence that the logic moved intact — and it is why
+  several known quirks moved with it (see `BEHAVIOR_CHANGES.md`).
+- *"Callable only by the site" is stated as what it is.* No CORS, plus
+  `Sec-Fetch-Site` and `Origin` checks, keeps other sites out and is tested in
+  a real browser. It is not privacy: `curl` can forge both headers. The docs
+  say that in as many words and name rate limiting as the control.
+
+**Verified.** `pnpm test` 1062 passing (91 of them new, in
+`src/test/functions/`); `pnpm lint` 0 errors, 11 warnings; `pnpm build`;
+`pnpm test:e2e` 90 passing on a fresh `wrangler pages dev dist`. In a browser
+against that runtime: `/whois-lookup/github.com` returned the live RDAP record
+through `/api/whois`; `/tenant-lookup/microsoft.com` and
+`/ssl-checker/github.com` returned live results through their unauthenticated
+paths (no Graph or SSL Labs credentials were available, so the tenant ID and
+the SSL Labs grade were **not** seen locally — those paths are covered by the
+replay tests only). `pnpm dev` with the proxy returned a live WHOIS result at
+`localhost`. From another origin, Chromium sent `Sec-Fetch-Site: cross-site`,
+the function answered 403 with no CORS header, and the page's `fetch` rejected.
+
+**Left for the owner.** Add the five secrets to the Pages project and
+redeploy; add a rate limiting rule for `/api/`; retire the three old workers
+and their DNS records once their traffic has stopped; decide what to do about
+`buzzwords.js`, a public API whose hard-coded allowlist still names
+`localhost:5173` and `localhost:3000`. Not deployed and no secret set from
+this session.
+
+**Same day, after review: the port had carried a dead SSL Labs path.** The
+session that asked for this work found that `/api/ssl` never reached SSL Labs:
+`analyze` answers 400 without an `email` header, and the checked-in worker —
+and so the port — read `SSL_LABS_EMAIL` without ever sending it. Reproduced
+with one unauthenticated request, and confirmed against SSL Labs' v4
+documentation (`email` mandatory on `analyze` and `getEndpointData`; 441 for an
+unregistered address). The replay test had not caught it because it mocks SSL
+Labs and the mock did not care about headers; it now asserts the header on
+every call that needs it and its absence on `info`.
+
+Two lessons for the record. The earlier note in this entry that the replay
+passing "is the evidence that the logic moved intact" was true and beside the
+point: the logic that moved was wrong, and only the *deployed* worker, which
+has drifted from the source, was right. And the README had recorded "the email
+is required to be set but is not sent anywhere" as a curiosity instead of
+treating it as the fault it was.
+
+Fixed in the function only: the email goes on the calls that need it and is
+never logged; a fallback now carries a `statusMessage` when SSL Labs is
+unconfigured or refuses the address, so the two failures an owner can fix no
+longer look like a grade-`T` certificate. `cloudflare-worker/ssl.js` is left as
+it is. Still not verified against the real SSL Labs API from this session —
+that needs the registered address, which only the Pages project will hold.

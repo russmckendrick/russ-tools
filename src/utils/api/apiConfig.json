@@ -1,19 +1,19 @@
 {
   "endpoints": {
     "tenant": {
-      "url": "https://tenant.russ.tools/",
+      "url": "/api/tenant",
       "description": "Microsoft Tenant Lookup API",
       "timeout": 10000,
       "retries": 2
     },
     "ssl": {
-      "url": "https://ssl.russ.tools/",
+      "url": "/api/ssl",
       "description": "SSL Certificate Checker API",
       "timeout": 15000,
       "retries": 2
     },
     "whois": {
-      "url": "https://whois.russ.tools/",
+      "url": "/api/whois",
       "description": "WHOIS Lookup API",
       "timeout": 10000,
       "retries": 2

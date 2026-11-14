@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "dev:api": "pnpm dlx wrangler pages dev public --port 8788 --compatibility-date 2025-05-05",
     "build": "pnpm generate:sitemap && pnpm generate:llms && astro build && pnpm generate:redirects && pnpm patch:webmcp",
     "preview": "astro preview",
     "generate:sitemap": "node scripts/generate-sitemap.js",

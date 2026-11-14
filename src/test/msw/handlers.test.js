@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { server } from './server.js';
 import { apiFetch, buildUrl } from '../../core/api.js';
+import apiConfig from '../../utils/api/apiConfig.json';
+
+const ORIGIN = 'http://localhost';
+const endpoint = (key) => `${ORIGIN}${apiConfig.endpoints[key].url}`;
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
@@ -14,7 +18,7 @@ afterAll(() => server.close());
  */
 describe('worker fixtures through MSW', () => {
   it('whois: domain query returns the RDAP shape', async () => {
-    const res = await apiFetch(buildUrl('https://whois.russ.tools/', { query: 'example.com' }));
+    const res = await apiFetch(buildUrl(endpoint('whois'), { query: 'example.com' }));
     const data = await res.json();
     expect(data.query).toBe('example.com');
     expect(data.type).toBe('domain');
@@ -23,7 +27,7 @@ describe('worker fixtures through MSW', () => {
   });
 
   it('whois: IP query returns the geo/ASN shape', async () => {
-    const res = await apiFetch(buildUrl('https://whois.russ.tools/', { query: '8.8.8.8' }));
+    const res = await apiFetch(buildUrl(endpoint('whois'), { query: '8.8.8.8' }));
     const data = await res.json();
     expect(data.type).toBe('ip');
     expect(data.data['ipinfo.io']).toBeDefined();
@@ -31,7 +35,7 @@ describe('worker fixtures through MSW', () => {
   });
 
   it('tenant: a managed domain resolves with apiResults from all sources', async () => {
-    const res = await apiFetch(buildUrl('https://tenant.russ.tools/', { domain: 'microsoft.com' }));
+    const res = await apiFetch(buildUrl(endpoint('tenant'), { domain: 'microsoft.com' }));
     const data = await res.json();
     expect(data.success).toBe(true);
     expect(data.tenantId).toMatch(/^[0-9a-f-]{36}$/);
@@ -39,7 +43,7 @@ describe('worker fixtures through MSW', () => {
   });
 
   it('ssl: a completed assessment carries graded endpoints', async () => {
-    const res = await apiFetch(buildUrl('https://ssl.russ.tools/', { domain: 'russ.tools' }));
+    const res = await apiFetch(buildUrl(endpoint('ssl'), { domain: 'russ.tools' }));
     const data = await res.json();
     expect(data.status).toBe('READY');
     expect(data.endpoints.length).toBeGreaterThan(0);

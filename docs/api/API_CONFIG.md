@@ -1,131 +1,102 @@
-# API Configuration System
+# API configuration
 
-This document describes the centralized API configuration system for RussTools.
-
-## Overview
-
-The API configuration system centralizes all external API endpoints used by the tools into a single configuration file (`apiConfig.json`) with utility functions to access them consistently.
+Where the tools' network endpoints are declared, and how they are called.
 
 ## Files
 
-- `src/utils/apiConfig.json` - Main configuration file containing all API endpoints
-- `src/utils/apiUtils.js` - Utility functions for accessing API configurations
-- `src/utils/index.js` - Exports API utilities for easy importing
+| File | Role |
+|---|---|
+| `src/utils/api/apiConfig.json` | Every endpoint a tool calls, with its timeout and retry count |
+| `src/core/api.js` | `apiFetch`, `apiJson`, `buildUrl`, `ApiError` — the one HTTP client |
+| `functions/api/*.js` | The site's own lookup API, which three of the endpoints point at |
 
-## Configuration Structure
+There is no wrapper beyond that: a tool imports the JSON, picks its endpoint and calls
+`apiFetch`. (`src/utils/apiUtils.js`, `getApiEndpoint` and `buildApiUrl`, which an earlier
+version of this document described, were deleted at the cutover.)
 
-### apiConfig.json
+## `apiConfig.json`
 
 ```json
 {
   "endpoints": {
-    "service_name": {
-      "url": "https://api.example.com/",
-      "description": "Service description",
-      "timeout": 10000,
-      "retries": 2
-    }
+    "tenant": { "url": "/api/tenant", "timeout": 10000, "retries": 2 },
+    "ssl":    { "url": "/api/ssl",    "timeout": 15000, "retries": 2 },
+    "whois":  { "url": "/api/whois",  "timeout": 10000, "retries": 2 },
+    "dns": {
+      "google": "https://dns.google/resolve",
+      "cloudflare": "https://1.1.1.1/dns-query",
+      "timeout": 8000,
+      "retries": 1
+    },
+    "external": { "azure_portal": "https://portal.azure.com", "timeout": 10000, "retries": 1 }
   },
-  "defaults": {
-    "timeout": 10000,
-    "retries": 2,
-    "headers": {
-      "Accept": "application/json",
-      "User-Agent": "RussTools/1.0"
-    }
-  }
+  "defaults": { "timeout": 10000, "retries": 2, "headers": { "Accept": "application/json" } }
 }
 ```
 
-### Current Endpoints
+| Key | What it is | Called by |
+|---|---|---|
+| `tenant` | The site's own API, `/api/tenant` | `tenant-lookup`, `microsoft-portals` |
+| `ssl` | The site's own API, `/api/ssl` | `ssl-checker` |
+| `whois` | The site's own API, `/api/whois` | `whois-lookup` |
+| `dns` | Public DNS-over-HTTPS resolvers, called directly from the browser | `src/core/dns.js` |
+| `external` | A base URL for building portal links; nothing is fetched from it | `microsoft-portals` |
 
-- **tenant** - Microsoft Tenant Lookup API (`https://tenant.russ.tools/`)
-- **ssl** - SSL Certificate Checker API (`https://ssl.russ.tools/`)
-- **whois** - WHOIS Lookup API (`https://whois.russ.tools/`)
-- **dns** - DNS over HTTPS providers (Google, Cloudflare)
-- **external** - Third-party APIs (HackerTarget, Azure Portal)
+### The three `/api/*` endpoints are root-relative on purpose
 
-## Usage
+They are served by the same Cloudflare Pages project as the pages (Pages Functions in
+`functions/api/`), so a relative path is the whole address: production, `www`, every
+preview deployment and local development each call their own origin with no per-environment
+configuration. They accept same-origin requests only and send no CORS headers, so **an
+absolute URL to another origin here would not work** — the API would answer 403. The access
+model, the secrets and the response shapes are in
+[`../cloudflare-workers/README.md`](../cloudflare-workers/README.md).
 
-### Basic Usage
+`src/tools/agent-discovery.test.js` pins these three values to `/api/<name>`, to a function
+file of the same name, and to the published API catalog.
+
+## Calling an endpoint
 
 ```javascript
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
+import { apiFetch, buildUrl } from '@/core';
+import apiConfig from '@/utils/api/apiConfig.json';
 
-// Get endpoint configuration
-const sslConfig = getApiEndpoint('ssl');
+const WHOIS = apiConfig.endpoints.whois;
 
-// Build URL with parameters
-const apiUrl = buildApiUrl(sslConfig.url, { domain: 'example.com' });
-
-// Make API call with retry logic
-const response = await apiFetch(apiUrl, {
-  method: 'GET',
-  headers: {
-    ...sslConfig.headers,
-    'Accept': 'application/json'
-  }
+const response = await apiFetch(buildUrl(WHOIS.url, { query }), {
+  headers: { Accept: 'application/json' },
+  timeout: WHOIS.timeout,
+  retries: WHOIS.retries,
+  signal,
 });
+const data = await response.json();
 ```
 
-### Multi-Provider Endpoints
+`buildUrl(base, params)` appends query parameters, skipping `null`, `undefined` and `''`.
+An absolute base is returned absolute. A root-relative base (`/api/whois`) is resolved
+against `location.origin` when there is a page, and returned relative when there is not
+(a unit test in the node environment).
 
-For services with multiple providers (like DNS):
+`apiFetch(url, options)`:
 
-```javascript
-// Get specific provider
-const googleDns = getApiEndpoint('dns', 'google');
-const cloudflareDns = getApiEndpoint('dns', 'cloudflare');
-```
+- applies `timeout` per attempt with an `AbortController`, and honours a caller's `signal`;
+- retries `retries` more times, with doubling backoff, on 408, 425, 429, 5xx and transport
+  failures only — **a 4xx is an answer and is never retried**, which includes the API's 403;
+- throws `ApiError` (`status`, `url`, `body`; `isTransport` when no status was ever seen)
+  for anything that is not 2xx.
 
-### Available Functions
+`apiJson(url, options)` is `apiFetch` plus JSON parsing.
 
-- `getApiEndpoint(service, provider?)` - Get endpoint configuration
-- `getAllApiEndpoints()` - Get all endpoint configurations
-- `getApiDefaults()` - Get default configuration
-- `buildApiUrl(baseUrl, params)` - Build URL with query parameters
-- `apiFetch(url, options, retries?)` - Fetch with retry logic
+## Adding an endpoint
 
-## Benefits
+1. Add it to `apiConfig.json` with a `url`, `timeout` and `retries`.
+2. Import the JSON in the tool and call it as above.
+3. If it is a third-party API called from the browser, it must send CORS headers for the
+   site's origin; if it cannot, it needs a function in `functions/api/` — read the
+   workers README first, and add its upstream to the tool's privacy note.
 
-1. **Centralized Configuration** - All API endpoints in one place
-2. **Easy Updates** - Change URLs without touching component code
-3. **Consistent Error Handling** - Built-in retry logic and error handling
-4. **Type Safety** - Structured configuration prevents typos
-5. **Environment Support** - Easy to switch between dev/prod endpoints
-6. **Monitoring** - Centralized logging and debugging
+## Local development
 
-## Adding New Endpoints
-
-1. Add the endpoint to `apiConfig.json`:
-```json
-{
-  "endpoints": {
-    "new_service": {
-      "url": "https://api.newservice.com/",
-      "description": "New service API",
-      "timeout": 15000,
-      "retries": 3
-    }
-  }
-}
-```
-
-2. Use in your component:
-```javascript
-import { getApiEndpoint, buildApiUrl, apiFetch } from '../../../utils/apiUtils';
-
-const newServiceConfig = getApiEndpoint('new_service');
-const response = await apiFetch(newServiceConfig.url);
-```
-
-## Migration Notes
-
-All tools have been updated to use this system:
-- SSL Checker Tool
-- Tenant Lookup Tool  
-- WHOIS Lookup Tool
-- DNS Lookup Tool
-- Microsoft Portals Tool
-
-The old hardcoded URLs have been replaced with configuration-based calls. 
+`pnpm dev` proxies `/api` to a locally running `pnpm dev:api` (`wrangler pages dev`), so the
+relative paths resolve there too. See
+[`../DEVELOPMENT.md`](../DEVELOPMENT.md#the-lookup-api-locally).

@@ -49,8 +49,8 @@ drift from what actually ships.
 | [`DESIGN.md`](../DESIGN.md) *(repo root)* | **The design system.** Colour, type, layout, shape, components. Authoritative — read before touching styling. |
 | [`plans/redesign-plan.md`](plans/redesign-plan.md) | **The redesign plan and its session log.** The living record of how the current architecture came about. |
 | [`BEHAVIOR_CHANGES.md`](BEHAVIOR_CHANGES.md) | Every deliberate divergence from previously captured behaviour, logged in the PR that made it. |
-| [`DEPLOYMENT.md`](DEPLOYMENT.md) | The build, the Cloudflare Pages configuration, `_redirects`, worker deploys and rollback. |
-| [`cloudflare-workers/README.md`](cloudflare-workers/README.md) | The four Cloudflare Workers, written from their source. |
+| [`DEPLOYMENT.md`](DEPLOYMENT.md) | The build, the Cloudflare Pages configuration, `_redirects`, the API's secrets, legacy worker deploys and rollback. |
+| [`cloudflare-workers/README.md`](cloudflare-workers/README.md) | The same-origin lookup API (`/api/*`, Pages Functions), who can call it, and the legacy Cloudflare Workers it replaced. |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | How the site is put together — the shell, the island model, the manifest contract, the token pipeline. |
 | [`DEVELOPMENT.md`](DEVELOPMENT.md) | How to work on it — setup, scripts, adding a tool, testing, lint rules, conventions. |
 | [`api/API_CONFIG.md`](api/API_CONFIG.md) | The API endpoint configuration used by the proxied lookups. |
@@ -93,7 +93,8 @@ Local calculations and pasted data stay in the browser. DNS Lookup sends the que
 to the chosen Google or Cloudflare DNS-over-HTTPS resolver; Email DNS Analyser and DNSSEC &
 Delegation Checker use Google DNS-over-HTTPS. BGP & ASN Explorer sends the queried address,
 prefix or ASN to RIPEstat. WHOIS, SSL analysis and Microsoft tenant discovery send the
-queried name or address through the three corresponding Workers in `cloudflare-worker/`.
+queried name or address to the site's own API (`/api/*`, the functions in `functions/api/`),
+which passes it to the upstream sources.
 Each lookup tool names that boundary where it runs.
 
 Saved data is browser local storage only. `/delete` shows what each tool has stored and

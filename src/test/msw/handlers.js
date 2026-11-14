@@ -17,28 +17,32 @@ import dnsNx from '../fixtures/workers/dns.nxdomain.json' with { type: 'json' };
  * contract, and repo-vs-deployed drift is proven, so the fixtures were taken
  * from production, not from the worker source in `cloudflare-worker/`).
  *
- * Captured 2026-07-19 with `Origin: https://russ.tools` — the workers 403
- * any other origin, which is also why these tools cannot be tested against
- * the real endpoints from CI.
+ * Captured 2026-07-19 from the standalone workers with
+ * `Origin: https://russ.tools`. The lookups now live at the site's own
+ * `/api/*` (Pages Functions in `functions/api/`), and the same fixtures are
+ * what `src/test/functions/` holds those handlers to.
+ *
+ * The site API is same-origin, so the handlers match the path on any origin
+ * with a leading wildcard: jsdom tests see `http://localhost/api/…`.
  *
  * Handlers key off the same query params the tools send:
- *   whois.russ.tools/?query=…    tenant.russ.tools/?domain=…
- *   ssl.russ.tools/?domain=…     dns.google/resolve?name=…&type=…
+ *   /api/whois?query=…    /api/tenant?domain=…
+ *   /api/ssl?domain=…     dns.google/resolve?name=…&type=…
  */
 export const workerHandlers = [
-  http.get('https://whois.russ.tools/', ({ request }) => {
+  http.get('*/api/whois', ({ request }) => {
     const query = new URL(request.url).searchParams.get('query');
     if (!query) return HttpResponse.json({ error: 'query required' }, { status: 400 });
     return HttpResponse.json(/^[0-9.:]+$/.test(query) ? whoisIp : whoisDomain);
   }),
 
-  http.get('https://tenant.russ.tools/', ({ request }) => {
+  http.get('*/api/tenant', ({ request }) => {
     const domain = new URL(request.url).searchParams.get('domain');
     if (!domain) return HttpResponse.json({ error: 'domain required' }, { status: 400 });
     return HttpResponse.json(domain === 'microsoft.com' ? tenantKnown : tenantUnmanaged);
   }),
 
-  http.get('https://ssl.russ.tools/', ({ request }) => {
+  http.get('*/api/ssl', ({ request }) => {
     const domain = new URL(request.url).searchParams.get('domain');
     if (!domain) return HttpResponse.json({ error: 'domain required' }, { status: 400 });
     if (domain.endsWith('.invalid')) return HttpResponse.json(sslError);

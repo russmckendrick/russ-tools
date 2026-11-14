@@ -29,7 +29,7 @@ Discover the Microsoft tenant for a domain and generate tenant-scoped links to M
 
 ## Privacy and saved data
 
-Tenant discovery is a network lookup through the configured Cloudflare Worker and public Microsoft metadata endpoints. Recent domains, a ten-minute lookup cache, and favorite portal choices are stored locally in this browser. Portal navigation is an explicit external action and follows the destination's Microsoft authentication flow.
+Tenant discovery is a network lookup through russ.tools' own lookup API to public Microsoft metadata endpoints. Recent domains, a ten-minute lookup cache, and favorite portal choices are stored locally in this browser. Portal navigation is an explicit external action and follows the destination's Microsoft authentication flow.
 
 ## Troubleshooting
 

@@ -1,13 +1,13 @@
 # Deployment
 
 The site is a static Astro build served by Cloudflare Pages. WHOIS, SSL analysis and
-Microsoft tenant discovery use separate Cloudflare Workers on their own subdomains,
-deployed by hand and on their own schedule — see
+Microsoft tenant discovery are three Pages Functions in `functions/api/`, served by the
+same project at `/api/*` and deployed with it — see
 [`cloudflare-workers/README.md`](cloudflare-workers/README.md). DNS and routing lookups go
 straight from the browser to their named public providers.
 
-There is no server-side rendering, no adapter and no runtime configuration. A deploy is a
-directory of files.
+There is no server-side rendering and no adapter. A deploy is a directory of files plus
+those three functions, and the only runtime configuration is the functions' secrets.
 
 ## Requirements
 
@@ -65,6 +65,42 @@ If the Pages build image ships a Node older than the `engines` floor, set a `NOD
 environment variable of `20` or higher on the project; there is no other environment
 variable the build reads.
 
+Pages picks up the top-level `functions/` directory by itself — there is no setting for it
+and no `wrangler.toml`. Do not add a `wrangler.toml` carrying `pages_build_output_dir`: it
+becomes the source of truth for the project and the matching dashboard fields stop being
+editable.
+
+### The API's secrets
+
+The functions read five secrets, set under Settings → Variables and Secrets. **Production
+and Preview are separate environments**; a value set in one is not present in the other.
+
+| Secret | Endpoint | Without it |
+|---|---|---|
+| `SSL_LABS_EMAIL`, `SSL_LABS_USER_AGENT` | `/api/ssl` | no SSL Labs analysis: fallback summary or a grade-`T` connectivity result |
+| `GRAPH_CLIENT_ID`, `GRAPH_CLIENT_SECRET`, `GRAPH_TENANT_ID` | `/api/tenant` | no Microsoft Graph: realm and DNS detail, no tenant ID |
+
+Use the values the `ssl-checker` and `microsoft-tenant-lookup` workers hold. Cloudflare
+does not show a secret once set, so if they are not recorded elsewhere, issue a new Graph
+client secret in the app registration rather than trying to read the old one back.
+
+`SSL_LABS_EMAIL` is the credential for SSL Labs, sent as an `email` header, and it only
+works if the address has been **registered once** with
+`POST https://api.ssllabs.com/api/v4/register` (JSON `firstName`, `lastName`, `email`,
+`organization`; free providers such as Gmail are refused). The deployed worker's address is
+evidently registered already, so use the same one; if a different address is used, register
+it first. The call is in
+[`cloudflare-workers/README.md`](cloudflare-workers/README.md#secrets). Add them
+as type **Secret**, then **redeploy** — a Pages secret takes effect on the next deployment,
+not the next request.
+
+Preview deployments are public `*.pages.dev` URLs outside the zone's WAF. Leaving the
+secrets out of the Preview environment is a reasonable default: previews then exercise the
+whole API on its unauthenticated sources and cannot spend the Graph or SSL Labs quota.
+
+There is no `ALLOWED_ORIGINS`. The API accepts its own origin and nothing else, whatever
+hostname it is served on, so a new preview needs no configuration.
+
 Pushing to `main` triggers a build and deploys it. Branch pushes and pull requests produce
 preview deployments using the same settings.
 
@@ -120,9 +156,26 @@ Against a deployed target:
 PW_BASE_URL=https://russ.tools pnpm test:e2e
 ```
 
-Worker-backed lookups are not asserted by the matrix — they depend on the target origin
-being in each worker's `ALLOWED_ORIGINS`, so a preview origin that has not been added will
-show failed lookups on an otherwise correct deployment.
+`e2e/api.spec.js` runs against a deployed target too and is safe to: every request in it is
+refused or is missing its parameter, so it proves the functions are routed and guarded
+without causing a single upstream lookup. It cannot tell you the secrets are right — check
+that by hand after the first deploy:
+
+- `/whois-lookup/github.com` shows registrar and nameservers (no secret involved).
+- `/ssl-checker/github.com` shows a letter grade and a certificate chain. If SSL Labs could
+  not be used, the Status field says why: "not configured for this deployment" means the
+  `SSL_LABS_*` secrets are missing from that environment, and "did not accept this site's
+  registered email" means the address is not registered with SSL Labs. Grade `T` with one
+  "basic check" endpoint and neither message means SSL Labs itself failed for that host.
+- `/tenant-lookup/microsoft.com` shows a tenant ID. "Detection Method: GetUserRealm API"
+  with no tenant ID means the `GRAPH_*` secrets are missing or wrong. If they are set, the
+  function log names the cause: tail the deployment
+  (`pnpm dlx wrangler pages deployment tail <deployment-id> --project-name russ-tools`),
+  repeat the lookup and read the `Failed to get Graph access token: <status> <error>
+  <AADSTS codes>` line. No line at all means one of the three secrets is not bound to that
+  environment.
+- From any other site's console, `fetch('https://russ.tools/api/whois?query=github.com')`
+  rejects with a CORS error.
 
 ## Continuous integration
 
@@ -133,7 +186,19 @@ without it. Lint is blocking at zero errors.
 
 CI does not deploy. Cloudflare Pages builds `main` itself from the git connection.
 
-## Workers
+## Rate limiting
+
+The API has none in code. Add a rate limiting rule on the `russ.tools` zone for
+`starts_with(http.request.uri.path, "/api/")`, per IP; the reasoning and its limits are in
+[`cloudflare-workers/README.md`](cloudflare-workers/README.md#abuse-and-rate-limiting).
+
+## Legacy workers
+
+The three standalone lookup workers (`ssl.russ.tools`, `whois.russ.tools`,
+`tenant.russ.tools`) are still deployed and still in `cloudflare-worker/`, but the site no
+longer calls them. They stay until the steps in
+[Retiring the old workers](cloudflare-workers/README.md#retiring-the-old-workers) are done.
+`buzzword-generator` is a separate public API and is not being retired.
 
 The workers are not part of the site build and are not deployed by CI. Each has its own
 config under `cloudflare-worker/configs/` and is deployed individually:
@@ -148,12 +213,14 @@ pnpm dlx wrangler deploy --config cloudflare-worker/configs/wrangler-ssl.toml
 the `ssl-checker`, `whois-lookup` and `microsoft-tenant-lookup` workers. It is read on
 every request, so a change takes effect on the next request with no redeploy. It is the
 only thing standing between these workers and open public use, so it needs pruning whenever
-a temporary origin — a preview deployment, a local port — stops being needed.
+a temporary origin — a preview deployment, a local port — stops being needed. With the site
+on `/api/*`, the tidy state until the workers are deleted is the production origins alone:
+no localhost entry and no preview origins.
 
 Set it per worker; the value replaces the previous one in full:
 
 ```bash
-echo 'https://russ.tools,https://www.russ.tools,http://localhost:4321' \
+echo 'https://russ.tools,https://www.russ.tools' \
   | pnpm dlx wrangler secret put ALLOWED_ORIGINS \
       --config cloudflare-worker/configs/wrangler-ssl.toml
 ```
@@ -173,7 +240,8 @@ requests the workers do not recognise, so put the production origin first.
 ## Rolling back
 
 **The site.** In the Cloudflare Pages dashboard, open the project's Deployments list, find
-the last known-good deployment and roll back to it. That is instant and needs no build.
+the last known-good deployment and roll back to it. That is instant and needs no build, and
+it takes `/api/*` back with it — the functions are part of the deployment.
 Reverting the offending commit on `main` produces a fresh build and is the durable fix.
 
 **A worker.** `pnpm dlx wrangler rollback --config cloudflare-worker/configs/<config>.toml`

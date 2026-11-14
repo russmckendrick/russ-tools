@@ -44,7 +44,7 @@ describe('ssl island', () => {
   it('an unreachable analysis service yields the honest connectivity state, fabricating nothing', async () => {
     // Worker down; the browser probe (fetch no-cors) is intercepted to succeed.
     server.use(
-      http.get('https://ssl.russ.tools/', () => HttpResponse.error()),
+      http.get('*/api/ssl', () => HttpResponse.error()),
       http.head('https://unreachable.example', () => new HttpResponse(null, { status: 200 }))
     );
 
