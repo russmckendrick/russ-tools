@@ -53,6 +53,8 @@ export default {
     'IPv4 and IPv6',
     'Netmask, wildcard, ranges, PTR',
     'Visual split and join',
+    'Plan subnets by host count (VLSM)',
+    'CSV and Markdown export',
     'Shareable deep links',
   ],
 

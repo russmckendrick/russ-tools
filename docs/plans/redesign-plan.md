@@ -3172,3 +3172,58 @@ which does not connect, and documented `/api/phrases`, `/api/adjectives` and
 with their parameters, each checked against the deployed worker. The rate-limit
 claims were removed: the worker has no rate limiting.
 
+### 2026-11-14 — The Subnet Calculator plans by size
+
+The manifest has listed `vlsm calculator` as a keyword since the tool replaced
+the Network Designer, and a gap analysis found nothing behind it: there was no
+way to say "500, 120, 60 and 2 hosts" and be handed the subnets. The Divide
+panel now has **Plan by size**.
+
+- **The allocator is `lib/plan.js`, and it returns splits.** `planSubnets` sorts
+  the requirements largest first and walks one cursor from the start of the
+  parent. Because the sizes are descending powers of two the cursor is always
+  aligned for the next block, so there is no search. The answer is the set of
+  ancestor keys to split, which is the state `lib/divide.js` already holds. The
+  tree, the table and the share link show a plan without knowing one was made,
+  and splitting or joining by hand afterwards just works. The test replays every
+  plan through `leaves` and `pruneSplits`.
+- **Two hosts is a `/31`.** The brief was "usable = size minus 2, with /31 and /32
+  as the tool already does", and `ipv4Details` calls a `/31` two usable hosts. That
+  makes a `/30` unreachable by host count (2 fits a `/31`, 3 needs a `/29`), so a
+  line may give a prefix instead: `link /30`. The same syntax is the whole of the
+  IPv6 input.
+- **Names are the only new state.** `names` is a map of leaf key to label, set by
+  a plan, shown as a Label column and on the block in the tree, and added to the
+  share payload only when a current leaf has one. An unnamed divide therefore
+  encodes to the bytes it always did; the island test pins that against the
+  captured `e2e` fixture, which was not edited. Names arrive from a URL, so they go
+  through `cleanName` on the way in, CSV cells that a spreadsheet would run as a
+  formula are quoted, and Pele was checked to escape label text before names were
+  put in the diagram.
+- **The planner is a disclosure, not a tab.** A "By hand / By size" tab pair would
+  have one empty panel. The button sits beside Copy share link and opens the list
+  above the tree. The list is a textarea, one requirement per line, because a
+  column pasted from a spreadsheet is the common case and five small inputs on a
+  phone is not.
+- **Export** is `lib/planExport.js`: Download CSV and Copy as Markdown under the
+  table, for every row of the divide as it stands.
+- **`plan_subnets`** is the second WebMCP tool, in `lib/planTool.js`. Its result
+  has no BigInt in it (totals are digit strings) and carries a share URL that
+  reopens the plan. `parseInput` and the root derivation moved to `lib/parse.js`
+  so the island and the tool share them.
+
+Checked in Chromium at 390px and 1440px in both themes with a five-line plan in
+a `/22` (12 blocks, 23 nodes). At 390px the tree holds at the 85% floor and
+scrolls inside its panel, opening centred; the page does not scroll sideways.
+
+A plan is a set of binary splits, so every allocation leaves the unused
+siblings on its path as free blocks: three IPv6 lines ending in a `/127` inside
+a `/48` make 80 rows. That is past the 32 blocks `SplitTree` draws, and it used
+to return nothing; it now says how many blocks there are and that the table has
+them.
+
+Noticed and not changed: the table indents each row 16px per level, and a plan
+ending in a `/31` is nine levels deep, so on a phone the deepest rows start
+with the subnet off to the right until the table is scrolled. The indent
+predates this work.
+
