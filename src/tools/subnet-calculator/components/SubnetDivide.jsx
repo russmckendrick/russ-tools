@@ -1,5 +1,5 @@
-import React from 'react';
-import { Combine, Scissors, Share2 } from 'lucide-react';
+import React, { useId, useState } from 'react';
+import { Combine, Copy, Download, ListOrdered, Scissors, Share2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { formatIPv4, ipv4Details, maskFromPrefix } from '../lib/ipv4';
 import { compressIPv6, ipv6Details } from '../lib/ipv6';
 import { FAMILIES, formatCount, formatTotal } from '../lib/format';
 import SplitTree from './SplitTree';
+import SubnetPlanner from './SubnetPlanner';
 
 /**
  * The davidc.net-style divide table: split a subnet in two, join halves back.
@@ -35,12 +36,34 @@ import SplitTree from './SplitTree';
  * @param {number} props.family 4 or 6.
  * @param {object[]} props.rows Leaves of the split tree, in display order.
  * @param {boolean} props.joinable Whether anything has been split yet.
+ * @param {Record<string, string>} [props.names] Labels by subnet key, from a plan.
+ * @param {string} [props.cidr] The parent block, as the planner names it.
+ * @param {object|null} [props.plan] The last allocation, while the divide still shows it.
+ * @param {(requirements: object[]) => void} [props.onPlan]
+ * @param {() => void} [props.onDownloadCsv]
+ * @param {() => void} [props.onCopyMarkdown]
  * @param {(key: string) => void} props.onSplit
  * @param {(family: object, addr: bigint, prefix: number) => void} props.onJoin
  * @param {() => void} props.onShare
  */
-export default function SubnetDivide({ family, rows, joinable, onSplit, onJoin, onShare }) {
+export default function SubnetDivide({
+  family,
+  rows,
+  joinable,
+  names = {},
+  cidr = '',
+  plan = null,
+  onSplit,
+  onJoin,
+  onShare,
+  onPlan = () => {},
+  onDownloadCsv = () => {},
+  onCopyMarkdown = () => {},
+}) {
   const v4 = family === 4;
+  const plannerId = useId();
+  const [planning, setPlanning] = useState(false);
+  const labelled = rows.some((row) => names[row.key]);
 
   return (
     <Card>
@@ -49,21 +72,37 @@ export default function SubnetDivide({ family, rows, joinable, onSplit, onJoin, 
           <div>
             <h3 className="text-title-sm">Divide</h3>
             <p className="text-body-sm text-muted-foreground mt-1">
-              Split any subnet in two, or join halves back together
+              Split any subnet in two, join halves back together, or plan subnets by size
             </p>
           </div>
-          <Button size="sm" variant="outline" onClick={onShare}>
-            <Share2 className="mr-2 h-4 w-4" />
-            Copy share link
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              aria-expanded={planning}
+              aria-controls={plannerId}
+              onClick={() => setPlanning((open) => !open)}
+            >
+              <ListOrdered className="mr-2 h-4 w-4" />
+              Plan by size
+            </Button>
+            <Button size="sm" variant="outline" onClick={onShare}>
+              <Share2 className="mr-2 h-4 w-4" />
+              Copy share link
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
-        <SplitTree family={family} rows={rows} onSplit={onSplit} onJoin={onJoin} />
+        <div id={plannerId} hidden={!planning}>
+          <SubnetPlanner family={family} cidr={cidr} plan={plan} onPlan={onPlan} />
+        </div>
+        <SplitTree family={family} rows={rows} names={names} onSplit={onSplit} onJoin={onJoin} />
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
+                {labelled && <TableHead>Label</TableHead>}
                 <TableHead>Subnet</TableHead>
                 {v4 && <TableHead>Netmask</TableHead>}
                 <TableHead>{v4 ? 'Usable range' : 'Range'}</TableHead>
@@ -81,6 +120,11 @@ export default function SubnetDivide({ family, rows, joinable, onSplit, onJoin, 
 
                 return (
                   <TableRow key={row.key}>
+                    {labelled && (
+                      <TableCell className="max-w-48 truncate text-body-sm" title={names[row.key]}>
+                        {names[row.key] ?? <span className="text-on-surface-faint">—</span>}
+                      </TableCell>
+                    )}
                     <TableCell
                       className="font-mono text-data-md whitespace-nowrap"
                       style={{ paddingLeft: `${row.depth * 16 + 13}px` }}
@@ -137,9 +181,21 @@ export default function SubnetDivide({ family, rows, joinable, onSplit, onJoin, 
             </TableBody>
           </Table>
         </div>
-        <p className="mt-3 text-data-sm font-mono text-muted-foreground">
-          {rows.length} subnet{rows.length === 1 ? '' : 's'}
-        </p>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <p className="text-data-sm font-mono text-muted-foreground">
+            {rows.length} subnet{rows.length === 1 ? '' : 's'}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={onDownloadCsv}>
+              <Download className="mr-2 h-4 w-4" />
+              Download CSV
+            </Button>
+            <Button size="sm" variant="outline" onClick={onCopyMarkdown}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy as Markdown
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

@@ -7,6 +7,9 @@ import { FAMILIES, formatCount } from '../lib/format';
 /** Past this many blocks the tree is wider than it is useful. */
 const MAX_LEAVES = 32;
 
+const MAX_LABEL = 16;
+const short = (name) => (name.length > MAX_LABEL ? `${name.slice(0, MAX_LABEL - 1)}…` : name);
+
 /**
  * The divide, as a tree you build by pressing it: press a block to split it
  * in two, press a parent to join its halves back.
@@ -19,11 +22,19 @@ const MAX_LEAVES = 32;
  * @param {object} props
  * @param {number} props.family 4 or 6
  * @param {{key: string, addr: bigint, prefix: number, depth: number, splittable: boolean}[]} props.rows
+ * @param {Record<string, string>} [props.names] labels by block key, from a plan
  * @param {(key: string) => void} props.onSplit
  * @param {(family: object, addr: bigint, prefix: number) => void} props.onJoin
  */
-export default function SplitTree({ family, rows, onSplit, onJoin }) {
-  if (rows.length === 0 || rows.length > MAX_LEAVES) return null;
+export default function SplitTree({ family, rows, names = {}, onSplit, onJoin }) {
+  if (rows.length === 0) return null;
+  if (rows.length > MAX_LEAVES) {
+    return (
+      <p className="mb-4 text-body-sm text-muted-foreground">
+        {rows.length} blocks is more than the tree can draw. The table lists them all.
+      </p>
+    );
+  }
 
   const fam = FAMILIES[family];
   const leaves = new Map(rows.map((row) => [row.key, row]));
@@ -43,13 +54,17 @@ export default function SplitTree({ family, rows, onSplit, onJoin }) {
     const key = nodeKey(fam, addr, prefix);
     const leaf = leaves.get(key);
     if (leaf) {
+      const name = names[key];
       return {
         id: key,
         label: key,
-        sub: detail(prefix),
-        tone: prefix === rootPrefix ? 'accent' : undefined,
+        sub: name ? `${short(name)} · ${detail(prefix)}` : detail(prefix),
+        tone: name ? 'ok' : prefix === rootPrefix ? 'accent' : undefined,
         ...(leaf.splittable
-          ? { onClick: () => onSplit(key), actionLabel: `Divide ${key} in two` }
+          ? {
+              onClick: () => onSplit(key),
+              actionLabel: name ? `Divide ${key} (${name}) in two` : `Divide ${key} in two`,
+            }
           : {}),
       };
     }

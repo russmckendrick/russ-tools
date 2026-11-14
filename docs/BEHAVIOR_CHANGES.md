@@ -24,6 +24,25 @@ Two rules:
 
 ## Landed
 
+### The Subnet Calculator plans by size, and its share links can carry names (2026-11-14)
+
+The Divide panel gained **Plan by size**: a list of host counts (IPv4) or prefix
+lengths (IPv6) is allocated largest first out of the calculated network and
+written as ordinary splits. Three things changed that a user or a fixture can see:
+
+- The share payload has an optional fourth key, `names` (`{ "<cidr>": "<label>" }`),
+  written only when a current leaf has a label. A divide with no labels encodes to
+  the same bytes as before, and a link without `names` restores as before; both are
+  pinned in the island test against the fixture `e2e/deeplinks.spec.js` captured.
+  The codec in `src/core/sharelink.js` is untouched. Names are cleaned on the way in
+  (control characters and angle brackets dropped, 32 characters at most).
+- The divide table shows a **Label** column while any row is labelled, and has
+  **Download CSV** and **Copy as Markdown** under it.
+- A second WebMCP tool, `plan_subnets`, registers beside `calculate_subnet`.
+
+Two hosts are given a `/31` and one a `/32`, matching what the details panel already
+calls usable. A `/30` is asked for by prefix (`link /30`).
+
 ### The three lookup workers are retired (2026-11-14)
 
 `ssl.russ.tools`, `whois.russ.tools` and `tenant.russ.tools` no longer exist. The

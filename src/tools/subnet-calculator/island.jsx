@@ -14,26 +14,24 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Calculator } from 'lucide-react';
 import { toast } from 'sonner';
-import { copyText, generateShareableURL, parseConfigFromURL } from '@/core';
+import {
+  copyText,
+  downloadFile,
+  generateShareableURL,
+  parseConfigFromURL,
+  safeFilename,
+} from '@/core';
 import { useWebMCPTool, textResult } from '@/lib/useWebMCPTool';
-import { parseIPv4, ipv4Details, parseIPv4Cidr } from './lib/ipv4';
-import { parseIPv6, ipv6Details, parseIPv6Cidr } from './lib/ipv6';
+import { ipv4Details } from './lib/ipv4';
 import { leaves, splitNode, joinNode, pruneSplits } from './lib/divide';
 import { FAMILIES, detailRowsFor, formatTotal } from './lib/format';
+import { DEFAULT_PREFIX, detailsFor, parseInput, rootOf } from './lib/parse';
+import { cleanNames, planSubnets, sharePayload } from './lib/plan';
+import { planToCsv, planToMarkdown } from './lib/planExport';
+import { PLAN_SUBNETS_TOOL } from './lib/planTool';
 import SubnetDetails from './components/SubnetDetails';
 import SubnetDivide from './components/SubnetDivide';
 import { Ghost } from '@/components/ui/ghost';
-
-/** Parse either family from one input. Returns {family, address, prefix|null} | null. */
-function parseInput(raw) {
-  const v4 = parseIPv4Cidr(raw);
-  if (v4) return { family: 4, ...v4 };
-  const v6 = parseIPv6Cidr(raw);
-  if (v6) return { family: 6, ...v6 };
-  return null;
-}
-
-const DEFAULT_PREFIX = { 4: 24, 6: 64 };
 
 const CALCULATE_SUBNET_TOOL = {
   name: 'calculate_subnet',
@@ -55,8 +53,7 @@ const CALCULATE_SUBNET_TOOL = {
     const parsed = parseInput(cidr);
     if (!parsed) return textResult({ error: 'Not a valid IPv4 or IPv6 address or CIDR.' });
     const prefix = parsed.prefix ?? DEFAULT_PREFIX[parsed.family];
-    const details =
-      parsed.family === 4 ? ipv4Details(parsed.address, prefix) : ipv6Details(parsed.address, prefix);
+    const details = detailsFor(parsed.family, parsed.address, prefix);
     return textResult({
       ...details,
       totalAddresses: formatTotal(details.totalAddresses, prefix, FAMILIES[parsed.family].bits),
@@ -78,11 +75,14 @@ const GHOST_LEAVES = leaves(FAMILIES[4], { addr: 0n, prefix: 24 }, new Set(['10.
 
 const SubnetCalculatorTool = () => {
   useWebMCPTool(CALCULATE_SUBNET_TOOL);
+  useWebMCPTool(PLAN_SUBNETS_TOOL);
   const [input, setInput] = useState('');
   const [prefixChoice, setPrefixChoice] = useState('');
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null); // { family, address, prefix }
   const [splits, setSplits] = useState(() => new Set());
+  const [names, setNames] = useState({});
+  const [plan, setPlan] = useState(null);
 
   const parsed = useMemo(() => parseInput(input), [input]);
   const family = parsed?.family ?? 4;
@@ -90,19 +90,10 @@ const SubnetCalculatorTool = () => {
   // Everything below derives from the calculated result, not the input box.
   const details = useMemo(() => {
     if (!result) return null;
-    return result.family === 4
-      ? ipv4Details(result.address, result.prefix)
-      : ipv6Details(result.address, result.prefix);
+    return detailsFor(result.family, result.address, result.prefix);
   }, [result]);
 
-  const root = useMemo(() => {
-    if (!result || !details) return null;
-    const addr =
-      result.family === 4
-        ? BigInt(parseIPv4(details.networkAddress))
-        : parseIPv6(details.networkAddress);
-    return { addr, prefix: result.prefix };
-  }, [result, details]);
+  const root = useMemo(() => (result ? rootOf(result.family, details) : null), [result, details]);
 
   const rows = useMemo(() => {
     if (!root) return [];
@@ -131,6 +122,8 @@ const SubnetCalculatorTool = () => {
     setResult({ family: parsedRaw.family, address: parsedRaw.address, prefix });
     setPrefixChoice(String(prefix));
     setSplits(new Set());
+    setNames({});
+    setPlan(null);
   };
 
   // Deep link: /subnet-calculator/:ip/:prefix (and the bare-:ip form).
@@ -144,7 +137,9 @@ const SubnetCalculatorTool = () => {
     calculate(raw);
   }, [urlIp, urlPrefix]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Share payloads restore the divide tree: { f, cidr, splits }.
+  // Share payloads restore the divide tree: { f, cidr, splits }, plus the
+  // optional { names } a plan adds. A link made before names existed has no
+  // such key and restores exactly as it always did.
   useEffect(() => {
     const config = parseConfigFromURL(new URLSearchParams(window.location.search));
     if (!config?.cidr) return;
@@ -153,6 +148,7 @@ const SubnetCalculatorTool = () => {
     if (Array.isArray(config.splits)) {
       setSplits(new Set(config.splits));
     }
+    setNames(cleanNames(config.names));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // A restored or edited split set must stay inside the current root.
@@ -161,9 +157,28 @@ const SubnetCalculatorTool = () => {
     setSplits((prev) => pruneSplits(FAMILIES[result.family], root, prev));
   }, [root, result]);
 
+  const leafNames = useMemo(
+    () => Object.fromEntries(rows.filter((row) => names[row.key]).map((row) => [row.key, names[row.key]])),
+    [rows, names]
+  );
+
+  const handlePlan = (requirements) => {
+    const next = planSubnets(FAMILIES[result.family], root, requirements);
+    setSplits(new Set(next.splits));
+    setNames(next.names);
+    setPlan(next);
+  };
+
+  const handleDownloadCsv = () => {
+    const csv = planToCsv(result.family, rows, leafNames);
+    const file = `${safeFilename(`subnets-${details.cidr}`)}.csv`;
+    if (downloadFile(csv, file, 'text/csv;charset=utf-8')) toast.success('CSV downloaded', { description: file });
+    else toast.error('Failed to download the CSV');
+  };
+
   const handleShare = async () => {
     if (!details) return;
-    const url = generateShareableURL({ f: result.family, cidr: details.cidr, splits: [...splits] });
+    const url = generateShareableURL(sharePayload(result.family, details.cidr, [...splits], leafNames));
     if (url && (await copyText(url))) {
       toast.success('Share link copied', { description: details.cidr });
     } else {
@@ -312,9 +327,23 @@ const SubnetCalculatorTool = () => {
             family={result.family}
             rows={rows}
             joinable={splits.size > 0}
-            onSplit={(key) => setSplits(splitNode(splits, key))}
-            onJoin={(rowFamily, addr, prefix) => setSplits(joinNode(rowFamily, splits, addr, prefix))}
+            names={leafNames}
+            cidr={details.cidr}
+            plan={plan}
+            onSplit={(key) => {
+              setSplits(splitNode(splits, key));
+              setPlan(null);
+            }}
+            onJoin={(rowFamily, addr, prefix) => {
+              setSplits(joinNode(rowFamily, splits, addr, prefix));
+              setPlan(null);
+            }}
             onShare={handleShare}
+            onPlan={handlePlan}
+            onDownloadCsv={handleDownloadCsv}
+            onCopyMarkdown={() =>
+              handleCopy(planToMarkdown(result.family, rows, leafNames), 'Markdown table')
+            }
           />
         </div>
       )}
