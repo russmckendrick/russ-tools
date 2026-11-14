@@ -339,6 +339,251 @@ test.describe('home and shell pages', () => {
   });
 });
 
+test.describe('the index remembers', () => {
+  const stored = (page) =>
+    page.evaluate(() => ({
+      pinned: localStorage.getItem('rt:shell:pinned'),
+      recent: localStorage.getItem('rt:shell:recent'),
+    }));
+
+  const seed = async (page, { pinned, recent }) => {
+    await page.goto('/');
+    await page.evaluate(
+      ([pinned, recent]) => {
+        if (pinned) localStorage.setItem('rt:shell:pinned', JSON.stringify(pinned));
+        if (recent) localStorage.setItem('rt:shell:recent', JSON.stringify(recent));
+      },
+      [pinned, recent]
+    );
+    await page.reload();
+  };
+
+  const strip = (page) => page.getByRole('navigation', { name: 'Your tools' });
+  const group = (page, name) => strip(page).getByRole('group', { name });
+
+  test('with nothing stored the index is as it was', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    await expect(page.locator('#rt-mine a')).toHaveCount(0);
+    // The strip takes no room: the filter row still starts where the band ends.
+    const gap = await page.evaluate(() => {
+      const band = document.querySelector('.rt-band').getBoundingClientRect();
+      const chip = document.querySelector('.rt-chip').getBoundingClientRect();
+      return Math.round(chip.top - band.bottom);
+    });
+    expect(gap).toBe(36);
+    // Looking at the catalogue is not a visit.
+    expect(await stored(page)).toEqual({ pinned: null, recent: null });
+  });
+
+  test('visiting a tool records it, most recent first, and help does not count', async ({
+    page,
+  }) => {
+    await page.goto('/jwt');
+    await page.goto('/subnet-calculator/10.0.0.0/22');
+    await page.goto('/base64');
+    await page.goto('/dns-lookup/help');
+    await page.goto('/jwt');
+    await expect.poll(async () => (await stored(page)).recent).toBe(
+      '["jwt","base64","subnet-calculator"]'
+    );
+
+    await page.goto('/');
+    await expect(group(page, 'Recent').getByRole('link')).toHaveText([
+      'JWT Decoder/Validator',
+      'Base64 Encoder/Decoder',
+      'Subnet Calculator',
+    ]);
+    await expect(group(page, 'Pinned')).toBeHidden();
+    await expect(group(page, 'Recent').getByRole('link').first()).toHaveAttribute('href', '/jwt');
+    // The catalogue beneath is untouched.
+    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+  });
+
+  test('a tool can be pinned, unpinned and reordered by pinning again', async ({ page }) => {
+    await page.goto('/');
+    const pin = (title) => page.getByRole('button', { name: `Pin ${title}`, exact: true });
+
+    await expect(pin('Subnet Calculator')).toHaveAttribute('aria-pressed', 'false');
+    await pin('Subnet Calculator').click();
+    await expect(pin('Subnet Calculator')).toHaveAttribute('aria-pressed', 'true');
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['Subnet Calculator']);
+    await expect(group(page, 'Recent')).toBeHidden();
+
+    await pin('JWT Decoder/Validator').click();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText([
+      'Subnet Calculator',
+      'JWT Decoder/Validator',
+    ]);
+    expect((await stored(page)).pinned).toBe('["subnet-calculator","jwt"]');
+
+    // Pins outlive the page, and are drawn before the page's own script runs.
+    await page.reload();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText([
+      'Subnet Calculator',
+      'JWT Decoder/Validator',
+    ]);
+    await expect(pin('JWT Decoder/Validator')).toHaveAttribute('aria-pressed', 'true');
+
+    await pin('Subnet Calculator').click();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['JWT Decoder/Validator']);
+    await pin('Subnet Calculator').click();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText([
+      'JWT Decoder/Validator',
+      'Subnet Calculator',
+    ]);
+
+    await pin('Subnet Calculator').click();
+    await pin('JWT Decoder/Validator').click();
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    expect(await stored(page)).toEqual({ pinned: null, recent: null });
+    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+  });
+
+  test('the pin works from the keyboard', async ({ page }) => {
+    await page.goto('/');
+    const pin = page.getByRole('button', { name: 'Pin Subnet Calculator', exact: true });
+    await pin.focus();
+    await page.keyboard.press('Enter');
+    await expect(pin).toHaveAttribute('aria-pressed', 'true');
+    await expect(pin).toBeFocused();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['Subnet Calculator']);
+  });
+
+  test('a pinned tool is listed once, under Pinned', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64', 'jwt'] });
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['JWT Decoder/Validator']);
+    await expect(group(page, 'Recent').getByRole('link')).toHaveText(['Base64 Encoder/Decoder']);
+  });
+
+  test('Clear removes recents and keeps pins', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64', 'subnet-calculator'] });
+    await expect(group(page, 'Recent').getByRole('link')).toHaveCount(2);
+
+    await page.getByRole('button', { name: 'Clear recent tools' }).click();
+    await expect(group(page, 'Recent')).toBeHidden();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['JWT Decoder/Validator']);
+    expect(await stored(page)).toEqual({ pinned: '["jwt"]', recent: null });
+    await expect(page.locator('#rt-status')).toHaveText('Recent tools cleared');
+    // Focus is not dropped with the button that was pressed.
+    await expect(group(page, 'Pinned').getByRole('link')).toBeFocused();
+  });
+
+  test('Clear with no pins takes the strip away', async ({ page }) => {
+    await seed(page, { recent: ['base64'] });
+    await page.getByRole('button', { name: 'Clear recent tools' }).click();
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    await expect(page.getByRole('radio', { name: 'All 28' })).toBeFocused();
+  });
+
+  test('a stored id the registry no longer has is ignored', async ({ page }) => {
+    await seed(page, {
+      pinned: ['network-designer', 'jwt'],
+      recent: ['a-tool-that-never-existed', 'base64'],
+    });
+    await expect(strip(page).getByRole('link')).toHaveText([
+      'JWT Decoder/Validator',
+      'Base64 Encoder/Decoder',
+    ]);
+    await expect(page.locator('a[href*="network-designer"]')).toHaveCount(0);
+
+    // Nothing left to show is the same as nothing stored.
+    await seed(page, { pinned: ['network-designer'], recent: ['a-tool-that-never-existed'] });
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+  });
+
+  test('damaged storage leaves the index standing', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.setItem('rt:shell:pinned', '{not json');
+      localStorage.setItem('rt:shell:recent', '{"jwt":true}');
+    });
+    await page.reload();
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+    await expect(page.getByRole('searchbox', { name: 'Filter tools by name' })).toBeVisible();
+  });
+
+  test('the filters leave the strip alone', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64', 'subnet-calculator'] });
+
+    await page.getByRole('radio', { name: 'Network 7' }).click();
+    await expect(page.locator('.rt-card:visible')).toHaveCount(7);
+    await expect(page).toHaveURL(/#network$/);
+    await expect(strip(page).getByRole('link')).toHaveCount(3);
+
+    await page.getByRole('searchbox', { name: 'Filter tools by name' }).fill('zzzz');
+    await expect(page.locator('.rt-card:visible')).toHaveCount(0);
+    await expect(strip(page).getByRole('link')).toHaveCount(3);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+    await expect(strip(page).getByRole('link')).toHaveCount(3);
+  });
+
+  test('the strip is drawn before the page script loads', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64'] });
+    await page.route('**/*.js', (route) => route.abort());
+    await page.reload();
+    await expect(strip(page).getByRole('link')).toHaveText([
+      'JWT Decoder/Validator',
+      'Base64 Encoder/Decoder',
+    ]);
+    // The pins are the page script's to reveal: without it there is no dead control.
+    await expect(page.locator('.rt-pin:visible')).toHaveCount(0);
+  });
+
+  test('on a phone the strip scrolls sideways and the page does not', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seed(page, {
+      pinned: ['jwt', 'subnet-calculator'],
+      recent: ['base64', 'dns-lookup', 'm365-licenses', 'hash'],
+    });
+
+    const scroller = page.locator('.rt-mine-scroll');
+    await expect(scroller).toHaveAttribute('data-more-end', '');
+    await expect(scroller).not.toHaveAttribute('data-more-start', '');
+    await expect(page.locator('#filters')).toHaveAttribute('data-more-end', '');
+
+    const { pageWidth, stripOverflows, linkHeight } = await page.evaluate(() => {
+      const el = document.querySelector('.rt-mine-scroll');
+      return {
+        pageWidth: document.documentElement.scrollWidth,
+        stripOverflows: el.scrollWidth > el.clientWidth,
+        linkHeight: el.querySelector('a').getBoundingClientRect().height,
+      };
+    });
+    expect(pageWidth).toBe(390);
+    expect(stripOverflows).toBe(true);
+    expect(linkHeight).toBeGreaterThanOrEqual(44);
+
+    await scroller.evaluate((el) => el.scrollTo({ left: el.scrollWidth }));
+    await expect(scroller).toHaveAttribute('data-more-start', '');
+    await expect(scroller).not.toHaveAttribute('data-more-end', '');
+  });
+
+  test('/delete names the index memory and clears it', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64'] });
+    await page.goto('/delete');
+
+    await expect(page.getByText('Pinned and recent tools')).toBeVisible();
+    await expect(page.getByText('rt:shell:pinned · rt:shell:recent')).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Clear saved data for Pinned and recent tools' })
+      .click();
+    await page.getByRole('button', { name: 'Delete' }).click();
+    await expect(page.getByText('Nothing stored')).toBeVisible();
+    expect(await stored(page)).toEqual({ pinned: null, recent: null });
+
+    await page.goto('/');
+    await expect(page.locator('#rt-mine')).toBeHidden();
+  });
+});
+
 test.describe('the retired path', () => {
   test('/network-designer 301s to /subnet-calculator', async ({ page }) => {
     const response = await page.request.get('/network-designer', {

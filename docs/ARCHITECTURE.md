@@ -436,6 +436,15 @@ from the registry, shows sizes, and `clearTool` removes the namespaced and legac
 generations together — per tool or all tools. Site preferences (theme, palette) and
 unrelated origin storage are outside that control.
 
+The shell owns two keys of its own, `rt:shell:pinned` and `rt:shell:recent`: arrays of
+tool ids behind the index's "Your tools" strip. `src/shell/yourTools.js` is the whole of
+the logic and is unit-tested as a pure module. `ToolLayout.astro` records a visit;
+`YourTools.astro` inlines `paintStrip` from that same module as a script directly after
+the strip's markup, so the strip is drawn before first paint by the code the tests run,
+not by a second copy of it. Each function it inlines is self-contained for that reason —
+it may only use its own arguments. `/delete` lists the pair as "Pinned and recent tools"
+through the same `clearTool` path, using `SHELL_STORAGE` as a manifest-shaped object.
+
 ## Build and hosting
 
 `pnpm build` runs five steps in order:

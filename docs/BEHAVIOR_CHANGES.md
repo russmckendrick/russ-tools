@@ -24,6 +24,40 @@ Two rules:
 
 ## Landed
 
+### The index stores what you pin and what you open (2026-11-14)
+
+The shell writes to `localStorage` for the first time since the theme preference. Two keys,
+both in this browser only and never sent anywhere:
+
+- **`rt:shell:recent`** — a JSON array of tool ids, most recent first, no repeats, capped at
+  twelve. Opening any tool page appends to it, including through a deep link such as
+  `/jwt/:token`. A tool's `/help` page, the index, `/delete` and `/404` do not count.
+- **`rt:shell:pinned`** — a JSON array of tool ids in the order they were pinned. Written only
+  by the pin control on an index row. Unpinning the last one removes the key.
+
+`shell` is not a tool id and cannot become one (`src/shell/yourTools.test.js` asserts it), so
+the two keys never collide with a manifest's `storageKeys`.
+
+What a visitor sees:
+
+- With either list non-empty the index shows a strip between the band and the filter row:
+  pinned tools, then up to six recent ones that are not already pinned. With both empty, or
+  holding only ids the registry no longer has, the page is exactly as it was.
+- Ids are stored, not paths. An id with no manifest is skipped when the strip is drawn and
+  is left in storage, so a retired tool cannot produce a dead link.
+- "Clear" on the strip removes `rt:shell:recent` and leaves the pins.
+- `/delete` lists both keys as one row, "Pinned and recent tools", with its own clear
+  button. **"Clear all tool data" now removes them too**, where before it touched nothing
+  the shell owned. The theme preference is still left alone. The summary line reads
+  "across 2 tools and the index" when that row is present.
+
+There is no opt-out other than clearing: recording a visit is unconditional. Where
+`localStorage` is unavailable nothing is recorded, the strip never appears and the pin
+controls stay hidden.
+
+Every index row gains one tab stop (its pin), so the catalogue is 56 stops by keyboard
+where it was 28.
+
 ### The Azure KQL Query Builder is rebuilt (2026-11-14)
 
 | | |
