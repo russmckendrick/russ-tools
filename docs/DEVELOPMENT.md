@@ -48,8 +48,8 @@ Every script below exists in `package.json`.
 
 ## The lookup API locally
 
-WHOIS, SSL and tenant lookups call the site's own API — `/api/whois`, `/api/ssl`,
-`/api/tenant`, which are Cloudflare Pages Functions in `functions/api/`. `astro dev` does
+WHOIS, SSL, tenant and HTTP header lookups call the site's own API — `/api/whois`,
+`/api/ssl`, `/api/tenant`, `/api/headers`, which are Cloudflare Pages Functions in `functions/api/`. `astro dev` does
 not run Functions, so local development is two terminals:
 
 ```bash
@@ -70,7 +70,7 @@ pnpm dlx wrangler pages dev public --port 8798 --compatibility-date 2025-05-05
 API_DEV_TARGET=http://127.0.0.1:8798 pnpm dev
 ```
 
-Without terminal 1 the proxy has nothing to forward to, so the three lookup tools show a
+Without terminal 1 the proxy has nothing to forward to, so the lookup tools that use it show a
 failed lookup; every other tool works, because nothing else touches `/api`.
 
 `pnpm dev:api` serves `public/` only because `wrangler pages dev` wants a directory; the

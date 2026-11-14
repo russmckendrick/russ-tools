@@ -5,8 +5,8 @@ import { allRoutes } from '../tools/registry.mjs';
 import { fromFragment, splitPem } from '../tools/cert-decoder/lib/pem.js';
 
 /**
- * The dispatcher's contract is the ranking, not just the routing: seven tools
- * accept a bare hostname, so "paste a domain" must offer seven chips rather
+ * The dispatcher's contract is the ranking, not just the routing: eight tools
+ * accept a bare hostname, so "paste a domain" must offer eight chips rather
  * than silently choosing one.
  *
  * Every href here is also a route the registry actually serves —
@@ -98,22 +98,43 @@ describe('suggest', () => {
     expect(ids('the quick brown fox jumps')).toEqual(['base64']);
   });
 
-  it('offers all seven domain tools, DNS first', () => {
+  it('offers all eight domain tools, DNS first', () => {
     expect(ids('example.com')).toEqual([
       'dns-lookup',
       'email-dns-analyser',
       'dnssec-checker',
       'whois-lookup',
       'ssl-checker',
+      'http-headers',
       'tenant-lookup',
       'microsoft-portals',
     ]);
   });
 
+  it('offers the headers checker for a pasted http(s) URL, by host alone', () => {
+    for (const url of ['https://example.com/pricing?ref=1', 'http://example.com', 'HTTPS://Example.com/Login#top']) {
+      const headers = suggest(url).find((s) => s.toolId === 'http-headers');
+      expect(headers, url).toMatchObject({ href: '/http-headers/example.com', why: 'URL', path: '/http-headers' });
+    }
+    expect(suggest('example.com').find((s) => s.toolId === 'http-headers').why).toBe('domain');
+  });
+
+  it('does not offer the headers checker for a URL that names an address', () => {
+    expect(ids('https://10.0.0.1:8443/')).not.toContain('http-headers');
+    expect(ids('http://[2001:db8::1]/')).not.toContain('http-headers');
+  });
+
+  it('leads with the headers checker when the paste is a web address', () => {
+    const [first, ...rest] = ids('https://example.com');
+    expect(first).toBe('http-headers');
+    expect(rest).toEqual(ids('example.com').filter((id) => id !== 'http-headers'));
+    expect(ids('http://example.com/')).toEqual(ids('https://example.com'));
+  });
+
   it('reduces a pasted URL to its host for every tool that reads a host', () => {
     const [url, ...hosts] = suggest('https://example.com/pricing?ref=1');
     expect(url.toolId).toBe('url');
-    expect(hosts).toHaveLength(7);
+    expect(hosts).toHaveLength(8);
     for (const s of hosts) {
       expect(s.href).toContain('example.com');
       expect(s.href).not.toContain('pricing');
@@ -327,11 +348,13 @@ describe('suggest', () => {
       expect(ids('https://')).toEqual(['base64']);
     });
 
-    it('offers the URL parser first when the URL has a path or a query', () => {
-      const domains = ids('example.com');
-      expect(ids('https://example.com/pricing')).toEqual(['url', ...domains]);
-      expect(ids('http://example.com?ref=1')).toEqual(['url', ...domains]);
-      expect(ids('HTTPS://example.com/?ref=1')).toEqual(['url', ...domains]);
+    it('offers the URL parser first when the URL has a path or a query, then the headers checker', () => {
+      const web = ids('https://example.com');
+      expect(web[0]).toBe('http-headers');
+      expect(ids('https://example.com/pricing')).toEqual(['url', ...web]);
+      expect(ids('http://example.com?ref=1')).toEqual(['url', ...web]);
+      expect(ids('HTTPS://example.com/?ref=1')).toEqual(['url', ...web]);
+      expect(ids('https://example.com/pricing').slice(0, 3)).toEqual(['url', 'http-headers', 'dns-lookup']);
       expect(ids('https://10.0.0.1:8443/admin')).toEqual([
         'url',
         'subnet-calculator',
@@ -350,12 +373,14 @@ describe('suggest', () => {
       expect(chip.href.split('#')[0]).toBe('/url');
     });
 
-    it('keeps the current dispatch for a bare host, with or without a scheme', () => {
+    it('does not offer the URL parser for a bare host, with or without a scheme', () => {
       const domains = ids('example.com');
+      const web = ids('https://example.com');
       expect(domains).not.toContain('url');
-      expect(ids('https://example.com')).toEqual(domains);
-      expect(ids('https://example.com/')).toEqual(domains);
-      expect(ids('https://example.com/#section')).toEqual(domains);
+      expect(web).not.toContain('url');
+      expect(domains[0]).toBe('dns-lookup');
+      expect(ids('https://example.com/')).toEqual(web);
+      expect(ids('https://example.com/#section')).toEqual(web);
       expect(ids('example.com/pricing')).toEqual(domains);
       expect(ids('ftp://example.com/file.txt')).toEqual(domains);
     });

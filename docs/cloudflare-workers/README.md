@@ -1,13 +1,14 @@
 # The lookup API and the Cloudflare Workers
 
-Three of the twenty-five tools need a server: SSL analysis, WHOIS/RDAP and Microsoft tenant
-discovery cannot be done from a browser. DNS and BGP tools call their named public data
-providers directly and use none of this.
+Five tools need a server: SSL analysis, WHOIS/RDAP, Microsoft tenant discovery (used by two
+tools) and reading another site's HTTP response headers cannot be done from a browser. DNS
+and BGP tools call their named public data providers directly and use none of this.
 
-Since 2026-11-14 the three lookups are served by the site itself, as **Cloudflare Pages
-Functions** at `/api/ssl`, `/api/whois` and `/api/tenant`. They deploy with the site, need
-no CORS because the pages that call them are the same origin, and run locally under
-`wrangler pages dev`.
+Since 2026-11-14 the lookups are served by the site itself, as **Cloudflare Pages
+Functions** at `/api/ssl`, `/api/whois`, `/api/tenant` and `/api/headers`. They deploy with
+the site, need no CORS because the pages that call them are the same origin, and run
+locally under `wrangler pages dev`. The first three were ported from standalone Workers;
+`/api/headers` was written as a function and never had a Worker.
 
 The three standalone Workers they were ported from (`ssl.russ.tools`, `whois.russ.tools`,
 `tenant.russ.tools`) were **retired on 2026-11-14** — see
@@ -24,7 +25,9 @@ no rate limiting in the code — see [Abuse and rate limiting](#abuse-and-rate-l
 | `functions/api/ssl.js` | `/api/ssl` — SSL Labs proxy with fallbacks |
 | `functions/api/whois.js` | `/api/whois` — RDAP for domains, ipinfo.io + ip-api.com for IPs |
 | `functions/api/tenant.js` | `/api/tenant` — Microsoft tenant discovery |
+| `functions/api/headers.js` | `/api/headers` — fetches a public URL and returns its response headers |
 | `functions-lib/http.js` | the shared guard (origin check, method check) and JSON helper |
+| `functions-lib/public-host.js` | what `/api/headers` is allowed to fetch: scheme, port, hostname and address rules |
 | `src/test/functions/` | Vitest: the guard, and each handler held to the captured production responses |
 | `e2e/api.spec.js` | Playwright: routing, same-origin access and cross-origin refusal through the Pages runtime |
 | `.dev.vars.example` | names of the local secrets; copy to the gitignored `.dev.vars` |
@@ -33,8 +36,8 @@ no rate limiting in the code — see [Abuse and rate limiting](#abuse-and-rate-l
 Pages turns every file under `functions/` into a route, which is why the shared module
 lives in `functions-lib/` instead: importing from outside `functions/` is the documented
 way to share code without creating a route. On build Pages generates a `_routes.json`
-whose `include` is exactly `/api/whois`, `/api/tenant` and `/api/ssl`, so **only those
-three paths invoke a Function** — every page and asset is still served as a free static
+whose `include` is exactly `/api/whois`, `/api/tenant`, `/api/ssl` and `/api/headers`, so
+**only those four paths invoke a Function** — every page and asset is still served as a free static
 request, and the `_redirects` rewrites for the param deep links are unaffected (`_redirects`
 is not applied to requests a Function serves, and no rule in it matches `/api/*`).
 
@@ -50,7 +53,8 @@ them. `buildUrl` resolves a root-relative base against the page's origin.
 ```json
 "ssl":    { "url": "/api/ssl",    "timeout": 15000, "retries": 2 },
 "whois":  { "url": "/api/whois",  "timeout": 10000, "retries": 2 },
-"tenant": { "url": "/api/tenant", "timeout": 10000, "retries": 2 }
+"tenant": { "url": "/api/tenant", "timeout": 10000, "retries": 2 },
+"headers": { "url": "/api/headers", "timeout": 12000, "retries": 1 }
 ```
 
 ## Who can call it
@@ -100,8 +104,10 @@ workflow.
 ## Abuse and rate limiting
 
 Each call fans out to third parties on the site's behalf — SSL Labs under the site's
-registered user agent, Microsoft Graph under the site's app registration — so the realistic
-abuse is someone scripting the API to spend those quotas. The code has no counter and no
+registered user agent, Microsoft Graph under the site's app registration, and for
+`/api/headers` a request to whatever public site the caller names — so the realistic abuse
+is someone scripting the API to spend those quotas, or to make the site's address the
+source of requests to someone else's. The code has no counter and no
 storage, and should not grow one: **Cloudflare's rate limiting rules are the control.**
 
 Create a rule on the `russ.tools` zone (Security → WAF → Rate limiting rules) matching
@@ -132,7 +138,7 @@ Set on the Pages project (Settings → Variables and Secrets), separately for th
 | `GRAPH_CLIENT_SECRET` | `/api/tenant` | as above — all three are required together |
 | `GRAPH_TENANT_ID` | `/api/tenant` | as above |
 
-`/api/whois` needs nothing. `ALLOWED_ORIGINS` is **not** read by the functions and must not
+`/api/whois` and `/api/headers` need nothing. `ALLOWED_ORIGINS` is **not** read by the functions and must not
 be added to the Pages project.
 
 **`SSL_LABS_EMAIL` must be an address registered with SSL Labs**, not just any address.
@@ -390,6 +396,134 @@ contract change to make on purpose, not in passing.
 The worker source also carried two inert pieces — an empty `KNOWN_TENANTS` map and an
 unread `_ENHANCED_APIS` list with an Autodiscover SOAP request. Neither was ported.
 
+## HTTP Security Headers — `/api/headers`
+
+```
+GET /api/headers?url=example.com
+GET /api/headers?url=https%3A%2F%2Fexample.com%2Flogin
+```
+
+`url` is required (**400** `{"error":"URL parameter is required"}` if absent). It is a
+hostname or an `http`/`https` URL; a bare hostname is requested over HTTPS. The function
+requests that URL, follows redirects itself, and returns the final response's headers. It
+needs no secrets and there is no captured production response to replay, because it was
+never a Worker.
+
+### It is a server-side request forgery surface, and is written as one
+
+A function that fetches a URL chosen by the caller can be pointed at things the caller
+could not reach. Everything below is enforced in `functions-lib/public-host.js` and
+`functions/api/headers.js`, on the URL asked for **and again on every redirect**:
+
+| Rule | Refused with |
+|---|---|
+| Scheme is `http` or `https` | `blocked_scheme` |
+| Port is 80 or 443 | `blocked_port` |
+| No username or password in the URL | `blocked_credentials` |
+| The host is a name, not an IP literal. Every IPv4 and IPv6 literal is refused, public ones included, in any spelling the URL parser accepts (decimal, hex, octal, short form, IPv4-mapped) | `blocked_address` |
+| The name is not `localhost`, a single label, or under `.localhost`, `.local`, `.internal`, `.localdomain`, `.lan`, `.home`, `.corp`, `.intranet`, `.private`, `.arpa`, `.onion`, `.test`, `.invalid` or `.example` | `blocked_host` |
+| Every A and AAAA record for the name is a public address. The name is resolved through Cloudflare DNS-over-HTTPS before each request; one private answer among public ones refuses the lot | `blocked_address` |
+
+"Public" excludes loopback (`127.0.0.0/8`, `::1`), RFC 1918 (`10/8`, `172.16/12`,
+`192.168/16`), link-local (`169.254/16`, `fe80::/10`, which covers the `169.254.169.254`
+metadata address), carrier-grade NAT (`100.64/10`, which covers Alibaba's
+`100.100.100.200`), unique-local IPv6 (`fc00::/7`, which covers `fd00:ec2::254`),
+`0.0.0.0/8`, the documentation and benchmarking ranges, multicast and reserved space, and
+anything outside `2000::/3` in IPv6 together with 6to4, Teredo and the IPv6 documentation
+ranges.
+
+The request itself:
+
+- **`HEAD`, then `GET`** if `HEAD` fails or answers 400 or above. On `GET` the body stream
+  is cancelled unread. **No body is ever returned.**
+- **Redirects are followed by hand**, at most five, with `redirect: 'manual'`. A sixth is
+  `too_many_redirects`.
+- **Eight seconds** for the whole lookup, DNS and every hop included.
+- `User-Agent: russ.tools-http-headers/1.0 (+https://russ.tools/http-headers)`. No cookies,
+  no `Authorization`, nothing from the caller's request is forwarded.
+- A request arriving **with that User-Agent is refused**, so the function cannot be made
+  to call itself through any of the hostnames it is served on.
+
+What this does not do, stated plainly:
+
+- **The DNS check and the fetch are two resolutions.** A name that answers publicly to the
+  check and privately a moment later (DNS rebinding) passes the check. On Cloudflare the
+  function has no private network to be steered into: there is no VPC or tunnel binding on
+  the project, and none should be added without revisiting this. Under `wrangler pages
+  dev` the fetch leaves from the developer's machine, where loopback is real, which is why
+  the literal and resolved-address rules exist at all rather than being left to the
+  platform.
+- **It is not rate limited in code.** One call makes up to twelve DNS queries and twelve
+  requests. The zone rule in [Abuse and rate limiting](#abuse-and-rate-limiting) is the
+  control, and it matters more here than for the other three: without it the function is a
+  slow way to make Cloudflare's addresses request a third party's site.
+- Only ports 80 and 443 can be reached, so it cannot be used to probe other services, but
+  it does reveal whether a public name answers HTTP.
+
+### Response
+
+A target refused before any request is **400**, `{"error": "...", "code": "blocked_port"}`.
+Once the lookup has started the status is always **200** with `Cache-Control: no-store`:
+
+```json
+{
+  "success": true,
+  "requestedUrl": "http://example.com/",
+  "finalUrl": "https://www.example.com/",
+  "status": 200,
+  "method": "HEAD",
+  "chain": [
+    { "url": "http://example.com/", "status": 301, "method": "HEAD",
+      "location": "https://www.example.com/" },
+    { "url": "https://www.example.com/", "status": 200, "method": "HEAD" }
+  ],
+  "headers": { "strict-transport-security": "max-age=31536000", "server": "nginx" },
+  "truncatedHeaders": [],
+  "cookies": [
+    { "name": "sid", "secure": true, "httpOnly": true, "sameSite": "Lax", "path": "/",
+      "domain": null, "persistent": false, "partitioned": false }
+  ],
+  "timestamp": 0,
+  "apiSource": "russ.tools /api/headers"
+}
+```
+
+`headers` is every response header of the final hop, names lower-cased, **except
+`Set-Cookie`**. Each value is cut at 16,384 characters, with the name listed in
+`truncatedHeaders` when that happens; at most 200 headers are returned. `cookies` carries
+at most 50 entries of **names and attributes only: a cookie's value is discarded in the
+function and is in no response**. `persistent` is true when the cookie has `Max-Age` or
+`Expires`.
+
+A lookup that stops part-way is still 200:
+
+```json
+{
+  "success": false,
+  "requestedUrl": "https://example.com/",
+  "chain": [ { "url": "https://example.com/", "status": 302, "method": "HEAD",
+               "location": "http://127.0.0.1/admin" } ],
+  "error": { "code": "blocked_address", "message": "The site redirects to a target that is not checked. …" },
+  "timestamp": 0,
+  "apiSource": "russ.tools /api/headers"
+}
+```
+
+`error.code` is one of the `blocked_*` codes above (a redirect to a refused target, or a
+name that resolves privately), `dns_not_found`, `dns_unavailable` (the resolver could not
+be reached, so nothing was fetched), `unreachable`, `timeout`, `bad_redirect` (a 3xx with
+no usable `Location`) or `too_many_redirects`. `chain` holds the hops completed before the
+stop, so a refused redirect shows where it pointed. Unhandled errors return **500**
+`{"error":"Internal server error"}` with no detail.
+
+The function returns facts and no judgement. Pass, warning and fail are decided in the
+browser by `src/tools/http-headers/lib/analyse.js`, so changing a finding is not a contract
+change; changing the fields above is.
+
+Logging: a refusal logs its code only; a lookup that stops logs the hostname, the code and
+the hop count. Header values, cookie names and the path and query of the URL are not
+logged.
+
 ## Deploying
 
 There is nothing to deploy separately. The functions are part of the Pages project: a push
@@ -400,13 +534,17 @@ preview deployment whose `/api/*` is that branch's code. Rollback is the Pages r
 ## Testing without deploying
 
 - **`pnpm test`** — `src/test/functions/guard.test.js` covers the access rules for all
-  three endpoints; `whois.test.js`, `tenant.test.js` and `ssl.test.js` mock the upstreams
+  four endpoints; `whois.test.js`, `tenant.test.js` and `ssl.test.js` mock the upstreams
   (IANA and the registries, ipinfo.io, ip-api.com, Microsoft, Cloudflare DoH, SSL Labs,
   HackerTarget) and hold the handlers to the responses captured from production.
+  `headers.test.js` and `public-host.test.js` cover every refusal, a redirect to each kind
+  of forbidden target, a name that resolves privately, the redirect limit and the
+  timeout.
 - **`pnpm build && pnpm test:e2e`** — `e2e/api.spec.js` runs against `wrangler pages dev
   dist`: the functions are routed, a same-origin browser fetch is answered, and a real
   browser on another origin gets a 403 it cannot read. None of it triggers an upstream
-  lookup, so it is safe against a deployed target too.
+  lookup, so it is safe against a deployed target too. The `/api/headers` cases there send
+  only targets the function refuses before any request leaves.
 - **By hand** — `pnpm dev:api` and a browser; see `docs/DEVELOPMENT.md`.
 
 `src/test/msw/handlers.js` serves the same captured responses to the tool tests, so the

@@ -14,7 +14,7 @@
  * tool's own definition of "that is a SKU part number" is the only one that
  * can be right about it.
  *
- * Ranking, not routing, is the point. Seven tools accept a bare hostname, so
+ * Ranking, not routing, is the point. Eight tools accept a bare hostname, so
  * "paste example.com and go" cannot be a single destination without silently
  * hiding four tools that wanted the same input. The caller renders one chip
  * per suggestion and follows the first on Enter.
@@ -279,14 +279,25 @@ function route(input) {
 
   if (isHostname(value)) {
     // Ordered by how little each one presumes: general DNS answers first,
-    // then focused mail and DNSSEC analysis, registration, TLS and Microsoft.
+    // then focused mail and DNSSEC analysis, registration, TLS, the response
+    // headers and Microsoft.
+    //
+    // A paste that starts `http://` or `https://` is a web address rather
+    // than a name, and the headers checker is the one tool here that reads a
+    // web address as one, so it moves to the front and the other seven keep
+    // their order behind it. Like them it is handed the host alone: a path or
+    // query string is never carried into a link.
     const host = cleanHostname(value);
+    const isWebUrl = /^https?:\/\//i.test(raw);
+    const headers = tool('http-headers', 'HTTP Headers', '/http-headers', `/http-headers/${seg(host)}`, isWebUrl ? 'URL' : 'domain');
     return [
+      ...(isWebUrl ? [headers] : []),
       tool('dns-lookup', 'DNS Lookup', '/dns-lookup', `/dns-lookup/${seg(host)}`, 'domain'),
       tool('email-dns-analyser', 'Email DNS', '/email-dns-analyser', `/email-dns-analyser/${seg(host)}`, 'domain'),
       tool('dnssec-checker', 'DNSSEC Checker', '/dnssec-checker', `/dnssec-checker/${seg(host)}`, 'domain'),
       tool('whois-lookup', 'WHOIS Lookup', '/whois-lookup', `/whois-lookup/${seg(host)}`, 'domain'),
       tool('ssl-checker', 'SSL Checker', '/ssl-checker', `/ssl-checker/${seg(host)}`, 'domain'),
+      ...(isWebUrl ? [] : [headers]),
       tool('tenant-lookup', 'Tenant Lookup', '/tenant-lookup', `/tenant-lookup/${seg(host)}`, 'domain'),
       tool('microsoft-portals', 'Microsoft Portals', '/microsoft-portals', `/microsoft-portals/${seg(host)}`, 'domain'),
     ];
@@ -320,6 +331,11 @@ function isDetailedUrl(value) {
  * Which tools will take this? `route` answers for the value's shape; a URL
  * with a path or query is additionally a thing in its own right, so the URL
  * parser is offered ahead of whatever its host dispatches to.
+ *
+ * That puts the parser before the headers checker, which `route` leads with
+ * for any http(s) address. The order is deliberate: the parser only reads the
+ * string, while the checker sends the host to the site's server and requests
+ * it, so Enter on a pasted link takes the step that touches nothing first.
  *
  * The link carries the URL in the fragment, as the certificate link does: a
  * pasted address can hold a token, and a fragment is never sent to the server.

@@ -49,6 +49,68 @@ Conditional Access explainer reads: four directory roles Microsoft has added sin
 now resolve to names there (Resource Policy Evaluator, Reader and Administrator, and Entra
 SOC Identity Responder).
 
+### A fourth server-side lookup: `/api/headers` (2026-11-14)
+
+The HTTP Security Headers tool (`/http-headers`) cannot work in the browser: a page is not
+allowed to read another site's response headers. So the site's API gains a fourth Pages
+Function, `/api/headers`, and **the list of things that leave the browser grows by one.**
+
+- **What is sent.** The URL or hostname the user enters goes to `/api/headers` on the
+  site's own origin. The function resolves the hostname through Cloudflare DNS-over-HTTPS
+  and requests the URL itself, so the target site sees a request from Cloudflare with the
+  User-Agent `russ.tools-http-headers/1.0`, not from the user. Nothing else about the user
+  is forwarded, and nothing is stored on the server.
+- **What comes back.** Status codes and URLs for each redirect hop, the final response's
+  headers, and for each cookie its name and attributes. A cookie's value is discarded in
+  the function. No response body is read or returned.
+- **What it refuses.** Anything that is not a public website on port 80 or 443: IP
+  literals of any kind, loopback, private, link-local and carrier-grade NAT addresses,
+  `localhost`, `.local`, `.internal` and similar names, cloud metadata addresses, other
+  schemes, and URLs carrying credentials. The same rules are applied to every redirect and
+  to the addresses a hostname resolves to. The full list, and what it does not protect
+  against, is in `docs/cloudflare-workers/README.md#http-security-headers--apiheaders`.
+- **Same access model as the other three.** Same-origin only, GET only, no CORS, no key,
+  no rate limiting in code. The zone rate-limiting rule covers it because it matches
+  `/api/`.
+
+Statements that said "three lookups" were corrected in the same change: `PRODUCT.md` (which
+still said "three Cloudflare Workers"), `README.md`, `docs/README.md`, `AGENTS.md`,
+`docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, `docs/DEVELOPMENT.md`, `docs/api/API_CONFIG.md`,
+the generated `/agents.md`, and `public/.well-known/api-catalog`. The contract is pinned by
+`src/test/functions/headers.test.js`, `public-host.test.js` and the `/api/headers` cases in
+`e2e/api.spec.js`. It has no production capture to replay, because it was never a Worker.
+
+The SAML Decoder added alongside it (`/saml`) is entirely client-side and changes no
+boundary.
+
+### The paste panel offers the headers checker for a domain or a URL (2026-11-14)
+
+This entry is read after the URL parser entry below it, which landed first.
+
+- **A bare hostname** (`example.com`) used to offer seven tools and now offers eight: HTTP
+  Headers sits sixth, after SSL Checker and before Tenant Lookup. The order of the other
+  seven is unchanged and **Enter still opens DNS Lookup**.
+- **A web address with no path or query** (`https://example.com`, `https://example.com/`,
+  or one with only a fragment) used to dispatch exactly as the bare hostname. It now offers
+  the same eight with **HTTP Headers first**, and Enter opens the headers checker where it
+  used to open DNS Lookup. Someone who typed the scheme is talking about a site, and the
+  checker is the one tool in the list that reads a web address as one.
+- **A web address with a path or query** (`https://example.com/pricing?ref=1`) was eight
+  chips, URL Parser first. It is now nine: **URL Parser first, HTTP Headers second**, then
+  the seven other host tools. Enter still opens the URL parser. The order is deliberate:
+  the parser only reads the string, while the checker sends the host to the site's server,
+  which requests it. The step that touches nothing comes first.
+- **Unchanged:** a host with a path but no scheme (`example.com/pricing`), any scheme other
+  than http and https, and a URL whose host is an IP address (the URL parser when it has a
+  path, then the four address tools), because the checker refuses IP literals.
+
+The headers chip links to `/http-headers/<host>`. It is handed the host alone, like every
+other host tool, so a path or query is not carried into the link; the checker therefore
+looks at the site's root, not the pasted page.
+
+`src/lib/paste.test.js` and the paste-panel and 404 tests in `e2e/deeplinks.spec.js` assert
+the new counts and orders.
+
 ### The paste panel offers the URL parser for a URL with a path or query (2026-11-14)
 
 A pasted `http://` or `https://` URL used to be reduced to its host and dispatched as that

@@ -85,6 +85,12 @@ export const TOOL_ICONS = {
   // ssl-checker
   'shield-check':
     '<path d="M12 3l7 3v5c0 5-3 8-7 10c-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+  // http-headers: a response, its lines ticked off
+  'list-checks':
+    '<path d="M3 6.5l1.8 1.8L8 5M3 12.5l1.8 1.8L8 11M3 18.5l1.8 1.8L8 17"/><path d="M12 6.5h9M12 12.5h9M12 18.5h6"/>',
+  // saml: an identity carried inside angle brackets
+  'code-xml':
+    '<path d="M7 7l-4 5 4 5M17 7l4 5-4 5"/><circle cx="12" cy="9.5" r="2"/><path d="M8.5 16.5c.8-2.6 6.2-2.6 7 0"/>',
   // base64
   binary:
     '<path d="M6 4v6M18 4v6M14 14v6M18 14v6"/><path d="M10 4h4v6h-4z"/><path d="M6 14h4v6H6z"/>',

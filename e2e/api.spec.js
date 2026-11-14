@@ -7,6 +7,7 @@ const ENDPOINTS = [
   ['/api/whois', 'query', 'Query parameter is required'],
   ['/api/ssl', 'domain', 'Domain parameter is required'],
   ['/api/tenant', 'domain', 'Domain parameter is required'],
+  ['/api/headers', 'url', 'URL parameter is required'],
 ];
 
 for (const [path, param, missing] of ENDPOINTS) {
@@ -68,6 +69,31 @@ for (const [path, param, missing] of ENDPOINTS) {
     });
   });
 }
+
+test.describe('/api/headers refuses to fetch anything that is not a public site', () => {
+  for (const [target, code] of [
+    ['http://127.0.0.1', 'blocked_address'],
+    ['http://127.0.0.1:8788/api/whois?query=example.com', 'blocked_port'],
+    ['http://169.254.169.254/latest/meta-data/', 'blocked_address'],
+    ['http://10.0.0.1', 'blocked_address'],
+    ['http://192.168.1.1', 'blocked_address'],
+    ['http://[::1]/', 'blocked_address'],
+    ['http://localhost', 'blocked_host'],
+    ['http://metadata.google.internal', 'blocked_host'],
+    ['https://example.com:8443', 'blocked_port'],
+    ['file:///etc/passwd', 'blocked_scheme'],
+  ]) {
+    test(`${target} is ${code}`, async ({ request }) => {
+      const response = await request.get(`/api/headers?url=${encodeURIComponent(target)}`, {
+        headers: { 'Sec-Fetch-Site': 'same-origin' },
+      });
+
+      expect(response.status()).toBe(400);
+      expect(response.headers()['cache-control']).toBe('no-store');
+      expect(await response.json()).toEqual({ error: expect.any(String), code });
+    });
+  }
+});
 
 test('a page on another origin cannot call or read the API', async ({ page, baseURL }) => {
   const api = new URL(baseURL);

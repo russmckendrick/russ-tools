@@ -1,7 +1,7 @@
 # Deployment
 
-The site is a static Astro build served by Cloudflare Pages. WHOIS, SSL analysis and
-Microsoft tenant discovery are three Pages Functions in `functions/api/`, served by the
+The site is a static Astro build served by Cloudflare Pages. WHOIS, SSL analysis,
+Microsoft tenant discovery and HTTP header checks are four Pages Functions in `functions/api/`, served by the
 same project at `/api/*` and deployed with it — see
 [`cloudflare-workers/README.md`](cloudflare-workers/README.md). DNS and routing lookups go
 straight from the browser to their named public providers.
