@@ -3446,3 +3446,81 @@ everything together the registry holds 28 tools and the frozen list 51 routes,
 `pnpm test` is 1732 and `pnpm test:e2e` is 99. The overlaps were all additive:
 the paste panel keeps the PEM rule and gains the GUID third chip and the
 timestamp rule, and the placeholder now names both PEM and timestamp.
+
+### 2026-11-14 — Two reference tools: Azure Regions and VM Sizes, Entra ID Lookup (28 → 30)
+
+Second wave of the tools the catalogue lacked. Both follow the snapshot pattern
+of `azure-rbac`: a refresh script reads Microsoft's published pages, the output
+is committed with its fetch date, and the browser searches it. Nothing in
+either dataset is typed by hand.
+
+**Azure Regions and VM Sizes (`/azure-regions`, `/azure-regions/:query`).**
+`pnpm refresh:azure-regions` writes two files. `regions.json` (59 regions) comes
+from the Learn regions list, requested with `Accept: text/markdown`: the
+article's repository is private, but Learn serves any article as markdown on
+that header, and the per-continent tabs on the page are where `area` comes
+from. `vm-sizes.json` (1,274 sizes in 163 series) comes from the series
+articles in `MicrosoftDocs/azure-compute-docs`, listed through one
+unauthenticated GitHub tree request; each article's tables are merged by size
+name. The letter meanings come from the naming-conventions article and the
+family list from the sizes overview.
+
+What is not there, and the tool says so on the page: which sizes a region
+offers, zone restrictions and prices. Those need the Resource SKUs API and a
+subscription. Sovereign-cloud regions are on other pages and are not read.
+
+The decoder was checked against every published name, which found the case the
+convention does not cover: Dv2, DSv2 and Av2 number their sizes, so
+`Standard_D3_v2` has four vCPUs. `decodeSizeName` takes the published record
+and reports a disagreeing number as a size number with the real count beside
+it. A letter or segment the convention does not list (`cc`, `Promo`) is shown
+as unlisted, not guessed.
+
+Region short codes are the Azure Naming tool's, read through the module it
+already used (`src/utils/azure/region-parser.js`, which now also returns the
+file's `geo_code` map), so there is one list. Eleven newer regions have no
+code in that file yet and the tool says so per region.
+
+Upstream mistakes are kept visible, not patched: six names that appear only in
+a storage or network table (a row missing its family letter, for instance) are
+dropped by the script and logged; `Standard_B1ls2` and `Standard_L80s_v26` are
+footnote digits glued to a name in the source and are published as they stand.
+
+**Entra ID Lookup (`/entra-ids`, `/entra-ids/:query`).** One search over four
+kinds of identifier, with a row of tabs to narrow it: 288 first-party
+application IDs, 1,031 Microsoft Graph permissions (delegated, application and
+resource-specific, each with its own ID), 139 directory role template IDs and
+352 AADSTS codes. A pasted GUID gets a sentence saying what it is, including
+which side of a permission. One unified list read better at 390px than three
+separate tabbed tables, and the tabs scroll as a row there.
+
+`scripts/refresh-entra-ids.mjs` was extended, not replaced. It still writes
+`entra-well-known-ids.json` for the Conditional Access explainer, and now also
+`entra-ids.json` and `entra-id-index.json`. AADSTS codes made it in because the
+error-code reference is one markdown table that parses reliably.
+
+Microsoft no longer publishes one list of first-party application IDs: the
+support article that carried it now lists four. The applications are the union
+of five documentation pages that tabulate IDs, plus Microsoft Graph's own ID
+from the permissions reference. That is a few hundred of several thousand, and
+the no-match state says a miss does not mean "not Microsoft". The script's
+older inline application list stays out of the new dataset; eight of its 22
+GUIDs are in none of the fetched pages, and the script prints them on each run.
+
+**Paste panel.** A bare GUID now offers four tools. `suggest()` is unchanged in
+kind (synchronous, lookup last); a new `refine()` loads the 65 kB id index the
+first time a GUID is pasted and moves Entra ID Lookup to the front when the
+GUID is one it holds. Enter waits for that. Logged in `BEHAVIOR_CHANGES.md`.
+
+**Shared.** `scripts/lib/markdown-tables.mjs` holds the table parsing both
+scripts need. Icons `map-pinned` and `scan-text` were drawn. Bundle cost, all
+behind dynamic imports: regions 12.7 kB (2.0 kB gzip), VM sizes 222 kB
+(16.7 kB), Entra dataset 629 kB (115 kB), Entra id index 65 kB (37.5 kB).
+
+Checked at 390px and 1440px in both themes. `pnpm test` 1821, `pnpm lint` 0
+errors and 11 warnings, `pnpm build` clean, `pnpm test:e2e` 106 with five new
+deep-link tests. The frozen list is 55 routes.
+
+Not done: per-region VM availability and prices (authenticated), sovereign
+regions, GPU counts in the size table, permissions of APIs other than Graph,
+and a complete first-party application list (not published).

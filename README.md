@@ -25,9 +25,11 @@ documentation states its boundary explicitly.
 | **WHOIS Lookup Tool** | Network | Registration and ownership detail for domains and IPs. | `/whois-lookup` | [Docs](docs/tools/whois-lookup/) |
 | **Azure KQL Query Builder** | Azure | Build Kusto queries for Azure services with guided forms. | `/azure-kql` | [Docs](docs/tools/azure-kql/) |
 | **Azure RBAC Role Explorer** | Azure | Search 504 built-in Azure roles by name or by the action they grant. | `/azure-rbac` | [Docs](docs/tools/azure-rbac/) |
+| **Azure Regions and VM Sizes** | Azure | Look up Azure regions, their pairs and zones, and decode VM size names. | `/azure-regions` | [Docs](docs/tools/azure-regions/) |
 | **Azure Resource Naming Tool** | Azure | Generate and validate names against Microsoft CAF rules. | `/azure-naming` | [Docs](docs/tools/azure-naming/) |
 | **Azure Service Tags** | Azure | Search and compare Microsoft Azure service-tag IP ranges. | `/azure-service-tags` | [Docs](docs/tools/azure-service-tags/) |
 | **Conditional Access Analyser** | Microsoft | Explain exported Conditional Access policies and spot the gaps. | `/conditional-access` | [Docs](docs/tools/conditional-access/) |
+| **Entra ID Lookup** | Microsoft | Identify Entra app IDs, Graph permission IDs, role IDs and AADSTS codes. | `/entra-ids` | [Docs](docs/tools/entra-ids/) |
 | **Microsoft 365 License Decoder** | Microsoft | Turn licence GUIDs and SKU part numbers into names and service plans. | `/m365-licenses` | [Docs](docs/tools/m365-licenses/) |
 | **Microsoft Portals (GDAP)** | Microsoft | Deep links into 91 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](docs/tools/microsoft-portals/) |
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](docs/tools/tenant-lookup/) |
@@ -45,7 +47,7 @@ documentation states its boundary explicitly.
 | **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](docs/tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](docs/tools/buzzword-ipsum/) |
 
-28 tools.
+30 tools.
 <!-- TOOLS:END -->
 
 ## Quick start

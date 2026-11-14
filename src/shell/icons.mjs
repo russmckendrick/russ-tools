@@ -52,9 +52,15 @@ export const TOOL_ICONS = {
   // azure-service-tags
   tags:
     '<path d="M3 11V5h6l9 9-6 6z"/><path d="M13 5l8 8-6 7"/><circle cx="6.5" cy="8.5" r="1"/>',
+  // azure-regions: a pin over the ground it marks
+  'map-pinned':
+    '<path d="M12 14c-2.5-3-4-5-4-7a4 4 0 0 1 8 0c0 2-1.5 4-4 7z"/><circle cx="12" cy="7" r="1.2"/><path d="M7 14H4v7h16v-7h-3"/><path d="M4 17.5h16"/>',
   // conditional-access
   'file-lock-2':
     '<path d="M6 11h12v9H6z"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/><path d="M12 14.5v2.5"/>',
+  // entra-ids: an identifier read inside a frame
+  'scan-text':
+    '<path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><path d="M8 10h8M8 14h5"/>',
   // m365-licenses
   'receipt-text':
     '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
