@@ -416,62 +416,12 @@ const Base64Tool = () => {
           </CardContent>
         </Card>
 
-        {/* File Upload */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <h3 className="text-title-sm">File Upload</h3>
-              {selectedFile && (
-                <Badge variant="secondary">
-                  {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
-                </Badge>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
-                isDragActive
-                  ? isDragAccept
-                    ? 'border-success bg-success-subtle'
-                    : 'border-danger bg-danger-subtle'
-                  : 'border-muted-foreground/25 hover:border-muted-foreground/50'
-              }`}
-            >
-              <input {...getInputProps()} />
-              {isDragActive ? (
-                isDragAccept ? (
-                  <Upload className="mx-auto h-12 w-12 text-success mb-4" />
-                ) : (
-                  <X className="mx-auto h-12 w-12 text-danger mb-4" />
-                )
-              ) : (
-                <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              )}
-              <div>
-                <p className="text-title-sm">
-                  {isDragActive
-                    ? isDragAccept
-                      ? 'Drop the file here'
-                      : 'File not supported'
-                    : 'Drag files here or click to select'
-                  }
-                </p>
-                <p className="text-body-sm text-muted-foreground mt-2">
-                  Supports text, images, and documents up to 15MB
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Input/Output */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Input */}
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <h3 className="text-title-sm">Input</h3>
                 <div className="flex items-center gap-2">
                   {selectedFile ? (
@@ -534,7 +484,7 @@ const Base64Tool = () => {
           {/* Output */}
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <h3 className="text-title-sm">Output</h3>
                 <div className="flex items-center gap-2">
                   {outputText && (
@@ -628,6 +578,55 @@ const Base64Tool = () => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
+        <Card>
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+              <h3 className="text-title-sm">File Upload</h3>
+              {selectedFile && (
+                <Badge variant="secondary">
+                  {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div
+              {...getRootProps()}
+              className={`border border-dashed rounded-lg px-4 py-6 text-center transition-colors cursor-pointer ${
+                isDragActive
+                  ? isDragAccept
+                    ? 'border-success bg-success-subtle'
+                    : 'border-danger bg-danger-subtle'
+                  : 'border-outline-strong hover:bg-surface-inset'
+              }`}
+            >
+              <input {...getInputProps()} />
+              {isDragActive ? (
+                isDragAccept ? (
+                  <Upload className="mx-auto mb-3 h-7 w-7 text-success" />
+                ) : (
+                  <X className="mx-auto mb-3 h-7 w-7 text-danger" />
+                )
+              ) : (
+                <Upload className="mx-auto mb-3 h-7 w-7 text-on-surface-faint" />
+              )}
+              <div>
+                <p className="text-body-md font-medium">
+                  {isDragActive
+                    ? isDragAccept
+                      ? 'Drop the file here'
+                      : 'File not supported'
+                    : 'Drag files here or click to select'
+                  }
+                </p>
+                <p className="text-body-sm text-muted-foreground mt-1">
+                  Supports text, images, and documents up to 15MB
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
     </div>
   );
 };

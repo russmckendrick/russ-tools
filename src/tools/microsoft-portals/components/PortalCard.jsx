@@ -10,65 +10,58 @@ const PortalCard = ({ portal, onToggleFavorite }) => {
     try {
       await navigator.clipboard.writeText(url);
       toast.success(`${name} URL copied to clipboard`);
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy URL');
     }
   };
 
+  const tags = (portal.tags ?? []).filter((tag) => tag !== portal.category).slice(0, 2);
+
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-title-sm truncate">{portal.name}</CardTitle>
-            <CardDescription className="text-body-sm line-clamp-2">
-              {portal.description}
-            </CardDescription>
+    <Card className="flex flex-col hover:border-outline-strong">
+      <CardHeader className="flex-1 border-b-0 pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <CardTitle className="truncate">{portal.name}</CardTitle>
+            <CardDescription className="line-clamp-2">{portal.description}</CardDescription>
           </div>
           <Button
             variant="ghost"
-            size="sm"
-            className="flex-shrink-0 ml-2"
+            size="icon"
+            className="-mr-2 -mt-1 shrink-0"
+            aria-pressed={portal.isFavorite}
+            aria-label={`${portal.isFavorite ? 'Remove' : 'Add'} ${portal.name} ${portal.isFavorite ? 'from' : 'to'} favourites`}
             onClick={() => onToggleFavorite(portal.key, portal.name)}
           >
-            {portal.isFavorite ? (
-              <Star className="h-4 w-4 fill-[var(--cat)] text-[var(--cat)]" />
-            ) : (
-              <Star className="h-4 w-4" />
-            )}
+            <Star className={portal.isFavorite ? 'fill-[var(--cat)] text-[var(--cat)]' : undefined} aria-hidden="true" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-1">
-            <Badge variant="outline" className="text-body-sm">
-              {portal.category}
+      <CardContent className="space-y-3 pt-0">
+        <div className="flex flex-wrap gap-1">
+          <Badge variant="outline">{portal.category}</Badge>
+          {tags.map((tag) => (
+            <Badge key={tag} variant="secondary">
+              {tag}
             </Badge>
-            {portal.tags && portal.tags.slice(0, 2).map(tag => (
-              <Badge key={tag} variant="secondary" className="text-body-sm">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-          
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              className="flex-1"
-              onClick={() => window.open(portal.url, '_blank')}
-            >
-              <ExternalLink className="h-3 w-3 mr-2" />
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <Button asChild size="sm" className="flex-1">
+            <a href={portal.url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink aria-hidden="true" />
               Open
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => copyPortalUrl(portal.url, portal.name)}
-            >
-              <Copy className="h-3 w-3" />
-            </Button>
-          </div>
+            </a>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label={`Copy the ${portal.name} URL`}
+            onClick={() => copyPortalUrl(portal.url, portal.name)}
+          >
+            <Copy aria-hidden="true" />
+          </Button>
         </div>
       </CardContent>
     </Card>

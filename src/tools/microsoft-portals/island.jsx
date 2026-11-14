@@ -35,19 +35,20 @@ import EmptyState from './components/EmptyState';
  * output rather than a fixture, and it costs no network. Sliced to six because
  * the whole catalogue renders 5922px tall.
  */
-const GHOST_PORTALS = Object.entries(generateAllPortalLinks(null))
-  .flatMap(([sectionKey, section]) =>
-    Object.entries(section).map(([portalKey, portal]) => ({
-      key: `${sectionKey}-${portalKey}`,
-      name: portal.name,
-      description: portal.description,
-      category: portal.category,
-      tags: portal.tags,
-      url: portal.url,
-      isFavorite: false,
-    }))
-  )
-  .slice(0, 6);
+const CATALOGUE = Object.entries(generateAllPortalLinks(null)).flatMap(([sectionKey, section]) =>
+  Object.entries(section).map(([portalKey, portal]) => ({
+    key: `${sectionKey}-${portalKey}`,
+    name: portal.name,
+    description: portal.description,
+    category: portal.category,
+    tags: portal.tags,
+    url: portal.url,
+    isFavorite: false,
+  }))
+);
+const GHOST_PORTALS = CATALOGUE.slice(0, 6);
+
+const PORTAL_COUNT = CATALOGUE.length;
 
 const MicrosoftPortalsTool = () => {
   // searchInput doubles as the portal *filter* box, so it stays tool state
@@ -56,7 +57,9 @@ const MicrosoftPortalsTool = () => {
   const [searchInput, setSearchInput] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTag, setSelectedTag] = useState(null);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia?.('(max-width: 639px)').matches ? 'list' : 'grid'
+  );
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
   const [domainToRemove, setDomainToRemove] = useState(null);
   const [manualSearchTriggered, setManualSearchTriggered] = useState(false);
@@ -315,7 +318,7 @@ const MicrosoftPortalsTool = () => {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-title-sm">Microsoft Portals</CardTitle>
-                <CardDescription className="mt-1">31 portals available</CardDescription>
+                <CardDescription className="mt-1">{PORTAL_COUNT} portals available</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -335,19 +338,19 @@ const MicrosoftPortalsTool = () => {
         {portalLinks && (
           <Card className="rt-arrive">
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
                   <CardTitle className="text-title-sm">Microsoft Portals</CardTitle>
                   <CardDescription className="mt-1">
                     {filteredPortals.length} portals available
                     {tenantInfo && ` for ${tenantInfo.displayName || tenantInfo.domain}`}
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button className="interactive" variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view" aria-pressed={viewMode === 'grid'}>
                     <Grid3X3 className="h-4 w-4" />
                   </Button>
-                  <Button className="interactive" variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
+                  <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view" aria-pressed={viewMode === 'list'}>
                     <List className="h-4 w-4" />
                   </Button>
                 </div>
@@ -370,7 +373,7 @@ const MicrosoftPortalsTool = () => {
               {filteredPortals.length === 0 ? (
                 <EmptyState allPortals={allPortals} />
               ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {filteredPortals.map((portal) => (
                     <PortalCard
                       key={portal.key}

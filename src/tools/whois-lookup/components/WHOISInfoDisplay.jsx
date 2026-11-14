@@ -51,7 +51,7 @@ export default function WHOISInfoDisplay({ data }) {
       {/* Basic Information */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="text-title-sm flex items-center gap-2">
               {getTypeIcon(data.type)}
               Basic Information

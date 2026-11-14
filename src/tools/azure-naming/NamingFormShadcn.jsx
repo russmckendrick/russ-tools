@@ -137,7 +137,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <Label className="flex items-center gap-2">
                   <span className="text-body-sm font-medium">Instance Number</span>
                   <HelpTooltipShadcn content="Enter a number up to 5 digits (e.g., 001, 12345). Optional field for resources that support multiple instances." />
@@ -183,7 +183,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <Label className="flex items-center gap-2">
                   <span className="text-body-sm font-medium">Custom Prefix</span>
                   <HelpTooltipShadcn content="Add a custom prefix to the resource name. This will be added before the resource type prefix." />
@@ -214,7 +214,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <Label className="flex items-center gap-2">
                   <span className="text-body-sm font-medium">Custom Suffix</span>
                   <HelpTooltipShadcn content="Add a custom suffix to the resource name. This will be added at the end of the name." />
@@ -245,7 +245,7 @@ const NamingFormShadcn = ({ formState, updateFormState, validationState, generat
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <Label className="flex items-center gap-2">
                   <span className="text-body-sm font-medium">Random Characters</span>
                   <HelpTooltipShadcn content="Select how many random characters to append to the resource name for uniqueness." />

@@ -65,7 +65,7 @@ const SamplesDialog = ({
           </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="json" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList>
             <TabsTrigger value="json">JSON</TabsTrigger>
             <TabsTrigger value="yaml">YAML</TabsTrigger>
             <TabsTrigger value="toml">TOML</TabsTrigger>

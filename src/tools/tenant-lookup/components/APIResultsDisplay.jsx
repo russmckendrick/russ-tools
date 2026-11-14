@@ -81,7 +81,7 @@ const APIResultsDisplay = ({ apiResults }) => {
                   className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => setExpandedApi(isExpanded ? null : apiName)}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                     <div className="flex items-center gap-3">
                       {hasData ? (
                         <CheckCircle className="h-5 w-5 text-success" />

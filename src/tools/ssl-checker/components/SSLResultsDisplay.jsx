@@ -100,7 +100,7 @@ const SSLResultsDisplay = ({ data }) => {
       )}
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="flex w-full lg:grid lg:grid-cols-6">
+        <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="certificates">Certificates</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
@@ -116,7 +116,7 @@ const SSLResultsDisplay = ({ data }) => {
                 carrying the 3px structural rule. */}
             <Card emphasis>
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                   <h3 className="text-title-sm">SSL Grade</h3>
                   {overallGrade && getGradeBadge(overallGrade)}
                 </div>

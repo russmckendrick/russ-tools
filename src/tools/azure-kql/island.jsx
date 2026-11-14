@@ -241,13 +241,15 @@ const AzureKqlTool = () => {
           onClick={handleShareConfiguration}
           disabled={!selectedService || !selectedTemplate}
         >
-          <Share className="w-4 h-4 mr-2" />
-          Share Configuration
+          <Share aria-hidden="true" />
+          <span>
+            Share<span className="max-sm:sr-only"> Configuration</span>
+          </span>
         </Button>
       </ToolAction>
       <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex w-full sm:grid sm:grid-cols-4 mb-6">
+          <TabsList className="mb-6">
             <TabsTrigger value="builder">Query Builder</TabsTrigger>
             <TabsTrigger value="favorites">Favorites</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>

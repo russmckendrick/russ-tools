@@ -409,6 +409,33 @@ A 1200px column with a 32px gutter. The band is full-bleed; its content sits in
 the same column. Tool pages are one full-width column under the band; a tool
 composes its own body. The two-column control/result split stays withdrawn.
 
+On a phone (600px and under) the gutter steps down to 20px. A 32px gutter there
+spends a sixth of the screen on margin and every panel inside pays again in
+padding. The token is unchanged; `shell.css` overrides it at the breakpoint.
+
+The head of a tool page is three rows on the band: the breadcrumb with the
+page's actions ranged right of it, the glyph and title, and one sentence. Help
+is the action every tool has, and it is prerendered there; a tool's own
+page-level action (the two share buttons) is portalled in beside it. Page
+actions never open a row of their own beneath the band.
+
+**Touch.** Controls are drawn at 32-36px because that is the right weight
+beside a 36px field. On a coarse pointer every button and tab carries an
+invisible target of at least 44px (`.rt-tap` in `globals.css`), so the drawing
+does not change between a mouse and a thumb. Form text is 16px on touch so iOS
+does not zoom the page into a focused field.
+
+**What a phone must never do:** scroll the page sideways, or wrap a value in
+the middle of itself. A wide table scrolls inside its own panel and keeps its
+identifiers on one line; an address wraps at a space before it breaks anywhere.
+A diagram is never scaled below 85% (about 11px labels): past that its panel
+scrolls sideways and opens centred on the root.
+
+Tabs are words on a hairline that runs the full measure, ranged left. They do
+not stretch to fill the row and do not stack; a row too long for the screen
+scrolls. A title and its actions sharing a header row wrap, with the actions
+dropping beneath, rather than squeezing the title.
+
 The index is five sections (Network, Microsoft & Azure, Security, Developer,
 Content). Each is headed by its group glyph on an ink tile, the name and a
 count, over an ink rule, with the tools beneath as ruled rows in two columns.

@@ -59,7 +59,7 @@ const QueryPreview = ({ query, service: _service, template }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="flex items-center gap-2">
             <Code2 className="w-5 h-5" />
             Query Preview

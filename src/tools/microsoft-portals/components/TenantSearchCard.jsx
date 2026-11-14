@@ -116,48 +116,46 @@ const TenantSearchCard = ({
 
           {/* Tenant Info */}
           {tenantInfo && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-title-sm">Tenant Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-body-sm font-medium">Domain</Label>
-                    <p className="text-data-md font-mono text-muted-foreground">{tenantInfo.domain}</p>
-                  </div>
-                  <div>
-                    <Label className="text-body-sm font-medium">Tenant ID</Label>
-                    <div className="flex items-center gap-2">
-                      <code className="text-data-sm font-mono bg-muted p-1 rounded">
-                        {tenantInfo.tenantId}
-                      </code>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(tenantInfo.tenantId, 'Tenant ID')}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                  {tenantInfo.displayName && (
-                    <div>
-                      <Label className="text-body-sm font-medium">Display Name</Label>
-                      <p className="text-body-sm text-muted-foreground">{tenantInfo.displayName}</p>
-                    </div>
-                  )}
-                  {tenantInfo.method && (
-                    <div>
-                      <Label className="text-body-sm font-medium">Lookup Method</Label>
-                      <Badge variant="secondary" className="text-data-sm font-mono">
-                        {tenantInfo.method}
-                      </Badge>
-                    </div>
-                  )}
+            <div className="border-t border-outline pt-4">
+              <h3 className="text-label-caps uppercase text-on-surface-faint">Tenant</h3>
+              <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+                <div className="min-w-0">
+                  <dt className="text-body-sm font-medium">Domain</dt>
+                  <dd className="mt-1 font-mono text-data-md text-on-surface-muted [overflow-wrap:anywhere]">{tenantInfo.domain}</dd>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="min-w-0">
+                  <dt className="text-body-sm font-medium">Tenant ID</dt>
+                  <dd className="mt-1 flex items-center gap-2">
+                    <code className="min-w-0 font-mono text-data-md text-on-surface-muted [overflow-wrap:anywhere]">
+                      {tenantInfo.tenantId}
+                    </code>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      aria-label="Copy tenant ID"
+                      onClick={() => copyToClipboard(tenantInfo.tenantId, 'Tenant ID')}
+                    >
+                      <Copy aria-hidden="true" />
+                    </Button>
+                  </dd>
+                </div>
+                {tenantInfo.displayName && (
+                  <div className="min-w-0">
+                    <dt className="text-body-sm font-medium">Display name</dt>
+                    <dd className="mt-1 text-body-sm text-on-surface-muted">{tenantInfo.displayName}</dd>
+                  </div>
+                )}
+                {tenantInfo.method && (
+                  <div className="min-w-0">
+                    <dt className="text-body-sm font-medium">Lookup method</dt>
+                    <dd className="mt-1">
+                      <Badge variant="secondary">{tenantInfo.method}</Badge>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </div>
           )}
         </div>
       </CardContent>

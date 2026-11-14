@@ -155,7 +155,7 @@ const MarkdownTableTool = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="mb-6">
             <TabsTrigger value="editor">Visual Editor</TabsTrigger>
             <TabsTrigger value="preview">Live Preview</TabsTrigger>
             <TabsTrigger value="markdown">Raw Markdown</TabsTrigger>
@@ -188,7 +188,7 @@ const MarkdownTableTool = () => {
           
           <TabsContent value="markdown">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <h3 className="text-title-sm">Raw Markdown Output</h3>
                 <Button
                   variant="outline"

@@ -95,7 +95,7 @@ const ConversionForm = ({
       {/* Input Section */}
       <Card className="relative">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <div>
               <CardTitle className="text-title-sm flex items-center gap-2">
                 Input Data
@@ -187,7 +187,7 @@ const ConversionForm = ({
       {/* Output Section */}
       <Card className="relative">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <div>
               <CardTitle className="text-title-sm">Output Data</CardTitle>
               <CardDescription>

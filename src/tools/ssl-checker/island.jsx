@@ -68,12 +68,19 @@ const SslCheckerTool = () => {
       grade: data.endpoints?.[0]?.grade || 'Unknown',
       hasWarnings: data.endpoints?.[0]?.hasWarnings || false,
     }),
-    onSuccess: (q, data, fromCache) =>
+    onSuccess: (q, data, fromCache) => {
+      if (data?.connectivityOnly) {
+        toast.info('HTTPS reachable, analysis unavailable', {
+          description: `${q} accepted a secure connection; the certificate report could not be fetched.`,
+        });
+        return;
+      }
       toast.success(fromCache ? 'Loaded from cache' : 'SSL Check Complete', {
         description: fromCache
           ? `SSL data for ${q} loaded from cache`
           : `SSL certificate analysis completed for ${q}`,
-      }),
+      });
+    },
     onError: (q, err) =>
       toast.error('SSL Check Failed', {
         description: err.message || 'Failed to analyze SSL certificate',
@@ -127,43 +134,23 @@ const SslCheckerTool = () => {
       <div className="space-y-6">
         {/* SSL Check Form */}
         <Card>
-          <CardHeader>
-            <h2 className="text-title-sm">Check SSL Certificate</h2>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="domain">Domain Name</Label>
-                {/*
-                  DESIGN.md, Inputs: the primary input on a tool page is a
-                  single 3px-bordered row — the field and the submit button are
-                  one object, flush, with no gap and no radius between them.
-                  The border lives on the wrapper, so the two controls drop
-                  their own and the seam is the button's own edge.
-                */}
-                <div className="mt-2 flex flex-col items-stretch border-[3px] border-rule bg-surface-raised sm:flex-row">
+                <div className="mt-1 flex flex-col gap-2 sm:flex-row">
                   <div className="relative flex-1">
-                    <Globe className="pointer-events-none absolute left-[22px] top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-faint" />
+                    <Globe className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-faint" />
                     <Input
                       id="domain"
                       type="text"
                       placeholder="example.com"
                       value={domain}
                       onChange={(e) => setDomain(e.target.value)}
-                      className="h-auto border-0 bg-transparent py-[18px] pl-[52px] pr-[22px] text-data-lg focus-visible:ring-inset focus-visible:ring-offset-0"
+                      className="pl-9"
                     />
                   </div>
-                  {/*
-                    `title-sm` rather than `body-lg` + `font-bold`: the handoff
-                    asks for 15px/700, and here one class applies one step —
-                    so the on-scale 17px/700 step is the honest choice, and
-                    nothing goes beside a type step.
-                  */}
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="h-auto shrink-0 px-9 text-title-sm focus-visible:ring-inset focus-visible:ring-offset-0"
-                  >
+                  <Button type="submit" disabled={loading}>
                     {loading ? (
                       <RotateCcw className="mr-2 h-4 w-4 animate-spin-ccw" />
                     ) : (
@@ -231,7 +218,7 @@ const SslCheckerTool = () => {
         {domainHistory.length > 0 && (
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <div className="flex items-center gap-2">
                   <History className="h-5 w-5" />
                   <h3 className="text-title-sm">Recent SSL Checks</h3>

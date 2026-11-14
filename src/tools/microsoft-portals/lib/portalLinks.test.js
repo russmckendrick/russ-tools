@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateAzurePortalLinks, generateM365AdminLinks } from './portalLinks.js';
+import { generateAllPortalLinks, generateAzurePortalLinks, generateM365AdminLinks } from './portalLinks.js';
 
 // Regression guard for the baseUrl bug: getApiEndpoint('external') returns a
 // { url, timeout, retries, headers } wrapper, so reading .azure_portal off it was
@@ -59,5 +59,17 @@ describe('no-tenant URLs', () => {
     for (const { url } of Object.values(links)) {
       expect(url.replace(/^https:\/\//, '')).not.toContain('//');
     }
+  });
+});
+
+describe('the catalogue count the manifest states', () => {
+  it('matches the number of portals the generator produces', async () => {
+    const { default: manifest } = await import('../manifest.mjs');
+    const total = Object.values(generateAllPortalLinks(null)).reduce(
+      (sum, section) => sum + Object.keys(section).length,
+      0
+    );
+    expect(manifest.shortDescription).toContain(`${total} Microsoft portals`);
+    expect(manifest.badges).toContain(`${total} portals`);
   });
 });

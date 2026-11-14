@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 const Switch = React.forwardRef(({ className, ...props }, ref) => (
   <SwitchPrimitives.Root
     className={cn(
-      "peer inline-flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full border border-rule transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-surface-inset",
+      "peer relative inline-flex h-6 w-10 shrink-0 cursor-pointer after:absolute after:-inset-x-0.5 after:-inset-y-2.5 after:content-[''] items-center rounded-full border border-rule transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-surface-inset",
       className
     )}
     {...props}

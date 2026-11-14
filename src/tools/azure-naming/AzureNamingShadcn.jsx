@@ -80,13 +80,16 @@ const AzureNamingShadcn = () => {
           onClick={handleShareConfiguration}
           disabled={!formState.resourceType.length || !formState.workload}
         >
-          <Share size={16} className="mr-2" />
-          Copy Configuration Share URL
+          <Share aria-hidden="true" />
+          <span>
+            <span className="max-sm:sr-only">Copy Configuration </span>Share
+            <span className="max-sm:sr-only"> URL</span>
+          </span>
         </Button>
       </ToolAction>
 
       <Tabs defaultValue="builder" className="space-y-6">
-            <TabsList className="grid h-auto w-full grid-cols-1 sm:h-10 sm:grid-cols-3">
+            <TabsList>
               <TabsTrigger value="builder" className="gap-2">
                 <Edit size={16} />
                 Name Builder

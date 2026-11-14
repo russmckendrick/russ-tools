@@ -201,7 +201,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
     
     return (
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <Label className="text-body-sm font-medium">Preview ({data.length} of {totalRows} rows)</Label>
           {totalRows > 10 && (
             <span className="text-body-sm text-muted-foreground">Showing first 10 rows</span>
@@ -244,7 +244,7 @@ const ImportDialog = ({ open, onClose, onImport }) => {
 
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList>
               <TabsTrigger value="text" className="flex items-center space-x-2">
                 <FileText className="w-4 h-4" />
                 <span>Paste Text</span>
