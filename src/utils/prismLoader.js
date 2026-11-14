@@ -38,10 +38,6 @@ export const loadPrismLanguages = async (languages) => {
         case 'hcl':
           await import('prismjs/components/prism-hcl');
           break;
-        case 'kql':
-          // KQL is custom, load from our custom definition
-          await import('./prism-kql');
-          break;
         default:
           console.warn(`Unknown language: ${language}`);
           return;

@@ -3447,6 +3447,208 @@ everything together the registry holds 28 tools and the frozen list 51 routes,
 the paste panel keeps the PEM rule and gains the GUID third chip and the
 timestamp rule, and the placeholder now names both PEM and timestamp.
 
+### 2026-11-14 — The Azure KQL Query Builder, rebuilt
+
+The owner's brief was one line: the tool is horrible, rebuild it from the ground up.
+No specifics, so the first job was finding out what "horrible" was made of.
+
+**What was wrong.** Using it at 390px and 1440px turned up more than taste:
+
+- Application Gateway could not produce a query at all. Its own default
+  (`Category: ApplicationGatewayAccessLog`) failed its own validation, because the
+  template's options were strings and the validator read `option.value`. The same
+  mismatch drew two dropdowns with four blank options.
+- The AVD client-address filter named `ClientIPAddress`, a column `WVDConnections` does
+  not have.
+- Nothing was escaped: a user name of `bob" or 1==1 //` closed the literal.
+- Editing a favourite deleted it. The handler removed it from the store and pushed the
+  edited copy onto the props array in a timeout.
+- The flow was four tabs and a Generate button around four templates of one shape.
+  At 390px the query began 1,474px down the page, after a button press.
+- Labels were regexed out of column names ("Client I P Address", "http Status_d"), the
+  query block was a hard-coded dark Prism theme in both site themes, and the page still
+  used the two-column split that was withdrawn everywhere else.
+
+**The shape of the replacement.** One column, no Generate button: service and scenario,
+time range and rows, filters, and the query directly under them, rebuilt on every
+change, with one sentence saying what it returns. A second tab, **Write KQL**, is a
+plain editor with the same highlighting; **Edit as KQL** carries a built query into it.
+Saved and recent queries sit below as two lists. The order is controls then query on
+purpose: with the query above the filters, a filter becoming valid adds a line above
+the field being typed in and moves it.
+
+**Typed filters, from a schema that is data.** `scripts/refresh-kql-schemas.mjs` reads
+each table's page in the Azure Monitor table reference on Microsoft Learn and writes
+`src/data/microsoft/azure-monitor-tables.json`: 28 tables and 997 columns with their
+types. `lib/columns.js` adds only what the reference cannot say in a type: which
+string columns are IP addresses or ports, and which take one of a documented set of
+values. Operators follow the type. A value that is wrong says why and its filter is
+left out, so the output always parses; a value that is right is written through
+`stringLiteral` or `verbatimLiteral`, which follow the Kusto string rules as Learn
+states them. `catalog.test.js` fails if any scenario, filter or note names a column
+the reference does not list, and it earned its place inside the first hour by catching
+a `DestinationIp` note on `AZFWApplicationRule`, which has no such column.
+
+**Coverage.** Twelve services and 73 scenarios at first (see the steer below), in three shapes: rows, top-N
+summaries and time charts whose bucket follows the time range. Every scenario's exact
+query is pinned in `lib/fixtures/scenarios.json`, read once by eye before pinning.
+
+**Three things left out, each on the evidence.**
+
+- *Open in Log Analytics.* Microsoft documents no deep-link format. The ones the
+  portal emits (`.../LogsBlade/resourceId/<id>/source/LogsBlade.AnalyticsShareLinkToQuery/q/<gzip+base64>`)
+  are known only from community posts and all need a workspace resource ID.
+- *A pipeline diagram.* The query is already a top-to-bottom pipeline of five to
+  eight lines and the sentence above it does the explaining. A diagram would restate
+  it and push it off a phone.
+- *NSG flow logs.* `AzureNetworkAnalytics_CL` is a custom table outside the table
+  reference. VNet flow logs (`NTANetAnalytics`) are in.
+
+**Where the documentation disagrees with itself, the query hedges.** The traffic
+analytics schema page gives `FlowStatus` as both a letter and a word depending on the
+section, so the denied-flows scenario filters `in ("Denied", "D")`. The activity log
+schema says a status is `Failed`; workspaces also hold `Failure`. That scenario takes
+both. Sets of values documented in lower case (`member`, `failure`) compare with `=~`
+because the data is not reliably that case.
+
+**Contracts.** The three routes and the four old ids resolve. A share link and a store
+captured from the old tool in a browser, before a line changed, are a fixture replayed
+by unit and e2e tests. Old data is read once into `rt:azure-kql:library` and left
+where it was. Custom templates could not survive as templates, since their fields were
+free-text column names with nothing behind them, so each becomes a saved KQL query.
+The ledger entry lists every visible difference.
+
+**Smaller things.** `build_kql_query` is registered through `useWebMCPTool` and lists
+the catalogue when called with nothing. Radix's empty `onValueChange` echo, which bit
+the Subnet Calculator, is guarded on every select here. `zustand` had no other user and
+is removed, as is the shared `prism-kql.js` grammar nothing loaded. The five
+`exhaustive-deps` warnings went with the old island: lint is 0 errors, 6 warnings.
+
+**The owner's steer, the same day: more services, more interactive, slicker.**
+
+- *More services.* 12 became 34, 73 scenarios became 181, over 69 tables and 2,729
+  columns: Front Door, DNS query logs, Bastion, Entra ID Protection, Graph activity,
+  Sentinel and Defender alerts, Windows security events, CEF, Defender XDR, Microsoft 365,
+  Intune, Azure SQL, Cosmos DB, Backup, the workspace's own usage and query audit, the
+  Windows event log, syslog, performance counters, updates, Application Insights, API
+  Management, Functions, Container Apps and Container Registry. Front Door has no
+  resource-specific table in the reference, so it is queried through `AzureDiagnostics`
+  with the two category names Learn's Front Door page gives. The reference rarely lists a
+  column's values, so the values new scenarios filter on (`LogonFailed`, `Closed`,
+  `Needed`, `Failed`, syslog severities) come from each product's own documentation and
+  are offered as suggestions, not enforced; where Learn does list them
+  (`AADUserRiskEvents.RiskLevel`, `FunctionAppLogs.Level`) they are a set.
+- *More interactive.* One searchable scenario field (`/` opens it) replaces two selects.
+  Time is four one-tap buttons plus the rest. Any scenario can be counted by up to four
+  columns or drawn over time. Filters are added from one-tap column chips and can be
+  switched off without deleting them. Every line of the query is a control that jumps to
+  what wrote it, which is the pipeline view the query already was.
+- *Slicker.* The page opens on a real query and remembers the last one, so there is no
+  empty state and the `<Ghost>` went. The query moved directly under the main controls
+  and is pinned on a tall desktop window while the filters scroll; its block reserves
+  seven lines so adding a filter does not move the page. A changed line is highlighted
+  for under a second, new rows ease in over `--duration-settle`, and the copy button
+  says "Copied" itself. All of it sits under the reduced-motion floor in `globals.css`.
+  On a phone a filter row is about 100px, down from about 190.
+
+Verified on the branch with `main` (through PR 41) merged in: `pnpm test` 2085 passing,
+`pnpm lint` 0 errors and 6 warnings (was 11), `pnpm build`, `PW_PORT=8830 pnpm test:e2e`
+94 passing, `pnpm generate:docs` and `pnpm generate:og` run (one card changed). The tool
+was used in a browser at 390px and 1440px in both themes: building, an invalid then a
+valid filter, a custom range, a time chart, saving, renaming, deleting, copying, sharing,
+and opening the captured old share link and an old store with a favourite, a history
+entry and a custom template.
+
+After `main` moved again (PR 39, three more tools) it was merged in once more and the
+checks re-run: 2251 unit tests, 0 lint errors and 6 warnings, a clean build, 102 e2e.
+
+Not verified: no query was run against a real Log Analytics workspace. Names are from
+Microsoft Learn; data in a given workspace depends on its diagnostic settings. The phone
+checks were an emulated 390px touch viewport, not a handset.
+
+Left for whoever merges the parallel branches: the test and tool counts in `AGENTS.md`.
+
+### 2026-11-14 — The index gets a memory
+
+A review of the index noted it knew nothing about the visitor: twenty-eight
+tools, the same order for someone who uses three of them daily as for someone
+arriving cold. It now keeps two lists, in `localStorage` and nowhere else:
+tools the visitor pinned, and tools they recently opened.
+
+**Storage.** `rt:shell:pinned` and `rt:shell:recent`, each a JSON array of tool
+ids. Ids rather than paths, so a retired tool is skipped at draw time instead of
+becoming a dead link, and comes back if the tool does. Recents are stored to
+twelve and shown to six after the pinned ones are taken out: with a cap of six
+on the stored list, someone with six pins would never see a recent at all.
+`src/shell/yourTools.js` holds all of it and is unit-tested as a pure module
+(35 tests). `ToolLayout.astro` records the visit from one small script, so no
+tool knows about it; help pages use `BaseLayout` and so are not counted.
+
+**The strip.** Between the band and the filter row: Pinned, then Recent, each a
+labelled row of small links, with "Clear" ranged right on the Recent row. With
+nothing to show it is `hidden` and takes no room, and the e2e suite measures
+that the filter row still starts 36px under the band.
+
+It is drawn **before first paint**. The links are prerendered into a
+`<template>` and an inline script immediately after the strip's markup clones
+the stored ones into place. That script is not a second implementation:
+`YourTools.astro` stringifies `paintStrip`, `planStrip` and `parseIds` out of
+the tested module, which is why each of the three takes everything it needs as
+an argument. A unit test evaluates the inlined source on its own to hold that
+line. Measured in Chromium, a load with stored tools reports the same
+layout-shift score as a load without, at 1440px and at 390px.
+
+Two things that looked simpler were tried on paper and rejected. Prerendering
+the links as hidden anchors puts a second `a[href="/subnet-calculator"]` ahead
+of the catalogue's, which fails the existing index tests in strict mode; the
+template keeps them out of the document. And nesting the pin inside the row is
+not possible, because the row is the link: `ToolRow.astro` wraps the row and
+the pin as siblings in `.rt-row`, which also takes over the
+`view-transition-name` so the pin travels with its row when a chip refilters.
+`ToolCard`'s `travel` prop went with that; /404 never used it.
+
+**The pin.** One per row, 32px with the 44px `.rt-tap` target, shown on hover or
+focus where there is a pointer, always on touch, and always when pinned. It is
+a real button in the tab order with `aria-pressed`, hidden until the page
+script runs so there is no dead control without JavaScript or without storage.
+Pinning appends, so unpin and pin again is the reorder. Drag to reorder was
+left out.
+
+**Edge fades.** The strip on a phone is one line that scrolls sideways, and it
+fades at whichever edge has more behind it. The filter chips had the same
+scroll and no such cue, so they share it now (`src/shell/edgeFade.js`). The mask
+is applied only while a row actually overflows, because a mask clips the focus
+ring of anything inside it.
+
+**/delete.** Lists the pair as "Pinned and recent tools", clears it alone or
+with everything else. Logged in `BEHAVIOR_CHANGES.md`, including that "Clear all
+tool data" now reaches these two keys.
+
+**Checked.** `pnpm test` 1769 (was 1732), `pnpm lint` 0 errors and the same 11
+warnings, `pnpm build && pnpm test:e2e` 112 (was 99; the thirteen new cases
+cover recording, pinning, the keyboard, unpinning, clearing, the untouched
+empty state, a retired id, damaged storage, the filters, the pre-paint draw
+with the page script blocked, the phone scroll and /delete). Driven in Chromium
+at 1440px and 390px (touch), light and dark, with and without stored data, and
+with `prefers-reduced-motion`, where pinning starts no view transition.
+
+**Not checked, and known costs.** Safari and Firefox were not run; the mask and
+`:has()` rules are standard but unverified there. A back-forward cache restore
+repaints the strip on `pageshow`, which no test exercises. The index HTML grew
+from about 61 kB to 96 kB (14.3 kB to 17.5 kB gzipped): the template of
+twenty-eight links and twenty-eight pin buttons. Keyboard users get one more
+tab stop per row.
+
+**Noticed, not touched.** The phone index already reports a layout shift of
+about 0.23 on load with nothing stored, from the shell below the band; and the
+index's meta description still says "Twenty-four small utilities".
+
+**After taking `main` in.** The Azure KQL rebuild landed first. Nothing
+overlapped in code: the two logs conflicted only because both append. The
+registry is still 28 tools, so the catalogue counts in the new e2e cases stand.
+With both together `pnpm test` is 2288, `pnpm test:e2e` is 115 and `pnpm lint`
+is 0 errors and 6 warnings.
+
 ### 2026-11-14 — Two reference tools: Azure Regions and VM Sizes, Entra ID Lookup (28 → 30)
 
 Second wave of the tools the catalogue lacked. Both follow the snapshot pattern

@@ -68,6 +68,16 @@ action goes through `<ToolAction>` (`ui/tool-actions.jsx`), which `ToolIsland` p
 slot beside Help. `.rt-band .rt-tool-acts :is(a, button)` in `shell.css` redraws whatever lands
 there in band tokens, so a tool passes an ordinary `<Button>` and never styles it for the band.
 
+**The index remembers, in the browser only.** `rt:shell:pinned` and `rt:shell:recent` hold
+tool ids behind the "Your tools" strip (`src/shell/YourTools.astro`). All of the logic is
+`src/shell/yourTools.js`; `paintStrip`, `planStrip` and `parseIds` are **stringified into an
+inline pre-paint script**, so each must stay self-contained — arguments only, no imports, no
+calls to a sibling function — or the strip silently stops appearing before first paint
+(`yourTools.test.js` evaluates the inlined source to catch that). The strip's links live in
+a `<template>`, not hidden in the page, because a hidden duplicate of every tool link breaks
+the `a[href="/…"]` locators the e2e suite uses. The pin is a sibling of the row link inside
+`.rt-row` (`ToolRow.astro`), never a child: a button cannot nest in an anchor.
+
 **Phones are a first-class target — the rules are in `DESIGN.md`'s Layout section.** The
 mechanics: `.rt-tap` (in `globals.css`, on every `Button` and `TabsTrigger`) is an invisible
 44px touch target on coarse pointers; `.rt-tool-body` is `minmax(0, 1fr)` because an implicit
@@ -147,8 +157,11 @@ A prior version of this file misdescribed the codebase. Corrected facts:
   `toolsConfig.json` and the `regions/` modules **have been deleted** — older docs
   reference them. The sitemap generator is `scripts/generate-sitemap.js`; the share codec
   is `src/core/sharelink.js`; the API client is `src/core/api.js`.
-- The azure-kql `*Shadcn` files **have been deleted**; they were a dead parallel
-  implementation. The live entry is `AzureKQLTool.jsx`.
+- azure-kql was **rebuilt from the ground up on 2026-11-14**. Its entry is `island.jsx`,
+  everything that decides what a query says is in `lib/`, and `AzureKQLTool.jsx`, the
+  `templates/`, `utils/` and `store/` folders and the template editor are gone. Table and
+  column names come from `src/data/microsoft/azure-monitor-tables.json`
+  (`pnpm refresh:kql-schemas`), never from memory.
 - `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, `docs/DEPLOYMENT.md` and the workers
   README were regenerated from the code at cutover. Earlier warnings about them being
   Mantine-era no longer apply.
@@ -175,14 +188,14 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
   stable contract and an unpinned upgrade would fail the drift test on an untouched file.
   It reads only `colors`, `typography`, `rounded` and `spacing`; `borderWidth`, `shadow`,
   `motion` and `components` are documentation, transcribed by hand into `globals.css`.
-- `pnpm test` — Vitest (1732 tests; **keep these green**) · `pnpm test:watch` to iterate.
+- `pnpm test` — Vitest (2288 tests; **keep these green**) · `pnpm test:watch` to iterate.
   The count dropped from ~1000 when the palettes were retired: `tokens.contrast.test.js`
   ran its pair list over 12 palette/mode combinations and now runs it over 2. It measures
   *more* roles than before, against fewer themes.
-- `pnpm test:e2e` — Playwright deep-link, help and API matrix (99 tests) against
+- `pnpm test:e2e` — Playwright deep-link, help and API matrix (115 tests) against
   `wrangler pages dev`. It reuses whatever is already listening on :8788, so a stale
   server gets tested instead of the build — `PW_PORT=8798 pnpm test:e2e` moves it.
-- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 11 warnings remain
+- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 6 warnings remain
   (exhaustive-deps and react-refresh) — the raw-palette and off-scale-type warnings are
   all cleared. Don't add errors, and don't let the warning count climb.
 - `pnpm generate:sitemap` — regenerate `public/sitemap.xml` **from the manifests**
@@ -245,9 +258,8 @@ Full reference: `docs/cloudflare-workers/README.md`.
 
 ### Tool structure
 
-A few files still carry a `Shadcn` suffix (`AzureNamingShadcn.jsx`,
-`AzureKQLTool.jsx`'s neighbours) — that is **migration residue**, not a convention to
-copy.
+A few files still carry a `Shadcn` suffix (`AzureNamingShadcn.jsx` and its neighbours)
+— that is **migration residue**, not a convention to copy.
 
 ### The tools
 
