@@ -24,6 +24,52 @@ Two rules:
 
 ## Landed
 
+### A fourth server-side lookup: `/api/headers` (2026-11-14)
+
+The HTTP Security Headers tool (`/http-headers`) cannot work in the browser: a page is not
+allowed to read another site's response headers. So the site's API gains a fourth Pages
+Function, `/api/headers`, and **the list of things that leave the browser grows by one.**
+
+- **What is sent.** The URL or hostname the user enters goes to `/api/headers` on the
+  site's own origin. The function resolves the hostname through Cloudflare DNS-over-HTTPS
+  and requests the URL itself, so the target site sees a request from Cloudflare with the
+  User-Agent `russ.tools-http-headers/1.0`, not from the user. Nothing else about the user
+  is forwarded, and nothing is stored on the server.
+- **What comes back.** Status codes and URLs for each redirect hop, the final response's
+  headers, and for each cookie its name and attributes. A cookie's value is discarded in
+  the function. No response body is read or returned.
+- **What it refuses.** Anything that is not a public website on port 80 or 443: IP
+  literals of any kind, loopback, private, link-local and carrier-grade NAT addresses,
+  `localhost`, `.local`, `.internal` and similar names, cloud metadata addresses, other
+  schemes, and URLs carrying credentials. The same rules are applied to every redirect and
+  to the addresses a hostname resolves to. The full list, and what it does not protect
+  against, is in `docs/cloudflare-workers/README.md#http-security-headers--apiheaders`.
+- **Same access model as the other three.** Same-origin only, GET only, no CORS, no key,
+  no rate limiting in code. The zone rate-limiting rule covers it because it matches
+  `/api/`.
+
+Statements that said "three lookups" were corrected in the same change: `PRODUCT.md` (which
+still said "three Cloudflare Workers"), `README.md`, `docs/README.md`, `AGENTS.md`,
+`docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, `docs/DEVELOPMENT.md`, `docs/api/API_CONFIG.md`,
+the generated `/agents.md`, and `public/.well-known/api-catalog`. The contract is pinned by
+`src/test/functions/headers.test.js`, `public-host.test.js` and the `/api/headers` cases in
+`e2e/api.spec.js`. It has no production capture to replay, because it was never a Worker.
+
+The SAML Decoder added alongside it (`/saml`) is entirely client-side and changes no
+boundary.
+
+### The paste panel offers the headers checker for a domain or a URL (2026-11-14)
+
+A bare hostname pasted into the index's paste panel used to offer seven tools and now
+offers eight: HTTP Headers sits sixth, after SSL Checker and before Tenant Lookup. A pasted
+`http://` or `https://` URL gets the same eight, reduced to its host as before; the chip
+for the headers checker is labelled as reading a URL. The order of the other seven is
+unchanged and Enter still opens DNS Lookup. A URL whose host is an IP address is unchanged
+(the four address tools), because the checker refuses IP literals.
+
+`src/lib/paste.test.js` and the paste-panel and 404 tests in `e2e/deeplinks.spec.js` assert
+the new count.
+
 ### The paste panel reads timestamps, and a GUID gets a third answer (2026-11-14)
 
 Two inputs to the index's paste panel now dispatch differently, both because of tools that

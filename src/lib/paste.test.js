@@ -5,8 +5,8 @@ import { allRoutes } from '../tools/registry.mjs';
 import { fromFragment, splitPem } from '../tools/cert-decoder/lib/pem.js';
 
 /**
- * The dispatcher's contract is the ranking, not just the routing: seven tools
- * accept a bare hostname, so "paste a domain" must offer seven chips rather
+ * The dispatcher's contract is the ranking, not just the routing: eight tools
+ * accept a bare hostname, so "paste a domain" must offer eight chips rather
  * than silently choosing one.
  *
  * Every href here is also a route the registry actually serves —
@@ -98,16 +98,30 @@ describe('suggest', () => {
     expect(ids('the quick brown fox jumps')).toEqual(['base64']);
   });
 
-  it('offers all seven domain tools, DNS first', () => {
+  it('offers all eight domain tools, DNS first', () => {
     expect(ids('example.com')).toEqual([
       'dns-lookup',
       'email-dns-analyser',
       'dnssec-checker',
       'whois-lookup',
       'ssl-checker',
+      'http-headers',
       'tenant-lookup',
       'microsoft-portals',
     ]);
+  });
+
+  it('offers the headers checker for a pasted http(s) URL, by host alone', () => {
+    for (const url of ['https://example.com/pricing?ref=1', 'http://example.com', 'HTTPS://Example.com/Login#top']) {
+      const headers = suggest(url).find((s) => s.toolId === 'http-headers');
+      expect(headers, url).toMatchObject({ href: '/http-headers/example.com', why: 'URL', path: '/http-headers' });
+    }
+    expect(suggest('example.com').find((s) => s.toolId === 'http-headers').why).toBe('domain');
+  });
+
+  it('does not offer the headers checker for a URL that names an address', () => {
+    expect(ids('https://10.0.0.1:8443/')).not.toContain('http-headers');
+    expect(ids('http://[2001:db8::1]/')).not.toContain('http-headers');
   });
 
   it('reduces a pasted URL to its host', () => {

@@ -8,7 +8,7 @@ Where the tools' network endpoints are declared, and how they are called.
 |---|---|
 | `src/utils/api/apiConfig.json` | Every endpoint a tool calls, with its timeout and retry count |
 | `src/core/api.js` | `apiFetch`, `apiJson`, `buildUrl`, `ApiError` — the one HTTP client |
-| `functions/api/*.js` | The site's own lookup API, which three of the endpoints point at |
+| `functions/api/*.js` | The site's own lookup API, which four of the endpoints point at |
 
 There is no wrapper beyond that: a tool imports the JSON, picks its endpoint and calls
 `apiFetch`. (`src/utils/apiUtils.js`, `getApiEndpoint` and `buildApiUrl`, which an earlier
@@ -22,6 +22,7 @@ version of this document described, were deleted at the cutover.)
     "tenant": { "url": "/api/tenant", "timeout": 10000, "retries": 2 },
     "ssl":    { "url": "/api/ssl",    "timeout": 15000, "retries": 2 },
     "whois":  { "url": "/api/whois",  "timeout": 10000, "retries": 2 },
+    "headers": { "url": "/api/headers", "timeout": 12000, "retries": 1 },
     "dns": {
       "google": "https://dns.google/resolve",
       "cloudflare": "https://1.1.1.1/dns-query",
@@ -39,10 +40,11 @@ version of this document described, were deleted at the cutover.)
 | `tenant` | The site's own API, `/api/tenant` | `tenant-lookup`, `microsoft-portals` |
 | `ssl` | The site's own API, `/api/ssl` | `ssl-checker` |
 | `whois` | The site's own API, `/api/whois` | `whois-lookup` |
+| `headers` | The site's own API, `/api/headers` | `http-headers` |
 | `dns` | Public DNS-over-HTTPS resolvers, called directly from the browser | `src/core/dns.js` |
 | `external` | A base URL for building portal links; nothing is fetched from it | `microsoft-portals` |
 
-### The three `/api/*` endpoints are root-relative on purpose
+### The four `/api/*` endpoints are root-relative on purpose
 
 They are served by the same Cloudflare Pages project as the pages (Pages Functions in
 `functions/api/`), so a relative path is the whole address: production, `www`, every
@@ -52,7 +54,10 @@ absolute URL to another origin here would not work** — the API would answer 40
 model, the secrets and the response shapes are in
 [`../cloudflare-workers/README.md`](../cloudflare-workers/README.md).
 
-`src/tools/agent-discovery.test.js` pins these three values to `/api/<name>`, to a function
+`headers` has a 12-second timeout because the function itself gives up after eight, and one
+retry because a refused target is a 400, which is never retried anyway.
+
+`src/tools/agent-discovery.test.js` pins these four values to `/api/<name>`, to a function
 file of the same name, and to the published API catalog.
 
 ## Calling an endpoint

@@ -15,7 +15,7 @@ import webmcp from 'astro-webmcp';
  *
  * See docs/plans/redesign-plan.md.
  *
- * The three lookups that leave the browser are Pages Functions under
+ * The four lookups that leave the browser are Pages Functions under
  * functions/api/, served at /api/* by the same Pages project. `astro dev`
  * knows nothing about them, so the dev server proxies /api to a locally
  * running `pnpm dev:api` (wrangler pages dev, port 8788). The proxy exists

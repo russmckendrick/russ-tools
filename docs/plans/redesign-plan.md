@@ -3446,3 +3446,86 @@ everything together the registry holds 28 tools and the frozen list 51 routes,
 `pnpm test` is 1732 and `pnpm test:e2e` is 99. The overlaps were all additive:
 the paste panel keeps the PEM rule and gains the GUID third chip and the
 timestamp rule, and the placeholder now names both PEM and timestamp.
+
+### 2026-11-14 — HTTP Security Headers and SAML Decoder (28 → 30)
+
+Two security tools from the 2026-11-14 gap review. One needs a server and one must not
+have one.
+
+**HTTP Security Headers (`/http-headers`, deep link `/http-headers/:domain`).** A browser
+cannot read another site's response headers, so this is the fourth lookup behind the
+site's API: `functions/api/headers.js`, on `lookupHandler` like the other three. It is a
+function that fetches a URL the caller chooses, and was written as the SSRF surface that
+makes it. `functions-lib/public-host.js` decides what may be fetched (http or https, port
+80 or 443, a hostname and never an IP literal, no internal names, no credentials), the
+handler resolves the name over Cloudflare DoH and refuses any private answer, and both are
+applied again to every redirect, which it follows by hand to a limit of five. HEAD first,
+GET if that is refused, body cancelled unread, eight seconds in all. Cookie values are
+dropped in the function; only names and flags come back.
+
+Two decisions the brief left open:
+
+- **Every IP literal is refused, public ones too.** The brief asked for private and
+  loopback literals to be refused. Refusing all of them removes the whole class of
+  parser-differential tricks (decimal, hex, octal, IPv4-mapped, NAT64) at the cost of a
+  case nobody needs: a security-headers check of a bare address.
+- **The function returns facts and the browser grades them.** Pass, warning and fail are
+  decided in `src/tools/http-headers/lib/analyse.js`, so rewording a finding or moving a
+  threshold is not an API contract change. There is no letter grade: four counts (passed,
+  warnings, failed, notes) and a specific sentence per header.
+
+What it cannot promise is written in the API reference and not softened: the DNS check and
+the fetch are two resolutions, so a rebinding name passes the check, and what covers that
+on Cloudflare is that the function has no private network to be steered into. Under
+`wrangler pages dev` the fetch leaves from the developer's machine, which is why
+`localtest.me` (a public name for 127.0.0.1) was the manual test, and it is refused.
+
+**SAML Decoder (`/saml`).** Entirely client-side. `lib/decode.js` detects raw XML, base64,
+base64 over DEFLATE, URL encoding, or a whole redirect URL or form body, and says which it
+found; `pako` (already here for the share-link codec) inflates, capped at 4 MB so a
+compression bomb stops. `lib/parse.js` reads the result with the browser's `DOMParser`
+and refuses any document with a DOCTYPE outright, since SAML never has one. The summary
+covers issuer, subject and NameID format, audience, destination and recipient, the
+validity window on the shared `ValidityBar`, authentication context, every attribute with
+Entra ID claim URIs labelled, and the signature and digest algorithms. Findings: expired or
+not yet valid, no audience restriction, SHA-1, nothing signed, an assertion signed only by
+the response around it, and a signature whose Reference names some other element.
+Signatures are reported and never verified, and the page says so in the signatures panel,
+the help and the WebMCP tool's output.
+
+The XML view is not Prism. `lib/pretty.js` walks the DOM into typed tokens and the
+component renders spans, so there is no `innerHTML` anywhere near pasted markup, and the
+colours are tokens (the existing Prism stylesheet in the data converter is raw hexes).
+
+**Shared files touched.** `src/shell/icons.mjs` (`list-checks`, `code-xml`),
+`src/lib/paste.js` (the headers checker joins the hostname list, sixth of eight),
+`src/tools/registry.test.js` (30 tools, 54 frozen routes), `e2e/deeplinks.spec.js`,
+`e2e/api.spec.js`, `src/utils/api/apiConfig.json`, `public/.well-known/api-catalog`,
+`scripts/generate-llms.mjs`, `src/tools/agent-discovery.test.js`,
+`src/test/functions/guard.test.js`, and the docs that listed three lookups. No dependency
+was added.
+
+**Found by looking.** A real CSP is two thousand characters, and Mozilla sends it twice
+(enforced and report-only), which made the phone page 5,200px tall; values over 280
+characters now open on request. "hello this is not saml" is made entirely of base64
+characters, so the first error message claimed it had decoded; it now says it is neither
+XML nor base64.
+
+Checked at 390px and 1440px in both themes, against `wrangler pages dev dist`: a real
+result for mozilla.org (two redirects), bing.com (cookies) and russ.tools, and refusals for
+`http://127.0.0.1`, `http://169.254.169.254`, `http://10.1.2.3`, `http://192.168.0.1`,
+`http://[::1]/` and `localtest.me`. `pnpm test` 2146, `pnpm lint` 0 errors and 11 warnings,
+`pnpm build` clean, `pnpm test:e2e` 119.
+
+Not verified: the function on Cloudflare's own network (only the local runtime was
+available, and nothing was deployed), so whether Cloudflare's edge refuses a fetch to a
+private address by itself is asserted from the platform's design and not observed here.
+Not done: a `<meta http-equiv>` CSP (the body is never read), checking more than one URL
+per site, SAML 1.1 and WS-Federation, decrypting an `EncryptedAssertion`, and verifying a
+signature.
+
+Left for the owner: `SITE_DESCRIPTION` in `src/shell/site.mjs` (and the copy of it in
+`public/.well-known/ai-catalog.json`) still says "Twenty-four focused tools" and
+"Everything runs in your browser ... nothing uploaded". The count was stale before this
+branch and the second sentence was already untrue of the lookups; it is site-wide meta
+copy, so it was not rewritten here.

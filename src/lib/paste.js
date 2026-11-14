@@ -14,7 +14,7 @@
  * tool's own definition of "that is a SKU part number" is the only one that
  * can be right about it.
  *
- * Ranking, not routing, is the point. Seven tools accept a bare hostname, so
+ * Ranking, not routing, is the point. Eight tools accept a bare hostname, so
  * "paste example.com and go" cannot be a single destination without silently
  * hiding four tools that wanted the same input. The caller renders one chip
  * per suggestion and follows the first on Enter.
@@ -270,14 +270,19 @@ export function suggest(input) {
 
   if (isHostname(value)) {
     // Ordered by how little each one presumes: general DNS answers first,
-    // then focused mail and DNSSEC analysis, registration, TLS and Microsoft.
+    // then focused mail and DNSSEC analysis, registration, TLS, the response
+    // headers and Microsoft. The headers checker reads a pasted http(s) URL
+    // as readily as a bare name; like the rest it is handed the host alone,
+    // so a path or query string is never carried into a link.
     const host = cleanHostname(value);
+    const isWebUrl = /^https?:\/\//i.test(raw);
     return [
       tool('dns-lookup', 'DNS Lookup', '/dns-lookup', `/dns-lookup/${seg(host)}`, 'domain'),
       tool('email-dns-analyser', 'Email DNS', '/email-dns-analyser', `/email-dns-analyser/${seg(host)}`, 'domain'),
       tool('dnssec-checker', 'DNSSEC Checker', '/dnssec-checker', `/dnssec-checker/${seg(host)}`, 'domain'),
       tool('whois-lookup', 'WHOIS Lookup', '/whois-lookup', `/whois-lookup/${seg(host)}`, 'domain'),
       tool('ssl-checker', 'SSL Checker', '/ssl-checker', `/ssl-checker/${seg(host)}`, 'domain'),
+      tool('http-headers', 'HTTP Headers', '/http-headers', `/http-headers/${seg(host)}`, isWebUrl ? 'URL' : 'domain'),
       tool('tenant-lookup', 'Tenant Lookup', '/tenant-lookup', `/tenant-lookup/${seg(host)}`, 'domain'),
       tool('microsoft-portals', 'Microsoft Portals', '/microsoft-portals', `/microsoft-portals/${seg(host)}`, 'domain'),
     ];

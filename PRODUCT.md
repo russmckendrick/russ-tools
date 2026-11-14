@@ -81,8 +81,9 @@ than generic textbook implementations.
   functional taxonomy, not decoration.
 - Static output on Cloudflare Pages; every page prerendered, one React island per tool.
 - Local processing is the default. Lookup tools state when they send the queried name or
-  address to Google or Cloudflare DNS-over-HTTPS, RIPEstat, or one of the three Cloudflare
-  Workers used for WHOIS, SSL analysis and Microsoft tenant discovery.
+  address to Google or Cloudflare DNS-over-HTTPS, RIPEstat, or the site's own same-origin
+  API (`/api/*`, four Cloudflare Pages Functions) used for WHOIS, SSL analysis, Microsoft
+  tenant discovery and HTTP security header checks.
 - Frozen technical contracts (deep-link routes, the share-link codec, localStorage
   migrations, per-tool SEO, Worker request/response schemas) are documented in
   `CLAUDE.md`. They are compatibility promises to already-published links.

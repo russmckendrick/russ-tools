@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
  * token, real domains, an IPv6 CIDR — because placeholder-shaped values are
  * exactly what `_redirects` patterns and `useParams` decoding never choke on.
  *
- * The lookups behind ssl/whois/tenant fire on mount but are NOT asserted:
+ * The lookups behind ssl/whois/tenant/headers fire on mount but are NOT asserted:
  * the matrix proves routing and param application. They are the site's own
  * `/api/*` now, which both the local runtime and a deployed target would
  * really answer — so these tests stub it, or every run would send four
@@ -85,7 +85,7 @@ test.describe('home and shell pages', () => {
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
   });
 
   test('the catalogue rows sit in two flush columns', async ({ page }) => {
@@ -108,7 +108,7 @@ test.describe('home and shell pages', () => {
       };
     });
 
-    expect(total).toBe(28);
+    expect(total).toBe(30);
     expect(lefts, `row left edges: ${lefts}`).toHaveLength(2);
     expect(widths, `row widths: ${widths}`).toHaveLength(1);
   });
@@ -132,17 +132,17 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
   });
 
   test('a shared category link arrives filtered', async ({ page }) => {
     await page.goto('/#security');
 
-    await expect(page.getByRole('radio', { name: 'Security 5' })).toHaveAttribute(
+    await expect(page.getByRole('radio', { name: 'Security 7' })).toHaveAttribute(
       'aria-checked',
       'true'
     );
-    await expect(page.locator('.rt-card:visible')).toHaveCount(5);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(7);
     // The anchor rides on the first row of the group, so the breadcrumb link
     // every tool page carries still has something to scroll to.
     await expect(page.locator('#security')).toHaveClass(/rt-card/);
@@ -154,12 +154,18 @@ test.describe('home and shell pages', () => {
     const input = page.locator('#rt-jump-input');
     await expect(input).toBeVisible();
 
-    // Seven tools take a bare hostname, so the panel offers all seven rather
+    // Eight tools take a bare hostname, so the panel offers all eight rather
     // than silently choosing one.
     await input.fill('example.com');
     const chips = page.locator('#rt-jump-hint a');
-    await expect(chips).toHaveCount(7);
+    await expect(chips).toHaveCount(8);
     await expect(chips.first()).toHaveText('DNS Lookup \u2192 /dns-lookup');
+
+    // A pasted http(s) URL is reduced to its host for every one of them,
+    // the headers checker included.
+    await input.fill('https://example.com/pricing?ref=1');
+    await expect(chips).toHaveCount(8);
+    await expect(page.locator('#rt-jump-hint a[href="/http-headers/example.com"]')).toHaveCount(1);
 
     // A CIDR can be calculated, combined or inspected in the routing table.
     await input.fill('10.0.0.0/22');
@@ -239,7 +245,7 @@ test.describe('home and shell pages', () => {
     // A wrong tool name carrying a right value: the domain lands in the panel.
     await page.goto('/whois/example.com');
     await expect(page.locator('#rt-jump-input')).toHaveValue('example.com');
-    await expect(page.locator('#rt-jump-hint a')).toHaveCount(7);
+    await expect(page.locator('#rt-jump-hint a')).toHaveCount(8);
 
     // A guess nobody could act on is worse than silence.
     await page.goto('/sdfsdfsdf');
@@ -361,6 +367,12 @@ test.describe('param deep links — rewrite + island application', () => {
     await stubLookupApi(page);
     await expectRewrite(page, '/ssl-checker/example.com', 'SSL Certificate Checker');
     await expect(page.locator('#domain')).toHaveValue('example.com');
+  });
+
+  test('/http-headers/:domain', async ({ page }) => {
+    await stubLookupApi(page);
+    await expectRewrite(page, '/http-headers/example.com', 'HTTP Security Headers');
+    await expect(page.locator('#http-headers-target')).toHaveValue('example.com');
   });
 
   test('/whois-lookup/:query', async ({ page }) => {

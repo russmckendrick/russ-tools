@@ -17,8 +17,8 @@ import { extractHelpMarkdown } from '../lib/helpMarkdown.js';
  */
 
 describe('manifest contract', () => {
-  it('registers all twenty-eight tools', () => {
-    expect(TOOLS).toHaveLength(28);
+  it('registers all thirty tools', () => {
+    expect(TOOLS).toHaveLength(30);
   });
 
   it.each(TOOLS.map((t) => [t.id, t]))('%s has a well-formed manifest', (id, tool) => {
@@ -127,6 +127,8 @@ describe('frozen contract #1 — deep links', () => {
     '/email-dns-analyser/:domain',
     '/hash',
     '/hash/:input',
+    '/http-headers',
+    '/http-headers/:domain',
     '/jwt',
     '/jwt/:token',
     '/m365-licenses',
@@ -136,6 +138,7 @@ describe('frozen contract #1 — deep links', () => {
     '/microsoft-portals/:domain',
     '/network-designer',
     '/password-generator',
+    '/saml',
     '/ssl-checker',
     '/ssl-checker/:domain',
     '/subnet-calculator',
@@ -159,7 +162,7 @@ describe('frozen contract #1 — deep links', () => {
   it('still carries every route the SPA served', () => {
     // Guards the list itself: a deletion here is a broken bookmark, and is
     // never what someone meant to do.
-    expect(routerPaths.length).toBe(51);
+    expect(routerPaths.length).toBe(54);
   });
 
   it('serves every one of them', () => {
