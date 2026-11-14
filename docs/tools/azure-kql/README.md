@@ -6,31 +6,67 @@ Build Kusto (KQL) queries for Azure Monitor Logs from ready-made scenarios with 
 
 ## Quick start
 
-1. Choose a **Service**, then a **Scenario**. A complete query appears straight away.
-2. Set the **Time range** and, for row and top-N queries, the number of **Rows**.
-3. Add filters from **Add a filter**. The query and the sentence above it update as you type.
+The page opens on a working query (failed Entra ID sign-ins the first time, and wherever you left off after that).
+
+1. Select the **Scenario** field, or press `/`, and search: a service, a table name or a word such as "failed" or "WAF".
+2. Pick a **Time range** with the 1h, 24h, 7d and 30d buttons, or choose another under **Other**.
+3. Add filters with the column buttons under **Filters**. The query and the sentence above it change as you type.
 4. Select **Copy query** and paste it into the Logs blade of your Log Analytics workspace.
 
 There is no Generate button and nothing is sent anywhere: the query is built in your browser and is never run.
 
 ## What it covers
 
-- **Azure Firewall**: `AZFWNetworkRule`, `AZFWApplicationRule`, `AZFWNatRule`, `AZFWDnsQuery`, `AZFWThreatIntel`, `AZFWIdpsSignature`
-- **Application Gateway**: `AGWAccessLogs`, `AGWFirewallLogs`, and `AzureDiagnostics` for gateways still logging there
-- **VNet flow logs**: `NTANetAnalytics` (traffic analytics)
-- **Entra ID sign-ins**: `SigninLogs`, `AADNonInteractiveUserSignInLogs`, `AADServicePrincipalSignInLogs`
-- **Entra ID audit log**: `AuditLogs`
-- **Activity log**: `AzureActivity`
-- **Key Vault**: `AZKVAuditLogs`
-- **Storage (blobs)**: `StorageBlobLogs`
-- **App Service**: `AppServiceHTTPLogs`, `AppServiceConsoleLogs`, `AppServiceAppLogs`
-- **Kubernetes (AKS)**: `ContainerLogV2`, `KubeEvents`, `KubePodInventory`, `AKSAudit`, `AKSControlPlane`
-- **Azure Virtual Desktop**: `WVDConnections`, `WVDErrors`
-- **Virtual machines**: `Heartbeat`
+34 services and 181 scenarios:
+
+- **Azure Firewall** (Network): `AZFWNetworkRule`, `AZFWApplicationRule`, `AZFWDnsQuery`, `AZFWThreatIntel`, `AZFWIdpsSignature`, `AZFWNatRule`
+- **Application Gateway** (Network): `AGWAccessLogs`, `AGWFirewallLogs`, `AzureDiagnostics`
+- **VNet flow logs** (Network): `NTANetAnalytics`
+- **Front Door** (Network): `AzureDiagnostics`
+- **DNS query logs** (Network): `DNSQueryLogs`
+- **Bastion** (Network): `MicrosoftAzureBastionAuditLogs`
+- **Entra ID sign-ins** (Identity): `SigninLogs`, `AADNonInteractiveUserSignInLogs`, `AADManagedIdentitySignInLogs`, `AADServicePrincipalSignInLogs`
+- **Entra ID audit log** (Identity): `AuditLogs`
+- **Entra ID Protection** (Identity): `AADUserRiskEvents`, `AADRiskyUsers`
+- **Microsoft Graph activity** (Identity): `MicrosoftGraphActivityLogs`
+- **Sentinel and Defender alerts** (Security): `SecurityIncident`, `SecurityAlert`
+- **Windows security events** (Security): `SecurityEvent`
+- **Firewalls and appliances (CEF)** (Security): `CommonSecurityLog`
+- **Defender XDR** (Security): `DeviceLogonEvents`, `DeviceProcessEvents`, `DeviceNetworkEvents`, `EmailEvents`, `IdentityLogonEvents`
+- **Microsoft 365 activity** (Microsoft 365): `OfficeActivity`
+- **Intune** (Microsoft 365): `IntuneAuditLogs`, `IntuneDevices`, `IntuneOperationalLogs`
+- **Activity log** (Platform): `AzureActivity`
+- **Key Vault** (Platform): `AZKVAuditLogs`
+- **Storage** (Platform): `StorageBlobLogs`, `StorageFileLogs`, `StorageQueueLogs`, `StorageTableLogs`
+- **Log Analytics workspace** (Platform): `Usage`, `LAQueryLogs`
+- **Azure SQL** (Data): `SQLSecurityAuditEvents`
+- **Cosmos DB** (Data): `CDBDataPlaneRequests`
+- **Azure Backup** (Data): `AddonAzureBackupJobs`
+- **App Service** (Compute): `AppServiceHTTPLogs`, `AppServiceConsoleLogs`, `AppServiceAppLogs`
+- **Kubernetes (AKS)** (Compute): `ContainerLogV2`, `KubeEvents`, `KubePodInventory`, `AKSAudit`, `KubeNodeInventory`, `AKSControlPlane`
+- **Azure Virtual Desktop** (Compute): `WVDConnections`, `WVDErrors`
+- **Virtual machines** (Compute): `Heartbeat`, `Perf`, `Update`
+- **Windows event log** (Compute): `Event`
+- **Linux syslog** (Compute): `Syslog`
+- **Application Insights** (Applications): `AppRequests`, `AppExceptions`, `AppDependencies`, `AppTraces`
+- **API Management** (Applications): `ApiManagementGatewayLogs`
+- **Azure Functions** (Applications): `FunctionAppLogs`
+- **Container Apps** (Applications): `ContainerAppConsoleLogs`, `ContainerAppSystemLogs`
+- **Container Registry** (Applications): `ContainerRegistryLoginEvents`
 
 Scenarios come in three shapes: **rows** (newest first, or slowest first), **top-N summaries** (counts by caller, by rule, by status), and **time charts** (a count per bucket, with the bucket sized to the time range).
 
-Table and column names are taken from Microsoft's Azure Monitor table reference. A table only holds data if the matching diagnostic setting or data collection rule sends it to your workspace, so an empty result usually means the log category is not enabled, not that the query is wrong.
+Table and column names are taken from Microsoft's Azure Monitor table reference. A table only holds data if the matching diagnostic setting, data collection rule or Sentinel connector sends it to your workspace, so an empty result usually means the log is not being collected, not that the query is wrong.
+
+## Reading and steering the query
+
+- Every line of the query is a control. Select a line, or tab to it and press Enter, to jump to what wrote it: the scenario, the time range, a filter, the row limit or the summary.
+- A line that has just changed is highlighted for a moment.
+- On a tall desktop window the query stays pinned while you scroll through the filters.
+
+## Summarise
+
+**Count by…** turns any scenario into a count grouped by up to four columns of your choosing, and **Over time** turns it into a time chart. **Reset** goes back to the scenario's own output. Your filters and time range stay as they are.
 
 ## Filters
 
@@ -46,11 +82,13 @@ For is one of and is none of, separate values with commas or new lines.
 
 A value that is not valid for its column says why underneath, and that filter is left out of the query until it is fixed, so what you copy always parses. Values are escaped for you: quotes and backslashes in a value cannot break out of the string.
 
+The switch at the start of a filter takes it out of the query without deleting it, so you can compare with and without.
+
 Filters marked **from the scenario** are what make the scenario what it is (for example `Action == "Deny"` in Top denied flows). You can change or remove them like any other.
 
 ## Time range
 
-- **Last 15 minutes to last 90 days** writes `TimeGenerated > ago(...)`.
+- **1h, 24h, 7d, 30d** and the other ranges from 15 minutes to 90 days write `TimeGenerated > ago(...)`.
 - **Custom range (UTC)** writes `TimeGenerated between (datetime(...) .. datetime(...))`.
 - **Set in the portal** writes no time filter, so the time picker in the Logs blade decides.
 
@@ -62,6 +100,7 @@ Filters marked **from the scenario** are what make the scenario what it is (for 
 
 - **Save** keeps the query under a name, with its filters, so it reopens in the builder. Rename or delete it from the list; a delete can be undone from the notice that appears.
 - **Recent** records each query you copy or download, newest first, up to 50.
+- The page also remembers the query you were last building.
 - Both lists are kept in this browser only. Use the Saved data page to clear them.
 - Favourites, history and custom templates from the earlier version of this tool are carried over the first time you open it. Custom templates become saved KQL queries.
 
@@ -93,7 +132,7 @@ The tool contract is [`src/tools/azure-kql/manifest.mjs`](../../../src/tools/azu
 | File | What it holds |
 |---|---|
 | `lib/catalog/*.js`, `lib/catalog.js` | Services and scenarios |
-| `lib/columns.js` | Per-table notes: the most-used columns, and which columns are IPs, ports or sets |
+| `lib/columns.js`, `lib/columns/*.js` | Per-table notes: the most-used columns, and which columns are IPs, ports or sets |
 | `lib/schema.js` | Column lookups over `src/data/microsoft/azure-monitor-tables.json` |
 | `lib/operators.js`, `lib/values.js`, `lib/kql.js` | Operators per type, value parsing with messages, KQL literals and escaping |
 | `lib/build.js`, `lib/time.js` | State to query text and its plain-English reading |
@@ -101,6 +140,7 @@ The tool contract is [`src/tools/azure-kql/manifest.mjs`](../../../src/tools/azu
 | `lib/library.js`, `lib/legacy.js` | Saved and recent queries, and the one-time read of the old store and templates |
 | `lib/share.js` | Share links, new and old |
 | `lib/webmcp.js` | The `build_kql_query` WebMCP tool |
+| `lib/search.js`, `lib/session.js` | Scenario search, and what the page opens on |
 
 **Adding a scenario.** Add it to the service in `lib/catalog/`, then add its exact query, line by line, to `lib/fixtures/scenarios.json`; `build.test.js` fails until every scenario is pinned there. `catalog.test.js` fails if the scenario names a table or column that is not in the reference data.
 

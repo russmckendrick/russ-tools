@@ -3422,7 +3422,7 @@ states them. `catalog.test.js` fails if any scenario, filter or note names a col
 the reference does not list, and it earned its place inside the first hour by catching
 a `DestinationIp` note on `AZFWApplicationRule`, which has no such column.
 
-**Coverage.** Twelve services and 73 scenarios, in three shapes: rows, top-N
+**Coverage.** Twelve services and 73 scenarios at first (see the steer below), in three shapes: rows, top-N
 summaries and time charts whose bucket follows the time range. Every scenario's exact
 query is pinned in `lib/fixtures/scenarios.json`, read once by eye before pinning.
 
@@ -3457,9 +3457,36 @@ the Subnet Calculator, is guarded on every select here. `zustand` had no other u
 is removed, as is the shared `prism-kql.js` grammar nothing loaded. The five
 `exhaustive-deps` warnings went with the old island: lint is 0 errors, 6 warnings.
 
-Verified on the branch with `main` (through PR 41) merged in: `pnpm test` 1846 passing,
-`pnpm lint` 0 errors and 6 warnings (was 11), `pnpm build`, `PW_PORT=8829 pnpm test:e2e`
-93 passing, `pnpm generate:docs` and `pnpm generate:og` run (one card changed). The tool
+**The owner's steer, the same day: more services, more interactive, slicker.**
+
+- *More services.* 12 became 34, 73 scenarios became 181, over 69 tables and 2,729
+  columns: Front Door, DNS query logs, Bastion, Entra ID Protection, Graph activity,
+  Sentinel and Defender alerts, Windows security events, CEF, Defender XDR, Microsoft 365,
+  Intune, Azure SQL, Cosmos DB, Backup, the workspace's own usage and query audit, the
+  Windows event log, syslog, performance counters, updates, Application Insights, API
+  Management, Functions, Container Apps and Container Registry. Front Door has no
+  resource-specific table in the reference, so it is queried through `AzureDiagnostics`
+  with the two category names Learn's Front Door page gives. The reference rarely lists a
+  column's values, so the values new scenarios filter on (`LogonFailed`, `Closed`,
+  `Needed`, `Failed`, syslog severities) come from each product's own documentation and
+  are offered as suggestions, not enforced; where Learn does list them
+  (`AADUserRiskEvents.RiskLevel`, `FunctionAppLogs.Level`) they are a set.
+- *More interactive.* One searchable scenario field (`/` opens it) replaces two selects.
+  Time is four one-tap buttons plus the rest. Any scenario can be counted by up to four
+  columns or drawn over time. Filters are added from one-tap column chips and can be
+  switched off without deleting them. Every line of the query is a control that jumps to
+  what wrote it, which is the pipeline view the query already was.
+- *Slicker.* The page opens on a real query and remembers the last one, so there is no
+  empty state and the `<Ghost>` went. The query moved directly under the main controls
+  and is pinned on a tall desktop window while the filters scroll; its block reserves
+  seven lines so adding a filter does not move the page. A changed line is highlighted
+  for under a second, new rows ease in over `--duration-settle`, and the copy button
+  says "Copied" itself. All of it sits under the reduced-motion floor in `globals.css`.
+  On a phone a filter row is about 100px, down from about 190.
+
+Verified on the branch with `main` (through PR 41) merged in: `pnpm test` 2085 passing,
+`pnpm lint` 0 errors and 6 warnings (was 11), `pnpm build`, `PW_PORT=8830 pnpm test:e2e`
+94 passing, `pnpm generate:docs` and `pnpm generate:og` run (one card changed). The tool
 was used in a browser at 390px and 1440px in both themes: building, an invalid then a
 valid filter, a custom range, a time chart, saving, renaming, deleting, copying, sharing,
 and opening the captured old share link and an old store with a favourite, a history

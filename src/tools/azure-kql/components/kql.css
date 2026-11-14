@@ -80,3 +80,87 @@
     font-size: 16px;
   }
 }
+
+.kql-lines {
+  min-height: calc(7 * 1.6em + 18px);
+  overflow-x: auto;
+}
+
+.kql-line {
+  position: relative;
+  display: block;
+  width: max-content;
+  min-width: 100%;
+  padding: 0 14px;
+  cursor: pointer;
+  white-space: pre;
+  outline: none;
+}
+
+.kql-line:hover,
+.kql-line:focus-visible {
+  background: color-mix(in srgb, var(--color-primary-text) 10%, transparent);
+}
+
+.kql-line:focus-visible {
+  box-shadow: inset 2px 0 0 var(--color-ring);
+}
+
+@media (pointer: fine) {
+  .kql-line:hover::after,
+  .kql-line:focus-visible::after {
+    content: attr(data-hint);
+    position: sticky;
+    right: 10px;
+    float: right;
+    margin-left: 24px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-on-surface-faint);
+  }
+}
+
+.kql-line-fresh {
+  animation: kql-fresh 900ms ease-out;
+}
+
+@keyframes kql-fresh {
+  from {
+    background: color-mix(in srgb, var(--color-primary-text) 26%, transparent);
+  }
+}
+
+.kql-row-in {
+  animation: kql-row-in var(--duration-settle) var(--ease-signal);
+}
+
+@keyframes kql-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.kql-reading {
+  min-height: 2lh;
+}
+
+@media (max-width: 600px) {
+  .kql-reading {
+    min-height: 4lh;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 820px) {
+  .kql-pin {
+    position: sticky;
+    top: 76px;
+    z-index: 5;
+  }
+
+  .kql-under-pin :is(input, button, [role='combobox'], [role='switch']) {
+    scroll-margin-top: 29rem;
+  }
+}

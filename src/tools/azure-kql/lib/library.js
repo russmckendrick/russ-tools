@@ -55,7 +55,15 @@ export function createLibrary({ backend } = {}) {
     return library;
   }
 
-  return { load, persist };
+  function loadLast() {
+    return restore(storage.get('last'));
+  }
+
+  function saveLast(state) {
+    storage.set('last', portable(state));
+  }
+
+  return { load, persist, loadLast, saveLast };
 }
 
 export function entryFor(state, kql, name) {

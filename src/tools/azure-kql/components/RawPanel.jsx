@@ -1,9 +1,10 @@
 import React from 'react';
-import { Copy, Download, Star } from 'lucide-react';
+import { Download, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import KqlEditor from './KqlEditor.jsx';
+import { CopyButton } from './QueryPanel.jsx';
 
 export default function RawPanel({ kql, onChange, onCopy, onSave, onDownload }) {
   const empty = !kql.trim();
@@ -20,10 +21,7 @@ export default function RawPanel({ kql, onChange, onCopy, onSave, onDownload }) 
             <p className="text-body-sm text-on-surface-muted">Write or paste KQL. Nothing here is checked or changed.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" onClick={onCopy} disabled={empty}>
-              <Copy aria-hidden="true" />
-              Copy query
-            </Button>
+            <CopyButton onCopy={onCopy} disabled={empty} />
             <Button variant="outline" size="sm" onClick={onSave} disabled={empty}>
               <Star aria-hidden="true" />
               <span className="max-sm:sr-only">Save</span>

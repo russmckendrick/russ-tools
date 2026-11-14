@@ -58,6 +58,15 @@ describe('build_kql_query', () => {
     expect(columns.find((column) => column.column === 'FlowType').values).toContain('ExternalPublic');
   });
 
+  it('counts by columns or over time when asked', () => {
+    expect(runBuild({ service: 'entra-sign-ins', scenario: 'failed', groupBy: ['AppDisplayName'], limit: 10 }).kql.split('\n').slice(-2)).toEqual([
+      '| summarize Count = count() by AppDisplayName',
+      '| top 10 by Count desc',
+    ]);
+    expect(runBuild({ service: 'entra-sign-ins', overTime: true }).kql).toContain('| render timechart');
+    expect(runBuild({ service: 'entra-sign-ins', groupBy: ['Nope'] }).notApplied[0].reason).toContain('no column called Nope');
+  });
+
   it('names an unknown service or scenario', () => {
     expect(runBuild({ service: 'nope' }).error).toBe('Unknown service "nope".');
     const result = runBuild({ service: 'key-vault', scenario: 'nope' });

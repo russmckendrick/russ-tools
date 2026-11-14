@@ -6,6 +6,8 @@ import { DEFAULT_TIME } from './time.js';
 let sequence = 0;
 export const nextId = () => `f${++sequence}`;
 
+export const NO_GROUP = { by: [], overTime: false };
+
 export const EMPTY_STATE = {
   mode: 'build',
   service: '',
@@ -13,6 +15,7 @@ export const EMPTY_STATE = {
   time: DEFAULT_TIME,
   limit: DEFAULT_LIMIT.rows,
   filters: [],
+  group: NO_GROUP,
   kql: '',
 };
 
@@ -35,8 +38,11 @@ export function scenarioState(serviceId, scenarioId, previous = EMPTY_STATE) {
     time: scenario.span ? { kind: 'relative', span: scenario.span } : previous.time,
     limit: DEFAULT_LIMIT[scenario.output.kind] || previous.limit || DEFAULT_LIMIT.rows,
     filters: [...presets(scenario), ...kept],
+    group: NO_GROUP,
   };
 }
+
+export const DEFAULT_STATE = scenarioState('entra-sign-ins', 'failed');
 
 export function newFilter(table, columnName) {
   const column = findColumn(table, columnName);
@@ -72,6 +78,18 @@ export function reducer(state, action) {
         ...state,
         filters: state.filters.map((filter) => (filter.id === action.id ? { ...filter, ...action.patch } : filter)),
       };
+    case 'group-add': {
+      const scenario = findScenario(state.service, state.scenario);
+      const by = state.group?.by ?? [];
+      if (!scenario || !findColumn(scenario.table, action.column) || by.includes(action.column) || by.length >= 4) return state;
+      return { ...state, group: { ...state.group, by: [...by, action.column] } };
+    }
+    case 'group-remove':
+      return { ...state, group: { ...state.group, by: state.group.by.filter((name) => name !== action.column) } };
+    case 'group-time':
+      return { ...state, group: { ...state.group, overTime: Boolean(action.overTime) } };
+    case 'group-clear':
+      return { ...state, group: NO_GROUP };
     case 'filter-remove':
       return { ...state, filters: state.filters.filter((filter) => filter.id !== action.id) };
     default:
@@ -87,13 +105,15 @@ export function portable(state) {
     scenario: state.scenario,
     time: state.time,
     limit: state.limit,
-    filters: state.filters.map(({ column, op, value, value2, preset }) => ({
+    filters: state.filters.map(({ column, op, value, value2, preset, off }) => ({
       column,
       op,
       value,
       ...(value2 ? { value2 } : {}),
       ...(preset ? { preset: true } : {}),
+      ...(off ? { off: true } : {}),
     })),
+    ...(state.group?.by.length || state.group?.overTime ? { group: state.group } : {}),
   };
 }
 
@@ -122,7 +142,9 @@ export function restore(saved) {
       value: text(filter.value, 2000),
       value2: text(filter.value2, 2000),
       ...(filter.preset ? { preset: true } : {}),
+      ...(filter.off ? { off: true } : {}),
     }));
+  const by = Array.isArray(saved.group?.by) ? saved.group.by.map((name) => text(name, 80)).filter(Boolean).slice(0, 4) : [];
   return {
     ...EMPTY_STATE,
     service: saved.service,
@@ -130,5 +152,6 @@ export function restore(saved) {
     time: restoreTime(saved.time),
     limit: text(saved.limit, 8) || DEFAULT_LIMIT[scenario.output.kind] || DEFAULT_LIMIT.rows,
     filters,
+    group: { by, overTime: Boolean(saved.group?.overTime) },
   };
 }

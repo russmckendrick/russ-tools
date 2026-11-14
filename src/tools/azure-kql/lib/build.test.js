@@ -154,7 +154,7 @@ describe('the reading', () => {
 
 describe('nothing chosen', () => {
   it('builds nothing and asks for a scenario', () => {
-    expect(buildQuery(EMPTY_STATE)).toEqual({ ok: false, kql: '', reading: '', problems: [{ scope: 'scenario', message: 'Choose a service and a scenario.' }] });
+    expect(buildQuery(EMPTY_STATE)).toEqual({ ok: false, kql: '', lines: [], reading: '', problems: [{ scope: 'scenario', message: 'Choose a service and a scenario.' }] });
     expect(buildQuery({ service: 'azure-firewall', scenario: 'no-such' }).ok).toBe(false);
   });
 });

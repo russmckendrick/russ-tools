@@ -99,3 +99,13 @@ describe('the library', () => {
     expect(openEntry({ kind: 'build', state: { service: 'retired', scenario: 'x' }, kql: 'Old | take 1' })).toMatchObject({ mode: 'kql', kql: 'Old | take 1' });
   });
 });
+
+describe('where you left off', () => {
+  it('remembers the last state and gives nothing back when there is none', () => {
+    const library = createLibrary();
+    expect(library.loadLast()).toBe(null);
+    const state = { ...scenarioState('key-vault', 'denied', EMPTY_STATE), group: { by: ['CallerIpAddress'], overTime: false } };
+    library.saveLast(state);
+    expect(buildQuery(createLibrary().loadLast()).kql).toBe(buildQuery(state).kql);
+  });
+});

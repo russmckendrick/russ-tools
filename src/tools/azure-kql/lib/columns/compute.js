@@ -1,4 +1,4 @@
-import { ip, oneOf, port, suggest } from './types.js';
+import { ip, oneOf, suggest } from './types.js';
 
 export const COMPUTE_NOTES = {
   AppServiceHTTPLogs: {

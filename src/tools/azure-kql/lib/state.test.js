@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { EMPTY_STATE, portable, reducer, restore, scenarioState } from './state.js';
+import { buildQuery } from './build.js';
+import { DEFAULT_STATE, EMPTY_STATE, portable, reducer, restore, scenarioState } from './state.js';
 
 const shape = (state) => state.filters.map(({ column, op, value, preset }) => [column, op, value, Boolean(preset)]);
 const run = (...actions) => actions.reduce(reducer, EMPTY_STATE);
@@ -71,5 +72,35 @@ describe('portable and restore', () => {
 
   it('keeps only the text of a hand-written query', () => {
     expect(portable({ ...EMPTY_STATE, mode: 'kql', kql: 'T', service: 'azure-firewall' })).toEqual({ mode: 'kql', kql: 'T' });
+  });
+});
+
+describe('grouping and switching filters off', () => {
+  const base = run({ type: 'service', service: 'azure-firewall' }, { type: 'filter-add', column: 'Rule' });
+
+  it('adds and removes count-by columns, without repeats or strangers', () => {
+    const state = [{ type: 'group-add', column: 'Action' }, { type: 'group-add', column: 'Action' }, { type: 'group-add', column: 'Nope' }, { type: 'group-add', column: 'Rule' }].reduce(reducer, base);
+    expect(state.group).toEqual({ by: ['Action', 'Rule'], overTime: false });
+    expect(reducer(state, { type: 'group-remove', column: 'Action' }).group.by).toEqual(['Rule']);
+    expect(reducer(reducer(state, { type: 'group-time', overTime: true }), { type: 'group-clear' }).group).toEqual({ by: [], overTime: false });
+  });
+
+  it('forgets the grouping when the scenario changes', () => {
+    const state = reducer(reducer(base, { type: 'group-add', column: 'Action' }), { type: 'scenario', scenario: 'denied' });
+    expect(state.group).toEqual({ by: [], overTime: false });
+  });
+
+  it('carries grouping and a switched-off filter through portable and restore', () => {
+    const state = [{ type: 'group-add', column: 'Action' }, { type: 'group-time', overTime: true }, { type: 'filter-change', id: base.filters[0].id, patch: { value: 'web', off: true } }].reduce(reducer, base);
+    const copy = restore(JSON.parse(JSON.stringify(portable(state))));
+    expect(copy.group).toEqual({ by: ['Action'], overTime: true });
+    expect(copy.filters[0]).toMatchObject({ column: 'Rule', value: 'web', off: true });
+    expect(buildQuery(copy).kql).toBe(buildQuery(state).kql);
+    expect(portable(base)).not.toHaveProperty('group');
+  });
+
+  it('starts on a scenario that already builds a query', () => {
+    expect(DEFAULT_STATE).toMatchObject({ service: 'entra-sign-ins', scenario: 'failed' });
+    expect(buildQuery(DEFAULT_STATE).kql).toContain('| where ResultType != "0"');
   });
 });

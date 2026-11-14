@@ -20,12 +20,12 @@ export default {
   shortDescription:
     'Build Log Analytics queries from scenarios with typed filters.',
   description:
-    'Build Kusto (KQL) queries for Azure Monitor Logs from ready-made ' +
-    'scenarios: Azure Firewall, Application Gateway, VNet flow logs, ' +
-    'Entra ID sign-ins and audit, Activity log, Key Vault, Storage, App ' +
-    'Service, AKS, Azure Virtual Desktop and VM heartbeats. Filters are ' +
-    'typed from the Azure Monitor table reference and the query updates ' +
-    'as you change them.',
+    'Build Kusto (KQL) queries for Azure Monitor Logs from 181 searchable ' +
+    'scenarios across 34 services: Azure networking, Entra ID, Sentinel ' +
+    'and Defender XDR, Microsoft 365, Intune, the activity log, Key Vault, ' +
+    'Storage, SQL, App Service, AKS, virtual machines and Application ' +
+    'Insights. Filters are typed from the Azure Monitor table reference ' +
+    'and the query updates as you change them.',
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'azure',
@@ -45,10 +45,11 @@ export default {
   // Concrete capabilities, rendered into the page's schema.org
   // `featureList`.
   features: [
-    'Scenario queries for twelve Azure services',
+    '181 searchable scenarios across 34 Azure and Microsoft 365 services',
     'Filters typed from the Azure Monitor table reference',
     'Live, syntax-highlighted query with a plain-English reading',
-    'Summaries, top-N and time-chart queries',
+    'Count any scenario by column or over time',
+    'Query lines that jump to the control that wrote them',
     'Raw KQL editor',
     'Saved and recent queries kept in the browser',
     'Shareable query links',
@@ -70,6 +71,10 @@ export default {
       'key vault audit logs',
       'aks container logs kql',
       'azure virtual desktop kql',
+      'sentinel kql',
+      'defender xdr kql',
+      'officeactivity kql',
+      'application insights kql',
     ],
   },
 
@@ -78,6 +83,7 @@ export default {
   // data page can clear them. legacyKeys are never deleted by a read.
   storageKeys: [
     'library',
+    'last',
     'store',
     'custom-templates',
   ],

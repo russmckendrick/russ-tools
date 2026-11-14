@@ -104,6 +104,22 @@ turned into a space is put back.
 scenario; a service id that does not exist opens the empty page. A legacy custom
 template id in the scenario position opens the saved query it became.
 
+**It opens on a query, and remembers the last one.** A first visit to `/azure-kql` shows
+failed Entra ID sign-ins rather than an empty page, and later visits reopen whatever was
+last being built (a new `rt:azure-kql:last` slot, declared in the manifest). A share link
+or a deep link still wins. A service id that does not exist now opens that default rather
+than nothing.
+
+**One searchable scenario field replaces the service and template selects**, covering 34
+services and 181 scenarios (the old tool had 3 and 4). `/` opens it.
+
+**A query can be reshaped.** Count by up to four columns, or over time, replaces the
+scenario's own output; a filter can be switched off without being removed. Both travel in
+share links and saved queries as optional keys (`group`, and `off` on a filter), so a link
+without them encodes and restores exactly as before.
+
+**Copy says so on the button** instead of raising a notice.
+
 **Also.** Download is named `<service>-<scenario>.kql` with no timestamp. The scenario
 names changed (**Network Rule Query** is **Network rule log**, **Application Rule Query**
 is **Application rule log**), and `e2e/deeplinks.spec.js` was changed to match. A

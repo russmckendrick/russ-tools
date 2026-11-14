@@ -26,7 +26,7 @@ const describeColumns = (table) =>
     ...(column.values ? { values: column.values } : {}),
   }));
 
-export function runBuild({ service, scenario, timeRange, filters, limit } = {}) {
+export function runBuild({ service, scenario, timeRange, filters, limit, groupBy, overTime } = {}) {
   const found = findService(service);
   if (!found) {
     return { error: service ? `Unknown service "${service}".` : 'Give a service and a scenario.', services: listing() };
@@ -59,6 +59,11 @@ export function runBuild({ service, scenario, timeRange, filters, limit } = {}) 
     });
   }
 
+  state.group = {
+    by: (Array.isArray(groupBy) ? groupBy : groupBy ? [groupBy] : []).map(String).slice(0, 4),
+    overTime: Boolean(overTime),
+  };
+
   const built = buildQuery(state);
   const page = typeof window === 'undefined' ? null : window.location.origin;
   return {
@@ -74,9 +79,10 @@ export function runBuild({ service, scenario, timeRange, filters, limit } = {}) 
 export const BUILD_KQL_QUERY_TOOL = {
   name: 'build_kql_query',
   description:
-    'Build a Kusto (KQL) query for Azure Monitor Logs from a scenario: Azure Firewall, Application Gateway, ' +
-    'VNet flow logs, Entra ID sign-ins and audit, Activity log, Key Vault, Storage, App Service, AKS, Azure ' +
-    'Virtual Desktop and VM heartbeats. Column names come from the Azure Monitor table reference, values are ' +
+    'Build a Kusto (KQL) query for Azure Monitor Logs from a scenario, across Azure networking, Entra ID, ' +
+    'Sentinel and Defender, Microsoft 365, Intune, the activity log, Key Vault, Storage, SQL, Cosmos DB, App ' +
+    'Service, Functions, AKS, virtual machines and Application Insights. Any scenario can be counted by ' +
+    'columns or over time. Column names come from the Azure Monitor table reference, values are ' +
     'escaped, and a filter that is not valid is left out and reported. Call it with no arguments to list the ' +
     'services and scenarios. The query is built locally and is not run.',
   inputSchema: {
@@ -102,6 +108,8 @@ export const BUILD_KQL_QUERY_TOOL = {
         },
       },
       limit: { type: 'integer', minimum: 1, maximum: 30000, description: 'Rows or groups to return' },
+      groupBy: { type: 'array', items: { type: 'string' }, description: 'Count rows by these columns instead of the scenario\'s own output' },
+      overTime: { type: 'boolean', description: 'Count per time bucket and render a time chart' },
     },
   },
   annotations: { readOnlyHint: true },

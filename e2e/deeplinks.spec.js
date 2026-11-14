@@ -462,6 +462,20 @@ test.describe('param deep links — rewrite + island application', () => {
     await expect(query).toContainText('top 1000 by TimeGenerated desc');
   });
 
+  test('/azure-kql opens on a query and finds a scenario by search', async ({ page }) => {
+    await page.goto('/azure-kql');
+    const query = page.getByLabel('KQL query');
+    await expect(query).toContainText('SigninLogs');
+    await page.keyboard.press('/');
+    await page.getByRole('combobox', { name: 'Search scenarios' }).fill('secret reads');
+    await page.keyboard.press('Enter');
+    await expect(query).toContainText('OperationName == "SecretGet"');
+    await query.getByText('ago(24h)').click();
+    await expect(page.getByRole('button', { name: 'Last 24 hours' })).toBeFocused();
+    await page.getByRole('button', { name: 'Last 7 days' }).click();
+    await expect(query).toContainText('ago(7d)');
+  });
+
   test('/azure-kql carries saved data from before the rebuild', async ({ page }) => {
     await page.addInitScript((store) => {
       if (!localStorage.getItem('rt:azure-kql:store')) localStorage.setItem('rt:azure-kql:store', store);

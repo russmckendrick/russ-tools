@@ -1,4 +1,4 @@
-import { ip, oneOf, port, suggest } from './types.js';
+import { ip, oneOf, suggest } from './types.js';
 
 const signIn = {
   IPAddress: ip,
