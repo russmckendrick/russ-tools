@@ -1,0 +1,82 @@
+.kql-code,
+.kql-editor {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-md);
+  line-height: 1.6;
+  tab-size: 2;
+  color: var(--color-on-surface);
+}
+
+.kql-code {
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.kql-code .token.keyword,
+.kql-editor .token.keyword {
+  color: var(--color-primary-text);
+  font-weight: 500;
+}
+
+.kql-code .token.string,
+.kql-editor .token.string {
+  color: var(--color-info);
+}
+
+.kql-code .token.comment,
+.kql-editor .token.comment {
+  color: var(--color-on-surface-faint);
+  font-style: italic;
+}
+
+.kql-code .token.operator,
+.kql-code .token.punctuation,
+.kql-editor .token.operator,
+.kql-editor .token.punctuation {
+  color: var(--color-on-surface-muted);
+}
+
+.kql-editor {
+  display: grid;
+  min-height: 14rem;
+}
+
+.kql-editor > pre,
+.kql-editor > textarea {
+  grid-area: 1 / 1;
+  margin: 0;
+  padding: 12px 14px;
+  border: 0;
+  font: inherit;
+  letter-spacing: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.kql-editor > pre {
+  pointer-events: none;
+}
+
+.kql-editor > textarea {
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--color-on-surface);
+  outline: none;
+}
+
+.kql-editor > textarea::placeholder {
+  color: var(--color-on-surface-faint);
+}
+
+.kql-editor .token.keyword {
+  font-weight: inherit;
+}
+
+@media (pointer: coarse) {
+  .kql-editor {
+    font-size: 16px;
+  }
+}

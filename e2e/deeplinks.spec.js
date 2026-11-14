@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 
 /**
@@ -40,6 +41,12 @@ const stubLookupApi = (page) =>
 /** Navigate and prove the `_redirects` 200-rewrite: no redirect happened —
  * the URL in the bar is still the deep link — and the prerendered page under
  * it is the right tool (its h1 comes from the manifest, no JS involved). */
+const KQL_CAPTURED = JSON.parse(
+  readFileSync(new URL('../src/tools/azure-kql/lib/fixtures/captured-2026-11-14.json', import.meta.url), 'utf8')
+);
+const KQL_LEGACY_SHARE = new URL(KQL_CAPTURED.shareUrl).searchParams.get('config');
+const KQL_LEGACY_STORE = KQL_CAPTURED.store;
+
 const expectRewrite = async (page, path, h1) => {
   const response = await page.goto(path);
   expect(response.status()).toBe(200);
@@ -434,6 +441,7 @@ test.describe('param deep links — rewrite + island application', () => {
   test('/azure-kql/:service', async ({ page }) => {
     await expectRewrite(page, '/azure-kql/azure-firewall', 'Azure KQL Query Builder');
     await expect(page.getByText('Azure Firewall').first()).toBeVisible();
+    await expect(page.getByLabel('KQL query')).toContainText('AZFWNetworkRule');
   });
 
   test('/azure-kql/:service/:template', async ({ page }) => {
@@ -442,7 +450,26 @@ test.describe('param deep links — rewrite + island application', () => {
       '/azure-kql/azure-firewall/application',
       'Azure KQL Query Builder'
     );
-    await expect(page.getByText('Application Rule Query').first()).toBeVisible();
+    await expect(page.getByText('Application rule log').first()).toBeVisible();
+    await expect(page.getByLabel('KQL query')).toContainText('AZFWApplicationRule');
+  });
+
+  test('/azure-kql restores a share link made before the rebuild', async ({ page }) => {
+    await page.goto(`/azure-kql?config=${KQL_LEGACY_SHARE}`);
+    const query = page.getByLabel('KQL query');
+    await expect(query).toContainText('ipv4_is_in_range(SourceIp, "10.0.0.0/8")');
+    await expect(query).toContainText('DestinationPort == 443');
+    await expect(query).toContainText('top 1000 by TimeGenerated desc');
+  });
+
+  test('/azure-kql carries saved data from before the rebuild', async ({ page }) => {
+    await page.addInitScript((store) => {
+      if (!localStorage.getItem('rt:azure-kql:store')) localStorage.setItem('rt:azure-kql:store', store);
+    }, KQL_LEGACY_STORE);
+    await page.goto('/azure-kql');
+    await page.getByRole('button', { name: 'Open' }).first().click();
+    await expect(page.getByLabel('KQL query')).toContainText('DestinationIp == "8.8.8.8"');
+    expect(await page.evaluate(() => localStorage.getItem('rt:azure-kql:store'))).toBe(KQL_LEGACY_STORE);
   });
 
   test('/subnet-calculator/:ip defaults the prefix', async ({ page }) => {

@@ -17,7 +17,7 @@ network, cloud and platform work.
 | **Email DNS Analyser** | Network | Check MX, SPF, DMARC, DKIM, MTA-STS and SMTP TLS reporting. | `/email-dns-analyser` | [Docs](tools/email-dns-analyser/) |
 | **Subnet Calculator** | Network | IPv4 and IPv6 subnet details, with a visual split-and-join divide table. | `/subnet-calculator` | [Docs](tools/subnet-calculator/) |
 | **WHOIS Lookup Tool** | Network | Registration and ownership detail for domains and IPs. | `/whois-lookup` | [Docs](tools/whois-lookup/) |
-| **Azure KQL Query Builder** | Azure | Build Kusto queries for Azure services with guided forms. | `/azure-kql` | [Docs](tools/azure-kql/) |
+| **Azure KQL Query Builder** | Azure | Build Log Analytics queries from scenarios with typed filters. | `/azure-kql` | [Docs](tools/azure-kql/) |
 | **Azure RBAC Role Explorer** | Azure | Search 504 built-in Azure roles by name or by the action they grant. | `/azure-rbac` | [Docs](tools/azure-rbac/) |
 | **Azure Resource Naming Tool** | Azure | Generate and validate names against Microsoft CAF rules. | `/azure-naming` | [Docs](tools/azure-naming/) |
 | **Azure Service Tags** | Azure | Search and compare Microsoft Azure service-tag IP ranges. | `/azure-service-tags` | [Docs](tools/azure-service-tags/) |

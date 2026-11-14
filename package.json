@@ -24,6 +24,7 @@
     "refresh:azure-rbac": "node scripts/refresh-azure-rbac.mjs",
     "refresh:azure-service-tags": "node scripts/refresh-azure-service-tags.mjs",
     "refresh:entra-ids": "node scripts/refresh-entra-ids.mjs",
+    "refresh:kql-schemas": "node scripts/refresh-kql-schemas.mjs",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",

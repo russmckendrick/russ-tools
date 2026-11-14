@@ -1,353 +1,200 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ToolAction } from '@/components/ui/tool-actions';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Share, 
-  Star,
-  Copy,
-  Download,
-  ExternalLink
-} from 'lucide-react';
+import React, { useMemo, useReducer, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Share } from 'lucide-react';
 import { toast } from 'sonner';
-import { copyText, downloadFile } from '@/core';
-import ServiceSelector from './components/ServiceSelector';
-import ParameterForm from './components/ParameterForm';
-import QueryPreview from './components/QueryPreview';
-import QueryHistory from './components/QueryHistory';
-import QueryFavorites from './components/QueryFavorites';
-import TemplateEditor from './components/TemplateEditor';
-import { useKQLStore } from './store/useKQLStore';
-import { generateKQLQuery } from './utils/queryGenerator';
-import { validateParameters } from './utils/validators';
-import { loadTemplate } from './utils/templateLoader';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Ghost } from '@/components/ui/ghost';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToolAction } from '@/components/ui/tool-actions';
+import { copyText, downloadFile, safeFilename } from '@/core';
+import { useWebMCPTool } from '@/lib/useWebMCPTool';
+import FilterList from './components/FilterList.jsx';
+import QueryPanel from './components/QueryPanel.jsx';
+import RangeControls from './components/RangeControls.jsx';
+import RawPanel from './components/RawPanel.jsx';
+import SaveDialog from './components/SaveDialog.jsx';
+import SavedQueries from './components/SavedQueries.jsx';
+import SourcePicker from './components/SourcePicker.jsx';
+import { buildQuery } from './lib/build.js';
+import { findScenario, findService } from './lib/catalog.js';
+import { createLibrary, entryFor, openEntry, renamed, withRecent, withSaved, withoutRecent, withoutSaved } from './lib/library.js';
+import { readShare, shareUrl } from './lib/share.js';
+import { EMPTY_STATE, reducer, scenarioState } from './lib/state.js';
+import { BUILD_KQL_QUERY_TOOL } from './lib/webmcp.js';
 
-const AzureKqlTool = () => {
-  const { service: urlService, template: urlTemplate } = useParams();
-  const [searchParams] = useSearchParams();
-  
-  const {
-    selectedService,
-    selectedTemplate,
-    parameters,
-    generatedQuery,
-    queryHistory,
-    favorites,
-    setSelectedService,
-    setSelectedTemplate,
-    setParameters,
-    updateParameter,
-    setGeneratedQuery,
-    addToHistory,
-    addToFavorites,
-    removeFavorite,
-    clearHistory
-  } = useKQLStore();
+const GHOST_STATE = scenarioState('azure-firewall', 'denied', EMPTY_STATE);
+const GHOST_QUERY = buildQuery(GHOST_STATE);
+const NOTHING = () => {};
 
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [activeTab, setActiveTab] = useState('builder');
+function initialState(params, library) {
+  const shared = typeof window === 'undefined' ? null : readShare(window.location.search);
+  if (shared) return shared;
+  if (!params.service) return EMPTY_STATE;
+  if (params.template && findService(params.service) && !findScenario(params.service, params.template)) {
+    const saved = library.saved.find((entry) => entry.id === params.template);
+    if (saved) return openEntry(saved);
+  }
+  return scenarioState(params.service, params.template, EMPTY_STATE);
+}
 
-  const currentTemplate = useMemo(() => {
-    if (!selectedService || !selectedTemplate) return null;
-    return loadTemplate(selectedService, selectedTemplate);
-  }, [selectedService, selectedTemplate]);
+function nameFor(state, kql) {
+  const scenario = findScenario(state.service, state.scenario);
+  if (state.mode === 'build' && scenario) return `${findService(state.service).name}: ${scenario.name}`;
+  return kql.split('\n').find((line) => line.trim())?.trim().slice(0, 60) || 'KQL query';
+}
 
-  // Initialize parameters with template defaults when template changes
-  useEffect(() => {
-    if (currentTemplate?.defaultParameters && selectedTemplate && selectedService) {
-      const defaultParams = currentTemplate.defaultParameters;
-      for (const [key, defaultValue] of Object.entries(defaultParams)) {
-        if (!parameters[key] || parameters[key] === '') {
-          updateParameter(key, defaultValue);
-        }
-      }
+export default function AzureKqlTool() {
+  useWebMCPTool(BUILD_KQL_QUERY_TOOL);
+  const params = useParams();
+  const top = useRef(null);
+  const [store] = useState(createLibrary);
+  const [library, setLibrary] = useState(() => store.load());
+  const latest = useRef(library);
+  const [state, dispatch] = useReducer(reducer, null, () => initialState(params, library));
+  const [saving, setSaving] = useState(null);
+
+  const scenario = findScenario(state.service, state.scenario);
+  const built = useMemo(() => buildQuery(state), [state]);
+  const building = state.mode === 'build';
+  const kql = building ? built.kql : state.kql;
+  const ready = Boolean(kql.trim());
+
+  const update = (change) => {
+    latest.current = change(latest.current);
+    setLibrary(latest.current);
+    store.persist(latest.current);
+  };
+  const undoable = (message, change) => {
+    const before = latest.current;
+    update(change);
+    toast(message, { action: { label: 'Undo', onClick: () => update(() => before) } });
+  };
+  const current = () => entryFor(state, kql, nameFor(state, kql));
+  const remember = () => update((lib) => withRecent(lib, current()));
+
+  const copy = async () => {
+    if (!(await copyText(kql))) return toast.error('Could not copy the query');
+    toast.success('Query copied');
+    return remember();
+  };
+
+  const download = () => {
+    downloadFile(kql, `${safeFilename(building ? `${state.service}-${state.scenario}` : 'query')}.kql`, 'text/plain');
+    remember();
+  };
+
+  const share = async () => {
+    const url = shareUrl(state, window.location.origin);
+    if (url && (await copyText(url))) toast.success('Share link copied');
+    else toast.error('Could not copy the share link');
+  };
+
+  const editAsKql = () => {
+    const earlier = state.kql.trim() && state.kql !== built.kql;
+    if (earlier) {
+      const raw = { ...state, mode: 'kql' };
+      update((lib) => withRecent(lib, entryFor(raw, state.kql, nameFor(raw, state.kql))));
+      toast.message('The KQL you had before is under Recent');
     }
-  }, [selectedService, selectedTemplate, currentTemplate, parameters, updateParameter]);
+    dispatch({ type: 'edit-as-kql', kql: built.kql });
+  };
 
-  useEffect(() => {
-    if (urlService && urlService !== selectedService) {
-      setSelectedService(urlService);
-    }
-    if (urlTemplate && urlTemplate !== selectedTemplate) {
-      setSelectedTemplate(urlTemplate);
-    }
-    
-    const configParam = searchParams.get('config');
-    if (configParam) {
-      try {
-        const config = JSON.parse(atob(configParam));
-        if (config.service) setSelectedService(config.service);
-        if (config.template) setSelectedTemplate(config.template);
-        if (config.parameters) setParameters(config.parameters);
-      } catch (error) {
-        console.error('Failed to parse config from URL:', error);
-      }
-    }
-  }, [urlService, urlTemplate, searchParams]);
+  const open = (entry) => {
+    dispatch({ type: 'load', state: openEntry(entry) });
+    top.current?.scrollIntoView({ block: 'start' });
+  };
 
-  const handleParameterChange = useCallback((name, value) => {
-    updateParameter(name, value);
-    
-    if (validationErrors[name]) {
-      setValidationErrors(prev => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
-    }
-  }, [validationErrors, updateParameter]);
-
-  const handleGenerateQuery = useCallback(async () => {
-    if (!currentTemplate) {
-      toast.error('Please select a service and template');
-      return;
-    }
-
-    const errors = validateParameters(parameters, currentTemplate);
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      toast.error('Please fix validation errors before generating');
-      return;
-    }
-
-    setIsGenerating(true);
-    setValidationErrors({});
-
-    try {
-      const query = await generateKQLQuery(currentTemplate, parameters);
-      setGeneratedQuery(query);
-      
-      addToHistory({
-        query,
-        service: selectedService,
-        template: selectedTemplate,
-        parameters: { ...parameters },
-        timestamp: new Date().toISOString()
-      });
-      
-      toast.success('Query generated successfully');
-    } catch (error) {
-      toast.error('Failed to generate query: ' + error.message);
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [currentTemplate, parameters, selectedService, selectedTemplate]);
-
-  const handleCopyQuery = useCallback(async () => {
-    if (!generatedQuery) {
-      toast.error('No query to copy');
-      return;
-    }
-
-    if (await copyText(generatedQuery)) {
-      toast.success('Query copied to clipboard');
-    } else {
-      toast.error('Failed to copy to clipboard');
-    }
-  }, [generatedQuery]);
-
-  const handleDownloadQuery = useCallback(() => {
-    if (!generatedQuery) {
-      toast.error('No query to download');
-      return;
-    }
-    
-    downloadFile(generatedQuery, `${selectedService}-${selectedTemplate}-${Date.now()}.kql`, 'text/plain');
-    toast.success('Query downloaded');
-  }, [generatedQuery, selectedService, selectedTemplate]);
-
-  const handleOpenInPortal = useCallback(() => {
-    if (!generatedQuery) {
-      toast.error('No query to open');
-      return;
-    }
-    
-    const encodedQuery = encodeURIComponent(generatedQuery);
-    const portalUrl = `https://portal.azure.com/#blade/Microsoft_Azure_Monitoring_Logs/LogsBlade/query/${encodedQuery}`;
-    window.open(portalUrl, '_blank');
-  }, [generatedQuery]);
-
-  const handleShareConfiguration = useCallback(async () => {
-    const config = {
-      service: selectedService,
-      template: selectedTemplate,
-      parameters
-    };
-
-    // The ?config wire format stays uncompressed btoa: this tool's existing
-    // share links use it, and its own URL effect parses exactly this.
-    const encoded = btoa(JSON.stringify(config));
-    const url = `${window.location.origin}/azure-kql?config=${encoded}`;
-
-    if (await copyText(url)) {
-      toast.success('Share URL copied to clipboard');
-    } else {
-      toast.error('Failed to copy to clipboard');
-    }
-  }, [selectedService, selectedTemplate, parameters]);
-
-  const handleAddToFavorites = useCallback(() => {
-    if (!generatedQuery) {
-      toast.error('Generate a query first');
-      return;
-    }
-    
-    const favorite = {
-      id: Date.now().toString(),
-      name: `${selectedService} - ${selectedTemplate}`,
-      query: generatedQuery,
-      service: selectedService,
-      template: selectedTemplate,
-      parameters: { ...parameters },
-      timestamp: new Date().toISOString()
-    };
-    
-    addToFavorites(favorite);
-    toast.success('Added to favorites');
-  }, [generatedQuery, selectedService, selectedTemplate, parameters]);
-
-  const handleLoadFromHistory = useCallback((entry) => {
-    setSelectedService(entry.service);
-    setSelectedTemplate(entry.template);
-    setParameters(entry.parameters);
-    setGeneratedQuery(entry.query);
-    setActiveTab('builder');
-    toast.success('Query loaded from history');
-  }, []);
-
-  const handleLoadFavorite = useCallback((favorite) => {
-    setSelectedService(favorite.service);
-    setSelectedTemplate(favorite.template);
-    setParameters(favorite.parameters);
-    setGeneratedQuery(favorite.query);
-    setActiveTab('builder');
-    toast.success('Favorite loaded');
-  }, []);
+  const save = (name) => {
+    update((lib) => withSaved(lib, { ...saving, id: crypto.randomUUID(), name, at: new Date().toISOString() }));
+    setSaving(null);
+    toast.success('Query saved');
+  };
 
   return (
     <>
       <ToolAction>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleShareConfiguration}
-          disabled={!selectedService || !selectedTemplate}
-        >
+        <Button variant="outline" size="sm" onClick={share} disabled={!ready}>
           <Share aria-hidden="true" />
           <span>
             Share<span className="max-sm:sr-only"> Configuration</span>
           </span>
         </Button>
       </ToolAction>
-      <div className="space-y-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="builder">Query Builder</TabsTrigger>
-            <TabsTrigger value="favorites">Favorites</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
+
+      <div ref={top} className="flex scroll-mt-24 flex-col gap-6">
+        <Tabs value={state.mode} onValueChange={(mode) => dispatch({ type: 'mode', mode })}>
+          <TabsList>
+            <TabsTrigger value="build">Build</TabsTrigger>
+            <TabsTrigger value="kql">Write KQL</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="builder">
-            <div className="space-y-6">
-              <ServiceSelector 
-                value={selectedService}
-                onChange={setSelectedService}
-              />
-              
-              {selectedService && (
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <div className="space-y-4">
-                    <ParameterForm
-                      service={selectedService}
-                      template={selectedTemplate}
-                      parameters={parameters}
-                      errors={validationErrors}
-                      onParameterChange={handleParameterChange}
-                      onTemplateChange={setSelectedTemplate}
-                      onGenerate={handleGenerateQuery}
-                      isGenerating={isGenerating}
-                    />
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <QueryPreview 
-                      query={generatedQuery}
-                      service={selectedService}
-                      template={currentTemplate}
-                    />
-                    
-                    {generatedQuery && (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Export Options</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex flex-wrap gap-2">
-                            <Button onClick={handleCopyQuery} variant="outline" size="sm">
-                              <Copy className="w-4 h-4 mr-2" />
-                              Copy Query
-                            </Button>
-                            <Button onClick={handleDownloadQuery} variant="outline" size="sm">
-                              <Download className="w-4 h-4 mr-2" />
-                              Download
-                            </Button>
-                            <Button onClick={handleOpenInPortal} variant="outline" size="sm">
-                              <ExternalLink className="w-4 h-4 mr-2" />
-                              Open in Portal
-                            </Button>
-                            <Button onClick={handleAddToFavorites} variant="outline" size="sm">
-                              <Star className="w-4 h-4 mr-2" />
-                              Add to Favorites
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+          <TabsContent value="build" className="mt-5 flex flex-col gap-6">
+            <Card>
+              <CardContent className="grid grid-cols-2 gap-x-3 gap-y-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)_7rem]">
+                <SourcePicker
+                  service={state.service}
+                  scenario={state.scenario}
+                  onService={(service) => dispatch({ type: 'service', service })}
+                  onScenario={(next) => dispatch({ type: 'scenario', scenario: next })}
+                />
+                {scenario && (
+                  <RangeControls
+                    time={state.time}
+                    limit={state.limit}
+                    showLimit={scenario.output.kind !== 'series'}
+                    onTime={(time) => dispatch({ type: 'time', time })}
+                    onLimit={(limit) => dispatch({ type: 'limit', limit })}
+                  />
+                )}
+                <p className="col-span-full text-body-sm text-on-surface-muted">
+                  {scenario ? scenario.description : 'Pick what you are investigating and the query appears below, ready to copy.'}
+                </p>
+              </CardContent>
+            </Card>
+
+            {scenario ? (
+              <>
+                <FilterList
+                  table={scenario.table}
+                  filters={state.filters}
+                  problems={built.problems}
+                  onAdd={(column) => dispatch({ type: 'filter-add', column })}
+                  onChange={(id, patch) => dispatch({ type: 'filter-change', id, patch })}
+                  onRemove={(id) => dispatch({ type: 'filter-remove', id })}
+                />
+                <QueryPanel built={built} onCopy={copy} onEdit={editAsKql} onSave={() => setSaving(current())} onDownload={download} />
+              </>
+            ) : (
+              <Ghost className="flex flex-col gap-6">
+                <FilterList table={GHOST_QUERY.table} filters={GHOST_STATE.filters} problems={[]} onAdd={NOTHING} onChange={NOTHING} onRemove={NOTHING} />
+                <QueryPanel built={GHOST_QUERY} onCopy={NOTHING} onEdit={NOTHING} onSave={NOTHING} onDownload={NOTHING} />
+              </Ghost>
+            )}
           </TabsContent>
 
-          <TabsContent value="favorites">
-            <QueryFavorites 
-              favorites={favorites}
-              onLoad={handleLoadFavorite}
-              onDelete={removeFavorite}
-            />
-          </TabsContent>
-
-          <TabsContent value="history">
-            <QueryHistory 
-              history={queryHistory}
-              onLoad={handleLoadFromHistory}
-              onClear={clearHistory}
-            />
-          </TabsContent>
-
-          <TabsContent value="templates">
-            <TemplateEditor 
-              onTemplateCreate={(template) => {
-                toast.success(`Template "${template.name}" created`);
-              }}
-              onTemplateUpdate={(template) => {
-                toast.success(`Template "${template.name}" updated`);
-              }}
+          <TabsContent value="kql" className="mt-5">
+            <RawPanel
+              kql={state.kql}
+              onChange={(next) => dispatch({ type: 'kql', kql: next })}
+              onCopy={copy}
+              onSave={() => setSaving(current())}
+              onDownload={download}
             />
           </TabsContent>
         </Tabs>
+
+        <SavedQueries
+          library={library}
+          onOpen={open}
+          onRename={(id, name) => update((lib) => renamed(lib, id, name))}
+          onDelete={(id) => undoable('Saved query deleted', (lib) => withoutSaved(lib, id))}
+          onSaveRecent={(entry) => setSaving(entry)}
+          onClearRecent={() => undoable('Recent queries cleared', withoutRecent)}
+        />
       </div>
+
+      <SaveDialog open={saving !== null} suggested={saving?.name ?? ''} onSave={save} onClose={() => setSaving(null)} />
     </>
   );
-};
-
-export default AzureKqlTool;
+}
