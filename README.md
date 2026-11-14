@@ -31,6 +31,7 @@ documentation states its boundary explicitly.
 | **Microsoft 365 License Decoder** | Microsoft | Turn licence GUIDs and SKU part numbers into names and service plans. | `/m365-licenses` | [Docs](docs/tools/m365-licenses/) |
 | **Microsoft Portals (GDAP)** | Microsoft | Deep links into 91 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](docs/tools/microsoft-portals/) |
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](docs/tools/tenant-lookup/) |
+| **Certificate & CSR Decoder** | Security | Decode PEM certificates, chains and CSRs without uploading them. | `/cert-decoder` | [Docs](docs/tools/cert-decoder/) |
 | **DNSSEC & Delegation Checker** | Security | Verify DS/DNSKEY links and inspect a domain delegation. | `/dnssec-checker` | [Docs](docs/tools/dnssec-checker/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](docs/tools/jwt/) |
 | **Password Generator** | Security | Cryptographically random passwords, generated on-device. | `/password-generator` | [Docs](docs/tools/password-generator/) |
@@ -41,7 +42,7 @@ documentation states its boundary explicitly.
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](docs/tools/markdown-table-tool/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](docs/tools/buzzword-ipsum/) |
 
-24 tools.
+25 tools.
 <!-- TOOLS:END -->
 
 ## Quick start

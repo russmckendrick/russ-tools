@@ -24,6 +24,7 @@ import { parseIPv4, parseIPv4Cidr } from '../tools/subnet-calculator/lib/ipv4.js
 import { parseIPv6, parseIPv6Cidr } from '../tools/subnet-calculator/lib/ipv6.js';
 import { looksLikeCron } from '../tools/cron-builder/lib/cron.js';
 import { detectQueryKind } from '../tools/m365-licenses/lib/licenses.js';
+import { hasPem, splitPem, toFragment } from '../tools/cert-decoder/lib/pem.js';
 import { cleanHostname, isHostname } from './hostname.js';
 
 /** A pasted value long enough to be a file is not a link. */
@@ -103,6 +104,10 @@ const tool = (toolId, label, path, href, why) => ({ toolId, label, path, href, w
  * accumulating, because the shapes are mutually exclusive once the collisions
  * below are settled:
  *
+ *   - a PEM block is tested before the length limit, because a certificate is
+ *     longer than anything else pasted here and a chain is longer still. It
+ *     is carried in the URL fragment, which is never sent to the server, and
+ *     `toFragment` drops any private key that came along with it.
  *   - a bare word is both `detectBase64`-true and "domain-shaped" under the
  *     repo's older regexes. `isHostname` requires a real dotted name, so the
  *     word falls to the encoder, which is where a word belongs.
@@ -126,7 +131,22 @@ const tool = (toolId, label, path, href, why) => ({ toolId, label, path, href, w
 export function suggest(input) {
   if (typeof input !== 'string') return [];
   const raw = input.trim();
-  if (!raw || raw.length > MAX_LENGTH) return [];
+  if (!raw) return [];
+
+  if (hasPem(raw)) {
+    const request = splitPem(raw).every((block) => block.kind !== 'certificate');
+    return [
+      tool(
+        'cert-decoder',
+        'Certificate Decoder',
+        '/cert-decoder',
+        `/cert-decoder#pem=${toFragment(raw)}`,
+        request ? 'certificate signing request' : 'PEM certificate'
+      ),
+    ];
+  }
+
+  if (raw.length > MAX_LENGTH) return [];
 
   const value = subject(raw);
 

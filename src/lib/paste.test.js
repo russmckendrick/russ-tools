@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { suggest } from './paste.js';
 import { allRoutes } from '../tools/registry.mjs';
+import { fromFragment, splitPem } from '../tools/cert-decoder/lib/pem.js';
 
 /**
  * The dispatcher's contract is the ranking, not just the routing: seven tools
@@ -283,5 +285,54 @@ describe('suggest', () => {
         ).toBe(true);
       }
     }
+  });
+});
+
+describe('PEM certificates', () => {
+  const read = (name) =>
+    readFileSync(new URL(`../tools/cert-decoder/fixtures/${name}`, import.meta.url), 'utf8');
+  const LEAF = read('leaf.pem');
+  const CHAIN = read('chain.pem');
+  const REQUEST = read('request.csr.pem');
+  const KEY = '-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIFakeFakeFakeFake\n-----END PRIVATE KEY-----';
+
+  it('routes a certificate to the decoder, carried in the fragment', () => {
+    expect(ids(LEAF)).toEqual(['cert-decoder']);
+    expect(first(LEAF).href).toMatch(/^\/cert-decoder#pem=c\.[A-Za-z0-9_-]+$/);
+    expect(first(LEAF).why).toBe('PEM certificate');
+    expect(allRoutes().map((r) => r.path)).toContain(first(LEAF).path);
+  });
+
+  it('round-trips what it was given', () => {
+    const fragment = first(CHAIN).href.split('#pem=')[1];
+    expect(splitPem(fromFragment(fragment))).toEqual(splitPem(CHAIN));
+  });
+
+  it('takes a whole chain although it is far past the length limit', () => {
+    expect(CHAIN.length).toBeGreaterThan(2000);
+    expect(ids(CHAIN)).toEqual(['cert-decoder']);
+    expect(first(CHAIN).href.split('~')).toHaveLength(3);
+  });
+
+  it('still reads one after a single-line field has flattened it', () => {
+    expect(first(CHAIN.replace(/\n/g, ' ')).href).toBe(first(CHAIN).href);
+    expect(first(CHAIN.replace(/\n/g, '')).href).toBe(first(CHAIN).href);
+  });
+
+  it('routes a signing request and says so', () => {
+    expect(ids(REQUEST)).toEqual(['cert-decoder']);
+    expect(first(REQUEST).href).toMatch(/^\/cert-decoder#pem=r\./);
+    expect(first(REQUEST).why).toBe('certificate signing request');
+  });
+
+  it('never puts a private key in a link', () => {
+    expect(suggest(KEY)).not.toContainEqual(expect.objectContaining({ toolId: 'cert-decoder' }));
+    const href = first(`${KEY}\n${LEAF}`).href;
+    expect(href).toBe(first(LEAF).href);
+    expect(href).not.toContain('MC4CAQAw');
+  });
+
+  it('leaves bare base64 with the encoder', () => {
+    expect(ids(splitPem(LEAF)[0].base64.slice(0, 400))).toEqual(['base64']);
   });
 });
