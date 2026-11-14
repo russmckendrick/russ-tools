@@ -1,6 +1,6 @@
 # The lookup API and the Cloudflare Workers
 
-Three of the twenty-four tools need a server: SSL analysis, WHOIS/RDAP and Microsoft tenant
+Three of the twenty-five tools need a server: SSL analysis, WHOIS/RDAP and Microsoft tenant
 discovery cannot be done from a browser. DNS and BGP tools call their named public data
 providers directly and use none of this.
 
