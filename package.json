@@ -17,6 +17,7 @@
     "generate:redirects": "node scripts/generate-redirects.mjs",
     "generate:tokens": "node scripts/generate-tokens.mjs",
     "generate:og": "node scripts/generate-og.mjs",
+    "generate:icons": "node scripts/generate-icons.mjs",
     "generate:docs": "node scripts/generate-docs.mjs",
     "refresh:m365-licenses": "node scripts/refresh-m365-licenses.mjs",
     "refresh:azure-rbac": "node scripts/refresh-azure-rbac.mjs",

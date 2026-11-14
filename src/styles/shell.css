@@ -95,7 +95,10 @@ body > main {
   color: var(--color-on-band);
   text-decoration: none;
 }
-.rt-site-mark,
+.rt-site-mark {
+  color: var(--color-on-band);
+  --rt-mark-bolt: var(--color-accent-bright);
+}
 .rt-brand-dot {
   color: var(--color-accent-bright);
 }
@@ -1226,7 +1229,9 @@ a.rt-kbd[data-first] {
   font-weight: 600;
   letter-spacing: -0.01em;
 }
-.rt-footer-brand svg,
+.rt-footer-brand svg {
+  --rt-mark-bolt: var(--color-primary-text);
+}
 .rt-footer-brand .rt-brand-dot {
   color: var(--color-primary-text);
 }
