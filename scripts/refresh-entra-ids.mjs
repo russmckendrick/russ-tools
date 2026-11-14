@@ -65,6 +65,15 @@ const HUMAN =
  * cell. A label differs from the published name only to say what a reader
  * would otherwise have to look up.
  *
+ * A reserved word has no name to sit beside, so its check is different: the
+ * page must print the word in a code span, or, where a fourth cell is given,
+ * print that text exactly. `None` is the case that needs it. The resource
+ * reference lists `All`, `Office365` and `MicrosoftAdminPortals` and leaves
+ * `None` out, but the Create policy reference gives
+ * `'includeApplications': 'none'` as its example of an application rule, and
+ * the portal offers None as a target. A policy that carries it should read
+ * "No cloud apps", not a bare word.
+ *
  * Find the Microsoft page before adding a row. An id that no Microsoft page
  * prints beside its name does not go in. Five rows were wrong here until
  * November 2026, two of them ids that never existed.
@@ -73,6 +82,7 @@ const APPLICATIONS = [
   ['All', 'All cloud apps', 'graph-conditional-access'],
   ['Office365', 'Office 365 (the app suite target)', 'graph-conditional-access'],
   ['MicrosoftAdminPortals', 'Microsoft Admin Portals', 'graph-conditional-access'],
+  ['None', 'No cloud apps', 'graph-create-policy', "'includeApplications': 'none'"],
   ['00000002-0000-0ff1-ce00-000000000000', 'Office 365 Exchange Online', 'power-platform'],
   ['00000003-0000-0ff1-ce00-000000000000', 'Office 365 SharePoint Online', 'service-principal-sign-ins'],
   ['00000003-0000-0000-c000-000000000000', 'Microsoft Graph', 'conditional-access'],
@@ -128,6 +138,12 @@ const CITED_SOURCES = [
     title: 'conditionalAccessApplications resource type',
     raw: 'https://raw.githubusercontent.com/microsoftgraph/microsoft-graph-docs-contrib/main/api-reference/v1.0/resources/conditionalaccessapplications.md',
     human: 'https://learn.microsoft.com/graph/api/resources/conditionalaccessapplications',
+  },
+  {
+    key: 'graph-create-policy',
+    title: 'Create conditionalAccessPolicy',
+    raw: 'https://raw.githubusercontent.com/microsoftgraph/microsoft-graph-docs-contrib/main/api-reference/v1.0/api/conditionalaccessroot-post-policies.md',
+    human: 'https://learn.microsoft.com/graph/api/conditionalaccessroot-post-policies',
   },
   {
     key: 'service-principal-sign-ins',
@@ -416,7 +432,7 @@ for (const source of CITED_SOURCES) {
 const unsupported = APPLICATIONS.filter(([id, label, source, published = label]) => {
   const text = sourceText.get(source);
   if (!text) return true;
-  if (!WHOLE_GUID.test(id)) return !text.includes(`\`${id}\``);
+  if (!WHOLE_GUID.test(id)) return !text.includes(published === label ? `\`${id}\`` : published);
   return !text
     .toLowerCase()
     .split(/\r?\n/)

@@ -40,7 +40,6 @@ that names one of these ids now explains differently.
 | `d176f6e7-38e5-40c9-8a78-3998aab820e7` | the raw GUID | Microsoft Online Syndication Partner Portal |
 | `66a88757-258c-4c72-893c-3e8bed4d6899` | Microsoft Forms | Office 365 Search Service |
 | `c9a559d2-7aab-4f13-a6ed-e7e9c52aec87` | the raw GUID | Microsoft Forms |
-| `None` | No cloud apps | None |
 
 The first row is the one that mattered. The list held two ids for Azure management,
 `797f4846-ba00-4fd7-ba5e-ceb5e5f1a0e0` and `…a0e1`, and neither exists: Microsoft's id is
@@ -49,10 +48,21 @@ management, which is among the most common policies there is, showed its target 
 GUID. The second row was worse in kind: a policy scoped to Azure Virtual Desktop was
 explained as one scoped to Intune enrolment.
 
-`None` is the one removal that is not a correction. Microsoft's Graph reference documents
-`All`, `Office365` and `MicrosoftAdminPortals` as reserved values of `includeApplications`
-and does not document `None` for applications, so it is no longer translated and shows as
-the word the policy carries.
+`None` is unchanged: a policy whose `includeApplications` is `None` still reads "No cloud
+apps". An earlier draft of this change removed that translation, because Graph's
+`conditionalAccessApplications` reference lists `All`, `Office365` and
+`MicrosoftAdminPortals` as reserved values and does not list `None`. It was put back. The
+Entra portal offers None as a target, and Microsoft's own Create conditionalAccessPolicy
+reference gives `'includeApplications': 'none'` as its example of an application rule, so
+the value is real even though the resource reference omits it. The refresh now cites that
+page for the row and fails if the example disappears. Whether a policy saved in the portal
+exports as `None` has not been checked against a tenant; if it never occurs, keeping the
+translation costs nothing.
+
+One small widening came with it. Reserved words now match whatever their case, because the
+reference spells it `none` where the list spells it `None`: `none`, `all` and `office365`
+resolve as `None`, `All` and `Office365` always did. Previously a lower-case reserved word
+was shown as typed.
 
 Every row of the list now cites the Microsoft page it was read from, and the refresh fails
 if that page stops printing the id beside the name. `src/tools/conditional-access/lib/wellKnown.test.js`

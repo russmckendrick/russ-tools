@@ -8,6 +8,7 @@
     "https://learn.microsoft.com/entra/identity/conditional-access/concept-conditional-access-cloud-apps",
     "https://learn.microsoft.com/entra/identity/conditional-access/terms-of-use",
     "https://learn.microsoft.com/entra/identity/monitoring-health/reference-service-principal-table",
+    "https://learn.microsoft.com/graph/api/conditionalaccessroot-post-policies",
     "https://learn.microsoft.com/graph/api/resources/conditionalaccessapplications",
     "https://learn.microsoft.com/power-platform/admin/apps-to-allow",
     "https://learn.microsoft.com/troubleshoot/entra/entra-id/governance/verify-first-party-apps-sign-in",
@@ -181,6 +182,7 @@
     "d3590ed6-52b3-4102-aeff-aad2292ab01c": "Microsoft Office (legacy Office client)",
     "d4ebce55-015a-49b5-a083-c84d1797ae8c": "Microsoft Intune Enrollment",
     "MicrosoftAdminPortals": "Microsoft Admin Portals",
+    "None": "No cloud apps",
     "Office365": "Office 365 (the app suite target)"
   },
   "guestOrExternalUserTypes": {

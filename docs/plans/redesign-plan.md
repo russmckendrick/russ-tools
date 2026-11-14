@@ -4041,8 +4041,16 @@ Two judgement calls, both recorded in the script:
   GUIDs in Learn content. It is Microsoft-published and states name beside id,
   but it is a tooling file, not an article. No article states those ids.
 
-`None` was dropped from the application map: Graph documents `All`, `Office365`
-and `MicrosoftAdminPortals` for `includeApplications`, and not `None`. Labels
+`None` stays in the application map. It was dropped at first, because Graph's
+resource reference documents `All`, `Office365` and `MicrosoftAdminPortals` for
+`includeApplications` and not `None`, and then restored: the portal offers None
+as a target, and the Create conditionalAccessPolicy reference gives
+`'includeApplications': 'none'` as its example of an application rule. That
+page is now the row's citation, checked on every refresh like the rest.
+Reserved words resolve whatever their case, since Microsoft writes it both
+ways. Whether a portal export carries `None` was not checked against a tenant;
+the two mistakes are not symmetric, and translating a value that never occurs
+costs nothing. Labels
 that were right about the id but differ from Microsoft's wording (Azure Active
 Directory Graph (retired), Microsoft Office (legacy Office client), Dynamics
 CRM Online, Power BI Service, Office 365 (OfficeHome)) were left as they were.

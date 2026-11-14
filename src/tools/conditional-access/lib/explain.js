@@ -55,13 +55,22 @@ export const humanise = (value) => {
 
 /**
  * Resolve one id through a lookup table, falling back to the raw value.
+ *
+ * GUID keys are stored lower-case and reserved words as Graph spells them
+ * (`All`, `None`, `Office365`), but Graph does not hold callers to a case:
+ * its own reference writes `'includeApplications': 'none'`. So a key that
+ * differs only in case still matches.
+ *
  * @param {Record<string,string>} table
  * @param {string} id
  */
 export const resolve = (table, id) => {
   if (!id) return '';
   const key = String(id).toLowerCase();
-  return table?.[key] ?? table?.[id] ?? id;
+  if (table?.[key] !== undefined) return table[key];
+  if (table?.[id] !== undefined) return table[id];
+  const match = Object.keys(table ?? {}).find((candidate) => candidate.toLowerCase() === key);
+  return match ? table[match] : id;
 };
 
 /** Join a list the way a sentence would. */

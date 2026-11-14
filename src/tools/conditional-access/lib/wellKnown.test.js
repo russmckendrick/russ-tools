@@ -3,14 +3,19 @@ import wellKnown from '../../../data/microsoft/entra-well-known-ids.json';
 import lookup from '../../../data/microsoft/entra-ids.json';
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-const RESERVED = ['All', 'MicrosoftAdminPortals', 'Office365'];
+const RESERVED = ['All', 'MicrosoftAdminPortals', 'None', 'Office365'];
 
 describe('the application ids the explainer names', () => {
   const { applications, applicationSources } = wellKnown;
 
-  it('are GUIDs, or one of the reserved words Graph documents', () => {
+  it('are GUIDs, or one of the reserved words Graph uses', () => {
     const others = Object.keys(applications).filter((id) => !GUID.test(id));
     expect(others.sort()).toEqual(RESERVED);
+  });
+
+  it('still translates None, and cites the page that shows it', () => {
+    expect(applications.None).toBe('No cloud apps');
+    expect(applicationSources).toContain('https://learn.microsoft.com/graph/api/conditionalaccessroot-post-policies');
   });
 
   it('cite Microsoft pages and nothing else', () => {
