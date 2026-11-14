@@ -2,7 +2,9 @@
  * Password Generator — ported (Phase 3).
  *
  * The island is the tool itself. Generation stays on crypto.getRandomValues
- * with rejection sampling and Fisher–Yates (the Phase 0 fix). No storage:
+ * with rejection sampling and Fisher–Yates (the Phase 0 fix), for passphrase
+ * words too; the maths is in `lib/`. The EFF wordlist behind passphrase mode
+ * is a dynamic import, so password mode never loads it. No storage:
  * passwords are never persisted, which is the point of the tool.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
@@ -18,7 +20,8 @@ export default {
     'Cryptographically random passwords, generated on-device.',
   description:
     'Generate secure, random passwords with customizable length and ' +
-    'character types. Features strength analysis, bulk generation, and ' +
+    'character types, or word-based passphrases from the EFF large ' +
+    'wordlist. Features strength analysis, bulk generation, and ' +
     'secure download options for password management.',
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
@@ -37,6 +40,7 @@ export default {
   features: [
     'Cryptographically secure generation',
     'Customizable length and character sets',
+    'Passphrases from the EFF large wordlist',
     'Password strength analysis',
     'Bulk password generation',
     'Secure download options',

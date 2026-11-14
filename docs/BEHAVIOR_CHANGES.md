@@ -18,11 +18,42 @@ Two rules:
 
 ## Open — captured as KNOWN-BUG, not yet fixed
 
-*Nothing currently open.*
+### password-generator: the guaranteed character ignores the exclusions
+
+Found while moving the generator into `lib/password.js` (2026-11-14) and pinned
+there as `KNOWN-BUG`, not fixed. Each enabled class is guaranteed one character,
+and that character is drawn from the whole class, not from the class with
+**Exclude similar** / **Exclude ambiguous** applied. So a password generated
+with "Exclude similar characters" on can still contain one `l`, `1`, `O` or `0`
+per class (about a 1-in-13 chance for the uppercase slot). The fix is to draw
+the guaranteed characters from the filtered classes.
 
 ---
 
 ## Landed
+
+### Password Generator: a passphrase mode, and the maths moved to `lib/` (2026-11-14)
+
+A **Password / Passphrase** switch sits above the settings. Passphrase mode
+draws 3 to 10 words (5 by default) from the EFF large wordlist with the same
+`crypto.getRandomValues` helper, joined by a chosen separator, optionally
+capitalised and with one digit appended. Its entropy is
+`words * log2(7776)` plus `log2(10)` for the digit, shown through the same
+Security Analysis panel, whose second figure is now labelled **Word List**
+in that mode and **Character Pool** otherwise.
+
+Password mode is unchanged: the generation and strength code moved verbatim
+from `island.jsx` into `lib/` and is now pinned by tests, quirks included.
+Visible differences are wording only: headings, buttons, toasts and the
+download file follow the mode ("Generate Passphrases",
+`passphrases_<date>.txt`), and the download header reports the length of the
+values in the file, not the current slider position.
+
+The page still opens on Password with one result drawn, and still stores
+nothing: the mode and the passphrase settings are forgotten on reload. The
+word list (`data/eff_large_wordlist.txt`, 109 kB, unmodified) is a dynamic
+import, so it is fetched from the site the first time Passphrase is opened
+and never in password mode.
 
 ### CRON builder: upcoming run times, names, and a validator that reads as you type (2026-11-14)
 

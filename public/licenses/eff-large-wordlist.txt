@@ -1,0 +1,28 @@
+EFF Large Wordlist for Passphrases
+
+File:      src/tools/password-generator/data/eff_large_wordlist.txt
+Source:    https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt
+About:     https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases
+Author:    Electronic Frontier Foundation (Joseph Bonneau), July 2016
+Retrieved: 2026-11-14
+SHA-256:   addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e
+Changes:   none. The file is the one EFF publishes, byte for byte: 7,776
+           lines, each a five-digit dice roll, a tab and a word.
+
+Licence
+
+Creative Commons Attribution 3.0 United States (CC BY 3.0 US)
+https://creativecommons.org/licenses/by/3.0/us/
+
+EFF publishes the original material on eff.org under a Creative Commons
+Attribution licence. That licence was CC BY 3.0 US when the wordlist was
+published in 2016. EFF's copyright policy (https://www.eff.org/copyright),
+as read on 2026-11-14, names Creative Commons Attribution 4.0 International
+(https://creativecommons.org/licenses/by/4.0/) for the site's original
+material. Both ask for the same thing here: credit to EFF, a link to the
+licence, and a note of any changes. This file is that credit, and the
+Password Generator's help page repeats it.
+
+Used by the Password Generator's passphrase mode on russ.tools, which draws
+words from the list with crypto.getRandomValues(). The list is loaded only
+when passphrase mode is opened.
