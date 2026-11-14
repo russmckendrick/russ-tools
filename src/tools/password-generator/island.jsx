@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import {
   Copy,
@@ -22,32 +23,22 @@ import {
 import { toast } from 'sonner';
 import { copyText, downloadFile } from '@/core';
 import { createToolIcon } from '@/components/ui/tool-icon';
+import { DEFAULT_PASSWORD_OPTIONS, generatePassword, passwordStrength } from './lib/password.js';
+import {
+  DEFAULT_PASSPHRASE_OPTIONS,
+  generatePassphrase,
+  loadWordlist,
+  passphraseStrength,
+} from './lib/passphrase.js';
+import PassphraseSettings from './components/PassphraseSettings.jsx';
+import GeneratedValue from './components/GeneratedValue.jsx';
 
 const PasswordIcon = createToolIcon('key-round');
 
-const secureRandomInt = (max) => {
-  const range = 0x100000000; // 2^32
-  const limit = range - (range % max);
-  const buffer = new Uint32Array(1);
-  let value;
-  do {
-    crypto.getRandomValues(buffer);
-    value = buffer[0];
-  } while (value >= limit);
-  return value % max;
-};
-
-const secureShuffle = (chars) => {
-  for (let i = chars.length - 1; i > 0; i--) {
-    const j = secureRandomInt(i + 1);
-    [chars[i], chars[j]] = [chars[j], chars[i]];
-  }
-  return chars;
-};
-
 const PasswordGeneratorTool = () => {
-  // Password generation settings
-  const [length, setLength] = useState([24]);
+  const [mode, setMode] = useState('password');
+
+  const [length, setLength] = useState([DEFAULT_PASSWORD_OPTIONS.length]);
   const [count, setCount] = useState(1);
   const [includeUppercase, setIncludeUppercase] = useState(true);
   const [includeLowercase, setIncludeLowercase] = useState(true);
@@ -55,241 +46,63 @@ const PasswordGeneratorTool = () => {
   const [includeSymbols, setIncludeSymbols] = useState(true);
   const [excludeSimilar, setExcludeSimilar] = useState(false);
   const [excludeAmbiguous, setExcludeAmbiguous] = useState(false);
-  
-  // Generated passwords
+
+  const [wordCount, setWordCount] = useState([DEFAULT_PASSPHRASE_OPTIONS.words]);
+  const [separator, setSeparator] = useState(DEFAULT_PASSPHRASE_OPTIONS.separator);
+  const [capitalise, setCapitalise] = useState(DEFAULT_PASSPHRASE_OPTIONS.capitalise);
+  const [appendDigit, setAppendDigit] = useState(DEFAULT_PASSPHRASE_OPTIONS.digit);
+
   const [passwords, setPasswords] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Character sets
-  const UPPERCASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const LOWERCASE = 'abcdefghijklmnopqrstuvwxyz';
-  const NUMBERS = '0123456789';
-  const SYMBOLS = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-  const SIMILAR_CHARS = 'il1Lo0O';
-  const AMBIGUOUS_CHARS = '{}[]()/\\\'"`~,;.<>';
-
+  const isPassphrase = mode === 'passphrase';
+  const noun = isPassphrase ? 'passphrase' : 'password';
+  const Noun = isPassphrase ? 'Passphrase' : 'Password';
   const currentLength = length[0];
+  const currentWords = wordCount[0];
 
-  // Calculate password strength with detailed analysis
-  const calculateStrength = useCallback(() => {
-    let charset = '';
-    if (includeUppercase) charset += UPPERCASE;
-    if (includeLowercase) charset += LOWERCASE;
-    if (includeNumbers) charset += NUMBERS;
-    if (includeSymbols) charset += SYMBOLS;
-    
-    if (excludeSimilar) {
-      charset = charset.split('').filter(char => !SIMILAR_CHARS.includes(char)).join('');
-    }
-    if (excludeAmbiguous) {
-      charset = charset.split('').filter(char => !AMBIGUOUS_CHARS.includes(char)).join('');
-    }
+  const passwordOptions = {
+    length: currentLength,
+    includeUppercase,
+    includeLowercase,
+    includeNumbers,
+    includeSymbols,
+    excludeSimilar,
+    excludeAmbiguous,
+  };
+  const passphraseOptions = { words: currentWords, separator, capitalise, digit: appendDigit };
 
-    const charsetSize = charset.length;
-    const entropy = Math.log2(Math.pow(charsetSize, currentLength));
-    
-    const possibleCombinations = Math.pow(charsetSize, currentLength);
-    const averageGuesses = possibleCombinations / 2;
-    const secondsToCrack = averageGuesses / 1000000000; // 1 billion guesses/sec
-    
-    // Format combinations in human readable format
-    const formatCombinations = (num) => {
-      if (num < 1000) return Math.round(num).toLocaleString();
-      if (num < 1000000) return `${(num / 1000).toFixed(1)} thousand`;
-      if (num < 1000000000) return `${(num / 1000000).toFixed(1)} million`;
-      if (num < 1000000000000) return `${(num / 1000000000).toFixed(1)} billion`;
-      if (num < 1000000000000000) return `${(num / 1000000000000).toFixed(1)} trillion`;
-      if (num < 1000000000000000000) return `${(num / 1000000000000000).toFixed(1)} quadrillion`;
-      if (num < 1e21) return `${(num / 1e18).toFixed(1)} quintillion`;
-      
-      // For extremely large numbers, use scientific notation
-      const exponent = Math.floor(Math.log10(num));
-      const mantissa = num / Math.pow(10, exponent);
-      return `${mantissa.toFixed(1)} × 10^${exponent}`;
-    };
-
-    // Convert to human readable time
-    let timeString = '';
-    
-    if (secondsToCrack < 1) {
-      timeString = 'Instantly';
-    } else if (secondsToCrack < 60) {
-      timeString = `${Math.round(secondsToCrack)} second${secondsToCrack > 1 ? 's' : ''}`;
-    } else if (secondsToCrack < 3600) {
-      const minutes = Math.round(secondsToCrack / 60);
-      timeString = `${minutes} minute${minutes > 1 ? 's' : ''}`;
-    } else if (secondsToCrack < 86400) {
-      const hours = Math.round(secondsToCrack / 3600);
-      timeString = `${hours} hour${hours > 1 ? 's' : ''}`;
-    } else if (secondsToCrack < 2592000) { // 30 days
-      const days = Math.round(secondsToCrack / 86400);
-      timeString = `${days} day${days > 1 ? 's' : ''}`;
-    } else if (secondsToCrack < 31536000) { // 1 year
-      const months = Math.round(secondsToCrack / 2592000);
-      timeString = `${months} month${months > 1 ? 's' : ''}`;
-    } else {
-      const years = secondsToCrack / 31536000;
-      const steps = [
-        [1e3, 1, ''],
-        [1e6, 1e3, ' thousand'],
-        [1e9, 1e6, ' million'],
-        [1e12, 1e9, ' billion'],
-        [1e15, 1e12, ' trillion'],
-      ];
-      const step = steps.find(([limit]) => years < limit);
-      if (!step) {
-        const exponent = Math.floor(Math.log10(years));
-        timeString = `${(years / Math.pow(10, exponent)).toFixed(1)} × 10^${exponent} years`;
-      } else if (step[1] === 1) {
-        const whole = Math.round(years);
-        timeString = `${whole.toLocaleString()} year${whole > 1 ? 's' : ''}`;
-      } else {
-        timeString = `${(years / step[1]).toFixed(1)}${step[2]} years`;
-      }
-    }
-
-    // Determine overall strength level
-    let level, tone, percentage, description;
-    
-    if (entropy < 25) {
-      level = 'Very Weak';
-      tone = 'text-danger';
-      percentage = 10;
-      description = 'Crackable in seconds';
-    } else if (entropy < 35) {
-      level = 'Weak';
-      tone = 'text-danger';
-      percentage = 25;
-      description = 'Crackable in minutes';
-    } else if (entropy < 50) {
-      level = 'Fair';
-      tone = 'text-warning';
-      percentage = 45;
-      description = 'Crackable by a determined attacker';
-    } else if (entropy < 65) {
-      level = 'Good';
-      tone = 'text-warning';
-      percentage = 65;
-      description = '';
-    } else if (entropy < 80) {
-      level = 'Strong';
-      tone = 'text-success';
-      percentage = 80;
-      description = '';
-    } else {
-      level = 'Excellent';
-      tone = 'text-success';
-      percentage = 100;
-      description = '';
-    }
-
-    // Generate detailed feedback
-    const feedback = [];
-    
-    if (currentLength < 8) {
-      feedback.push({ type: 'error', message: 'Under 8 characters' });
-    } else if (currentLength < 12) {
-      feedback.push({ type: 'warning', message: 'Under 12 characters' });
-    }
-
-    if (!includeUppercase && !includeLowercase) {
-      feedback.push({ type: 'error', message: 'No letters included' });
-    } else if (!includeUppercase || !includeLowercase) {
-      feedback.push({ type: 'warning', message: 'Only one letter case' });
-    }
-
-    if (!includeNumbers) {
-      feedback.push({ type: 'warning', message: 'Numbers are excluded' });
-    }
-
-    if (!includeSymbols) {
-      feedback.push({ type: 'warning', message: 'Symbols are excluded' });
-    }
-
-    if (charsetSize < 26) {
-      feedback.push({ type: 'error', message: 'Character set is too limited' });
-    } else if (charsetSize < 62) {
-      feedback.push({ type: 'warning', message: 'Narrow character set' });
-    }
-
-    return {
-      level,
-      tone,
-      percentage,
-      description,
-      entropy: Math.round(entropy * 10) / 10,
-      charsetSize,
-      combinations: formatCombinations(possibleCombinations),
-      timeToCrack: timeString,
-      feedback
-    };
-  }, [currentLength, includeUppercase, includeLowercase, includeNumbers, includeSymbols, excludeSimilar, excludeAmbiguous]);
-
-  // Generate a single password
-  const generatePassword = useCallback(() => {
-    let charset = '';
-    if (includeUppercase) charset += UPPERCASE;
-    if (includeLowercase) charset += LOWERCASE;
-    if (includeNumbers) charset += NUMBERS;
-    if (includeSymbols) charset += SYMBOLS;
-    
-    if (excludeSimilar) {
-      charset = charset.split('').filter(char => !SIMILAR_CHARS.includes(char)).join('');
-    }
-    if (excludeAmbiguous) {
-      charset = charset.split('').filter(char => !AMBIGUOUS_CHARS.includes(char)).join('');
-    }
-
-    if (charset.length === 0) {
-      throw new Error('At least one character type must be selected');
-    }
-
-    let password = '';
-    
-    // Ensure at least one character from each selected type
-    const requiredChars = [];
-    if (includeUppercase) requiredChars.push(UPPERCASE[secureRandomInt(UPPERCASE.length)]);
-    if (includeLowercase) requiredChars.push(LOWERCASE[secureRandomInt(LOWERCASE.length)]);
-    if (includeNumbers) requiredChars.push(NUMBERS[secureRandomInt(NUMBERS.length)]);
-    if (includeSymbols) requiredChars.push(SYMBOLS[secureRandomInt(SYMBOLS.length)]);
-
-    // Add required characters
-    for (let i = 0; i < Math.min(requiredChars.length, currentLength); i++) {
-      password += requiredChars[i];
-    }
-
-    // Fill the rest with random characters
-    for (let i = password.length; i < currentLength; i++) {
-      password += charset[secureRandomInt(charset.length)];
-    }
-
-    // Shuffle the password to avoid predictable patterns
-    return secureShuffle(password.split('')).join('');
-  }, [currentLength, includeUppercase, includeLowercase, includeNumbers, includeSymbols, excludeSimilar, excludeAmbiguous]);
-
-  // Generate multiple passwords
-  const handleGeneratePasswords = async ({ silent = false } = {}) => {
+  const handleGeneratePasswords = async ({ silent = false, as = mode } = {}) => {
+    const phrase = as === 'passphrase';
     try {
       setIsGenerating(true);
-      
-      if (!includeUppercase && !includeLowercase && !includeNumbers && !includeSymbols) {
+
+      if (!phrase && !includeUppercase && !includeLowercase && !includeNumbers && !includeSymbols) {
         toast.error('Please select at least one character type');
         return;
       }
 
+      const wordlist = phrase ? await loadWordlist() : null;
+
       const newPasswords = [];
       for (let i = 0; i < count; i++) {
+        const result = phrase
+          ? generatePassphrase(wordlist, passphraseOptions)
+          : { value: generatePassword(passwordOptions) };
         newPasswords.push({
           id: Date.now() + i,
-          value: generatePassword(),
+          ...result,
+          kind: phrase ? 'passphrase' : 'password',
           timestamp: new Date().toLocaleTimeString()
         });
       }
-      
+
       setPasswords(newPasswords);
-      if (!silent) toast.success(`Successfully generated ${count} password${count > 1 ? 's' : ''}`);
+      if (!silent) {
+        toast.success(`Successfully generated ${count} ${phrase ? 'passphrase' : 'password'}${count > 1 ? 's' : ''}`);
+      }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(phrase && !/character type/.test(error.message) ? `Could not generate a passphrase: ${error.message}` : error.message);
     } finally {
       setIsGenerating(false);
     }
@@ -300,37 +113,49 @@ const PasswordGeneratorTool = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleModeChange = (next) => {
+    if (next === mode) return;
+    setMode(next);
+    handleGeneratePasswords({ silent: true, as: next });
+  };
+
   // Copy password to clipboard
   const copyToClipboard = async (password) => {
     if (await copyText(password)) {
-      toast.success('Password copied to clipboard');
+      toast.success(`${Noun} copied to clipboard`);
     } else {
-      toast.error('Failed to copy password to clipboard');
+      toast.error(`Failed to copy ${noun} to clipboard`);
     }
   };
 
   // Download passwords as text file
   const downloadPasswords = () => {
     if (passwords.length === 0) {
-      toast.error('Generate some passwords first');
+      toast.error(`Generate some ${noun}s first`);
       return;
     }
+
+    const phrases = passwords[0].kind === 'passphrase';
+    const item = phrases ? 'passphrase' : 'password';
+    const size = phrases
+      ? `Words: ${passwords[0].parts.length} each`
+      : `Length: ${passwords[0].value.length} characters each`;
 
     const header = `RUSS TOOLS - Password Generator
 ================================
 
 Generated from: russ.tools
 Date: ${new Date().toLocaleString()}
-Count: ${passwords.length} password${passwords.length > 1 ? 's' : ''}
-Length: ${currentLength} characters each
+Count: ${passwords.length} ${item}${passwords.length > 1 ? 's' : ''}
+${size}
 
 SECURITY NOTICE:
-- Store these passwords securely
-- Never share passwords via email or unsecured channels
-- Use a different password for each account
+- Store these ${item}s securely
+- Never share ${item}s via email or unsecured channels
+- Use a different ${item} for each account
 - Consider using a password manager
 
-Generated Passwords:
+Generated ${phrases ? 'Passphrases' : 'Passwords'}:
 
 `;
 
@@ -338,36 +163,70 @@ Generated Passwords:
 
     const footer = `
 
-End of password list
+End of ${item} list
 Generated with love by RussTools
 Visit: https://russ.tools
 `;
 
     const content = header + passwordList + footer;
 
-    downloadFile(content, `passwords_${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
+    downloadFile(content, `${item}s_${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
 
-    toast.success('Passwords saved to file!');
+    toast.success(`${phrases ? 'Passphrases' : 'Passwords'} saved to file!`);
   };
 
   // Clear all passwords
   const clearPasswords = () => {
     setPasswords([]);
-    toast.success('All passwords cleared');
+    toast.success(`All ${noun}s cleared`);
   };
 
-  const strength = calculateStrength();
+  const strength = isPassphrase ? passphraseStrength(passphraseOptions) : passwordStrength(passwordOptions);
+
+  const strengthMeter = (
+    <div className="space-y-2">
+      <Progress value={strength.percentage} className="h-1.5" />
+
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <span className={`text-body-sm font-medium ${strength.tone}`}>
+          {strength.level}
+        </span>
+        <span className="text-body-sm text-muted-foreground">
+          {strength.description}
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <TooltipProvider>
-      <div className="space-y-6">
+      <Tabs value={mode} onValueChange={handleModeChange} className="space-y-6">
+        <TabsList aria-label="What to generate">
+          <TabsTrigger value="password">Password</TabsTrigger>
+          <TabsTrigger value="passphrase">Passphrase</TabsTrigger>
+        </TabsList>
+        <TabsContent value={mode} className="mt-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Configuration Panel */}
           <Card>
             <CardHeader>
-              <h3 className="text-title-sm">Password Settings</h3>
+              <h3 className="text-title-sm">{Noun} Settings</h3>
             </CardHeader>
             <CardContent className="space-y-6">
+              {isPassphrase ? (
+                <PassphraseSettings
+                  wordCount={wordCount}
+                  onWordCountChange={setWordCount}
+                  separator={separator}
+                  onSeparatorChange={setSeparator}
+                  capitalise={capitalise}
+                  onCapitaliseChange={setCapitalise}
+                  appendDigit={appendDigit}
+                  onAppendDigitChange={setAppendDigit}
+                  meter={strengthMeter}
+                />
+              ) : (
+              <>
               {/* Length Section */}
               <div className="space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
@@ -406,19 +265,7 @@ Visit: https://russ.tools
                       ))}
                     </div>
                     
-                    {/* Custom Progress Bar */}
-                    <div className="space-y-2">
-                      <Progress value={strength.percentage} className="h-1.5" />
-                      
-                      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-                        <span className={`text-body-sm font-medium ${strength.tone}`}>
-                          {strength.level}
-                        </span>
-                        <span className="text-body-sm text-muted-foreground">
-                          {strength.description}
-                        </span>
-                      </div>
-                    </div>
+                    {strengthMeter}
                   </div>
               </div>
 
@@ -492,12 +339,15 @@ Visit: https://russ.tools
                 </div>
               </div>
 
+              </>
+              )}
+
               <Separator />
 
               {/* Generation Options */}
               <div className="space-y-4">
                 <Label htmlFor="count" className="text-body-md font-medium">
-                  Number of passwords to generate
+                  Number of {noun}s to generate
                 </Label>
                 <Input
                   id="count"
@@ -521,7 +371,7 @@ Visit: https://russ.tools
                 ) : (
                   <RefreshCw className="mr-2 h-4 w-4" />
                 )}
-                Generate Passwords
+                Generate {Noun}s
               </Button>
             </CardContent>
           </Card>
@@ -531,14 +381,14 @@ Visit: https://russ.tools
             <Card className="max-lg:order-first">
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-                  <h3 className="text-title-sm">Generated Passwords</h3>
+                  <h3 className="text-title-sm">Generated {Noun}s</h3>
                   {passwords.length > 0 && (
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={downloadPasswords}
-                        aria-label="Download passwords"
+                        aria-label={`Download ${noun}s`}
                       >
                         <Download className="h-4 w-4" />
                       </Button>
@@ -546,7 +396,7 @@ Visit: https://russ.tools
                         variant="outline"
                         size="sm"
                         onClick={clearPasswords}
-                        aria-label="Clear passwords"
+                        aria-label={`Clear ${noun}s`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -559,7 +409,7 @@ Visit: https://russ.tools
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <PasswordIcon className="size-10 text-on-surface-faint mb-4" />
                     <p className="text-muted-foreground">
-                      Configure your settings and click "Generate Passwords" to create secure passwords
+                      Configure your settings and click "Generate {Noun}s" to create secure {noun}s
                     </p>
                   </div>
                 ) : (
@@ -570,18 +420,16 @@ Visit: https://russ.tools
                           <div className="flex justify-between items-center gap-2">
                             <div className="flex-1 min-w-0 space-y-1">
                               <p className="text-body-sm text-muted-foreground">
-                                Password {index + 1} • Generated at {password.timestamp}
+                                {password.kind === 'passphrase' ? 'Passphrase' : 'Password'} {index + 1} • Generated at {password.timestamp}
                               </p>
-                              <p className="font-mono text-data-lg break-all select-all">
-                                {password.value}
-                              </p>
+                              <GeneratedValue entry={password} />
                             </div>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => copyToClipboard(password.value)}
                               className="ml-2 flex-shrink-0"
-                              aria-label="Copy password"
+                              aria-label={`Copy ${password.kind === 'passphrase' ? 'passphrase' : 'password'}`}
                             >
                               <Copy className="h-4 w-4" />
                             </Button>
@@ -603,7 +451,7 @@ Visit: https://russ.tools
                       <Info className="h-4 w-4 text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Detailed password security metrics</p>
+                      <p>Detailed {noun} security metrics</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -618,8 +466,8 @@ Visit: https://russ.tools
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-body-sm text-muted-foreground">Character Pool</p>
-                    <span className="text-data-md font-mono">{strength.charsetSize} characters</span>
+                    <p className="text-body-sm text-muted-foreground">{strength.poolLabel}</p>
+                    <span className="text-data-md font-mono">{strength.pool}</span>
                   </div>
                   <div className="col-span-2 space-y-1">
                     <p className="text-body-sm text-muted-foreground">Possible Combinations</p>
@@ -671,7 +519,8 @@ Visit: https://russ.tools
 
           </div>
         </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </TooltipProvider>
   );
 };

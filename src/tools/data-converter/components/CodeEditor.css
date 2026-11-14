@@ -19,6 +19,7 @@
 }
 
 .code-highlight .token.property,
+.code-highlight .token.tag,
 .code-highlight .token.attr-name {
   color: #6f42c1; /* purple for property names */
 }
@@ -52,6 +53,7 @@
 }
 
 .dark .code-highlight .token.property,
+.dark .code-highlight .token.tag,
 .dark .code-highlight .token.attr-name {
   color: #b392f0; /* light purple for property names */
 }

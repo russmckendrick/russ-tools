@@ -20,8 +20,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyText } from '@/core';
-import { validateCronExpression } from './lib/cron.js';
+import { normaliseCronNames, validateCronExpression } from './lib/cron.js';
 import CronFlow from './components/CronFlow.jsx';
+import UpcomingRuns from './components/UpcomingRuns.jsx';
 
 const defaultFields = {
   minute: '*',
@@ -265,6 +266,7 @@ const CronBuilderTool = () => {
   const [fields, setFields] = useState(defaultFields);
   const [copied, setCopied] = useState(false);
   const [manualInput, setManualInput] = useState('');
+  const [clock, setClock] = useState('utc');
 
   // Build cron string from fields
   const cronString = `${fields.minute} ${fields.hour} ${fields.dayOfMonth} ${fields.month} ${fields.dayOfWeek}`;
@@ -333,7 +335,12 @@ const CronBuilderTool = () => {
   }, [urlExpression]);
 
   const validation = validateCronExpression(cronString);
-  const translation = translateCronExpression(cronString);
+  const translation = translateCronExpression(normaliseCronNames(cronString));
+
+  const typedExpression = manualInput.trim().replace(/\s+/g, ' ');
+  const inspected = typedExpression || cronString;
+  const inspectedValidation = validateCronExpression(inspected);
+  const inspectedTranslation = translateCronExpression(normaliseCronNames(inspected));
 
   return (
     <TooltipProvider>
@@ -412,6 +419,9 @@ const CronBuilderTool = () => {
                         </div>
                       </div>
                     )}
+                    {validation.valid && (
+                      <UpcomingRuns expression={cronString} clock={clock} onClockChange={setClock} />
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -477,7 +487,7 @@ const CronBuilderTool = () => {
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Enter a cron expression directly to validate and translate it
+                Type or paste a cron expression to check it as you go. Load copies it into the builder.
               </AlertDescription>
             </Alert>
             
@@ -499,12 +509,19 @@ const CronBuilderTool = () => {
                   </div>
                 </div>
                 
-                {validation.valid ? (
+                {!typedExpression && (
+                  <p className="text-body-sm text-muted-foreground">
+                    Nothing typed yet, so this is the builder's expression:{' '}
+                    <code className="whitespace-nowrap font-mono text-data-md text-on-surface">{cronString}</code>
+                  </p>
+                )}
+
+                {inspectedValidation.valid ? (
                   <div className="flex items-start gap-2 p-3 bg-success-subtle rounded-md">
                     <Check className="w-4 h-4 text-success mt-0.5" />
                     <div className="space-y-1">
                       <p className="text-body-sm font-medium text-success">Valid Expression</p>
-                      <p className="text-body-sm text-success">{translation}</p>
+                      <p className="text-body-sm text-success">{inspectedTranslation}</p>
                     </div>
                   </div>
                 ) : (
@@ -512,9 +529,13 @@ const CronBuilderTool = () => {
                     <AlertCircle className="w-4 h-4 text-danger mt-0.5" />
                     <div className="space-y-1">
                       <p className="text-body-sm font-medium text-danger">Invalid Expression</p>
-                      <p className="text-body-sm text-danger">{validation.error}</p>
+                      <p className="text-body-sm text-danger">{inspectedValidation.error}</p>
                     </div>
                   </div>
+                )}
+
+                {inspectedValidation.valid && (
+                  <UpcomingRuns expression={inspected} clock={clock} onClockChange={setClock} />
                 )}
               </CardContent>
             </Card>

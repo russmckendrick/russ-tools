@@ -1,9 +1,11 @@
 /**
  * JWT Decoder/Validator — ported (Phase 3).
  *
- * The island is the tool itself. Decode is jwt-decode, verification is
- * jose, both entirely in the browser; nothing persists and nothing is
- * sent anywhere.
+ * The island is the tool itself. Decode and verification are jose, both
+ * entirely in the browser; nothing persists and the token is never sent
+ * anywhere. One thing reaches the network, and only on a button press:
+ * two GETs for the issuer's public keys (`lib/issuer.js`), neither of
+ * which carries the token.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /jwt
@@ -18,9 +20,10 @@ export default {
   shortDescription:
     'Decode and validate tokens without them leaving the tab.',
   description:
-    'Decode JWT tokens completely client-side without sending to ' +
-    'external services. Validate signatures, expiration, claims and ' +
-    'analyze token security for API debugging and auth troubleshooting.',
+    'Decode JWT tokens completely client-side without sending them to ' +
+    'external services. Verify signatures against a pasted key or, on ' +
+    'request, the issuer\'s published keys (JWKS). Check expiration and ' +
+    'claims for API debugging and auth troubleshooting.',
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'security',
@@ -40,9 +43,10 @@ export default {
   // Concrete capabilities, rendered into the page's schema.org
   // `featureList`. Migrated off toolsConfig.json, which is retiring.
   features: [
-    '100% client-side processing',
-    'No data sent to servers',
+    'Decoding and verification in the browser',
+    'Tokens are never sent anywhere',
     'JWT signature validation',
+    'Issuer key lookup (OpenID discovery and JWKS), on request only',
     'Claims analysis',
     'Expiration checking',
     'Token security analysis',

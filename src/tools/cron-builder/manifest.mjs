@@ -1,9 +1,9 @@
 /**
  * CRON Expression Builder — ported (Phase 3).
  *
- * The island is the tool itself. Stateless: nothing persists, nothing is
- * fetched, and the parser/translator live inline until something else
- * needs them.
+ * The island is the tool itself. Stateless: nothing persists and nothing is
+ * fetched. The validator is `lib/cron.js`, the run-time calculator
+ * `lib/schedule.js`; the translator is still inline in the island.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
  *   /cron
@@ -41,6 +41,7 @@ export default {
     'Visual cron builder',
     'Expression validation',
     'Human-readable descriptions',
+    'Next five run times in local time and UTC',
     'Common schedule presets',
     'Real-time preview',
     'Copy-paste ready output',

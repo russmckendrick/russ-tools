@@ -409,3 +409,67 @@ volumes = ["postgres_data:/var/lib/postgresql/data"]
 driver = "local"`
   }
 };
+
+export const CSV_SAMPLES = {
+  staff: {
+    name: "Staff List",
+    description: "A header row and rows, with quoted fields",
+    data: `id,name,role,email,salary,remote,start_date
+EMP001,Sarah Chen,Senior Developer,sarah.chen@techcorp.com,95000,true,2021-03-15
+EMP002,Marcus Rodriguez,DevOps Engineer,marcus.r@techcorp.com,88000,false,2020-11-08
+EMP003,"O'Neill, Priya","Engineering Manager, Platform",priya.oneill@techcorp.com,121000,true,2019-06-01
+EMP004,Tom Baker,"Writer of ""the docs""",tom.baker@techcorp.com,,true,2023-01-09`
+  },
+
+  inventory: {
+    name: "Inventory",
+    description: "Numbers, booleans and a multi-line note",
+    data: `sku,name,price,in_stock,quantity,note
+"0042",USB-C Cable,9.99,true,340,
+"0107",Mechanical Keyboard,129.5,true,18,"Ships in 2 boxes:
+keyboard and keycaps"
+"0311",Monitor Arm,74,false,0,Back in stock in March`
+  }
+};
+
+export const XML_SAMPLES = {
+  catalogue: {
+    name: "Book Catalogue",
+    description: "Attributes, repeated elements and text",
+    data: `<?xml version="1.0" encoding="UTF-8"?>
+<catalogue version="2" updated="2026-11-14">
+  <book id="b1" available="true">
+    <title>On the Analytical Engine</title>
+    <author>Ada Lovelace</author>
+    <price currency="GBP">12.5</price>
+    <tag>mathematics</tag>
+    <tag>history</tag>
+  </book>
+  <book id="b2" available="false">
+    <title>Notes &amp; Sketches</title>
+    <author>Charles Babbage</author>
+    <price currency="EUR">9</price>
+    <tag>engineering</tag>
+    <tag>letters</tag>
+  </book>
+</catalogue>`
+  },
+
+  rows: {
+    name: "Table of Rows",
+    description: "The shape CSV converts to and from",
+    data: `<?xml version="1.0" encoding="UTF-8"?>
+<rows>
+  <row>
+    <id>1</id>
+    <name>Ada</name>
+    <active>true</active>
+  </row>
+  <row>
+    <id>2</id>
+    <name>Grace</name>
+    <active>false</active>
+  </row>
+</rows>`
+  }
+};
