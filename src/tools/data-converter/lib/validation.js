@@ -5,10 +5,12 @@ import parseJson from 'json-parse-even-better-errors';
 import yaml from 'js-yaml';
 import SourceMap from 'js-yaml-source-map';
 import * as TOML from '@ltd/j-toml';
+import { looksLikeCsv, parseCsv, resolveDelimiter } from './csv.js';
+import { looksLikeXml, parseXml } from './xml.js';
 
 /**
  * Enhanced validation utility that provides detailed error messages
- * with line numbers and suggestions for JSON, YAML, and TOML formats
+ * with line numbers and suggestions for JSON, YAML, TOML, CSV and XML
  */
 
 // Initialize AJV with better error reporting and format validation
@@ -255,9 +257,84 @@ export function validateTOML(input) {
 }
 
 /**
+ * Parse and validate CSV: a header row and rows become a list of objects.
+ */
+export function validateCSV(input, { csvDelimiter = 'auto', inferTypes = true } = {}) {
+  try {
+    const delimiter = resolveDelimiter(csvDelimiter, input);
+    return { success: true, data: parseCsv(input, { delimiter, inferTypes }), errors: [] };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      errors: [
+        new ValidationError(`CSV Parse Error: ${error.message}`, error.line ?? null, null, [
+          'Check that every row has the same number of fields as the header row',
+          'Wrap a field in double quotes if it contains the delimiter, a quote or a line break',
+          'If the file uses semicolons, tabs or pipes, set the CSV delimiter in Settings',
+        ]),
+      ],
+    };
+  }
+}
+
+/**
+ * Parse and validate XML with the browser's own parser.
+ */
+export function validateXML(input, { inferTypes = true } = {}) {
+  try {
+    return { success: true, data: parseXml(input, { inferTypes }), errors: [] };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      errors: [
+        new ValidationError(`XML Parse Error: ${error.message}`, error.line ?? null, error.column ?? null, [
+          'Check that every opening tag has a matching closing tag',
+          'An XML document has exactly one root element',
+          'Attribute values need quotes, and & and < in text are written &amp; and &lt;',
+        ]),
+      ],
+    };
+  }
+}
+
+const PARSERS = {
+  json: validateJSON,
+  yaml: validateYAML,
+  toml: validateTOML,
+  csv: validateCSV,
+  xml: validateXML,
+};
+
+/**
+ * Parse input as one named format.
+ */
+export function validateAs(format, input, options = {}) {
+  const parser = PARSERS[format];
+  if (!parser) return validateWithDetection(input, options);
+  const result = parser(input, options);
+  return result.success ? { ...result, detectedFormat: format } : result;
+}
+
+/**
+ * Parse input as the format the user chose, falling back to detection when
+ * it does not parse as that. If nothing parses, the chosen format's errors
+ * are the ones worth showing.
+ */
+export function validateWithPreference(format, input, options = {}) {
+  if (!PARSERS[format]) return validateWithDetection(input, options);
+  const chosen = validateAs(format, input, options);
+  if (chosen.success) return chosen;
+  const detected = validateWithDetection(input, options);
+  if (detected.success) return detected;
+  return { ...chosen, detectedFormat: null };
+}
+
+/**
  * Auto-detect format and validate with enhanced error reporting
  */
-export function validateWithDetection(input) {
+export function validateWithDetection(input, options = {}) {
   if (!input.trim()) {
     return {
       success: false,
@@ -272,6 +349,25 @@ export function validateWithDetection(input) {
   const jsonResult = validateJSON(input);
   if (jsonResult.success) {
     return { ...jsonResult, detectedFormat: 'json' };
+  }
+
+  // Markup can only be XML. YAML would accept it as one long string, so a
+  // document that looks like XML and is not well formed reports XML errors.
+  if (looksLikeXml(trimmedInput)) {
+    const xmlResult = validateXML(input, options);
+    if (xmlResult.success) {
+      return { ...xmlResult, detectedFormat: 'xml' };
+    }
+    return {
+      success: false,
+      data: null,
+      errors: xmlResult.errors.map((e) => {
+        const newError = new ValidationError(e.message, e.line, e.column, e.suggestions);
+        newError.format = 'XML';
+        return newError;
+      }),
+      detectedFormat: null,
+    };
   }
   
   // Check for TOML patterns before YAML (since YAML is more permissive)
@@ -292,6 +388,15 @@ export function validateWithDetection(input) {
     }
   }
   
+  // CSV before YAML, which reads any unquoted text as a string and would
+  // claim it. Only a consistent table with a plausible header row counts.
+  if (looksLikeCsv(input, resolveDelimiter(options.csvDelimiter, input))) {
+    const csvResult = validateCSV(input, options);
+    if (csvResult.success) {
+      return { ...csvResult, detectedFormat: 'csv' };
+    }
+  }
+
   // Try YAML
   const yamlResult = validateYAML(input);
   if (yamlResult.success) {

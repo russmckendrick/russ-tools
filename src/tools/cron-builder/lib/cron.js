@@ -3,8 +3,9 @@
  * be tested and so the homepage's paste dispatcher can ask "is this a cron
  * expression?" without importing a React island.
  *
- * Behaviour is unchanged from the island's private copy — including its
- * quirks, which are pinned by `cron.test.js` rather than fixed here:
+ * Behaviour is unchanged from the island's private copy, apart from month and
+ * weekday names (`JAN`-`DEC`, `SUN`-`SAT`), which are accepted since
+ * 2026-11-14. Its quirks are pinned by `cron.test.js` rather than fixed here:
  * `parseInt` accepts a trailing tail (`5x` reads as 5), a step's base is only
  * bounds-checked and not its own range, and `L` is honoured for day-of-month
  * only. Changing any of that is a behaviour change and belongs in its own PR
@@ -34,13 +35,34 @@ const validateRange = (value, min, max) => {
   return !isNaN(num) && num >= min && num <= max;
 };
 
+const MONTH_NAMES = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const DAY_NAMES = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+const replaceNames = (field, names, offset) =>
+  field.replace(/[a-z]+/gi, (word) => {
+    const index = names.indexOf(word.toLowerCase());
+    return index === -1 ? word : String(index + offset);
+  });
+
+/**
+ * @param {string} cronString
+ * @returns {string}
+ */
+export function normaliseCronNames(cronString) {
+  const parts = cronString.trim().split(/\s+/);
+  if (parts.length !== 5) return cronString;
+  parts[3] = replaceNames(parts[3], MONTH_NAMES, 1);
+  parts[4] = replaceNames(parts[4], DAY_NAMES, 0);
+  return parts.join(' ');
+}
+
 /**
  * @param {string} cronString
  * @returns {{ valid: boolean, error?: string }}
  */
 export function validateCronExpression(cronString) {
   try {
-    const parts = cronString.trim().split(/\s+/);
+    const parts = normaliseCronNames(cronString).trim().split(/\s+/);
     if (parts.length !== 5) {
       return { valid: false, error: 'CRON expression must have exactly 5 fields' };
     }
@@ -57,10 +79,10 @@ export function validateCronExpression(cronString) {
       return { valid: false, error: 'Invalid day of month value (1-31 or L)' };
     }
     if (!validateRange(month, 1, 12)) {
-      return { valid: false, error: 'Invalid month value (1-12)' };
+      return { valid: false, error: 'Invalid month value (1-12 or JAN-DEC)' };
     }
     if (!validateRange(dayOfWeek, 0, 7)) {
-      return { valid: false, error: 'Invalid day of week value (0-7)' };
+      return { valid: false, error: 'Invalid day of week value (0-7 or SUN-SAT)' };
     }
 
     return { valid: true };

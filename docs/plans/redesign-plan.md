@@ -3305,3 +3305,77 @@ Noticed and not fixed: the paste panel offers a pasted private key to the
 Base64 encoder like any other text, which puts it in a URL path; and the
 panel's placeholder was already wider than the field at 390px before "PEM"
 was added to it.
+
+### 2026-11-14 — Four gaps filled inside existing tools
+
+A review listed things the existing tools could not do. Four of them lived
+inside tools that already exist, and each landed as one commit on
+`feat/tool-gaps` with its logic in the tool's `lib/`, tests, a help-page
+update and a `BEHAVIOR_CHANGES.md` entry. No package was added.
+
+**CRON: upcoming run times.** `lib/schedule.js` is a pure function of
+(expression, from-date): it expands each field to the set of values it
+allows, then walks month, day, hour and minute in turn, in UTC, and stops
+five years out. `0 0 30 2 *` therefore answers "never runs" at once
+instead of scanning 2.6 million minutes. Both tabs show the next
+five runs in local time with UTC beside each and the wait until the first.
+Two decisions were not in the brief. The schedule is read against UTC by
+default with a "This device" switch, because cron has no timezone and a list
+of times is only true for one clock. And "restricted" follows Vixie cron: a
+field that starts with `*` (so `*/2`) is not restricted, which changed what
+`CronFlow` draws for that case so the diagram and the list cannot disagree.
+The validator now reads `JAN`-`DEC` and `SUN`-`SAT`, and the Validator tab
+checks what is typed rather than the builder's expression.
+
+**Password Generator: passphrases.** The island had no `lib/`; generation
+and the strength maths moved out verbatim into `random.js`, `password.js`
+and `strength.js` and were pinned before anything was added. Passphrase mode
+draws from the EFF large wordlist with the same rejection-sampled
+`crypto.getRandomValues` helper, and its entropy is `words * log2(7776)`
+(plus `log2(10)` for an appended digit), never the character-pool sum. The
+list is committed byte for byte (SHA-256 in `public/licenses/`), loaded by
+dynamic import, and checked on load to be 7,776 different words. A test also
+proves no word begins another, so "no separator" loses nothing. The licence
+needed one correction to the brief: the list was published under CC BY 3.0
+US, but EFF's copyright page today says CC BY 4.0 International. The notice
+records both; either way it is attribution, which is given. Moving the code
+surfaced a real bug: the guaranteed character of each class ignored the
+"exclude similar" and "exclude ambiguous" settings. It was pinned as
+KNOWN-BUG in the feature commit and fixed in the next one on the same branch
+(the guaranteed characters are drawn from the filtered classes, and a class
+that filtering empties has its guarantee skipped).
+
+**JWT: the issuer's published keys.** `lib/issuer.js` does OpenID discovery
+and `lib/signature.js` verifies. The tool's promise is that tokens never
+leave the tab, so the feature was built around what could be said truthfully
+before the button is pressed: two GETs, no credentials, no referrer,
+redirects refused, the token in neither. One thing could not be promised in
+advance, that both requests go to the issuer's own host, because `jwks_uri`
+is the issuer's choice (Google's is on `www.googleapis.com`). So the second
+request is made automatically only when the host matches; otherwise the tool
+stops, names the host and asks. Verification switched from `jwtVerify` to
+`compactVerify` so an expired token with a good signature is "verified"
+beside "expired", and the diagram's Signature step now has three honest
+states. The old code reported an unsigned token as verified.
+
+**Data Converter: CSV and XML.** CSV is a small state-machine parser in the
+tool (the markdown table tool's parser splits on newlines first and is
+pinned as it is, so nothing was lifted into `core/`). Quoting carries the
+types: text that looks like a number is written quoted and a quoted cell is
+never inferred, which makes JSON to CSV to JSON exact. XML uses `DOMParser`
+and `XMLSerializer` with the `@name` / `#text` / repeated-siblings mapping.
+One step past the brief: a top-level list is written as `<rows><row>`
+rather than refused, because otherwise CSV could never become XML. The
+BigInt gotcha turned out to be a live crash, not a caution: any TOML document
+with a whole number failed to convert to JSON or YAML. `toPlainData` fixes
+that for all five outputs.
+
+Verified: `pnpm test` 1447 passing (was 1080), `pnpm lint` 0 errors and the
+same 11 warnings, `pnpm build`, `PW_PORT=8818 pnpm test:e2e` 90 passing.
+Each tool was driven in a browser at 390px and 1440px in both themes; the
+JWT fetch was exercised against a live issuer (discovery, the cross-host
+question, the key set) and against a refusal.
+
+Left for whoever merges the parallel branches: the test and tool counts in
+`AGENTS.md` (other branches add tests and tools too, so they want counting
+once).
