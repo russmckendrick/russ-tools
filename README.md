@@ -5,8 +5,8 @@ work with networks, cloud platforms and certificates. Most processing stays in y
 browser, with no accounts, analytics or uploads.
 
 Network lookups necessarily send the queried name or address to the provider named in
-that tool: Google or Cloudflare DNS-over-HTTPS, RIPEstat for routing data, and Cloudflare
-Worker proxies for WHOIS, SSL analysis and Microsoft tenant discovery. Each tool's linked
+that tool: Google or Cloudflare DNS-over-HTTPS, RIPEstat for routing data, and the site's
+own same-origin API for WHOIS, SSL analysis and Microsoft tenant discovery. Each tool's linked
 documentation states its boundary explicitly.
 
 ## Available tools
@@ -62,7 +62,7 @@ clears it, per tool or all at once.
 - **[Astro](https://astro.build)** — static shell; every page is prerendered HTML
 - **React 19** — one island per tool, hydrated only on pages that need it
 - **Tailwind CSS 4** with Radix primitives — the shared component layer in `src/components/ui/`
-- **Cloudflare Pages** for hosting, **Cloudflare Workers** for three proxied lookups
+- **Cloudflare Pages** for hosting, with **Pages Functions** at `/api/*` for three proxied lookups
 - **Vitest** and **Playwright** for unit and deep-link coverage
 
 Design is governed by [`DESIGN.md`](DESIGN.md) in the repo root — colour, type, layout,

@@ -94,6 +94,87 @@ Two smaller notes recorded rather than hidden:
   behaviour-preserving. The underlying divergence is still there for anyone
   who types two spaces into the manual box.
 
+### The three lookups moved to a same-origin API
+
+| | |
+|---|---|
+| **Where** | `functions/api/ssl.js`, `functions/api/whois.js`, `functions/api/tenant.js`, `functions-lib/http.js` (all new, ported from `cloudflare-worker/`); `src/utils/api/apiConfig.json`, `src/core/api.js` (`buildUrl`); `astro.config.mjs` (dev proxy); `public/.well-known/api-catalog`, `scripts/generate-llms.mjs`; `playwright.config.js`, `e2e/deeplinks.spec.js` |
+| **Pinned by** | `src/test/functions/guard.test.js`, `whois.test.js`, `tenant.test.js`, `ssl.test.js`, `e2e/api.spec.js` (all new); `src/tools/agent-discovery.test.js`, `src/core/api.test.js`, `src/test/msw/handlers.test.js` (updated) |
+| **Landed** | owner decision, 2026-11-14 |
+
+WHOIS, SSL and tenant lookups are now Cloudflare Pages Functions at
+`/api/whois`, `/api/ssl` and `/api/tenant`, called same-origin, instead of
+three workers on three hostnames. **Query parameters and JSON bodies did not
+change** (frozen contract #5): the new suites rebuild each upstream's data
+from the responses captured from the production workers, run the handler, and
+require the captured response back — for a completed and an in-progress SSL
+assessment, the basic-check fallback, a domain and an IP WHOIS, and two
+tenants. Today's live responses were compared key-for-key with the 2026-07-19
+fixtures first; nothing had drifted. No worker fixture was edited.
+
+What did change, all of it outside the body of a successful lookup:
+
+- **Address.** `GET https://<name>.russ.tools/?…` became `GET /api/<name>?…`.
+  The old hostnames still answer; nothing in the site calls them.
+- **Access model.** The workers matched `Origin` (or a `Referer` prefix)
+  against an `ALLOWED_ORIGINS` secret and sent CORS headers. The functions
+  send no CORS headers at all, refuse a `Sec-Fetch-Site` other than
+  `same-origin` and an `Origin` other than the request's own, and need no
+  list. A refusal is 403 with one JSON message for all three (the workers'
+  wording and CORS headers on a 403 differed per worker). This is not
+  authentication: a non-browser client can forge those headers, and the docs
+  say so.
+- **Methods.** `OPTIONS` was 200 with CORS headers and is now 405 (403 when
+  cross-origin). Other non-GET methods were 405 with a plain-text body under a
+  JSON content type and are now 405 `{"error":"Method not allowed"}` with
+  `Allow: GET`.
+- **No `Configuration error` 500.** It existed only for a missing
+  `ALLOWED_ORIGINS`.
+- **SSL: an in-progress response is `Cache-Control: no-store`.** The worker
+  sent `public, max-age=300` on every 200, including the ones whose `pollInfo`
+  tells the client to ask again in 5–30 seconds — at the same URL, which a
+  browser may then answer from its own cache for five minutes. Finished
+  results keep the five-minute header.
+- **SSL: the domain is URL-encoded into the SSL Labs and HackerTarget
+  queries.** It was interpolated raw, so `domain=example.com%26publish%3Don`
+  added a parameter to the upstream call. A hostname encodes to itself;
+  pinned in `ssl.test.js`.
+- **SSL: the registered email is sent to SSL Labs.** `cloudflare-worker/ssl.js`
+  reads `SSL_LABS_EMAIL` and never transmits it, and the v4 API answers
+  `analyze` without an `email` header with 400. A faithful port therefore
+  never reached SSL Labs at all. The functions send `email` on `analyze` and
+  `getEndpointData` (not `info`). This diverges from the checked-in worker
+  and matches the *deployed* one, which returns SSL Labs results and so must
+  already send it. Pinned in `ssl.test.js`.
+- **SSL: a fallback says why, in two cases.** When the `SSL_LABS_*` secrets
+  are missing, or SSL Labs refuses the email (441, or 400 naming the `email`
+  field), the HackerTarget or basic-check result gains a top-level
+  `statusMessage` — a key the SSL Labs shape already has and the client
+  already shows. Before, both cases were indistinguishable from a real
+  grade-`T` result. Every other fallback is unchanged, which the
+  `ssl.error.json` replay still pins.
+- **Tenant: a refused Graph token is logged with its cause.** The worker
+  logged the HTTP status alone. The function adds Microsoft's OAuth `error`
+  and `error_codes` to that one line and nothing else — never
+  `error_description`, a `GRAPH_*` value or the request body — and the
+  response body is unchanged. Pinned in `tenant.test.js`.
+- **Logging.** The workers logged the env keys, the SSL Labs email, whole
+  upstream responses and every query. The functions log failures only.
+- **`buildUrl` accepts a root-relative base**, resolving it against the page
+  origin (and leaving it relative where there is no page). Absolute bases are
+  untouched.
+- **The deep-link matrix stubs `/api/**`.** Those lookups used to fail closed
+  against a worker that did not list the test origin; against a local or
+  deployed same-origin API they would be four real third-party queries per
+  run.
+
+Carried over on purpose, because fixing them changes a response body: the
+`apiSource` strings still read "…via Cloudflare Worker"; the tenant lookup's
+three `openid_configuration` URLs (underscore) still never match, so
+`openIdConfig` is still absent; the SSL 500 body still includes `stack`; and
+the SSL scheme strip is still case-sensitive. `cloudflare-worker/` is
+untouched and `buzzwords.js` was out of scope.
+
 ### The site grew an AI-agent surface
 
 | | |

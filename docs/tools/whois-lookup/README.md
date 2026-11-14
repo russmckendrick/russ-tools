@@ -28,7 +28,7 @@ Look up public registration data for a domain or allocation and geolocation data
 
 ## Privacy and saved data
 
-The query is sent to the configured Cloudflare Worker and its upstream lookup sources. The most recent 100 queries and a 30-minute result cache are stored locally in this browser. Exported JSON is saved wherever your browser downloads files and is then outside the app's storage controls.
+The query is sent to russ.tools' own lookup API and on to its upstream lookup sources. The most recent 100 queries and a 30-minute result cache are stored locally in this browser. Exported JSON is saved wherever your browser downloads files and is then outside the app's storage controls.
 
 ## Troubleshooting
 

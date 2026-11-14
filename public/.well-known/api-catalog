@@ -18,32 +18,32 @@
       ]
     },
     {
-      "anchor": "https://ssl.russ.tools/",
+      "anchor": "https://russ.tools/api/ssl",
       "service-doc": [
         {
-          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#ssl-checker--sslrusstools",
+          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#ssl-checker--apissl",
           "type": "text/html",
-          "title": "SSL Certificate Checker API"
+          "title": "SSL Certificate Checker API (same-origin only: answers the russ.tools pages, refuses other callers)"
         }
       ]
     },
     {
-      "anchor": "https://whois.russ.tools/",
+      "anchor": "https://russ.tools/api/whois",
       "service-doc": [
         {
-          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#whois--whoisrusstools",
+          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#whois--apiwhois",
           "type": "text/html",
-          "title": "WHOIS Lookup API"
+          "title": "WHOIS Lookup API (same-origin only: answers the russ.tools pages, refuses other callers)"
         }
       ]
     },
     {
-      "anchor": "https://tenant.russ.tools/",
+      "anchor": "https://russ.tools/api/tenant",
       "service-doc": [
         {
-          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#microsoft-tenant-lookup--tenantrusstools",
+          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#microsoft-tenant-lookup--apitenant",
           "type": "text/html",
-          "title": "Microsoft Tenant Lookup API"
+          "title": "Microsoft Tenant Lookup API (same-origin only: answers the russ.tools pages, refuses other callers)"
         }
       ]
     }

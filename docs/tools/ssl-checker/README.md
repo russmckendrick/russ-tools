@@ -28,7 +28,7 @@ Request an SSL Labs assessment for a hostname and inspect its certificate, endpo
 
 ## Privacy and saved data
 
-The hostname is sent to the configured analysis service through the Cloudflare Worker and may also be probed directly by the browser only when full analysis is unavailable. The last 50 checks and complete results cached for five minutes are stored locally in this browser. Partial connectivity-only results are not cached.
+The hostname is sent to russ.tools' own lookup API, which passes it to the analysis service, and may also be probed directly by the browser only when full analysis is unavailable. The last 50 checks and complete results cached for five minutes are stored locally in this browser. Partial connectivity-only results are not cached.
 
 ## Troubleshooting
 

@@ -14,9 +14,15 @@ import { defineConfig, devices } from '@playwright/test';
  *       PW_BASE_URL=https://russ-tools-preview.pages.dev pnpm test:e2e
  *   - Local Cloudflare runtime (pre-flight; same engine wrangler ships):
  *       pnpm build && pnpm test:e2e
- *     which auto-starts `wrangler pages dev dist` on :8788.
+ *     which auto-starts `wrangler pages dev dist` on :8788. That serves the
+ *     Pages Functions in functions/ too, so e2e/api.spec.js runs against the
+ *     same build. `PW_PORT` moves it when 8788 is taken — an existing server
+ *     on the port is reused, so a stale one would be tested instead of this
+ *     build.
  */
-const baseURL = process.env.PW_BASE_URL ?? 'http://127.0.0.1:8788';
+const port = process.env.PW_PORT ?? '8788';
+const local = `http://127.0.0.1:${port}`;
+const baseURL = process.env.PW_BASE_URL ?? local;
 
 export default defineConfig({
   testDir: './e2e',
@@ -33,9 +39,8 @@ export default defineConfig({
   webServer: process.env.PW_BASE_URL
     ? undefined
     : {
-        command:
-          'pnpm dlx wrangler pages dev dist --port 8788 --compatibility-date 2025-05-05',
-        url: 'http://127.0.0.1:8788',
+        command: `pnpm dlx wrangler pages dev dist --port ${port} --compatibility-date 2025-05-05`,
+        url: local,
         reuseExistingServer: true,
         timeout: 120_000,
         env: { WRANGLER_SEND_METRICS: 'false' },

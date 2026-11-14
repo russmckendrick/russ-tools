@@ -8,10 +8,12 @@ import { test, expect } from '@playwright/test';
  * token, real domains, an IPv6 CIDR — because placeholder-shaped values are
  * exactly what `_redirects` patterns and `useParams` decoding never choke on.
  *
- * Worker-backed lookups (ssl/whois/tenant) fire on mount but are NOT
- * asserted: the matrix proves routing and param application, which is
- * origin-independent. Live lookups depend on the target origin being in each
- * worker's ALLOWED_ORIGINS.
+ * The lookups behind ssl/whois/tenant fire on mount but are NOT asserted:
+ * the matrix proves routing and param application. They are the site's own
+ * `/api/*` now, which both the local runtime and a deployed target would
+ * really answer — so these tests stub it, or every run would send four
+ * queries to SSL Labs, a registry and Microsoft. `e2e/api.spec.js` is where
+ * the API itself is exercised.
  */
 
 // Minted for this suite: HS256, secret "your-256-bit-secret",
@@ -25,6 +27,15 @@ const JWT =
 // frozen contract #2).
 const SHARE_CONFIG =
   'eJyrVkpTsjLRUUrOTClSslIyNNADQ31DMyUdpeKCnMySYiWraDRxBM9cKbYWACVDD4o';
+
+const stubLookupApi = (page) =>
+  page.route('**/api/**', (route) =>
+    route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'stubbed by the deep-link matrix' }),
+    })
+  );
 
 /** Navigate and prove the `_redirects` 200-rewrite: no redirect happened —
  * the URL in the bar is still the deep link — and the prerendered page under
@@ -331,21 +342,25 @@ test.describe('the retired path', () => {
 
 test.describe('param deep links — rewrite + island application', () => {
   test('/ssl-checker/:domain', async ({ page }) => {
+    await stubLookupApi(page);
     await expectRewrite(page, '/ssl-checker/example.com', 'SSL Certificate Checker');
     await expect(page.locator('#domain')).toHaveValue('example.com');
   });
 
   test('/whois-lookup/:query', async ({ page }) => {
+    await stubLookupApi(page);
     await expectRewrite(page, '/whois-lookup/example.com', 'WHOIS Lookup Tool');
     await expect(page.locator('#query')).toHaveValue('example.com');
   });
 
   test('/tenant-lookup/:domain', async ({ page }) => {
+    await stubLookupApi(page);
     await expectRewrite(page, '/tenant-lookup/microsoft.com', 'Microsoft Tenant Lookup');
     await expect(page.locator('#domain')).toHaveValue('microsoft.com');
   });
 
   test('/microsoft-portals/:domain', async ({ page }) => {
+    await stubLookupApi(page);
     await expectRewrite(page, '/microsoft-portals/contoso.com', 'Microsoft Portals (GDAP)');
     await expect(
       page.getByPlaceholder('Enter domain (e.g., contoso.com) or email address...')

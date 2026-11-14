@@ -29,12 +29,12 @@ Discover the public Microsoft tenant metadata, authentication endpoints, DNS con
 
 ## Privacy and saved data
 
-The domain is sent through the configured Cloudflare Worker to public Microsoft and DNS discovery endpoints. Results are not automatically retained, but selecting Save stores the complete lookup locally in this browser. Remove individual saved entries or use Clear All when they are no longer needed.
+The domain is sent through russ.tools' own lookup API to public Microsoft and DNS discovery endpoints. Results are not automatically retained, but selecting Save stores the complete lookup locally in this browser. Remove individual saved entries or use Clear All when they are no longer needed.
 
 ## Troubleshooting
 
 - If no tenant is found, verify the spelling and confirm the domain is associated with Microsoft 365 or Entra ID.
-- A network error can come from the browser, the Worker, Microsoft, or DNS; retry after checking connectivity.
+- A network error can come from the browser, the lookup API, Microsoft, or DNS; retry after checking connectivity.
 - Federation and DNS results reflect public configuration and may lag behind recent tenant changes because of upstream caching.
 
 <!-- help:end -->
