@@ -5,7 +5,8 @@
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PastePanel from '../shell/PastePanel.astro';
-import ToolCard from '../shell/ToolCard.astro';
+import ToolRow from '../shell/ToolRow.astro';
+import YourTools from '../shell/YourTools.astro';
 import { TOOLS } from '../tools/registry.mjs';
 import { categoryGroupId, categoryLabel } from '../shell/categories.mjs';
 import SubnetArt from '../shell/SubnetArt.astro';
@@ -108,6 +109,8 @@ const plural = (n) => `${n} ${n === 1 ? 'tool' : 'tools'}`;
     <SubnetArt />
   </div>
 
+  <YourTools />
+
   <!--
     A radio group, not six toggles. The categories are mutually exclusive, so
     `aria-pressed` on six buttons was describing six independent switches; a
@@ -173,7 +176,7 @@ const plural = (n) => `${n} ${n === 1 ? 'tool' : 'tools'}`;
             <span class="rt-section-count" data-total={g.count}>{plural(g.count)}</span>
           </div>
           <div class="rt-section-rows">
-            {g.tools.map((tool, j) => <ToolCard tool={tool} anchor={j === 0 ? g.id : null} travel />)}
+            {g.tools.map((tool, j) => <ToolRow tool={tool} anchor={j === 0 ? g.id : null} />)}
           </div>
         </section>
       ))
@@ -199,6 +202,8 @@ const plural = (n) => `${n} ${n === 1 ? 'tool' : 'tools'}`;
    * tile.
    */
   import { wirePastePanel } from '../lib/pastePanel.js';
+  import { edgeFade } from '../shell/edgeFade.js';
+  import { wireYourTools } from '../shell/yourToolsStrip.js';
   const board = document.getElementById('board');
   const filters = document.getElementById('filters');
   const chips = [...filters.querySelectorAll('.rt-chip')];
@@ -260,6 +265,7 @@ const plural = (n) => `${n} ${n === 1 ? 'tool' : 'tools'}`;
       const matchesCategory = searching || category === 'all' || card.dataset.category === category;
       const hit = matchesName && matchesCategory;
       card.hidden = !hit;
+      card.parentElement.hidden = !hit;
       if (hit) shown.push(card);
     }
 
@@ -418,6 +424,13 @@ const plural = (n) => `${n} ${n === 1 ? 'tool' : 'tools'}`;
 
   find.hidden = false;
   readUrl();
+  edgeFade(filters);
+  wireYourTools({
+    settle,
+    announce: (text) => {
+      status.textContent = text;
+    },
+  });
 
   // No autofocus: stealing focus on a catalogue would hijack the scroll
   // position and pop a keyboard on every phone that opens the site.

@@ -613,6 +613,107 @@ a.rt-kbd[data-first] {
   animation: rt-fade-in var(--duration-fast) var(--ease-signal);
 }
 
+/* --- Your tools ----------------------------------------------------------- */
+
+.rt-mine {
+  padding-block: var(--rt-space-xl);
+  border-bottom: var(--border-hairline) solid var(--color-outline);
+}
+.rt-mine:not([hidden]) ~ .rt-filters {
+  padding-top: var(--rt-space-2xl);
+}
+.rt-mine-scroll {
+  display: grid;
+  gap: var(--rt-space-sm);
+}
+.rt-mine-group {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: var(--rt-space-md);
+}
+.rt-mine-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-data-sm);
+  line-height: 32px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-faint);
+}
+.rt-mine-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rt-space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rt-mine-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rt-space-sm);
+  min-height: 32px;
+  padding: 0 var(--rt-space-md) 0 10px;
+  border: var(--border-hairline) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-signal),
+    border-color var(--duration-fast) var(--ease-signal);
+}
+.rt-mine-link .rt-ico {
+  color: var(--color-primary-text);
+}
+.rt-mine-link:hover {
+  border-color: var(--color-on-surface);
+  background: var(--color-surface-inset);
+}
+.rt-mine-link:focus-visible,
+.rt-mine-clear:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+.rt-mine-clear {
+  font: inherit;
+  font-size: var(--text-body-sm);
+  line-height: 1;
+  height: 32px;
+  padding: 0 var(--rt-space-xs);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-primary-text);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* A row that scrolls sideways fades at whichever edge has more behind it.
+   `edgeFade.js` sets the two attributes; neither is present on a row that
+   fits, so nothing is masked there and a focus ring is never clipped. */
+:is(.rt-mine-scroll, .rt-chips):is([data-more-start], [data-more-end]) {
+  --rt-fade-start: 0px;
+  --rt-fade-end: 0px;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black var(--rt-fade-start),
+    black calc(100% - var(--rt-fade-end)),
+    transparent
+  );
+}
+:is(.rt-mine-scroll, .rt-chips)[data-more-start] {
+  --rt-fade-start: 32px;
+}
+:is(.rt-mine-scroll, .rt-chips)[data-more-end] {
+  --rt-fade-end: 32px;
+}
+
 /* --- The filter row -------------------------------------------------------
    Pills. The selected one inverts to the theme's ink; none of them carries a
    hue. */
@@ -797,7 +898,7 @@ a.rt-kbd[data-first] {
 }
 
 /* --- The refilter travels -------------------------------------------------
-   Each row carries a `view-transition-name` (see `ToolCard.astro`), so when a
+   Each row carries a `view-transition-name` (see `ToolRow.astro`), so when a
    chip rearranges the catalogue the rows that stay slide to their new place
    and the ones that leave fade out where they stood. The root group is
    silenced so the header and band, which did not change, are not dissolved.
@@ -908,6 +1009,72 @@ a.rt-kbd[data-first] {
   transform: none;
 }
 
+/* --- The pin --------------------------------------------------------------
+   The row is a link, so the pin is its sibling inside `.rt-row`, laid over
+   the row's right end. It waits for intent where there is a pointer to show
+   it and is always drawn where there is not; a pinned one is always drawn. */
+
+.rt-row {
+  position: relative;
+  min-width: 0;
+}
+.rt-row .rt-card {
+  padding-right: 50px;
+}
+@media (hover: hover) {
+  .rt-row:has(.rt-pin:hover) .rt-card {
+    background: var(--color-surface-inset);
+  }
+  .rt-pin:hover {
+    color: var(--color-primary-text);
+    border-color: var(--color-outline-strong);
+    background: var(--color-surface);
+  }
+}
+.rt-pin {
+  position: absolute;
+  inset-block: 0;
+  right: var(--rt-space-sm);
+  width: 32px;
+  height: 32px;
+  margin-block: auto;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: var(--border-hairline) solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-on-surface-dim);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-signal),
+    color var(--duration-fast) var(--ease-signal),
+    border-color var(--duration-fast) var(--ease-signal);
+}
+.rt-row:hover .rt-pin,
+.rt-row:focus-within .rt-pin,
+.rt-pin[aria-pressed='true'] {
+  opacity: 1;
+}
+@media (hover: none) {
+  .rt-pin {
+    opacity: 1;
+  }
+}
+.rt-pin:active {
+  transform: translateY(1px);
+}
+.rt-pin:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+.rt-pin[aria-pressed='true'] {
+  color: var(--color-primary-text);
+}
+.rt-pin[aria-pressed='true'] svg {
+  fill: currentColor;
+}
+
 /* --- Tool icon ------------------------------------------------------------
    One glyph, two settings. In a catalogue row it sits on a soft accent tile
    that fills on hover. At the head of a tool page it sits on the bright
@@ -962,6 +1129,38 @@ a.rt-kbd[data-first] {
     flex: none;
     min-height: 44px;
     scroll-snap-align: start;
+  }
+  .rt-mine {
+    padding-block: var(--rt-space-lg);
+  }
+  .rt-mine:not([hidden]) ~ .rt-filters {
+    padding-top: var(--rt-space-md);
+  }
+  .rt-mine-scroll {
+    display: flex;
+    align-items: center;
+    gap: var(--rt-space-xl);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .rt-mine-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .rt-mine-group {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--rt-space-sm);
+  }
+  .rt-mine-list {
+    flex-wrap: nowrap;
+  }
+  .rt-mine-link,
+  .rt-mine-clear {
+    min-height: 44px;
+  }
+  .rt-mine-label {
+    line-height: 1;
   }
   .rt-find {
     flex: 1 0 100%;

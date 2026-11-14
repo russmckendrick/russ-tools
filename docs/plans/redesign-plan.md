@@ -3446,3 +3446,78 @@ everything together the registry holds 28 tools and the frozen list 51 routes,
 `pnpm test` is 1732 and `pnpm test:e2e` is 99. The overlaps were all additive:
 the paste panel keeps the PEM rule and gains the GUID third chip and the
 timestamp rule, and the placeholder now names both PEM and timestamp.
+
+### 2026-11-14 — The index gets a memory
+
+A review of the index noted it knew nothing about the visitor: twenty-eight
+tools, the same order for someone who uses three of them daily as for someone
+arriving cold. It now keeps two lists, in `localStorage` and nowhere else:
+tools the visitor pinned, and tools they recently opened.
+
+**Storage.** `rt:shell:pinned` and `rt:shell:recent`, each a JSON array of tool
+ids. Ids rather than paths, so a retired tool is skipped at draw time instead of
+becoming a dead link, and comes back if the tool does. Recents are stored to
+twelve and shown to six after the pinned ones are taken out: with a cap of six
+on the stored list, someone with six pins would never see a recent at all.
+`src/shell/yourTools.js` holds all of it and is unit-tested as a pure module
+(35 tests). `ToolLayout.astro` records the visit from one small script, so no
+tool knows about it; help pages use `BaseLayout` and so are not counted.
+
+**The strip.** Between the band and the filter row: Pinned, then Recent, each a
+labelled row of small links, with "Clear" ranged right on the Recent row. With
+nothing to show it is `hidden` and takes no room, and the e2e suite measures
+that the filter row still starts 36px under the band.
+
+It is drawn **before first paint**. The links are prerendered into a
+`<template>` and an inline script immediately after the strip's markup clones
+the stored ones into place. That script is not a second implementation:
+`YourTools.astro` stringifies `paintStrip`, `planStrip` and `parseIds` out of
+the tested module, which is why each of the three takes everything it needs as
+an argument. A unit test evaluates the inlined source on its own to hold that
+line. Measured in Chromium, a load with stored tools reports the same
+layout-shift score as a load without, at 1440px and at 390px.
+
+Two things that looked simpler were tried on paper and rejected. Prerendering
+the links as hidden anchors puts a second `a[href="/subnet-calculator"]` ahead
+of the catalogue's, which fails the existing index tests in strict mode; the
+template keeps them out of the document. And nesting the pin inside the row is
+not possible, because the row is the link: `ToolRow.astro` wraps the row and
+the pin as siblings in `.rt-row`, which also takes over the
+`view-transition-name` so the pin travels with its row when a chip refilters.
+`ToolCard`'s `travel` prop went with that; /404 never used it.
+
+**The pin.** One per row, 32px with the 44px `.rt-tap` target, shown on hover or
+focus where there is a pointer, always on touch, and always when pinned. It is
+a real button in the tab order with `aria-pressed`, hidden until the page
+script runs so there is no dead control without JavaScript or without storage.
+Pinning appends, so unpin and pin again is the reorder. Drag to reorder was
+left out.
+
+**Edge fades.** The strip on a phone is one line that scrolls sideways, and it
+fades at whichever edge has more behind it. The filter chips had the same
+scroll and no such cue, so they share it now (`src/shell/edgeFade.js`). The mask
+is applied only while a row actually overflows, because a mask clips the focus
+ring of anything inside it.
+
+**/delete.** Lists the pair as "Pinned and recent tools", clears it alone or
+with everything else. Logged in `BEHAVIOR_CHANGES.md`, including that "Clear all
+tool data" now reaches these two keys.
+
+**Checked.** `pnpm test` 1769 (was 1732), `pnpm lint` 0 errors and the same 11
+warnings, `pnpm build && pnpm test:e2e` 112 (was 99; the thirteen new cases
+cover recording, pinning, the keyboard, unpinning, clearing, the untouched
+empty state, a retired id, damaged storage, the filters, the pre-paint draw
+with the page script blocked, the phone scroll and /delete). Driven in Chromium
+at 1440px and 390px (touch), light and dark, with and without stored data, and
+with `prefers-reduced-motion`, where pinning starts no view transition.
+
+**Not checked, and known costs.** Safari and Firefox were not run; the mask and
+`:has()` rules are standard but unverified there. A back-forward cache restore
+repaints the strip on `pageshow`, which no test exercises. The index HTML grew
+from about 61 kB to 96 kB (14.3 kB to 17.5 kB gzipped): the template of
+twenty-eight links and twenty-eight pin buttons. Keyboard users get one more
+tab stop per row.
+
+**Noticed, not touched.** The phone index already reports a layout shift of
+about 0.23 on load with nothing stored, from the shell below the band; and the
+index's meta description still says "Twenty-four small utilities".

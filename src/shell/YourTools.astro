@@ -1,0 +1,32 @@
+---
+import ToolIcon from './ToolIcon.astro';
+import { TOOLS } from '../tools/registry.mjs';
+import { stripBootSource } from './yourTools.js';
+---
+
+<nav class="rt-mine" id="rt-mine" aria-label="Your tools" hidden>
+  <div class="rt-mine-scroll">
+    <div class="rt-mine-group" data-group="pinned" role="group" aria-labelledby="rt-mine-pinned" hidden>
+      <span class="rt-mine-label" id="rt-mine-pinned">Pinned</span>
+      <ul class="rt-mine-list"></ul>
+    </div>
+    <div class="rt-mine-group" data-group="recent" role="group" aria-labelledby="rt-mine-recent" hidden>
+      <span class="rt-mine-label" id="rt-mine-recent">Recent</span>
+      <ul class="rt-mine-list"></ul>
+      <button class="rt-mine-clear rt-tap" id="rt-mine-clear" type="button" aria-label="Clear recent tools">Clear</button>
+    </div>
+  </div>
+  <template>
+    {
+      TOOLS.map((tool) => (
+        <li data-tool={tool.id}>
+          <a class="rt-mine-link" href={tool.path}>
+            <ToolIcon icon={tool.icon} size={16} />
+            {tool.title}
+          </a>
+        </li>
+      ))
+    }
+  </template>
+</nav>
+<script is:inline set:html={stripBootSource('rt-mine')} />
