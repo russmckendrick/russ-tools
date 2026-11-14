@@ -226,7 +226,8 @@ The design surface. Radix primitives styled against `DESIGN.md`, and the one pla
 reaches every tool at once. Pressable controls use the primary accent; category colour is
 reserved for the icon tile, badges, borders and small labels. `ToolLayout` sets `--cat`
 and `--cat-fill` once from the manifest, so a tool never names a colour. There is one
-`<Toaster/>`, one help link (`ToolHelp.jsx`) to the prerendered guide, and one React tool
+`<Toaster/>`, one help link to the prerendered guide (prerendered on the band by
+`ToolLayout.astro`, beside any action a tool portals in through `ui/tool-actions.jsx`), and one React tool
 icon renderer (`tool-icon.jsx`) sharing `src/shell/icons.mjs` with the Astro
 `ToolIcon.astro`.
 

@@ -263,7 +263,7 @@ const BuzzwordIpsumTool = () => {
           {/* Options Column */}
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <h3 className="text-title-sm">Options</h3>
                 <Button variant="outline" size="sm" onClick={() => setApiModalOpen(true)}>
                   <Code className="w-4 h-4 mr-2" />
@@ -339,7 +339,7 @@ const BuzzwordIpsumTool = () => {
             {generatedText ? (
               <Card>
                 <CardHeader>
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                     <h3 className="text-title-sm">Generated Text</h3>
                     <div className="flex gap-2">
                       <Button 

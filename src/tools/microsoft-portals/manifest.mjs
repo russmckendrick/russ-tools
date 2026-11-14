@@ -15,7 +15,7 @@ export default {
 
   // Rendered on the card, so a tool can never ship as a bare icon and a name.
   shortDescription:
-    'Deep links into 31 Microsoft portals, scoped to a tenant.',
+    'Deep links into 91 Microsoft portals, scoped to a tenant.',
   description:
     'Generate deep links to various Microsoft portals based on ' +
     'domain/tenant information. Discover tenant details and create ' +
@@ -26,7 +26,7 @@ export default {
   icon: 'layout-grid',
   badges: [
     'GDAP',
-    '31 portals',
+    '91 portals',
   ],
 
   // Deep-link segments. The generated _redirects turns each into a 200

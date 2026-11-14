@@ -98,9 +98,22 @@ const schema = [
        category hue is set once on the body wrapper below it: `--cat` is the
        text hue, `--cat-fill` the solid badge block. -->
   <div slot="band" class="rt-tool-head">
-      <nav class="rt-crumb rt-rise" aria-label="Breadcrumb">
-        <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a>
-      </nav>
+      <div class="rt-tool-top rt-rise">
+        <nav class="rt-crumb" aria-label="Breadcrumb">
+          <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a>
+        </nav>
+        <div class="rt-tool-acts" data-tool-actions>
+          <span class="rt-tool-acts-slot" data-tool-actions-slot></span>
+          <a class="rt-tool-help" href={`${tool.path}/help`}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <path d="M12 17h.01" />
+            </svg>
+            Help
+          </a>
+        </div>
+      </div>
 
       <div class="rt-tool-id rt-rise" style="--rt-i: 1">
         <ToolIcon icon={tool.icon} size={30} />

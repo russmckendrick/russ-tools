@@ -250,7 +250,7 @@ const JWTTool = () => {
         {/* Input Section */}
         <Card className="mb-6">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
               <CardTitle>JWT Token Input</CardTitle>
               <div className="flex items-center gap-2">
                 <Button
@@ -333,7 +333,7 @@ const JWTTool = () => {
         {/* Signature Validation Section */}
         <Card className="mb-6">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
               <CardTitle>Signature Validation (Optional)</CardTitle>
               <div className="flex items-center space-x-2">
                 <Switch
@@ -398,7 +398,7 @@ const JWTTool = () => {
               <TokenAnatomy token={jwtToken} />
               <ValidationFlow analysis={tokenAnalysis} checking={validateSignature} validation={validationResult} />
               <Tabs defaultValue="decoded" className="w-full">
-                <TabsList className="flex w-full sm:grid sm:grid-cols-3">
+                <TabsList>
                   <TabsTrigger value="decoded" className="flex items-center gap-2">
                     <Fingerprint className="h-4 w-4" />
                     Decoded Token
@@ -418,7 +418,7 @@ const JWTTool = () => {
                     {/* Header */}
                     <Card>
                       <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                           <CardTitle className="text-title-sm">Header</CardTitle>
                           <Button
                             variant="outline"
@@ -439,7 +439,7 @@ const JWTTool = () => {
                     {/* Payload */}
                     <Card>
                       <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                           <CardTitle className="text-title-sm">Payload</CardTitle>
                           <Button
                             variant="outline"
@@ -461,7 +461,7 @@ const JWTTool = () => {
                   {/* Signature */}
                   <Card>
                     <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                         <CardTitle className="text-title-sm">Signature</CardTitle>
                         <Button
                           variant="outline"
@@ -648,7 +648,7 @@ const JWTTool = () => {
                       {Object.keys(tokenAnalysis.customClaims).length > 0 && (
                         <Card>
                           <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                               <CardTitle className="text-title-sm">Custom Claims</CardTitle>
                               <Button
                                 variant="outline"

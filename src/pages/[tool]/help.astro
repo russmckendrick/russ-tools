@@ -67,9 +67,11 @@ const schema = [
   schema={schema}
 >
   <div slot="band" class="rt-tool-head">
-      <nav class="rt-crumb rt-rise" aria-label="Breadcrumb">
-        <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a> / <a href={tool.path}>{tool.title}</a> / Help
-      </nav>
+      <div class="rt-tool-top rt-rise">
+        <nav class="rt-crumb" aria-label="Breadcrumb">
+          <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a> / <a href={tool.path}>{tool.title}</a> / Help
+        </nav>
+      </div>
 
       <div class="rt-tool-id rt-rise" style="--rt-i: 1">
         <ToolIcon icon={tool.icon} size={30} />

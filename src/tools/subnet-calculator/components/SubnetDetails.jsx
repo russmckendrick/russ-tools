@@ -33,7 +33,7 @@ export default function SubnetDetails({ cidr, family, details, detailRows, onCop
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="flex items-center gap-3 min-w-0">
             <span className="font-mono text-data-lg truncate">{cidr}</span>
             <Badge>IPv{family}</Badge>
@@ -77,7 +77,7 @@ export default function SubnetDetails({ cidr, family, details, detailRows, onCop
                 <TableCell className="text-body-sm text-muted-foreground whitespace-nowrap">
                   {label}
                 </TableCell>
-                <TableCell className="font-mono text-data-md break-all select-all">
+                <TableCell className="font-mono text-data-md [overflow-wrap:anywhere] select-all">
                   {value}
                 </TableCell>
               </TableRow>

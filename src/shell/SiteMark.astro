@@ -1,31 +1,29 @@
 ---
 /**
- * The toolbox mark: an outline drawn with the same pen as the tool glyphs —
- * squared body, a handle, one seam and a clasp, all `currentColor`. The
- * wrapper chooses the ink: the bright accent on the header band, the accent's
- * text role in the footer.
+ * The hex-key mark: a key bent to the "r" of russ, and the bolt it turns,
+ * which is the dot of russ.tools. Two filled shapes. The key takes
+ * `currentColor`; the bolt takes `--rt-mark-bolt`, so the wrapper chooses
+ * both inks: white and the bright accent on the header band, the footer's
+ * own ink and the accent's text role beneath it.
  *
- * `scripts/generate-og.mjs` inlines this file's inner SVG markup by matching
- * the first svg element in the file — keep the drawing inside one element,
- * and never write a literal svg tag in this comment.
+ * The bolt's right point sits on the end of the key's arm and its base on
+ * the foot of the stem. Keep those two alignments if it is resized.
+ *
+ * `scripts/generate-og.mjs` and `scripts/generate-icons.mjs` inline this
+ * file's inner SVG markup by matching the first svg element in the file —
+ * keep the drawing inside one element, and never write a literal svg tag in
+ * this comment.
  */
 const { size = 22, class: className } = Astro.props;
 ---
 
-<svg
-  class={className}
-  viewBox="0 0 24 24"
-  width={size}
-  height={size}
-  fill="none"
-  stroke="currentColor"
-  stroke-width="1.75"
-  stroke-linecap="round"
-  stroke-linejoin="round"
-  aria-hidden="true"
->
-  <path d="M4 8h16v11H4z" />
-  <path d="M9 8V5h6v3" />
-  <path d="M4 13h16" />
-  <path d="M12 12v2" />
+<svg class={className} viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+  <path
+    fill="currentColor"
+    d="M5 20.75V10.25A6.75 6.75 0 0 1 11.75 3.5h7.5V7h-7.5A3.25 3.25 0 0 0 8.5 10.25v10.5z"
+  />
+  <path
+    style="fill: var(--rt-mark-bolt, currentColor)"
+    d="M10.25 16.853l2.25-3.897h4.5l2.25 3.897-2.25 3.897h-4.5z"
+  />
 </svg>

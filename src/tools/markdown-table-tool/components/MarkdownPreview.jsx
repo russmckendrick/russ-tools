@@ -239,7 +239,7 @@ const MarkdownPreview = ({ markdown, validation, stats }) => {
       {/* Preview */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <CardTitle className="text-title-sm">Live Preview</CardTitle>
             <Badge variant={validation.isValid ? 'default' : 'destructive'}>
               {validation.isValid ? 'Renders correctly' : 'May not render properly'}

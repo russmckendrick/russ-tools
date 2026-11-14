@@ -38,7 +38,7 @@ const TenantInfoDisplay = ({ data, onSave }) => {
       {/* Basic Tenant Information */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="text-title-sm flex items-center gap-2">
               <Building className="h-5 w-5" />
               Tenant Information

@@ -65,10 +65,10 @@ export function PlanDetail({ plan, skus, onCopy, onSkuSelect }) {
                   </button>
                 </TableCell>
                 <TableCell>
-                  <code className="font-mono text-data-sm break-all">{sku.partNumber || '—'}</code>
+                  <code className="whitespace-nowrap font-mono text-data-sm">{sku.partNumber || '—'}</code>
                 </TableCell>
                 <TableCell>
-                  <code className="font-mono text-data-sm break-all">{sku.guid}</code>
+                  <code className="whitespace-nowrap font-mono text-data-sm">{sku.guid}</code>
                 </TableCell>
               </TableRow>
             ))}

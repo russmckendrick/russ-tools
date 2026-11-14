@@ -29,7 +29,7 @@ documentation states its boundary explicitly.
 | **Azure Service Tags** | Azure | Search and compare Microsoft Azure service-tag IP ranges. | `/azure-service-tags` | [Docs](docs/tools/azure-service-tags/) |
 | **Conditional Access Analyser** | Microsoft | Explain exported Conditional Access policies and spot the gaps. | `/conditional-access` | [Docs](docs/tools/conditional-access/) |
 | **Microsoft 365 License Decoder** | Microsoft | Turn licence GUIDs and SKU part numbers into names and service plans. | `/m365-licenses` | [Docs](docs/tools/m365-licenses/) |
-| **Microsoft Portals (GDAP)** | Microsoft | Deep links into 31 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](docs/tools/microsoft-portals/) |
+| **Microsoft Portals (GDAP)** | Microsoft | Deep links into 91 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](docs/tools/microsoft-portals/) |
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](docs/tools/tenant-lookup/) |
 | **DNSSEC & Delegation Checker** | Security | Verify DS/DNSKEY links and inspect a domain delegation. | `/dnssec-checker` | [Docs](docs/tools/dnssec-checker/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](docs/tools/jwt/) |
@@ -89,6 +89,7 @@ pnpm dev
 | `pnpm lint` | ESLint — zero errors is enforced in CI |
 | `pnpm generate:tokens` | Regenerate the design tokens from `DESIGN.md` |
 | `pnpm generate:og` | Regenerate the Open Graph cards |
+| `pnpm generate:icons` | Regenerate the favicon and app icons from the site mark |
 | `pnpm generate:docs` | Regenerate the tool tables in the READMEs |
 
 ### Adding a tool

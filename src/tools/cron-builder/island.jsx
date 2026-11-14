@@ -339,7 +339,7 @@ const CronBuilderTool = () => {
     <TooltipProvider>
       <div className="space-y-6">
         <Tabs defaultValue="builder">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList>
             <TabsTrigger value="builder" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               CRON Builder
@@ -350,7 +350,7 @@ const CronBuilderTool = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="builder" className="space-y-6">
+          <TabsContent value="builder" className="flex flex-col gap-6 data-[state=inactive]:hidden">
             {/* CRON Expression Output — the page's subject, so this is the
                 one panel that takes the 3px structural rule. */}
             <Card emphasis>
@@ -369,7 +369,7 @@ const CronBuilderTool = () => {
                       for exactly this kind of utility action.
                     */}
                     <div className="flex items-stretch">
-                      <div className="min-w-0 flex-1 overflow-x-auto border border-outline border-r-0 bg-surface-inset px-6 py-[22px] font-mono text-data-xl text-on-surface">
+                      <div className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-l-md border border-outline border-r-0 bg-surface-inset px-4 py-4 font-mono text-data-xl text-on-surface sm:px-6 sm:py-[22px]">
                         {cronString}
                       </div>
                       <Tooltip>
@@ -378,7 +378,7 @@ const CronBuilderTool = () => {
                             variant="secondary"
                             onClick={handleCopy}
                             aria-label={copied ? 'Copied' : 'Copy expression'}
-                            className={`h-auto shrink-0 gap-2 px-7 text-label-caps uppercase ${
+                            className={`h-auto shrink-0 gap-2 rounded-l-none px-4 text-label-caps uppercase sm:px-7 ${
                               copied ? 'border-success bg-success-subtle text-success hover:bg-success-subtle hover:text-success' : ''
                             }`}
                           >
@@ -395,7 +395,6 @@ const CronBuilderTool = () => {
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                    <CronFlow fields={fields} />
                     {validation.valid ? (
                       <div className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-success mt-0.5" />
@@ -416,6 +415,10 @@ const CronBuilderTool = () => {
                 </div>
               </CardContent>
             </Card>
+
+            <div className="max-sm:order-last">
+              <CronFlow fields={fields} />
+            </div>
 
             {/* Field Selectors */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

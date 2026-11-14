@@ -54,11 +54,33 @@ manifest's `category` — a tool never names a colour. The focus ring is `--colo
 which resolves to `primary-text` (the accent in dark, a deep green in light);
 the raw accent is ~1.6:1 on paper and cannot be a ring or text there. There is one `<Toaster/>`
 (`ui/toaster.jsx`, mounted by `ToolIsland`), one tool-level help affordance (the prerendered
-`/<tool>/help` page — `src/pages/[tool]/help.astro`, linked by `src/bridge/ToolHelp.jsx`; the
+`/<tool>/help` page — `src/pages/[tool]/help.astro`, linked from the band by `ToolLayout.astro`; the
 old drawer `ui/help-dialog.jsx` and `ui/sheet.jsx` are deleted), one field-level hint
 (`ui/help-hint.jsx`), and
 one source for the Material tool icons (`src/shell/icons.mjs`, rendered by the Astro
 `ToolIcon` and the React `ui/tool-icon.jsx`).
+
+**Page actions live on the band.** `ToolLayout.astro` prerenders the action row beside the
+breadcrumb (`[data-tool-actions]`) with the Help link already in it; a tool's own page-level
+action goes through `<ToolAction>` (`ui/tool-actions.jsx`), which `ToolIsland` portals into the
+slot beside Help. `.rt-band .rt-tool-acts :is(a, button)` in `shell.css` redraws whatever lands
+there in band tokens, so a tool passes an ordinary `<Button>` and never styles it for the band.
+
+**Phones are a first-class target — the rules are in `DESIGN.md`'s Layout section.** The
+mechanics: `.rt-tap` (in `globals.css`, on every `Button` and `TabsTrigger`) is an invisible
+44px touch target on coarse pointers; `.rt-tool-body` is `minmax(0, 1fr)` because an implicit
+`auto` grid track let one nowrap row push the help prose off-screen; `TabsList` owns its layout
+(never pass it `grid grid-cols-N`); `FlowDiagram` will not scale a drawing below 85% and scrolls
+its panel instead; and an ID or address in a table cell is `whitespace-nowrap` or
+`[overflow-wrap:anywhere]`, never `break-all` — `break-all` in an auto-layout table collapses
+the column to one character and made each licence row 130px tall.
+
+**The site mark is the hex key** (`src/shell/SiteMark.astro`, adopted 2026-11-14 from
+`design/proposals/2026-11-identity/`, on the existing green): a key bent to the "r" and the bolt
+it turns, which is the dot of russ.tools. Two filled shapes — the key in `currentColor`, the bolt
+in `--rt-mark-bolt` — so it is not drawn with the 1.75px pen the tool glyphs use. That one file is
+the only drawing: the OG cards and every icon file are generated from it. The proposal's copper,
+blue and violet schemes were **not** adopted.
 
 **Shell CSS classes are `rt-`-prefixed** (`src/styles/shell.css`). They were bare before,
 and `.grid` collided with Tailwind's `grid` utility — the shell's rule won, so every
@@ -109,7 +131,7 @@ or if any pair drops below its WCAG floor — it has caught five real contrast f
 
 A prior version of this file misdescribed the codebase. Corrected facts:
 
-- There are **15 tools**. Don't take a count from prose anywhere — the generated tables
+- There are **24 tools** (2026-11-14). Don't take a count from prose anywhere — the generated tables
   in the READMEs are the only inventory that is checked (`src/tools/docs.test.js`).
 - Theming is a **pre-paint inline script** in `BaseLayout.astro` reading `vite-ui-theme`
   from localStorage, plus `src/shell/appearance-controls.js`. There is no React theme
@@ -163,6 +185,9 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
   all cleared. Don't add errors, and don't let the warning count climb.
 - `pnpm generate:sitemap` — regenerate `public/sitemap.xml` **from the manifests**
 - `pnpm generate:og` — regenerate the Open Graph cards (Playwright; commits PNGs)
+- `pnpm generate:icons` — regenerate `public/assets/logo.svg`, `favicon.ico` and the touch /
+  home-screen PNGs from `src/shell/SiteMark.astro` and the token layer (Playwright; commits them).
+  Run both after changing the mark or the band / accent colours.
 - `pnpm generate:docs` — regenerate the tool tables in `README.md` and `docs/README.md`
 
 > If a bare `pnpm <script>` fails with a `runDepsStatusCheck` / ignored-builds error,

@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils"
  */
 const buttonVariants = cva(
   cn(
-    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap",
+    "rt-tap inline-flex items-center justify-center gap-1.5 whitespace-nowrap",
     "text-body-sm font-medium transition-[color,background-color,border-color,box-shadow,transform] duration-140 ease-out",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
     "disabled:pointer-events-none disabled:opacity-50",

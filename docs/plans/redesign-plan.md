@@ -2976,6 +2976,82 @@ dates. Sequence and Gantt are registered only by the tools that use them.
 connectors draw themselves, dotted ones drift, Gantt bars grow. A redraw only
 animates nodes whose text is new. All verified in the browser with live data.
 
+### 2026-11-14 — Refinement pass: every page at 390px and 1440px
+
+The owner asked for a full review on mobile and desktop. Every page was
+captured at both widths with Playwright (deep-linked so results were on
+screen), with an in-page audit for sideways overflow, touch targets and type
+under 11px, and then read by eye. No page scrolled sideways; the faults were
+elsewhere.
+
+**Shell.**
+
+- *Help pages clipped their prose on a phone.* `.rt-tool-body` is a grid with
+  an implicit `auto` track, which is as wide as its widest unbreakable child;
+  the jump-chip row is nowrap, so the article was laid out 512px wide inside a
+  375px screen and cut off by an ancestor. Now `minmax(0, 1fr)`. The audit did
+  not catch it (nothing overflowed the document) and lint could not.
+- *Page actions moved onto the band.* Help was a button on a row of its own
+  under the band on all 24 tools. `ToolLayout.astro` now prerenders the action
+  row beside the breadcrumb with Help in it, and `ToolIsland` portals a tool's
+  own action (the two share buttons) into the slot beside it.
+  `src/bridge/ToolHelp.jsx` is deleted. The tool starts about 50px higher.
+- *Phone gutter 32px to 20px*, tighter band and body padding below 600px.
+- *Touch targets.* `.rt-tap` (globals.css) gives every `Button` and
+  `TabsTrigger` an invisible 44px target on coarse pointers without changing
+  how they are drawn. The switch, the breadcrumb links, the footer links and
+  the toast close button got the same treatment.
+
+**Shared UI.**
+
+- *Diagrams.* Pele scales to the panel, so a seven-leaf tree was a 262px
+  smudge on a phone. `FlowDiagram` now holds a floor of 85% and scrolls the
+  panel, centred on the root; a top-down drawing is turned on its side only
+  when that removes the scrolling.
+- *Tabs.* `TabsList` owns its layout: full-width hairline, words ranged left,
+  sideways scroll when too long. Eight call sites had overridden it with
+  `grid grid-cols-N`, which stretched two tabs across 1200px on cron and
+  stacked three on a phone on azure-naming.
+- *Header rows.* 47 `flex justify-between` title-and-action rows now wrap.
+
+**Tools.** See `docs/BEHAVIOR_CHANGES.md` for the user-visible ones. Also:
+`break-all` in table cells replaced (it collapsed the M365 GUID column to one
+character and made each row 130px tall, a 7,839px page; it split IPs
+mid-octet in the subnet table); the SSL checker's 3px Stacks-era input frame
+replaced with the standard field-and-button row; Microsoft Portals' nested
+tenant card flattened to a ruled block and its `hover:shadow-md` removed;
+password-generator card titles brought from `headline-md` to `title-sm`.
+
+**Verified.** 965 Vitest, 68 Playwright, build, lint 0 errors / 11 warnings.
+Every page re-captured at both widths in light, and a subset in dark.
+WHOIS, SSL and tenant lookups could not be seen with live data locally: the
+workers refuse the `127.0.0.1` origin.
+
+**Not done, noted for later.** Form fields are 36px tall on touch (the 44px
+target covers buttons and tabs only). The index's filter chips scroll sideways
+on a phone with no edge fade to say so. Buzzword Ipsum still opens empty.
+"Azure Cloud Shell" appears in two portal catalogues and so twice under "All".
+The data converter's input is a screen tall on a phone before the output.
+
+### 2026-11-14 — A new mark, on the same green
+
+The owner asked for a new logo and colour scheme. A subagent produced three
+directions under `design/proposals/2026-11-identity/` (Hex / Copper, Block /
+Cyanotype, Ligature / Iris), each with SVG marks, a measured palette and a
+preview page. The owner chose the Hex mark, kept Datasheet's green, and asked
+for the hexagon to be a little larger.
+
+`SiteMark.astro` is now two filled paths (key in `currentColor`, bolt in
+`--rt-mark-bolt`) rather than a stroked outline. `scripts/generate-icons.mjs`
+is new: it lifts the drawing from that file and the colours from the token
+layer and writes `logo.svg`, `favicon.ico` (16/32/48) and the three PNGs, so
+there is one drawing and no hand-kept copies. `generate-og.mjs` sets the two
+inks instead of a stroke. None of the proposal's palettes was adopted, and its
+Plex Mono wordmark was not either: the header keeps Plex Sans.
+
+Seen in the header and footer in both themes, at 16-48px as a favicon, and on
+an OG card. Not seen on a real phone home screen.
+
 ### 2026-11-14 — One same-origin API for the three lookups
 
 The owner asked whether the WHOIS, SSL and tenant workers could become a

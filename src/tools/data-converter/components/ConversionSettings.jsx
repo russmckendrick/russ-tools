@@ -47,7 +47,7 @@ const ConversionSettings = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <Label htmlFor="enable-validation" className="text-body-sm font-medium">
                   Enable Validation
                 </Label>
@@ -58,7 +58,7 @@ const ConversionSettings = ({
                 />
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <Label htmlFor="schema-validation" className="text-body-sm font-medium">
                   Schema Validation
                 </Label>
@@ -104,7 +104,7 @@ const ConversionSettings = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <Label htmlFor="auto-detect" className="text-body-sm font-medium">
                   Auto Detect Format
                 </Label>
@@ -115,7 +115,7 @@ const ConversionSettings = ({
                 />
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <Label htmlFor="prettify-output" className="text-body-sm font-medium">
                   Prettify Output
                 </Label>
@@ -137,7 +137,7 @@ const ConversionSettings = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <Label htmlFor="enable-history" className="text-body-sm font-medium">
                   Enable History
                 </Label>

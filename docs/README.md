@@ -23,7 +23,7 @@ network, cloud and platform work.
 | **Azure Service Tags** | Azure | Search and compare Microsoft Azure service-tag IP ranges. | `/azure-service-tags` | [Docs](tools/azure-service-tags/) |
 | **Conditional Access Analyser** | Microsoft | Explain exported Conditional Access policies and spot the gaps. | `/conditional-access` | [Docs](tools/conditional-access/) |
 | **Microsoft 365 License Decoder** | Microsoft | Turn licence GUIDs and SKU part numbers into names and service plans. | `/m365-licenses` | [Docs](tools/m365-licenses/) |
-| **Microsoft Portals (GDAP)** | Microsoft | Deep links into 31 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](tools/microsoft-portals/) |
+| **Microsoft Portals (GDAP)** | Microsoft | Deep links into 91 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](tools/microsoft-portals/) |
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](tools/tenant-lookup/) |
 | **DNSSEC & Delegation Checker** | Security | Verify DS/DNSKEY links and inspect a domain delegation. | `/dnssec-checker` | [Docs](tools/dnssec-checker/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](tools/jwt/) |

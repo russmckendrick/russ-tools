@@ -76,14 +76,14 @@ export function SkuDetail({ sku, plans, onCopy, onPlanSelect }) {
                 <TableCell>
                   <button
                     type="button"
-                    className="font-mono text-data-sm underline underline-offset-2 hover:text-primary-text"
+                    className="whitespace-nowrap py-1.5 font-mono text-data-sm underline underline-offset-2 hover:text-primary-text"
                     onClick={() => onPlanSelect(plan.name || plan.id)}
                   >
                     {plan.name || plan.id}
                   </button>
                 </TableCell>
                 <TableCell>
-                  <code className="font-mono text-data-sm break-all">{plan.id}</code>
+                  <code className="whitespace-nowrap font-mono text-data-sm">{plan.id}</code>
                 </TableCell>
               </TableRow>
             ))}

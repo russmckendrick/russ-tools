@@ -45,7 +45,7 @@ export default function SubnetDivide({ family, rows, joinable, onSplit, onJoin, 
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div>
             <h3 className="text-title-sm">Divide</h3>
             <p className="text-body-sm text-muted-foreground mt-1">

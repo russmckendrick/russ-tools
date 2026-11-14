@@ -21,6 +21,15 @@
   padding-inline: var(--rt-space-gutter);
 }
 
+/* The 32px gutter is a desktop measure. On a phone it spends a sixth of the
+   screen on margin, and every card inside it pays again in padding, so the
+   gutter steps down once. */
+@media (max-width: 600px) {
+  :root {
+    --rt-space-gutter: 20px;
+  }
+}
+
 /* Short pages push the footer to the bottom of the viewport rather than
    leaving it stranded halfway down with dead ground beneath it. */
 body {
@@ -86,7 +95,10 @@ body > main {
   color: var(--color-on-band);
   text-decoration: none;
 }
-.rt-site-mark,
+.rt-site-mark {
+  color: var(--color-on-band);
+  --rt-mark-bolt: var(--color-accent-bright);
+}
 .rt-brand-dot {
   color: var(--color-accent-bright);
 }
@@ -986,9 +998,21 @@ a.rt-kbd[data-first] {
 
 .rt-tool-head {
   position: relative;
-  padding-block: 40px 44px;
+  /* Less above than below: the first row is 36px of action buttons with the
+     12px crumb centred in it, so it brings air of its own. */
+  padding-block: 26px 44px;
   display: grid;
   gap: var(--rt-space-md);
+}
+/* The crumb on the left, the page's actions on the right. They wrap rather
+   than squeeze when a tool adds an action of its own on a phone. */
+.rt-tool-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rt-space-sm) var(--rt-space-lg);
+  min-height: 36px;
 }
 .rt-crumb {
   font-family: var(--font-mono);
@@ -997,9 +1021,63 @@ a.rt-kbd[data-first] {
   letter-spacing: 0.06em;
   color: var(--color-on-band-muted);
 }
+/* The words stay 12px; the padding is the touch target, pulled back out of
+   the layout by the matching negative margin. */
 .rt-crumb a {
+  display: inline-block;
+  padding-block: 12px;
+  margin-block: -12px;
   color: inherit;
   text-decoration: none;
+}
+.rt-tool-acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--rt-space-sm);
+  margin-left: auto;
+}
+.rt-tool-acts-slot {
+  display: contents;
+}
+/* Every action on the band is drawn the same way, whether it is the
+   prerendered Help link or a button a tool portals in. The selector outranks
+   the button component's surface utilities on purpose: those are paper
+   tokens, and this is the band. */
+.rt-band .rt-tool-acts :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 12px;
+  border: var(--border-hairline) solid var(--color-band-outline);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-on-band);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-signal),
+    border-color var(--duration-fast) var(--ease-signal);
+}
+.rt-band .rt-tool-acts :is(a, button) svg {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  color: var(--color-accent-bright);
+}
+.rt-band .rt-tool-acts :is(a, button):hover {
+  background: var(--color-band-raised);
+  border-color: var(--color-on-band-muted);
+}
+.rt-band .rt-tool-acts button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .rt-crumb a:hover {
   color: var(--color-on-band);
@@ -1041,7 +1119,17 @@ a.rt-kbd[data-first] {
 }
 @media (max-width: 600px) {
   .rt-tool-head {
-    padding-block: var(--rt-space-2xl) var(--rt-space-2xl);
+    padding-block: var(--rt-space-lg) var(--rt-space-2xl);
+    gap: 10px;
+  }
+  .rt-tool-head > p {
+    font-size: 15px;
+  }
+  .rt-tool-top {
+    min-height: 44px;
+  }
+  .rt-band .rt-tool-acts :is(a, button) {
+    height: 40px;
   }
   .rt-tool-id {
     gap: 14px;
@@ -1053,21 +1141,25 @@ a.rt-kbd[data-first] {
   }
 }
 
-/* Actions and alerts a bridged tool still owns, hoisted above its body. */
-
-.rt-tool-actions {
-  display: grid;
-  gap: var(--rt-space-sm);
-  justify-items: start;
-  padding-bottom: var(--rt-space-md);
-}
-
 /* One full-width column. A tool composes its own body inside it. */
 .rt-tool-body {
   position: relative;
   padding-block: var(--rt-space-3xl) var(--rt-space-4xl);
   display: grid;
+  /* `minmax(0, 1fr)`, not the implicit `auto` track: an auto track is as wide
+     as its widest unbreakable child, so one nowrap row (the help page's jump
+     chips) set the width of the whole column and pushed the prose off a
+     phone screen. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--rt-space-lg);
+}
+@media (max-width: 600px) {
+  .rt-tool-body {
+    padding-block: var(--rt-space-xl) var(--rt-space-3xl);
+  }
+  .rt-site-footer {
+    margin-top: var(--rt-space-2xl);
+  }
 }
 
 /* --- Panel ----------------------------------------------------------------
@@ -1123,12 +1215,13 @@ a.rt-kbd[data-first] {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--rt-space-lg);
-  padding-block: var(--rt-space-2xl);
+  gap: var(--rt-space-xs) var(--rt-space-lg);
+  padding-block: var(--rt-space-lg);
 }
 .rt-footer-brand {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   gap: var(--rt-space-sm);
   color: var(--color-on-footer);
   text-decoration: none;
@@ -1136,7 +1229,9 @@ a.rt-kbd[data-first] {
   font-weight: 600;
   letter-spacing: -0.01em;
 }
-.rt-footer-brand svg,
+.rt-footer-brand svg {
+  --rt-mark-bolt: var(--color-primary-text);
+}
 .rt-footer-brand .rt-brand-dot {
   color: var(--color-primary-text);
 }
@@ -1146,6 +1241,9 @@ a.rt-kbd[data-first] {
   font-size: var(--text-body-sm);
 }
 .rt-footnav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--color-on-footer-muted);
   text-decoration: none;
   transition: color var(--duration-base) var(--ease-signal);
@@ -1194,9 +1292,21 @@ a.rt-kbd[data-first] {
   overflow-x: auto;
   padding: var(--rt-space-2xl) var(--rt-space-xl);
 }
+/* Pele scales its drawing down to the panel. Past a point that stops being
+   a diagram and becomes a smudge, so `FlowDiagram` sets a floor on the width
+   and the panel scrolls sideways instead. */
 .rt-diagram-scroll > svg {
   display: block;
   margin-inline: auto;
+  min-width: var(--rt-diagram-min, 0);
+}
+@media (max-width: 600px) {
+  .rt-diagram-scroll {
+    padding: var(--rt-space-xl) var(--rt-space-lg);
+  }
+  .rt-diagram-caption {
+    padding-inline: var(--rt-space-lg);
+  }
 }
 .rt-diagram-caption {
   padding: 0 var(--rt-space-xl) var(--rt-space-lg);

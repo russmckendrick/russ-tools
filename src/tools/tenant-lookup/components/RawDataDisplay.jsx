@@ -37,7 +37,7 @@ const RawDataDisplay = ({ data }) => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <h3 className="text-title-sm flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Raw Response Data
@@ -59,7 +59,7 @@ const RawDataDisplay = ({ data }) => {
       {showRawData && (
         <CardContent>
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
               <span className="text-body-sm text-muted-foreground">
                 Complete JSON Response ({jsonString.length.toLocaleString()} characters)
               </span>

@@ -98,7 +98,7 @@ const DNSAnalysisDisplay = ({ dnsInfo }) => {
       {dnsInfo.txtRecords && dnsInfo.txtRecords.length > 0 && (
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
               <h3 className="text-title-sm flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 TXT Records ({dnsInfo.txtRecords.length})

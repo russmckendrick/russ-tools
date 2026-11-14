@@ -24,6 +24,42 @@ Two rules:
 
 ## Landed
 
+### The mobile and desktop refinement pass (2026-11-14)
+
+A full review of every page at 390px and 1440px. Most of it is layout and is
+recorded in the plan's Session Log; these are the changes a user would notice
+as behaviour.
+
+| Tool | Before | After | Why |
+|---|---|---|---|
+| every tool | Help was an outline button on a row of its own above the tool, rendered by the island after hydration | Help is a link on the band beside the breadcrumb, prerendered by `ToolLayout.astro` | The row cost 48px on every page for one small button, and the link did not exist until JavaScript ran. `[data-tool-actions]` is still the container, so the e2e help matrix is unchanged. |
+| azure-kql, azure-naming | The share button sat in that same row | It is portalled onto the band beside Help; on a phone its label shortens to "Share" (the accessible name is unchanged) | One place for page-level actions. |
+| password-generator | Opened on an empty "Generated Passwords" panel and waited for a click | Draws one password on arrival, silently (no toast); the result panel leads the page on a phone and the right-hand column on desktop | A generator that shows nothing until asked hides the one thing it is for. |
+| password-generator | "Average time to crack" read `737475384536082688.0T years`, and any span between 1,000 and a billion years read `0.0B years` | One ladder: years, thousand, million, billion, trillion, then `7.4 × 10^29 years` | The old branches skipped six orders of magnitude and never rounded past a trillion. |
+| microsoft-portals | Stated "31 portals" in the manifest, the page head and the empty state; the catalogue holds 91 | Says 91, counted from the data in the island and pinned by `portalLinks.test.js` | The number was typed once and never updated as three more catalogues were added. |
+| microsoft-portals | Always opened in the card grid; the list view was a five-column table | Opens in the list view below 640px; the list is one ruled row per portal | Ninety-one cards in a single column was 18,662px of scrolling on a phone, and the table needed a sideways scroll to reach "Open". |
+| microsoft-portals | "Open" was a button calling `window.open` | "Open" is a real link (`target="_blank" rel="noopener noreferrer"`) | Middle-click, copy-link and the status-bar URL all work; assistive tech announces a link. |
+| ssl-checker | When only connectivity could be verified, a green "SSL Check Complete — certificate analysis completed" toast appeared above a panel saying analysis was unavailable | An info toast: "HTTPS reachable, analysis unavailable" | The tool was contradicting itself. |
+| base64 | The file-upload dropzone sat above the Input and Output fields | It sits below them, and is a third of the height | Text is the common route; the dropzone pushed both fields off the first screen. |
+| cron-builder | The flow diagram sat between the expression and its selectors at every width | Unchanged on desktop; on a phone it follows the selectors | Pele draws it top-down on a narrow screen, which put 700px between the expression and the controls that change it. |
+
+### The toolbox mark became the hex key (2026-11-14)
+
+The site mark was an outlined toolbox. It is now a hex key bent to the "r" of
+russ, with the bolt it turns standing as the dot of russ.tools, in the existing
+green: white key and mint bolt on the band, ink key and deep-green bolt in the
+footer. It came from the identity proposal in
+`design/proposals/2026-11-identity/` (direction A); the owner took the mark,
+kept the colour scheme, and asked for the bolt to be larger than drawn there
+(radius 3.75 to 4.5 on the 24px grid, still aligned to the end of the key's
+arm and the foot of its stem).
+
+The favicon changed shape as well as drawing: it was a bare glyph that swapped
+its stroke on `prefers-color-scheme`, and is now the mark on a rounded band
+tile, which reads the same on a light or a dark tab strip. `favicon.ico`, the
+touch icon, the two home-screen PNGs and all 25 OG cards were regenerated;
+`pnpm generate:icons` is new and produces the icon files from `SiteMark.astro`.
+
 ### The index became one stream, and grew a paste dispatcher
 
 | | |

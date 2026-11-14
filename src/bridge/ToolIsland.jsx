@@ -3,13 +3,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { ToolActionsProvider } from '@/components/ui/tool-actions';
 import { TOOLS_BY_ID } from '../tools/registry.mjs';
-import ToolHelp from './ToolHelp';
 
 /**
  * One island entry that mounts any tool's React component inside
  * `ToolLayout.astro`.
  *
- * It supplies the two things the tools expect that a static Astro page does
+ * It supplies the three things the tools expect that a static Astro page does
  * not have:
  *
  *  1. **A router.** Nine tools call `useParams`/`useSearchParams`. Rather
@@ -18,6 +17,8 @@ import ToolHelp from './ToolHelp';
  *     `_redirects` rewrites come from, so a deep link cannot match in one
  *     place and miss in the other.
  *  2. **Toasts.** One `<Toaster/>` per page, belonging to the island.
+ *  3. **A place for page actions.** `<ToolAction>` portals into the slot
+ *     ToolLayout prerenders on the band, beside the Help link.
  *
  * The theme needs nothing: it is a class on `<html>` written by BaseLayout's
  * pre-paint script. No `ThemeProvider` is required because no tool consumes
@@ -34,6 +35,10 @@ import ToolHelp from './ToolHelp';
 export default function ToolIsland({ toolId }) {
   const tool = TOOLS_BY_ID[toolId];
   const [actionsTarget, setActionsTarget] = React.useState(null);
+
+  React.useEffect(() => {
+    setActionsTarget(document.querySelector('[data-tool-actions-slot]'));
+  }, []);
 
   if (!tool) {
     // Unreachable via getStaticPaths, but a silent blank panel would be the
@@ -60,10 +65,6 @@ export default function ToolIsland({ toolId }) {
     <div className="rt-island" onClickCapture={interceptLinks}>
       <BrowserRouter>
         <ToolActionsProvider target={actionsTarget}>
-          <div data-tool-actions className="mb-4 flex justify-end gap-2">
-            <div ref={setActionsTarget} className="contents" />
-            <ToolHelp tool={tool} />
-          </div>
           <Suspense fallback={<IslandLoading title={tool.title} />}>
             <IslandErrorBoundary title={tool.title}>
               <Routes>

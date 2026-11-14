@@ -29,7 +29,8 @@ export function Toaster(props) {
           description: 'text-body-sm text-on-surface-muted',
           actionButton: 'bg-primary text-on-primary',
           cancelButton: 'border border-outline-strong bg-surface-raised text-on-surface',
-          closeButton: 'border-outline bg-surface-inset text-on-surface-muted',
+          closeButton:
+            "border-outline bg-surface-inset text-on-surface-muted after:absolute after:-inset-2.5 after:content-['']",
           success: '[&_[data-icon]]:text-success',
           error: '[&_[data-icon]]:text-danger',
           warning: '[&_[data-icon]]:text-warning',

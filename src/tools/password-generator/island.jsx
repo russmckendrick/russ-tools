@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,19 +127,24 @@ const PasswordGeneratorTool = () => {
     } else if (secondsToCrack < 31536000) { // 1 year
       const months = Math.round(secondsToCrack / 2592000);
       timeString = `${months} month${months > 1 ? 's' : ''}`;
-    } else if (secondsToCrack < 31536000000) { // 1000 years
-      const years = Math.round(secondsToCrack / 31536000);
-      if (years < 1000) {
-        timeString = `${years.toLocaleString()} year${years > 1 ? 's' : ''}`;
-      } else {
-        timeString = `${(years / 1000).toFixed(1)}K years`;
-      }
     } else {
-      const bYears = (secondsToCrack / 31536000000000000);
-      if (bYears < 1000) {
-        timeString = `${bYears.toFixed(1)}B years`;
+      const years = secondsToCrack / 31536000;
+      const steps = [
+        [1e3, 1, ''],
+        [1e6, 1e3, ' thousand'],
+        [1e9, 1e6, ' million'],
+        [1e12, 1e9, ' billion'],
+        [1e15, 1e12, ' trillion'],
+      ];
+      const step = steps.find(([limit]) => years < limit);
+      if (!step) {
+        const exponent = Math.floor(Math.log10(years));
+        timeString = `${(years / Math.pow(10, exponent)).toFixed(1)} × 10^${exponent} years`;
+      } else if (step[1] === 1) {
+        const whole = Math.round(years);
+        timeString = `${whole.toLocaleString()} year${whole > 1 ? 's' : ''}`;
       } else {
-        timeString = `${(bYears / 1000).toFixed(1)}T years`;
+        timeString = `${(years / step[1]).toFixed(1)}${step[2]} years`;
       }
     }
 
@@ -263,7 +268,7 @@ const PasswordGeneratorTool = () => {
   }, [currentLength, includeUppercase, includeLowercase, includeNumbers, includeSymbols, excludeSimilar, excludeAmbiguous]);
 
   // Generate multiple passwords
-  const handleGeneratePasswords = async () => {
+  const handleGeneratePasswords = async ({ silent = false } = {}) => {
     try {
       setIsGenerating(true);
       
@@ -282,13 +287,18 @@ const PasswordGeneratorTool = () => {
       }
       
       setPasswords(newPasswords);
-      toast.success(`Successfully generated ${count} password${count > 1 ? 's' : ''}`);
+      if (!silent) toast.success(`Successfully generated ${count} password${count > 1 ? 's' : ''}`);
     } catch (error) {
       toast.error(error.message);
     } finally {
       setIsGenerating(false);
     }
   };
+
+  useEffect(() => {
+    handleGeneratePasswords({ silent: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Copy password to clipboard
   const copyToClipboard = async (password) => {
@@ -355,12 +365,12 @@ Visit: https://russ.tools
           {/* Configuration Panel */}
           <Card>
             <CardHeader>
-              <h3 className="text-headline-md">Password Settings</h3>
+              <h3 className="text-title-sm">Password Settings</h3>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Length Section */}
               <div className="space-y-4">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                     <Label className="text-body-md font-medium">Password Length</Label>
                     <div className="flex items-center gap-2">
                       <span className="text-data-md font-mono text-on-surface">{currentLength}</span>
@@ -400,7 +410,7 @@ Visit: https://russ.tools
                     <div className="space-y-2">
                       <Progress value={strength.percentage} className="h-1.5" />
                       
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                         <span className={`text-body-sm font-medium ${strength.tone}`}>
                           {strength.level}
                         </span>
@@ -501,7 +511,7 @@ Visit: https://russ.tools
               </div>
 
               <Button
-                onClick={handleGeneratePasswords}
+                onClick={() => handleGeneratePasswords()}
                 disabled={isGenerating}
                 className="w-full"
                 size="lg"
@@ -516,13 +526,78 @@ Visit: https://russ.tools
             </CardContent>
           </Card>
 
-          {/* Right Side - Two Stacked Sections */}
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6 max-lg:contents">
+            {/* Generated Passwords Section */}
+            <Card className="max-lg:order-first">
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                  <h3 className="text-title-sm">Generated Passwords</h3>
+                  {passwords.length > 0 && (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={downloadPasswords}
+                        aria-label="Download passwords"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearPasswords}
+                        aria-label="Clear passwords"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {passwords.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <PasswordIcon className="size-10 text-on-surface-faint mb-4" />
+                    <p className="text-muted-foreground">
+                      Configure your settings and click "Generate Passwords" to create secure passwords
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {passwords.map((password, index) => (
+                      <Card key={password.id}>
+                        <CardContent className="pt-4">
+                          <div className="flex justify-between items-center gap-2">
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <p className="text-body-sm text-muted-foreground">
+                                Password {index + 1} • Generated at {password.timestamp}
+                              </p>
+                              <p className="font-mono text-data-lg break-all select-all">
+                                {password.value}
+                              </p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyToClipboard(password.value)}
+                              className="ml-2 flex-shrink-0"
+                              aria-label="Copy password"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
             {/* Security Analysis Section */}
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <h3 className="text-headline-md">Security Analysis</h3>
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                  <h3 className="text-title-sm">Security Analysis</h3>
                   <Tooltip>
                     <TooltipTrigger>
                       <Info className="h-4 w-4 text-muted-foreground" />
@@ -594,72 +669,6 @@ Visit: https://russ.tools
               </CardContent>
             </Card>
 
-            {/* Generated Passwords Section */}
-            <Card className="flex-1">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <h3 className="text-headline-md">Generated Passwords</h3>
-                  {passwords.length > 0 && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={downloadPasswords}
-                        aria-label="Download passwords"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={clearPasswords}
-                        aria-label="Clear passwords"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {passwords.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <PasswordIcon className="size-10 text-on-surface-faint mb-4" />
-                    <p className="text-muted-foreground">
-                      Configure your settings and click "Generate Passwords" to create secure passwords
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {passwords.map((password, index) => (
-                      <Card key={password.id}>
-                        <CardContent className="pt-4">
-                          <div className="flex justify-between items-center gap-2">
-                            <div className="flex-1 min-w-0 space-y-1">
-                              <p className="text-body-sm text-muted-foreground">
-                                Password {index + 1} • Generated at {password.timestamp}
-                              </p>
-                              <p className="font-mono text-data-lg break-all select-all">
-                                {password.value}
-                              </p>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyToClipboard(password.value)}
-                              className="ml-2 flex-shrink-0"
-                              aria-label="Copy password"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

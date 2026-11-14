@@ -30,6 +30,10 @@ const esc = (text) => String(text).replace(/"/g, '#quot;');
 
 const CONFIG = { flowchart: { curve: 'step' } };
 
+const MIN_SCALE = 0.85;
+
+const TOP_DOWN = /^(\s*(?:flowchart|graph))\s+(?:TD|TB)\b/;
+
 /**
  * @param {object} props
  * @param {string} props.source Mermaid flowchart source
@@ -64,25 +68,45 @@ export function FlowDiagram({ source, label, caption, actions, auto = false, cla
     };
   }, []);
 
-  const svg = React.useMemo(() => {
+  const drawing = React.useMemo(() => {
     const fontFamily = host.current ? getComputedStyle(host.current).fontFamily : 'monospace';
-    try {
-      return render(source, {
+    const draw = (text, autoDirection) =>
+      render(text, {
         idPrefix: `d${prefix}`,
         fontFamily: fontFamily || 'monospace',
         fontSize: 13,
         maxWidth: width || undefined,
-        autoDirection: auto,
+        autoDirection,
         links: false,
         images: false,
         config: CONFIG,
-      }).svg;
+      });
+    try {
+      let out = draw(source, auto);
+      let turned = false;
+      if (width && out.width * MIN_SCALE > width && TOP_DOWN.test(source)) {
+        const side = draw(source.replace(TOP_DOWN, '$1 LR'), false);
+        if (side.width * MIN_SCALE <= width) {
+          out = side;
+          turned = true;
+        }
+      }
+      return { svg: out.svg, natural: out.width, centre: !turned && TOP_DOWN.test(source) };
     } catch {
-      return '';
+      return { svg: '', natural: 0, centre: false };
     }
     // `fonts` is a redraw trigger, not an input.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, width, fonts, prefix, auto]);
+  const { svg } = drawing;
+
+  const floor = Math.round(drawing.natural * MIN_SCALE);
+  const scrolls = width > 0 && floor > width;
+  React.useLayoutEffect(() => {
+    const el = host.current;
+    if (!el || !scrolls || !drawing.centre) return;
+    el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+  }, [scrolls, drawing.centre, source]);
 
   // Pele hands back a string, so the button semantics go on afterwards.
   React.useLayoutEffect(() => {
@@ -151,6 +175,10 @@ export function FlowDiagram({ source, label, caption, actions, auto = false, cla
       <div
         ref={host}
         className="rt-diagram-scroll"
+        style={scrolls ? { '--rt-diagram-min': `${floor}px` } : undefined}
+        tabIndex={scrolls ? 0 : undefined}
+        role={scrolls ? 'group' : undefined}
+        aria-label={scrolls ? `${label}, scrolls sideways` : undefined}
         onClick={fire}
         onKeyDown={(event) => {
           if (event.key !== 'Enter' && event.key !== ' ') return;

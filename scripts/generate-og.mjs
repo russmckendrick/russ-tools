@@ -65,8 +65,9 @@ const monoData = readFileSync(
   'node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2'
 ).toString('base64');
 
-// The toolbox mark, lifted from SiteMark.astro: the inner markup of its one
-// <svg>. It draws in currentColor, which the card sets to the bright accent.
+// The hex-key mark, lifted from SiteMark.astro: the inner markup of its one
+// <svg>. The key draws in currentColor and the bolt in --rt-mark-bolt, which
+// the card sets to white and the bright accent.
 const siteMark = readFileSync('src/shell/SiteMark.astro', 'utf8')
   .match(/<svg[^>]*>([\s\S]*?)<\/svg>/)[1];
 
@@ -112,8 +113,8 @@ const cardHtml = ({ title, sub, icon, category, path }) => {
     font-size: 28px; font-weight: 600; letter-spacing: -0.01em;
   }
   header svg {
-    width: 34px; height: 34px; color: ${C.accent};
-    stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
+    width: 34px; height: 34px; color: ${C.text};
+    --rt-mark-bolt: ${C.accent};
   }
   main { margin-top: auto; }
   .mark { display: flex; align-items: center; gap: 22px; margin-bottom: 34px; }
@@ -142,7 +143,7 @@ const cardHtml = ({ title, sub, icon, category, path }) => {
   }
 </style>
 <header>
-  <svg viewBox="0 0 24 24" fill="none">${siteMark}</svg>
+  <svg viewBox="0 0 24 24">${siteMark}</svg>
   <span>${SITE_NAME}</span>
 </header>
 <main>
