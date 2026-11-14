@@ -80,16 +80,17 @@ and Preview are separate environments**; a value set in one is not present in th
 | `SSL_LABS_EMAIL`, `SSL_LABS_USER_AGENT` | `/api/ssl` | no SSL Labs analysis: fallback summary or a grade-`T` connectivity result |
 | `GRAPH_CLIENT_ID`, `GRAPH_CLIENT_SECRET`, `GRAPH_TENANT_ID` | `/api/tenant` | no Microsoft Graph: realm and DNS detail, no tenant ID |
 
-Use the values the `ssl-checker` and `microsoft-tenant-lookup` workers hold. Cloudflare
-does not show a secret once set, so if they are not recorded elsewhere, issue a new Graph
-client secret in the app registration rather than trying to read the old one back.
+Cloudflare does not show a secret once set, so if a value is not recorded elsewhere, issue
+a new Graph client secret in the app registration rather than trying to read the old one
+back. `GRAPH_CLIENT_ID` is the app's "Application (client) ID" and `GRAPH_TENANT_ID` its
+"Directory (tenant) ID"; an Object ID or a Secret ID in either place is refused by
+Microsoft with `unauthorized_client` / `700016`, which the function logs.
 
 `SSL_LABS_EMAIL` is the credential for SSL Labs, sent as an `email` header, and it only
 works if the address has been **registered once** with
 `POST https://api.ssllabs.com/api/v4/register` (JSON `firstName`, `lastName`, `email`,
-`organization`; free providers such as Gmail are refused). The deployed worker's address is
-evidently registered already, so use the same one; if a different address is used, register
-it first. The call is in
+`organization`; free providers such as Gmail are refused). The address in use is already
+registered; if a different one is used, register it first. The call is in
 [`cloudflare-workers/README.md`](cloudflare-workers/README.md#secrets). Add them
 as type **Secret**, then **redeploy** — a Pages secret takes effect on the next deployment,
 not the next request.
@@ -192,50 +193,21 @@ The API has none in code. Add a rate limiting rule on the `russ.tools` zone for
 `starts_with(http.request.uri.path, "/api/")`, per IP; the reasoning and its limits are in
 [`cloudflare-workers/README.md`](cloudflare-workers/README.md#abuse-and-rate-limiting).
 
-## Legacy workers
+## The Buzzword worker
 
-The three standalone lookup workers (`ssl.russ.tools`, `whois.russ.tools`,
-`tenant.russ.tools`) are still deployed and still in `cloudflare-worker/`, but the site no
-longer calls them. They stay until the steps in
-[Retiring the old workers](cloudflare-workers/README.md#retiring-the-old-workers) are done.
-`buzzword-generator` is a separate public API and is not being retired.
-
-The workers are not part of the site build and are not deployed by CI. Each has its own
-config under `cloudflare-worker/configs/` and is deployed individually:
+`buzzword-generator` (`buzzwords.russ.tools`) is the one standalone worker left. It is a
+separate public API, not part of the site build, and is not deployed by CI:
 
 ```bash
-pnpm dlx wrangler deploy --config cloudflare-worker/configs/wrangler-ssl.toml
+pnpm dlx wrangler deploy --config cloudflare-worker/configs/wrangler-buzzwords.toml
 ```
 
-### Rotating ALLOWED_ORIGINS
+Its origin allowlist is compiled into `cloudflare-worker/buzzwords.js`; changing it needs
+an edit and a redeploy.
 
-`ALLOWED_ORIGINS` is a comma-separated list of exact origins, held as a secret on each of
-the `ssl-checker`, `whois-lookup` and `microsoft-tenant-lookup` workers. It is read on
-every request, so a change takes effect on the next request with no redeploy. It is the
-only thing standing between these workers and open public use, so it needs pruning whenever
-a temporary origin — a preview deployment, a local port — stops being needed. With the site
-on `/api/*`, the tidy state until the workers are deleted is the production origins alone:
-no localhost entry and no preview origins.
-
-Set it per worker; the value replaces the previous one in full:
-
-```bash
-echo 'https://russ.tools,https://www.russ.tools' \
-  | pnpm dlx wrangler secret put ALLOWED_ORIGINS \
-      --config cloudflare-worker/configs/wrangler-ssl.toml
-```
-
-Repeat for `wrangler-whois.toml` and `wrangler-tenant.toml`. The three lists are set
-separately and can drift; check all three when auditing.
-
-Two things to know before editing the value. The origin check falls back to a `Referer`
-prefix match when there is no `Origin` header, so a trailing-slash-free entry such as
-`https://russ.tools` also matches a referer of `https://russ.tools.example.com/` — keep the
-list tight. And the first entry doubles as the default `Access-Control-Allow-Origin` for
-requests the workers do not recognise, so put the production origin first.
-
-`buzzword-generator` does not read this secret; its allowlist is compiled into
-`cloudflare-worker/buzzwords.js` and changing it requires an edit and a redeploy.
+The three lookup workers (`ssl-checker`, `whois-lookup`, `microsoft-tenant-lookup`) and
+their hostnames were deleted on 2026-11-14, after `/api/*` was confirmed in production.
+There is nothing left to rotate or redeploy for them.
 
 ## Rolling back
 
@@ -244,9 +216,8 @@ the last known-good deployment and roll back to it. That is instant and needs no
 it takes `/api/*` back with it — the functions are part of the deployment.
 Reverting the offending commit on `main` produces a fresh build and is the durable fix.
 
-**A worker.** `pnpm dlx wrangler rollback --config cloudflare-worker/configs/<config>.toml`
-restores its previous version. Secrets are not versioned with the code — a bad
-`ALLOWED_ORIGINS` is fixed by setting it again, not by rolling back.
+**The Buzzword worker.** `pnpm dlx wrangler rollback --config cloudflare-worker/configs/wrangler-buzzwords.toml`
+restores its previous version.
 
 **A build-settings change.** The Pages build command and output directory are dashboard
 settings, not repository files. Reverting them means editing them back and triggering a

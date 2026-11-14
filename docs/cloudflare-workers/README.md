@@ -10,11 +10,9 @@ no CORS because the pages that call them are the same origin, and run locally un
 `wrangler pages dev`.
 
 The three standalone Workers they were ported from (`ssl.russ.tools`, `whois.russ.tools`,
-`tenant.russ.tools`) are **still deployed and untouched**, so anything pinned to the old
-hostnames keeps working until the owner retires them — see
-[Legacy standalone workers](#legacy-standalone-workers) and
-[Retiring the old workers](#retiring-the-old-workers). Nothing in this repository calls
-them any more.
+`tenant.russ.tools`) were **retired on 2026-11-14** — see
+[Retired standalone workers](#retired-standalone-workers). Those hostnames no longer
+resolve.
 
 There is **no KV, no Durable Object, no D1 binding and no API key** anywhere in this, and
 no rate limiting in the code — see [Abuse and rate limiting](#abuse-and-rate-limiting).
@@ -151,10 +149,9 @@ curl -X POST https://api.ssllabs.com/api/v4/register \
 
 All four fields are mandatory, and SSL Labs does not accept free mail providers such as
 Gmail, Yahoo or Hotmail. The response carries `status: "success"` or `"failure"` with a
-`message`. The address the `ssl-checker` worker's secret holds is very likely registered
-already — see the note on the deployed worker under
-[Legacy standalone workers](#legacy-standalone-workers) — so try that value first and
-register only if `/api/ssl` reports that SSL Labs did not accept it.
+`message`. An address that is already registered answers with "Email already registered
+with us", which is a pass: use it as it is. Register only if `/api/ssl` reports that SSL
+Labs did not accept the address.
 
 Secrets take effect on the next deployment, not the next request: after adding or changing
 one, redeploy (retry the latest deployment, or push).
@@ -201,9 +198,9 @@ below. There is no SSL Labs API key: the registered email *is* the credential. R
 needs neither and is sent without the email. The address is never logged and never appears
 in a response.
 
-This is a deliberate divergence from `cloudflare-worker/ssl.js`, which reads
-`SSL_LABS_EMAIL` and never sends it — so, run as checked in, that source is refused by
-SSL Labs on every request and always falls back.
+This is a deliberate divergence from the retired `ssl-checker` worker's source, which read
+`SSL_LABS_EMAIL` and never sent it — so, run as it was checked in, it was refused by SSL
+Labs on every request and always fell back.
 
 Flow:
 
@@ -415,91 +412,39 @@ preview deployment whose `/api/*` is that branch's code. Rollback is the Pages r
 `src/test/msw/handlers.js` serves the same captured responses to the tool tests, so the
 islands are exercised without network access or a running function.
 
-## Legacy standalone workers
+## Retired standalone workers
 
-Kept in `cloudflare-worker/`, unmodified, and still deployed. This section describes them
-as they are; nothing in the site calls the first three any more.
+Until 2026-11-14 the three lookups ran as separate Workers, each on its own hostname with
+its own copy of an `ALLOWED_ORIGINS` secret:
 
-**The deployed `ssl-checker` is not the checked-in `ssl.js`.** The source never sends the
-`email` header SSL Labs requires, yet on 2026-11-14 the deployed worker returned a full
-`SSL Labs API v4` assessment for `github.com`. It can only have done that by sending a
-registered address, so the deployed code has drifted from the repository and the worker's
-`SSL_LABS_EMAIL` secret holds a working value. Nothing here redeploys that worker; if it
-were redeployed from source it would stop returning SSL Labs results.
+| Worker | Custom domain | Replaced by |
+|---|---|---|
+| `ssl-checker` | `ssl.russ.tools` | `/api/ssl` |
+| `whois-lookup` | `whois.russ.tools` | `/api/whois` |
+| `microsoft-tenant-lookup` | `tenant.russ.tools` | `/api/tenant` |
 
-| Source | Worker name | Custom domain | Called by |
-|---|---|---|---|
-| `ssl.js` | `ssl-checker` | `ssl.russ.tools` | nothing in this repository (was SSL Certificate Checker) |
-| `whois.js` | `whois-lookup` | `whois.russ.tools` | nothing in this repository (was WHOIS Lookup) |
-| `tenant.js` | `microsoft-tenant-lookup` | `tenant.russ.tools` | nothing in this repository (was Tenant Lookup, Microsoft Portals) |
-| `buzzwords.js` | `buzzword-generator` | `buzzwords.russ.tools` | nothing in this repository |
+They were deleted with `wrangler delete` once `/api/*` had been checked in production, and
+their sources (`cloudflare-worker/ssl.js`, `whois.js`, `tenant.js`) and configs were
+removed from the repository in the same change; git history has them. Deleting a worker
+with a `custom_domain` route removed its DNS record, and the three hostnames no longer
+resolve. Their secrets went with them.
 
-Each config in `cloudflare-worker/configs/` declares a single `custom_domain` route and
-nothing else. There are no environments, no staging variants and no `[vars]` blocks — every
-value the workers read is a secret set with `wrangler secret put`.
+What survives is the contract. The request parameters and response bodies documented per
+endpoint above are the workers', captured from production before the move and replayed by
+`src/test/functions/` from the fixtures in `src/test/fixtures/workers/` — which are still
+named after the old hostnames.
 
-### Origin handling in the workers
+Two things about the old workers worth knowing if their history is ever read: the origin
+check fell back to a `Referer` prefix match, so an allowed `https://russ.tools` also
+matched `https://russ.tools.example.com/`; and `ssl.js` logged the values of its SSL Labs
+settings on every request. Neither was carried into the functions.
 
-`ssl.js`, `whois.js` and `tenant.js` share the same shape, copied three times.
-
-`ALLOWED_ORIGINS` is a required secret: a comma-separated list, split and trimmed on every
-request. If it is missing the worker returns **500** with
-`{"error":"Configuration error: …"}` and no CORS headers.
-
-The check runs before anything else, including the `OPTIONS` preflight:
-
-1. If the `Origin` header exactly matches an entry, the request is allowed.
-2. Otherwise, if the `Referer` header *starts with* an allowed origin, the request is
-   allowed. This is a prefix test, so `https://russ.tools.example.com/` matches an allowed
-   `https://russ.tools`.
-3. Otherwise the worker returns **403**.
-
-Only `GET` and `OPTIONS` are accepted; anything else is **405**. `ssl.js` puts CORS headers
-on its 403 and the other two do not, and the three differ in what
-`Access-Control-Allow-Origin` they fall back to for an origin they do not recognise.
-
-Their request parameters and response bodies are the ones documented per endpoint above,
-at `GET /?…` on each hostname.
-
-### What the workers log
-
-All four log to `console`, which means Cloudflare's live tail and any log push destination
-configured on the account. `ssl.js` logs `Object.keys(env)` on every request, the resolved
-SSL Labs config including the values of `SSL_LABS_EMAIL` and `SSL_LABS_USER_AGENT`, and the
-entire SSL Labs response for every parse; `tenant.js` logs the full `ALLOWED_ORIGINS` list
-on every request; `whois.js` and `tenant.js` log every domain and IP looked up. The Pages
-Functions log failures only, and never a secret.
-
-### Deploying a legacy worker
-
-`wrangler` is not a dependency of this project; invoke it with `pnpm dlx`. Each worker is
-deployed with its own config, from the repository root:
+The one standalone worker left is `buzzword-generator`, below. `wrangler` is not a
+dependency of this project; invoke it with `pnpm dlx`:
 
 ```bash
-pnpm dlx wrangler deploy --config cloudflare-worker/configs/wrangler-ssl.toml
+pnpm dlx wrangler deploy --config cloudflare-worker/configs/wrangler-buzzwords.toml
 ```
-
-Secrets are set per worker the same way (`wrangler secret put <NAME> --config <config>`).
-Rollback is `pnpm dlx wrangler rollback --config <config>`. There should be no reason to
-deploy the three lookup workers again.
-
-### Retiring the old workers
-
-The old hostnames are only still needed by pages that were loaded before the cutover (a
-tab left open keeps the JavaScript it was served) and by anything outside this repository
-that was pointed at them. Once the site has been deploying from `/api/*` for a few days:
-
-1. Check each worker's request graph in the dashboard (Workers & Pages → the worker →
-   Metrics). Requests should have fallen to nothing, or to background noise that the
-   origin check is already answering with 403.
-2. Delete the worker (`pnpm dlx wrangler delete --config cloudflare-worker/configs/wrangler-<name>.toml`).
-   Deleting a worker with a `custom_domain` route removes the DNS record Cloudflare created
-   for it; confirm `ssl`, `whois` and `tenant` are gone from the zone's DNS afterwards and
-   remove any that are left.
-3. Then delete `cloudflare-worker/ssl.js`, `whois.js`, `tenant.js` and their three configs,
-   and this section.
-
-Do **not** retire `buzzwords.russ.tools` as part of that. It is a different kind of thing.
 
 ## Buzzword generator — `buzzwords.russ.tools`
 

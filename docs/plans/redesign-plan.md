@@ -3145,3 +3145,27 @@ unconfigured or refuses the address, so the two failures an owner can fix no
 longer look like a grade-`T` certificate. `cloudflare-worker/ssl.js` is left as
 it is. Still not verified against the real SSL Labs API from this session —
 that needs the registered address, which only the Pages project will hold.
+
+### 2026-11-14 — Both changes live, and the old workers retired
+
+PR 35 (the same-origin API) merged first and deployed; PR 34 (the refinement
+pass and the hex mark) took `main` in, with one conflict in this log, and
+merged after it.
+
+Getting Graph working took three preview builds. The first was built before
+`GRAPH_TENANT_ID` existed in the preview environment (Pages binds secrets at
+deploy time). The second had all three values and Microsoft refused the token
+with a bare 400, so the function was changed to log Microsoft's `error` and
+`error_codes`. The third named it: `unauthorized_client` / `700016`, a client
+ID that is not an application in the tenant. With the two IDs re-entered the
+fourth preview returned a tenant ID, and production did the same after merge.
+
+`ssl-checker`, `whois-lookup` and `microsoft-tenant-lookup` were then deleted
+with `wrangler delete`, at the owner's instruction, and their sources and
+configs removed from the repo. The three hostnames no longer resolve.
+`buzzword-generator` is untouched and answers `/health`.
+
+Noticed and not fixed: the Buzzword Ipsum tool's API panel shows
+`buzzwords.russmckendrick.com`, which does not connect; the worker's route is
+`buzzwords.russ.tools`.
+

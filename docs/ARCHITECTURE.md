@@ -48,7 +48,7 @@ Commands: `pnpm dev`, `pnpm build` (output `dist/`), `pnpm preview`.
 | `e2e/` | The Playwright deep-link, help-page and layout checks. |
 | `functions/api/` | The lookup API: one Cloudflare Pages Function per lookup, served at `/api/*`. |
 | `functions-lib/` | The functions' shared guard. Outside `functions/` because every file in there becomes a route. |
-| `cloudflare-worker/` | The legacy standalone workers the API was ported from, still deployed, and `buzzwords.js`. |
+| `cloudflare-worker/` | `buzzwords.js`, the one standalone worker left. The three lookup workers were retired on 2026-11-14. |
 | `public/` | Static assets and discovery metadata. The sitemap and llms files are generated and gitignored; Open Graph cards are committed. |
 
 ## The Astro shell
@@ -410,10 +410,10 @@ ships a checked-in Microsoft snapshot and performs its searches and diffs locall
 `wrangler pages dev` process (`pnpm dev:api`); see `DEVELOPMENT.md`. The functions' secrets
 are set on the Pages project, and locally in a gitignored `.dev.vars`.
 
-The three standalone workers the API was ported from are still in `cloudflare-worker/` and
-still deployed on `whois.russ.tools`, `ssl.russ.tools` and `tenant.russ.tools`, each behind
-its own `ALLOWED_ORIGINS` secret. No client code calls them; they remain until the owner
-retires them (`cloudflare-workers/README.md`).
+The three standalone workers the API was ported from (`whois.russ.tools`, `ssl.russ.tools`
+and `tenant.russ.tools`) were retired on 2026-11-14: deleted from Cloudflare and removed
+from this repository. Their response shapes live on as the fixtures in
+`src/test/fixtures/workers/`, which are still named after those hostnames.
 
 `cloudflare-worker/buzzwords.js` is also in the tree, but no current client code calls it:
 the Buzzword Ipsum tool generates from a bundled `data/buzzwords.json`. The worker exists
