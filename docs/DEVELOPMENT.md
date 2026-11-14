@@ -84,7 +84,7 @@ value is optional:
 | Without | What you get |
 |---|---|
 | anything | `/api/whois` in full |
-| `SSL_LABS_EMAIL` + `SSL_LABS_USER_AGENT` | `/api/ssl` skips SSL Labs: HackerTarget's summary, or a basic grade-`T` connectivity result |
+| `SSL_LABS_EMAIL` + `SSL_LABS_USER_AGENT` | `/api/ssl` skips SSL Labs: HackerTarget's summary, or a basic grade-`T` connectivity result, with a Status line saying SSL Labs is not configured. The email must be one registered with SSL Labs; an unregistered one gets the same fallback and says so. |
 | `GRAPH_CLIENT_ID` + `GRAPH_CLIENT_SECRET` + `GRAPH_TENANT_ID` | `/api/tenant` skips Microsoft Graph: realm and DNS detail, no tenant ID |
 
 **Why localhost is allowed.** The API refuses any `Origin` that is not its own. Locally the

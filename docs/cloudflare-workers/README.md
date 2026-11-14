@@ -128,7 +128,7 @@ Set on the Pages project (Settings → Variables and Secrets), separately for th
 
 | Name | Used by | If missing |
 |---|---|---|
-| `SSL_LABS_EMAIL` | `/api/ssl` | SSL Labs is skipped; falls back to HackerTarget, then a basic check |
+| `SSL_LABS_EMAIL` | `/api/ssl` | SSL Labs is skipped; falls back to HackerTarget, then a basic check, and says so in `statusMessage` |
 | `SSL_LABS_USER_AGENT` | `/api/ssl` | as above — both are required together |
 | `GRAPH_CLIENT_ID` | `/api/tenant` | Graph is skipped; no tenant ID, public endpoints only |
 | `GRAPH_CLIENT_SECRET` | `/api/tenant` | as above — all three are required together |
@@ -136,6 +136,25 @@ Set on the Pages project (Settings → Variables and Secrets), separately for th
 
 `/api/whois` needs nothing. `ALLOWED_ORIGINS` is **not** read by the functions and must not
 be added to the Pages project.
+
+**`SSL_LABS_EMAIL` must be an address registered with SSL Labs**, not just any address.
+The v4 API requires an `email` header on `analyze` and `getEndpointData` and refuses
+everything else: 400 with an `email` field error when the header is missing, 441 when the
+address is not registered. Registration is a one-off call, made by the owner, not by this
+code:
+
+```bash
+curl -X POST https://api.ssllabs.com/api/v4/register \
+  -H 'Content-Type: application/json' \
+  -d '{"firstName":"…","lastName":"…","email":"…","organization":"…"}'
+```
+
+All four fields are mandatory, and SSL Labs does not accept free mail providers such as
+Gmail, Yahoo or Hotmail. The response carries `status: "success"` or `"failure"` with a
+`message`. The address the `ssl-checker` worker's secret holds is very likely registered
+already — see the note on the deployed worker under
+[Legacy standalone workers](#legacy-standalone-workers) — so try that value first and
+register only if `/api/ssl` reports that SSL Labs did not accept it.
 
 Secrets take effect on the next deployment, not the next request: after adding or changing
 one, redeploy (retry the latest deployment, or push).
@@ -162,6 +181,8 @@ successful lookup, and each is in [`BEHAVIOR_CHANGES.md`](../BEHAVIOR_CHANGES.md
 | Missing `ALLOWED_ORIGINS` | 500 `Configuration error` | not applicable |
 | SSL in-progress response | `Cache-Control: public, max-age=300` | `Cache-Control: no-store` |
 | SSL upstream query | domain interpolated raw | domain passed through `encodeURIComponent` |
+| SSL Labs `email` header | never sent by the checked-in source | sent on `analyze` and `getEndpointData` |
+| SSL fallback when SSL Labs is unconfigured or refuses the email | silent | top-level `statusMessage` says so |
 | Logging | env keys, the SSL Labs email, whole upstream responses, every domain looked up | failures only |
 
 ## SSL Checker — `/api/ssl`
@@ -174,9 +195,15 @@ GET /api/ssl?domain=example.com
 
 Secrets: `SSL_LABS_EMAIL`, `SSL_LABS_USER_AGENT`. Both are required by
 `getSSLLabsConfig`; a missing one throws and the request falls through to the fallback path
-below. There is no SSL Labs API key. Only the user agent is transmitted, as the
-`User-Agent` header on requests to `https://api.ssllabs.com/api/v4`; the email is required
-to be set but is not sent anywhere — that is how the worker behaved and the port keeps it.
+below. There is no SSL Labs API key: the registered email *is* the credential. Requests to
+`https://api.ssllabs.com/api/v4` carry the user agent as `User-Agent`, and `analyze` and
+`getEndpointData` carry the address in an `email` header, which SSL Labs requires. `info`
+needs neither and is sent without the email. The address is never logged and never appears
+in a response.
+
+This is a deliberate divergence from `cloudflare-worker/ssl.js`, which reads
+`SSL_LABS_EMAIL` and never sends it — so, run as checked in, that source is refused by
+SSL Labs on every request and always falls back.
 
 Flow:
 
@@ -196,6 +223,19 @@ Flow:
 
 The `apiSource` strings still say "Cloudflare Worker". They are part of the response body
 the client and its history entries were written against, so they did not change.
+
+A fallback result (steps 4 and 5) normally has no top-level `statusMessage`. It gains one in
+exactly two cases, so that a deployment that can never reach SSL Labs does not look like a
+site with a poor certificate:
+
+- the `SSL_LABS_*` secrets are missing: `SSL Labs analysis unavailable: it is not
+  configured for this deployment. Showing a reduced check instead.`
+- SSL Labs answered `analyze` with 441, or with 400 naming the `email` field: `SSL Labs
+  analysis unavailable: SSL Labs did not accept this site's registered email. Showing a
+  reduced check instead.`
+
+The SSL checker shows `statusMessage` in its Status field. Any other SSL Labs failure — the
+service being down, a host it cannot assess — falls back without one, as the worker did.
 
 The response is always 200 JSON, reshaped from SSL Labs rather than passed through:
 
@@ -370,6 +410,13 @@ islands are exercised without network access or a running function.
 
 Kept in `cloudflare-worker/`, unmodified, and still deployed. This section describes them
 as they are; nothing in the site calls the first three any more.
+
+**The deployed `ssl-checker` is not the checked-in `ssl.js`.** The source never sends the
+`email` header SSL Labs requires, yet on 2026-11-14 the deployed worker returned a full
+`SSL Labs API v4` assessment for `github.com`. It can only have done that by sending a
+registered address, so the deployed code has drifted from the repository and the worker's
+`SSL_LABS_EMAIL` secret holds a working value. Nothing here redeploys that worker; if it
+were redeployed from source it would stop returning SSL Labs results.
 
 | Source | Worker name | Custom domain | Called by |
 |---|---|---|---|

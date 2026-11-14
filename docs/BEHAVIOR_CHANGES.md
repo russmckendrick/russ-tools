@@ -139,6 +139,20 @@ What did change, all of it outside the body of a successful lookup:
   queries.** It was interpolated raw, so `domain=example.com%26publish%3Don`
   added a parameter to the upstream call. A hostname encodes to itself;
   pinned in `ssl.test.js`.
+- **SSL: the registered email is sent to SSL Labs.** `cloudflare-worker/ssl.js`
+  reads `SSL_LABS_EMAIL` and never transmits it, and the v4 API answers
+  `analyze` without an `email` header with 400. A faithful port therefore
+  never reached SSL Labs at all. The functions send `email` on `analyze` and
+  `getEndpointData` (not `info`). This diverges from the checked-in worker
+  and matches the *deployed* one, which returns SSL Labs results and so must
+  already send it. Pinned in `ssl.test.js`.
+- **SSL: a fallback says why, in two cases.** When the `SSL_LABS_*` secrets
+  are missing, or SSL Labs refuses the email (441, or 400 naming the `email`
+  field), the HackerTarget or basic-check result gains a top-level
+  `statusMessage` — a key the SSL Labs shape already has and the client
+  already shows. Before, both cases were indistinguishable from a real
+  grade-`T` result. Every other fallback is unchanged, which the
+  `ssl.error.json` replay still pins.
 - **Logging.** The workers logged the env keys, the SSL Labs email, whole
   upstream responses and every query. The functions log failures only.
 - **`buildUrl` accepts a root-relative base**, resolving it against the page

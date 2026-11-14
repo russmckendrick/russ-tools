@@ -3,13 +3,26 @@ import { json, lookupHandler } from '../../functions-lib/http.js';
 const SSL_LABS_BASE_URL = 'https://api.ssllabs.com/api/v4';
 const DAY_MS = 1000 * 60 * 60 * 24;
 
+const NOT_CONFIGURED_NOTICE =
+  'SSL Labs analysis unavailable: it is not configured for this deployment. Showing a reduced check instead.';
+const NOT_REGISTERED_NOTICE =
+  "SSL Labs analysis unavailable: SSL Labs did not accept this site's registered email. Showing a reduced check instead.";
+
+class SSLLabsRefusal extends Error {
+  constructor(message, notice) {
+    super(message);
+    this.name = 'SSLLabsRefusal';
+    this.notice = notice;
+  }
+}
+
 function getSSLLabsConfig(env) {
   if (!env.SSL_LABS_EMAIL) {
-    throw new Error('SSL_LABS_EMAIL environment variable is required');
+    throw new SSLLabsRefusal('SSL_LABS_EMAIL environment variable is required', NOT_CONFIGURED_NOTICE);
   }
 
   if (!env.SSL_LABS_USER_AGENT) {
-    throw new Error('SSL_LABS_USER_AGENT environment variable is required');
+    throw new SSLLabsRefusal('SSL_LABS_USER_AGENT environment variable is required', NOT_CONFIGURED_NOTICE);
   }
 
   return {
@@ -27,13 +40,33 @@ const FALLBACK_APIS = [
   },
 ];
 
-async function sslLabsFetch(url, config) {
-  return fetch(url, {
-    headers: {
-      'User-Agent': config.userAgent,
-      Accept: 'application/json',
-    },
-  });
+async function sslLabsFetch(url, config, { registered = true } = {}) {
+  const headers = {
+    'User-Agent': config.userAgent,
+    Accept: 'application/json',
+  };
+
+  if (registered) headers.email = config.email;
+
+  return fetch(url, { headers });
+}
+
+async function assertAccepted(response, action) {
+  if (response.ok) return;
+
+  let rejectedEmail = response.status === 441;
+
+  if (response.status === 400) {
+    try {
+      const body = await response.clone().json();
+      rejectedEmail = Boolean(body.errors?.some((error) => error.field === 'email'));
+    } catch {
+      rejectedEmail = false;
+    }
+  }
+
+  const message = `SSL Labs ${action} failed: ${response.status} ${response.statusText}`;
+  throw rejectedEmail ? new SSLLabsRefusal(message, NOT_REGISTERED_NOTICE) : new Error(message);
 }
 
 async function checkSSLLabs(domain, env) {
@@ -41,7 +74,7 @@ async function checkSSLLabs(domain, env) {
   const host = encodeURIComponent(domain);
 
   try {
-    const infoResponse = await sslLabsFetch(`${config.baseUrl}/info`, config);
+    const infoResponse = await sslLabsFetch(`${config.baseUrl}/info`, config, { registered: false });
 
     if (!infoResponse.ok) {
       throw new Error(`SSL Labs info check failed: ${infoResponse.status}`);
@@ -57,9 +90,7 @@ async function checkSSLLabs(domain, env) {
     config
   );
 
-  if (!response.ok) {
-    throw new Error(`SSL Labs analyze failed: ${response.status} ${response.statusText}`);
-  }
+  await assertAccepted(response, 'analyze');
 
   let data = await response.json();
 
@@ -76,9 +107,7 @@ async function checkSSLLabs(domain, env) {
     config
   );
 
-  if (!response.ok) {
-    throw new Error(`SSL Labs start assessment failed: ${response.status} ${response.statusText}`);
-  }
+  await assertAccepted(response, 'start assessment');
 
   data = await response.json();
 
@@ -534,11 +563,13 @@ export const onRequest = lookupHandler(async ({ url, env }) => {
       .toLowerCase();
 
     let result = null;
+    let notice = null;
 
     try {
       result = await checkSSLLabs(cleanDomain, env);
     } catch (sslLabsError) {
       console.log(`SSL Labs failed: ${sslLabsError.message}`);
+      notice = sslLabsError.notice ?? null;
 
       for (const api of FALLBACK_APIS) {
         try {
@@ -552,6 +583,10 @@ export const onRequest = lookupHandler(async ({ url, env }) => {
 
     if (!result) {
       result = await performBasicSSLCheck(cleanDomain);
+    }
+
+    if (notice) {
+      result.statusMessage = notice;
     }
 
     return json(result, {

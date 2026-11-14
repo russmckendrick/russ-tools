@@ -151,7 +151,7 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
   stable contract and an unpinned upgrade would fail the drift test on an untouched file.
   It reads only `colors`, `typography`, `rounded` and `spacing`; `borderWidth`, `shadow`,
   `motion` and `components` are documentation, transcribed by hand into `globals.css`.
-- `pnpm test` — Vitest (1062 tests; **keep these green**) · `pnpm test:watch` to iterate.
+- `pnpm test` — Vitest (1071 tests; **keep these green**) · `pnpm test:watch` to iterate.
   The count dropped from ~1000 when the palettes were retired: `tokens.contrast.test.js`
   ran its pair list over 12 palette/mode combinations and now runs it over 2. It measures
   *more* roles than before, against fewer themes.
@@ -196,6 +196,10 @@ three standalone workers, whose query parameters and JSON bodies they keep exact
   `GRAPH_CLIENT_SECRET`, `GRAPH_TENANT_ID`) are set on the Pages project per environment;
   locally they come from the gitignored `.dev.vars` (names in `.dev.vars.example`). All
   are optional: each lookup degrades to its unauthenticated sources without them.
+  `SSL_LABS_EMAIL` is SSL Labs' credential, sent as an `email` header on `analyze` and
+  `getEndpointData`; it must be an address registered with SSL Labs, and it is never
+  logged. The legacy `cloudflare-worker/ssl.js` reads it and never sends it — don't copy
+  that back.
 - **Do not add a `wrangler.toml` with `pages_build_output_dir`.** It would become the
   source of truth and lock the dashboard's settings for the same fields.
 - **The contract is tested by replay.** `src/test/functions/` rebuilds each upstream's

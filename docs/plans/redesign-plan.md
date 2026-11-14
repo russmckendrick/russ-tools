@@ -3045,3 +3045,27 @@ and their DNS records once their traffic has stopped; decide what to do about
 `buzzwords.js`, a public API whose hard-coded allowlist still names
 `localhost:5173` and `localhost:3000`. Not deployed and no secret set from
 this session.
+
+**Same day, after review: the port had carried a dead SSL Labs path.** The
+session that asked for this work found that `/api/ssl` never reached SSL Labs:
+`analyze` answers 400 without an `email` header, and the checked-in worker —
+and so the port — read `SSL_LABS_EMAIL` without ever sending it. Reproduced
+with one unauthenticated request, and confirmed against SSL Labs' v4
+documentation (`email` mandatory on `analyze` and `getEndpointData`; 441 for an
+unregistered address). The replay test had not caught it because it mocks SSL
+Labs and the mock did not care about headers; it now asserts the header on
+every call that needs it and its absence on `info`.
+
+Two lessons for the record. The earlier note in this entry that the replay
+passing "is the evidence that the logic moved intact" was true and beside the
+point: the logic that moved was wrong, and only the *deployed* worker, which
+has drifted from the source, was right. And the README had recorded "the email
+is required to be set but is not sent anywhere" as a curiosity instead of
+treating it as the fault it was.
+
+Fixed in the function only: the email goes on the calls that need it and is
+never logged; a fallback now carries a `statusMessage` when SSL Labs is
+unconfigured or refuses the address, so the two failures an owner can fix no
+longer look like a grade-`T` certificate. `cloudflare-worker/ssl.js` is left as
+it is. Still not verified against the real SSL Labs API from this session —
+that needs the registered address, which only the Pages project will hold.

@@ -82,7 +82,15 @@ and Preview are separate environments**; a value set in one is not present in th
 
 Use the values the `ssl-checker` and `microsoft-tenant-lookup` workers hold. Cloudflare
 does not show a secret once set, so if they are not recorded elsewhere, issue a new Graph
-client secret in the app registration rather than trying to read the old one back. Add them
+client secret in the app registration rather than trying to read the old one back.
+
+`SSL_LABS_EMAIL` is the credential for SSL Labs, sent as an `email` header, and it only
+works if the address has been **registered once** with
+`POST https://api.ssllabs.com/api/v4/register` (JSON `firstName`, `lastName`, `email`,
+`organization`; free providers such as Gmail are refused). The deployed worker's address is
+evidently registered already, so use the same one; if a different address is used, register
+it first. The call is in
+[`cloudflare-workers/README.md`](cloudflare-workers/README.md#secrets). Add them
 as type **Secret**, then **redeploy** — a Pages secret takes effect on the next deployment,
 not the next request.
 
@@ -154,8 +162,11 @@ without causing a single upstream lookup. It cannot tell you the secrets are rig
 that by hand after the first deploy:
 
 - `/whois-lookup/github.com` shows registrar and nameservers (no secret involved).
-- `/ssl-checker/github.com` shows a letter grade and a certificate chain. Grade `T` with one
-  "basic check" endpoint means the `SSL_LABS_*` secrets are missing from that environment.
+- `/ssl-checker/github.com` shows a letter grade and a certificate chain. If SSL Labs could
+  not be used, the Status field says why: "not configured for this deployment" means the
+  `SSL_LABS_*` secrets are missing from that environment, and "did not accept this site's
+  registered email" means the address is not registered with SSL Labs. Grade `T` with one
+  "basic check" endpoint and neither message means SSL Labs itself failed for that host.
 - `/tenant-lookup/microsoft.com` shows a tenant ID. "Detection Method: GetUserRealm API"
   with no tenant ID means the `GRAPH_*` secrets are missing or wrong.
 - From any other site's console, `fetch('https://russ.tools/api/whois?query=github.com')`
