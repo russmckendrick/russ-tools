@@ -1,5 +1,7 @@
 /**
- * The HTTP client for the Cloudflare Worker lookups.
+ * The HTTP client for the lookups that leave the browser: the site's own
+ * same-origin API (`/api/ssl`, `/api/whois`, `/api/tenant` — Pages Functions
+ * in `functions/api/`) and the public DNS and routing providers.
  *
  * `src/utils/api/apiUtils.js` — which this replaces at each tool's port —
  * gets three things wrong, and all three are visible to users:
@@ -47,8 +49,15 @@ export class ApiError extends Error {
   }
 }
 
+const ROOT_RELATIVE = /^\/(?!\/)/;
+const PLACEHOLDER_ORIGIN = 'http://relative.invalid';
+
 /**
  * Add query parameters to a URL, skipping null/undefined.
+ *
+ * A root-relative base (`/api/whois`, the site's own same-origin API) is
+ * resolved against the page's origin, so callers and test interceptors always
+ * see an absolute URL in a browser; where there is no page it stays relative.
  *
  * @param {string} baseUrl
  * @param {Record<string, unknown>} [params]
@@ -60,9 +69,17 @@ export function buildUrl(baseUrl, params = {}) {
   );
   if (entries.length === 0) return baseUrl;
 
-  const url = new URL(baseUrl);
+  if (!ROOT_RELATIVE.test(baseUrl)) {
+    const url = new URL(baseUrl);
+    for (const [key, value] of entries) url.searchParams.append(key, String(value));
+    return url.toString();
+  }
+
+  const origin = globalThis.location?.origin;
+  const hasOrigin = Boolean(origin) && origin !== 'null';
+  const url = new URL(baseUrl, hasOrigin ? origin : PLACEHOLDER_ORIGIN);
   for (const [key, value] of entries) url.searchParams.append(key, String(value));
-  return url.toString();
+  return hasOrigin ? url.toString() : `${url.pathname}${url.search}`;
 }
 
 /** @param {number} ms */

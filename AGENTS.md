@@ -143,17 +143,21 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
 > change, so it can come back with another stray npm install.
 
 - `pnpm install` — install deps (esbuild is the one approved build script, see `pnpm.onlyBuiltDependencies`)
+- `pnpm dev:api` — `wrangler pages dev` on :8788, serving the Pages Functions in
+  `functions/api/`. Run it beside `pnpm dev`, whose Vite proxy forwards `/api` to it;
+  without it the WHOIS, SSL and tenant tools fail locally and everything else works.
 - `pnpm generate:tokens` — regenerate the token layer from `DESIGN.md` (needs network once).
   The exporter is **pinned** (`@google/design.md@0.3.0`) because its output shape is not a
   stable contract and an unpinned upgrade would fail the drift test on an untouched file.
   It reads only `colors`, `typography`, `rounded` and `spacing`; `borderWidth`, `shadow`,
   `motion` and `components` are documentation, transcribed by hand into `globals.css`.
-- `pnpm test` — Vitest (514 tests; **keep these green**) · `pnpm test:watch` to iterate.
+- `pnpm test` — Vitest (1062 tests; **keep these green**) · `pnpm test:watch` to iterate.
   The count dropped from ~1000 when the palettes were retired: `tokens.contrast.test.js`
   ran its pair list over 12 palette/mode combinations and now runs it over 2. It measures
   *more* roles than before, against fewer themes.
-- `pnpm test:e2e` — Playwright deep-link and help matrix (41 tests) against
-  `wrangler pages dev`
+- `pnpm test:e2e` — Playwright deep-link, help and API matrix (90 tests) against
+  `wrangler pages dev`. It reuses whatever is already listening on :8788, so a stale
+  server gets tested instead of the build — `PW_PORT=8798 pnpm test:e2e` moves it.
 - `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 11 warnings remain
   (exhaustive-deps and react-refresh) — the raw-palette and off-scale-type warnings are
   all cleared. Don't add errors, and don't let the warning count climb.
@@ -168,8 +172,43 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
 
 Astro static site, React island per tool. All processing is **client-side /
 privacy-first** — no data leaves the browser except three explicit lookups (WHOIS, SSL,
-Microsoft tenant), proxied through **Cloudflare Workers** (`cloudflare-worker/`; client
-config in `src/utils/api/apiConfig.json`, accessed via `src/core/api.js`).
+Microsoft tenant), which go to the site's **own same-origin API** (below; client config in
+`src/utils/api/apiConfig.json`, accessed via `src/core/api.js`).
+
+### The lookup API (`/api/*`, added 2026-11-14)
+
+`/api/ssl`, `/api/whois` and `/api/tenant` are **Cloudflare Pages Functions** in
+`functions/api/`, one module per lookup, deployed with the site. They were ported from the
+three standalone workers, whose query parameters and JSON bodies they keep exactly.
+
+- **`functions-lib/http.js` is the shared guard**, and it lives outside `functions/` on
+  purpose: every file under `functions/` becomes a route. Don't move it in, and don't put
+  tests or helpers under `functions/`.
+- **Same-origin only, and honest about it.** No CORS headers anywhere; `Sec-Fetch-Site`
+  must be `same-origin` when present; `Origin` must equal the request URL's own origin
+  when present; GET only. That stops other sites using or reading it. It does **not** stop
+  a non-browser client, which can forge or omit those headers — never describe the API as
+  private or authenticated. Rate limiting is a Cloudflare zone rule, not code.
+- **There is no `ALLOWED_ORIGINS` and no localhost entry.** "Own origin" is derived from
+  the request, so previews work unconfigured. A loopback `Origin` is accepted only when
+  the function's own URL is loopback, which only happens under `wrangler pages dev`.
+- **Secrets** (`SSL_LABS_EMAIL`, `SSL_LABS_USER_AGENT`, `GRAPH_CLIENT_ID`,
+  `GRAPH_CLIENT_SECRET`, `GRAPH_TENANT_ID`) are set on the Pages project per environment;
+  locally they come from the gitignored `.dev.vars` (names in `.dev.vars.example`). All
+  are optional: each lookup degrades to its unauthenticated sources without them.
+- **Do not add a `wrangler.toml` with `pages_build_output_dir`.** It would become the
+  source of truth and lock the dashboard's settings for the same fields.
+- **The contract is tested by replay.** `src/test/functions/` rebuilds each upstream's
+  data from the production captures in `src/test/fixtures/workers/`, runs the handler and
+  requires the captured response back. Several quirks are therefore deliberate: the
+  `apiSource` strings still say "Cloudflare Worker", the tenant lookup's
+  `openid_configuration` URLs are wrong and never match, and the SSL 500 body carries
+  `stack`. Changing any of them is a contract change — log it in `BEHAVIOR_CHANGES.md`.
+- **The old workers are still deployed and still in `cloudflare-worker/`** until the owner
+  retires them; don't edit or delete them. `cloudflare-worker/buzzwords.js` is a separate
+  public API and is not part of any of this.
+
+Full reference: `docs/cloudflare-workers/README.md`.
 
 ### Tool structure
 
@@ -212,7 +251,7 @@ Four pieces — the first three manifest-driven, the fourth static:
 - **Discovery statics** (checked in, not generated): `public/_headers` puts an RFC 8288
   `Link: rel="api-catalog"` + `rel="service-doc"` on `/` and sets
   `application/linkset+json` + open CORS on the catalog; `public/.well-known/api-catalog`
-  (RFC 9727 linkset) anchors the three worker APIs from `apiConfig.json`;
+  (RFC 9727 linkset) anchors the three `/api/*` lookup endpoints from `apiConfig.json` (on `SITE_URL`, each titled as same-origin only);
   `public/.well-known/ai-catalog.json` is the ARD manifest pointing at llms.txt, the
   WebMCP manifest and the api-catalog; `robots.txt` carries
   `Content-Signal: search=yes, ai-input=yes` (`ai-train` deliberately undeclared — an
@@ -238,8 +277,10 @@ Four pieces — the first three manifest-driven, the fourth static:
 4. **SEO** — per-tool meta/OG/schema from the manifest via `BaseLayout`/`ToolLayout`,
    plus `/sitemap.xml` and the per-tool OG cards. Pinned by `src/layouts/seo.test.js`
    and `canonical.test.js`, which assert the **built** output.
-5. **Cloudflare Workers** — request/response schemas are a stable contract; leave them
-   until the dedicated phase.
+5. **The lookup API** (`/api/ssl`, `/api/whois`, `/api/tenant`, and the legacy workers
+   they were ported from) — request/response schemas are a stable contract, pinned by
+   replay tests in `src/test/functions/`. They change only on purpose, with a
+   `BEHAVIOR_CHANGES.md` entry.
 
 ## Conventions
 
@@ -323,4 +364,5 @@ Session Log for details.
   (`pnpm generate:docs`) and pinned by `src/tools/docs.test.js` — don't hand-edit them.
 - `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, `docs/DEPLOYMENT.md` and
   `docs/cloudflare-workers/README.md` were **regenerated from the code** at cutover.
-- Workers/API: `docs/cloudflare-workers/README.md`, `docs/api/API_CONFIG.md`
+- Lookup API and legacy workers: `docs/cloudflare-workers/README.md`,
+  `docs/api/API_CONFIG.md`

@@ -14,7 +14,15 @@ import webmcp from 'astro-webmcp';
  * own Vite config; there is no vite.config.js any more.
  *
  * See docs/plans/redesign-plan.md.
+ *
+ * The three lookups that leave the browser are Pages Functions under
+ * functions/api/, served at /api/* by the same Pages project. `astro dev`
+ * knows nothing about them, so the dev server proxies /api to a locally
+ * running `pnpm dev:api` (wrangler pages dev, port 8788). The proxy exists
+ * only in `astro dev`; nothing here reaches the build.
  */
+const API_DEV_TARGET = process.env.API_DEV_TARGET ?? 'http://127.0.0.1:8788';
+
 export default defineConfig({
   site: 'https://russ.tools',
   output: 'static',
@@ -47,6 +55,11 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      proxy: {
+        '/api': { target: API_DEV_TARGET, changeOrigin: false },
+      },
+    },
     resolve: {
       alias: { '@': new URL('./src', import.meta.url).pathname },
     },

@@ -22,6 +22,34 @@ describe('buildUrl', () => {
 
   it('returns the base URL untouched when there is nothing to add', () => {
     expect(buildUrl('https://api.example.com/dns')).toBe('https://api.example.com/dns');
+    expect(buildUrl('/api/whois')).toBe('/api/whois');
+  });
+
+  it('keeps a root-relative base relative when there is no page to resolve it against', () => {
+    expect(buildUrl('/api/whois', { query: 'example.com', type: null })).toBe('/api/whois?query=example.com');
+    expect(buildUrl('/api/tenant', { domain: 'a b@c.com' })).toBe('/api/tenant?domain=a+b%40c.com');
+  });
+
+  it('resolves a root-relative base against the page origin in a browser', () => {
+    vi.stubGlobal('location', { origin: 'https://russ.tools' });
+    try {
+      expect(buildUrl('/api/ssl', { domain: 'example.com' })).toBe('https://russ.tools/api/ssl?domain=example.com');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('stays relative on an opaque origin', () => {
+    vi.stubGlobal('location', { origin: 'null' });
+    try {
+      expect(buildUrl('/api/ssl', { domain: 'example.com' })).toBe('/api/ssl?domain=example.com');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('does not treat a protocol-relative URL as the site API', () => {
+    expect(() => buildUrl('//other.example/api', { a: 1 })).toThrow();
   });
 });
 

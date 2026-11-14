@@ -87,8 +87,11 @@ const agentsMd = [
   '',
   `${tools.length} focused utilities, one page each, no accounts and no analytics. ` +
     'Local calculations and pasted data stay in the browser. Lookup tools name the ' +
-    'provider they contact: Google or Cloudflare DNS-over-HTTPS, RIPEstat, or one of ' +
-    'the Cloudflare Workers for WHOIS, SSL certificate checks and Microsoft tenant discovery.',
+    'provider they contact: Google or Cloudflare DNS-over-HTTPS, RIPEstat, or the ' +
+    "site's own API at `/api/whois`, `/api/ssl` and `/api/tenant` for WHOIS, SSL " +
+    'certificate checks and Microsoft tenant discovery. That API is same-origin only: ' +
+    'it answers the pages of this site and refuses requests from anywhere else, so ' +
+    'use the tool pages rather than calling it directly.',
   '',
   '## For AI agents',
   '',

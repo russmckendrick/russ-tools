@@ -43,10 +43,12 @@ Commands: `pnpm dev`, `pnpm build` (output `dist/`), `pnpm preview`.
 | `src/components/common/` | `StorageManager.jsx`, the island behind `/delete`. |
 | `src/styles/` | `globals.css`, the generated `tokens.generated.css`, and `shell.css`. |
 | `src/utils/` | What remains of the pre-rewrite utilities: `api/apiConfig.json`, `azure/`, `devLog.js`, the Prism loaders. |
-| `src/test/` | Vitest setup, MSW handlers and captured worker fixtures. |
+| `src/test/` | Vitest setup, MSW handlers, captured lookup fixtures, and the suites for the API handlers (`functions/`). |
 | `scripts/` | Build and asset generators, the WebMCP manifest patch, and reference-data refresh jobs. |
 | `e2e/` | The Playwright deep-link, help-page and layout checks. |
-| `cloudflare-worker/` | Worker sources and their `wrangler-*.toml` configs. |
+| `functions/api/` | The lookup API: one Cloudflare Pages Function per lookup, served at `/api/*`. |
+| `functions-lib/` | The functions' shared guard. Outside `functions/` because every file in there becomes a route. |
+| `cloudflare-worker/` | The legacy standalone workers the API was ported from, still deployed, and `buzzwords.js`. |
 | `public/` | Static assets and discovery metadata. The sitemap and llms files are generated and gitignored; Open Graph cards are committed. |
 
 ## The Astro shell
@@ -200,7 +202,7 @@ from `src/core/index.js`:
   copying work on non-secure origins.
 - **`download.js`** — `downloadFile`/`downloadJSON`/`safeFilename`, revoking the object URL
   on the next frame.
-- **`api.js`** — the HTTP client for Worker and public-provider lookups: a real
+- **`api.js`** — the HTTP client for the site's own `/api/*` and public-provider lookups: a real
   `AbortController` deadline,
   retries limited to 5xx/408/425/429 and genuine transport failures, and an `ApiError`
   carrying the status.
@@ -376,19 +378,26 @@ they must keep decoding forever.
 
 ## The Cloudflare boundary
 
-WHOIS, SSL analysis and Microsoft tenant discovery go through Cloudflare Workers on
-dedicated subdomains. DNS and routing data use named public APIs directly from the browser.
+WHOIS, SSL analysis and Microsoft tenant discovery go through the site's own API: three
+Cloudflare Pages Functions served by the same Pages project, on the same origin as the
+pages that call them. DNS and routing data use named public APIs directly from the browser.
 
-| Endpoint | Worker source | Used by |
+| Endpoint | Source | Used by |
 |---|---|---|
-| `https://whois.russ.tools/` | `cloudflare-worker/whois.js` | whois-lookup |
-| `https://ssl.russ.tools/` | `cloudflare-worker/ssl.js` | ssl-checker |
-| `https://tenant.russ.tools/` | `cloudflare-worker/tenant.js` | tenant-lookup, microsoft-portals |
+| `/api/whois` | `functions/api/whois.js` | whois-lookup |
+| `/api/ssl` | `functions/api/ssl.js` | ssl-checker |
+| `/api/tenant` | `functions/api/tenant.js` | tenant-lookup, microsoft-portals |
 
-URLs, timeouts and retry counts are declared in `src/utils/api/apiConfig.json` and read by
+Paths, timeouts and retry counts are declared in `src/utils/api/apiConfig.json` and read by
 the tools that need them; requests go through `apiFetch`/`buildUrl` from `src/core/api.js`,
-which applies the configured timeout and the retry policy. Request and response schemas are
-a frozen contract — the client changes when a request is given up on, not what is sent.
+which applies the configured timeout and the retry policy and resolves the root-relative
+path against the page's origin. Request and response schemas are a frozen contract — the
+functions were ported from the workers and are held to responses captured from them.
+
+Being same-origin is the access model: the functions send no CORS headers and refuse any
+request whose `Sec-Fetch-Site` or `Origin` says it came from somewhere else
+(`functions-lib/http.js`). That keeps other sites out; it does not, and cannot, keep out a
+non-browser client that forges those headers.
 
 DNS lookups use public DNS-over-HTTPS endpoints directly (`dns.google/resolve` and
 `1.1.1.1/dns-query`), with no worker in between.
@@ -396,10 +405,14 @@ DNS lookups use public DNS-over-HTTPS endpoints directly (`dns.google/resolve` a
 The BGP & ASN Explorer calls the public RIPEstat Data API directly. Azure Service Tags
 ships a checked-in Microsoft snapshot and performs its searches and diffs locally.
 
-Each worker enforces a CORS origin allowlist from an `ALLOWED_ORIGINS` secret set per
-worker (`cloudflare-worker/configs/wrangler-*.toml` documents the `wrangler secret put`
-invocation). A local dev origin has to be on that list for worker-backed lookups to
-succeed from a development server.
+`astro dev` does not run Functions, so in development its Vite proxy forwards `/api` to a
+`wrangler pages dev` process (`pnpm dev:api`); see `DEVELOPMENT.md`. The functions' secrets
+are set on the Pages project, and locally in a gitignored `.dev.vars`.
+
+The three standalone workers the API was ported from are still in `cloudflare-worker/` and
+still deployed on `whois.russ.tools`, `ssl.russ.tools` and `tenant.russ.tools`, each behind
+its own `ALLOWED_ORIGINS` secret. No client code calls them; they remain until the owner
+retires them (`cloudflare-workers/README.md`).
 
 `cloudflare-worker/buzzwords.js` is also in the tree, but no current client code calls it:
 the Buzzword Ipsum tool generates from a bundled `data/buzzwords.json`. The worker exists

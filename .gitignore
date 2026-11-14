@@ -43,6 +43,12 @@ playwright-report
 .windsurfrules
 .wrangler
 
+# Local secrets for the Pages Functions (`pnpm dev:api`). The names live in
+# .dev.vars.example; the values never leave this machine.
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
 CLAUDE.md
 **/CLAUDE.md
 

@@ -32,6 +32,7 @@ Every script below exists in `package.json`.
 | Command | What it runs | When to use it |
 |---|---|---|
 | `pnpm dev` | `astro dev` | Day-to-day development. Note that param deep links 404 here — there is no `_redirects` layer in the dev server. |
+| `pnpm dev:api` | `wrangler pages dev public --port 8788` | The lookup API for `pnpm dev`, in a second terminal — see [The lookup API locally](#the-lookup-api-locally). |
 | `pnpm build` | `generate:sitemap` → `astro build` → `generate:redirects` | Produce `dist/`. Also required before the built-output test suites will run. |
 | `pnpm preview` | `astro preview` | Serve the built `dist/` as static files. Still no `_redirects` handling — for that, use `wrangler pages dev dist`. |
 | `pnpm test` | `vitest run` | The unit and contract suites. |
@@ -44,9 +45,54 @@ Every script below exists in `package.json`.
 | `pnpm generate:og` | `scripts/generate-og.mjs` | Regenerate the committed Open Graph cards in `public/og/`. |
 | `pnpm generate:docs` | `scripts/generate-docs.mjs` | Regenerate the tool tables in `README.md` and `docs/README.md`. |
 
-Worker-backed lookups (WHOIS, SSL, tenant) call the deployed Cloudflare Workers, which
-enforce a CORS origin allowlist. A local development origin must be in the relevant
-worker's `ALLOWED_ORIGINS` for those lookups to succeed; everything else works offline.
+## The lookup API locally
+
+WHOIS, SSL and tenant lookups call the site's own API — `/api/whois`, `/api/ssl`,
+`/api/tenant`, which are Cloudflare Pages Functions in `functions/api/`. `astro dev` does
+not run Functions, so local development is two terminals:
+
+```bash
+# terminal 1 — the API, on http://127.0.0.1:8788
+pnpm dev:api
+
+# terminal 2 — the site, on http://localhost:4321
+pnpm dev
+```
+
+`astro.config.mjs` gives the dev server a Vite proxy that forwards `/api` to
+`http://127.0.0.1:8788`, so the browser still makes a same-origin request to
+`localhost:4321/api/…` exactly as it would in production. The proxy exists only in
+`astro dev`. If the API is on another port, say so in both places:
+
+```bash
+pnpm dlx wrangler pages dev public --port 8798 --compatibility-date 2025-05-05
+API_DEV_TARGET=http://127.0.0.1:8798 pnpm dev
+```
+
+Without terminal 1 the proxy has nothing to forward to, so the three lookup tools show a
+failed lookup; every other tool works, because nothing else touches `/api`.
+
+`pnpm dev:api` serves `public/` only because `wrangler pages dev` wants a directory; the
+part that matters is that it compiles `functions/` from the repository root and reloads on
+change. To see the whole built site on the Cloudflare runtime instead — pages, param deep
+links and API on one port — use `pnpm build && pnpm dlx wrangler pages dev dist`.
+
+**Secrets.** Copy `.dev.vars.example` to `.dev.vars` (gitignored) and fill in what you
+have. `wrangler pages dev` reads it from the repository root; nothing deploys it. Every
+value is optional:
+
+| Without | What you get |
+|---|---|
+| anything | `/api/whois` in full |
+| `SSL_LABS_EMAIL` + `SSL_LABS_USER_AGENT` | `/api/ssl` skips SSL Labs: HackerTarget's summary, or a basic grade-`T` connectivity result |
+| `GRAPH_CLIENT_ID` + `GRAPH_CLIENT_SECRET` + `GRAPH_TENANT_ID` | `/api/tenant` skips Microsoft Graph: realm and DNS detail, no tenant ID |
+
+**Why localhost is allowed.** The API refuses any `Origin` that is not its own. Locally the
+browser's origin (`localhost:4321`) and wrangler's (`127.0.0.1:8788`) differ, so the guard
+accepts a loopback `Origin` when — and only when — the function's own URL is a loopback
+host, which is true under `wrangler pages dev` and never true once deployed. There is no
+localhost entry in any deployed configuration. The full access model, and what it cannot
+do, is in [`cloudflare-workers/README.md`](cloudflare-workers/README.md#who-can-call-it).
 
 ## Adding a tool
 
@@ -128,8 +174,12 @@ origin (`http://localhost/`) for the same reason — an opaque origin carries no
 `include` is `src/**/*.{test,spec}.{js,jsx}`, so the Playwright specs in `e2e/` are not
 picked up.
 
-Worker responses are stubbed with MSW: handlers in `src/test/msw/handlers.js`, captured
-fixtures in `src/test/fixtures/workers/`.
+Lookup responses are stubbed with MSW for the tool tests: handlers in
+`src/test/msw/handlers.js`, fixtures captured from production in
+`src/test/fixtures/workers/`. The API handlers themselves are tested in
+`src/test/functions/` — they live there, not beside the code, because every file under
+`functions/` becomes a route. Those suites stub `fetch`, rebuild each upstream's data from
+the same fixtures, and require the handler to reproduce the captured response.
 
 Roughly what the suites cover:
 
@@ -165,8 +215,8 @@ lint**, in that order: without the build step those suites silently skip.
 
 ### Playwright
 
-`pnpm test:e2e` runs `e2e/deeplinks.spec.js` — the browser-level gate for the deep-link
-contract. It proves what only the Cloudflare Pages layer can: that a param deep link
+`pnpm test:e2e` runs the specs in `e2e/`. `deeplinks.spec.js` is the browser-level gate
+for the deep-link contract. It proves what only the Cloudflare Pages layer can: that a param deep link
 200-rewrites with the URL intact, that the prerendered page underneath is the right tool,
 that `/network-designer` 301s to `/subnet-calculator`, and that the island applies the param
 after hydration. It also covers the index grouping and the mobile navigation.
@@ -182,9 +232,16 @@ pnpm build && pnpm test:e2e
 PW_BASE_URL=https://russ-tools-preview.pages.dev pnpm test:e2e
 ```
 
-Worker-backed lookups fire on mount but are not asserted: the matrix proves routing and
-param application, which is origin-independent, whereas live lookups depend on the target
-origin being in each worker's `ALLOWED_ORIGINS`.
+The lookup tools fire a request on mount; the deep-link matrix stubs `/api/**` so a run
+does not send real queries to SSL Labs, a registry and Microsoft. `e2e/api.spec.js` is the
+gate for the API itself: `/api/*` reaches a Function, a same-origin browser fetch is
+answered, and a browser on another origin is refused with a 403 it cannot read. Every
+request in it is either missing its parameter or refused, so it never causes an upstream
+lookup.
+
+The config reuses a server already listening on `:8788`. If one is — an earlier
+`pnpm dev:api`, or another checkout — it is that server that gets tested, not this build;
+`PW_PORT=8798 pnpm test:e2e` starts a fresh one on another port.
 
 ## Linting
 
