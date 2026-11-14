@@ -24,6 +24,46 @@ Two rules:
 
 ## Landed
 
+### Conditional Access: five application names were wrong, and are corrected (2026-11-14)
+
+The explainer names the applications a policy targets from a short list in
+`scripts/refresh-entra-ids.mjs`. That list was typed by hand, and a check of every row
+against Microsoft's documentation found five that no Microsoft source supports. A policy
+that names one of these ids now explains differently.
+
+| Application id in the policy | Before | Now |
+|---|---|---|
+| `797f4846-ba00-4fd7-ba43-dac1f8f63013` | the raw GUID | Windows Azure Service Management API (Azure Resource Manager) |
+| `9cdead84-a844-4324-93f2-b2e6bb768d07` | Microsoft Intune Enrolment | Azure Virtual Desktop |
+| `d4ebce55-015a-49b5-a083-c84d1797ae8c` | the raw GUID | Microsoft Intune Enrollment |
+| `cf36b471-5b44-428c-9ce7-313bf84528de` | Microsoft Online Syndication Partner Portal | Microsoft Bing Search |
+| `d176f6e7-38e5-40c9-8a78-3998aab820e7` | the raw GUID | Microsoft Online Syndication Partner Portal |
+| `66a88757-258c-4c72-893c-3e8bed4d6899` | Microsoft Forms | Office 365 Search Service |
+| `c9a559d2-7aab-4f13-a6ed-e7e9c52aec87` | the raw GUID | Microsoft Forms |
+| `None` | No cloud apps | None |
+
+The first row is the one that mattered. The list held two ids for Azure management,
+`797f4846-ba00-4fd7-ba5e-ceb5e5f1a0e0` and `…a0e1`, and neither exists: Microsoft's id is
+`…ba43-dac1f8f63013`, one application under both names. A policy requiring MFA for Azure
+management, which is among the most common policies there is, showed its target as a bare
+GUID. The second row was worse in kind: a policy scoped to Azure Virtual Desktop was
+explained as one scoped to Intune enrolment.
+
+`None` is the one removal that is not a correction. Microsoft's Graph reference documents
+`All`, `Office365` and `MicrosoftAdminPortals` as reserved values of `includeApplications`
+and does not document `None` for applications, so it is no longer translated and shows as
+the word the policy carries.
+
+Every row of the list now cites the Microsoft page it was read from, and the refresh fails
+if that page stops printing the id beside the name. `src/tools/conditional-access/lib/wellKnown.test.js`
+pins the corrected rows. No existing test or fixture named any of these ids.
+
+The same refresh adds seven application ids to the Entra ID Lookup's dataset, from the
+Microsoft Dev Box Conditional Access page: Windows Azure Service Management API, Azure
+Virtual Desktop, Windows 365, Microsoft Remote Desktop, Windows Cloud sign-in, Fidalgo
+Dataplane Public and Microsoft developer portal. A pasted GUID that is one of them now
+ranks the lookup first in the paste panel, as any other id it holds does.
+
 ### The paste panel knows an Entra identifier when it sees one (2026-11-14)
 
 A bare **GUID** in the index's paste panel used to offer three tools in a fixed order: Azure

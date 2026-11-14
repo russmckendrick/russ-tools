@@ -47,7 +47,7 @@ Pasting a GUID into the box on the home page lists this tool first when the GUID
 - Directory roles: the Microsoft Entra built-in roles reference (`MicrosoftDocs/entra-docs`, `permissions-reference.md`)
 - Graph permissions: the Microsoft Graph permissions reference (`microsoftgraph/microsoft-graph-docs-contrib`, `concepts/permissions-reference.md`)
 - Error codes: the Microsoft Entra authentication and authorization error codes reference (`MicrosoftDocs/entra-docs`, `reference-error-codes.md`)
-- Applications, merged from five pages: Power Platform's "Commonly used Microsoft first-party services and portal apps", "Verify first-party Microsoft applications in sign-in reports", the mandatory multifactor authentication page, the Conditional Access target resources page, and the Microsoft 365 client application IDs table. Microsoft Graph's own ID is read from the permissions reference.
+- Applications, merged from six pages: Power Platform's "Commonly used Microsoft first-party services and portal apps", "Verify first-party Microsoft applications in sign-in reports", the mandatory multifactor authentication page, the Conditional Access target resources page, the Microsoft Dev Box Conditional Access page, and the Microsoft 365 client application IDs table. Microsoft Graph's own ID is read from the permissions reference.
 
 The fetch date is shown under the search box. Microsoft documents only a subset of AADSTS codes and rewords them; for a code that is not here, `https://login.microsoftonline.com/error` is the live source.
 
@@ -62,5 +62,5 @@ Nothing you paste leaves the browser. The tool does not use localStorage and mak
 - `lib/entraIds.js` flattens the dataset into searchable entries and classifies the query (GUID, GUID prefix, error code, text).
 - `lib/idIndex.js` reads `entra-id-index.json`, the GUIDs alone (about 65 kB), which `src/lib/paste.js` loads on demand to rank this tool for a pasted GUID.
 - `entra-ids.json` (about 670 kB before compression) is a dynamic import, so the page shell renders before it arrives.
-- The Conditional Access explainer keeps its own smaller file, `entra-well-known-ids.json`, written by the same script.
+- The Conditional Access explainer keeps its own smaller file, `entra-well-known-ids.json`, written by the same script. Its application list is typed in the script, and each row cites a Microsoft page that the run checks.
 - WebMCP tool: `lookup_entra_id`.
