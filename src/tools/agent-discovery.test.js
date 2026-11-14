@@ -9,13 +9,13 @@ import apiConfig from '../utils/api/apiConfig.json';
  *
  * `public/_headers` (Cloudflare Pages) advertises the API catalog from the
  * homepage; `public/.well-known/api-catalog` is an RFC 9264 linkset naming
- * the three lookup APIs; `public/.well-known/ai-catalog.json` is the ARD
+ * the four lookup APIs; `public/.well-known/ai-catalog.json` is the ARD
  * manifest. All three are static and checked in — the drift they guard
  * against is a lookup endpoint changing in apiConfig.json while the
  * published catalog keeps pointing agents at the old address.
  *
  * The lookups are the site's own same-origin API (`/api/ssl`, `/api/whois`,
- * `/api/tenant`), so apiConfig.json holds root-relative paths and the
+ * `/api/tenant`, `/api/headers`), so apiConfig.json holds root-relative paths and the
  * catalog anchors are those paths on SITE_URL. Each must have a Pages
  * Function behind it, and the catalog must not send agents to the retired
  * per-lookup hostnames.
@@ -25,7 +25,7 @@ const headers = readFileSync('public/_headers', 'utf8');
 const apiCatalog = JSON.parse(readFileSync('public/.well-known/api-catalog', 'utf8'));
 const aiCatalog = JSON.parse(readFileSync('public/.well-known/ai-catalog.json', 'utf8'));
 const robots = readFileSync('public/robots.txt', 'utf8');
-const LOOKUPS = ['ssl', 'whois', 'tenant'];
+const LOOKUPS = ['ssl', 'whois', 'tenant', 'headers'];
 
 describe('_headers', () => {
   it('advertises the api-catalog from the homepage', () => {

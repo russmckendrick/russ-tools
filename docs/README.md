@@ -27,8 +27,10 @@ network, cloud and platform work.
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](tools/tenant-lookup/) |
 | **Certificate & CSR Decoder** | Security | Decode PEM certificates, chains and CSRs without uploading them. | `/cert-decoder` | [Docs](tools/cert-decoder/) |
 | **DNSSEC & Delegation Checker** | Security | Verify DS/DNSKEY links and inspect a domain delegation. | `/dnssec-checker` | [Docs](tools/dnssec-checker/) |
+| **HTTP Security Headers** | Security | Check a site for HSTS, CSP, framing and cookie flags. | `/http-headers` | [Docs](tools/http-headers/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](tools/jwt/) |
 | **Password Generator** | Security | Cryptographically random passwords, generated on-device. | `/password-generator` | [Docs](tools/password-generator/) |
+| **SAML Decoder** | Security | Decode a SAML response, request or assertion without uploading it. | `/saml` | [Docs](tools/saml/) |
 | **SSL Certificate Checker** | Security | Inspect the chain, ciphers and expiry for any host. | `/ssl-checker` | [Docs](tools/ssl-checker/) |
 | **Base64 Encoder/Decoder** | Developer | Encode and decode text and files, including URL-safe output. | `/base64` | [Docs](tools/base64/) |
 | **CRON Expression Builder** | Developer | Build and read cron expressions in plain English. | `/cron` | [Docs](tools/cron-builder/) |
@@ -42,7 +44,7 @@ network, cloud and platform work.
 | **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](tools/buzzword-ipsum/) |
 
-31 tools.
+33 tools.
 <!-- TOOLS:END -->
 
 Tools without a linked document work the same way as the rest; nobody has written one up
@@ -101,7 +103,9 @@ to the chosen Google or Cloudflare DNS-over-HTTPS resolver; Email DNS Analyser a
 Delegation Checker use Google DNS-over-HTTPS. BGP & ASN Explorer sends the queried address,
 prefix or ASN to RIPEstat. WHOIS, SSL analysis and Microsoft tenant discovery send the
 queried name or address to the site's own API (`/api/*`, the functions in `functions/api/`),
-which passes it to the upstream sources.
+which passes it to the upstream sources. HTTP Security Headers sends the URL you enter to
+the same API, which resolves the hostname through Cloudflare DNS and requests the URL
+itself.
 Each lookup tool names that boundary where it runs.
 
 Saved data is browser local storage only. `/delete` shows what each tool has stored and

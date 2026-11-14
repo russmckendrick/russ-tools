@@ -6,7 +6,7 @@ browser, with no accounts, analytics or uploads.
 
 Network lookups necessarily send the queried name or address to the provider named in
 that tool: Google or Cloudflare DNS-over-HTTPS, RIPEstat for routing data, and the site's
-own same-origin API for WHOIS, SSL analysis and Microsoft tenant discovery. Each tool's linked
+own same-origin API for WHOIS, SSL analysis, Microsoft tenant discovery and HTTP header checks. Each tool's linked
 documentation states its boundary explicitly.
 
 ## Available tools
@@ -33,8 +33,10 @@ documentation states its boundary explicitly.
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](docs/tools/tenant-lookup/) |
 | **Certificate & CSR Decoder** | Security | Decode PEM certificates, chains and CSRs without uploading them. | `/cert-decoder` | [Docs](docs/tools/cert-decoder/) |
 | **DNSSEC & Delegation Checker** | Security | Verify DS/DNSKEY links and inspect a domain delegation. | `/dnssec-checker` | [Docs](docs/tools/dnssec-checker/) |
+| **HTTP Security Headers** | Security | Check a site for HSTS, CSP, framing and cookie flags. | `/http-headers` | [Docs](docs/tools/http-headers/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](docs/tools/jwt/) |
 | **Password Generator** | Security | Cryptographically random passwords, generated on-device. | `/password-generator` | [Docs](docs/tools/password-generator/) |
+| **SAML Decoder** | Security | Decode a SAML response, request or assertion without uploading it. | `/saml` | [Docs](docs/tools/saml/) |
 | **SSL Certificate Checker** | Security | Inspect the chain, ciphers and expiry for any host. | `/ssl-checker` | [Docs](docs/tools/ssl-checker/) |
 | **Base64 Encoder/Decoder** | Developer | Encode and decode text and files, including URL-safe output. | `/base64` | [Docs](docs/tools/base64/) |
 | **CRON Expression Builder** | Developer | Build and read cron expressions in plain English. | `/cron` | [Docs](docs/tools/cron-builder/) |
@@ -48,7 +50,7 @@ documentation states its boundary explicitly.
 | **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](docs/tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](docs/tools/buzzword-ipsum/) |
 
-31 tools.
+33 tools.
 <!-- TOOLS:END -->
 
 ## Quick start

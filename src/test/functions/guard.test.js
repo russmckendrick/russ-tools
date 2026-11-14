@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { onRequest as whois } from '../../../functions/api/whois.js';
 import { onRequest as ssl } from '../../../functions/api/ssl.js';
 import { onRequest as tenant } from '../../../functions/api/tenant.js';
+import { onRequest as headers } from '../../../functions/api/headers.js';
 import { guard, isLocalRuntime } from '../../../functions-lib/http.js';
 import { SITE, call, stubUpstream } from './harness.js';
 
@@ -11,6 +12,7 @@ const ENDPOINTS = [
   ['whois', whois, '/api/whois', '?query=example.com'],
   ['ssl', ssl, '/api/ssl', '?domain=example.com'],
   ['tenant', tenant, '/api/tenant', '?domain=example.com'],
+  ['headers', headers, '/api/headers', '?url=example.com'],
 ];
 
 const request = (url, { method = 'GET', headers = {} } = {}) => new Request(url, { method, headers });

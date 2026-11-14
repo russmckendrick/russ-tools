@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
  * token, real domains, an IPv6 CIDR — because placeholder-shaped values are
  * exactly what `_redirects` patterns and `useParams` decoding never choke on.
  *
- * The lookups behind ssl/whois/tenant fire on mount but are NOT asserted:
+ * The lookups behind ssl/whois/tenant/headers fire on mount but are NOT asserted:
  * the matrix proves routing and param application. They are the site's own
  * `/api/*` now, which both the local runtime and a deployed target would
  * really answer — so these tests stub it, or every run would send four
@@ -92,7 +92,7 @@ test.describe('home and shell pages', () => {
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(31);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('the catalogue rows sit in two flush columns', async ({ page }) => {
@@ -115,7 +115,7 @@ test.describe('home and shell pages', () => {
       };
     });
 
-    expect(total).toBe(31);
+    expect(total).toBe(33);
     expect(lefts, `row left edges: ${lefts}`).toHaveLength(2);
     expect(widths, `row widths: ${widths}`).toHaveLength(1);
   });
@@ -139,17 +139,17 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(31);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('a shared category link arrives filtered', async ({ page }) => {
     await page.goto('/#security');
 
-    await expect(page.getByRole('radio', { name: 'Security 5' })).toHaveAttribute(
+    await expect(page.getByRole('radio', { name: 'Security 7' })).toHaveAttribute(
       'aria-checked',
       'true'
     );
-    await expect(page.locator('.rt-card:visible')).toHaveCount(5);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(7);
     // The anchor rides on the first row of the group, so the breadcrumb link
     // every tool page carries still has something to scroll to.
     await expect(page.locator('#security')).toHaveClass(/rt-card/);
@@ -161,11 +161,11 @@ test.describe('home and shell pages', () => {
     const input = page.locator('#rt-jump-input');
     await expect(input).toBeVisible();
 
-    // Seven tools take a bare hostname, so the panel offers all seven rather
+    // Eight tools take a bare hostname, so the panel offers all eight rather
     // than silently choosing one.
     await input.fill('example.com');
     const chips = page.locator('#rt-jump-hint a');
-    await expect(chips).toHaveCount(7);
+    await expect(chips).toHaveCount(8);
     await expect(chips.first()).toHaveText('DNS Lookup \u2192 /dns-lookup');
 
     // A CIDR can be calculated, combined or inspected in the routing table.
@@ -202,20 +202,27 @@ test.describe('home and shell pages', () => {
     await expect(chips).toHaveCount(1);
     await expect(chips.first()).toHaveAttribute('href', '/timestamp/1794651210123');
 
-    // A URL with a path or query is offered to the URL parser first, with the
-    // seven host tools behind it. The URL rides in the fragment, which is
-    // never sent to the server. A bare host keeps the dispatch it had.
+    // A URL with a path or query is offered to the URL parser first, which
+    // only reads the string; the headers checker, which fetches the site, is
+    // second, and the seven other host tools follow. The URL rides in the
+    // fragment, which is never sent to the server, and every host tool gets
+    // the host alone.
     await input.fill('https://example.com/pricing?ref=1');
-    await expect(chips).toHaveCount(8);
+    await expect(chips).toHaveCount(9);
     await expect(chips.first()).toHaveText('URL Parser → /url');
     await expect(chips.first()).toHaveAttribute(
       'href',
       '/url#url=https%3A%2F%2Fexample.com%2Fpricing%3Fref%3D1'
     );
-    await expect(chips.nth(1)).toHaveAttribute('href', '/dns-lookup/example.com');
+    await expect(chips.nth(1)).toHaveAttribute('href', '/http-headers/example.com');
+    await expect(chips.nth(2)).toHaveAttribute('href', '/dns-lookup/example.com');
+
+    // A bare origin has nothing for the parser to take apart, so the headers
+    // checker leads and DNS follows.
     await input.fill('https://example.com/');
-    await expect(chips).toHaveCount(7);
-    await expect(chips.first()).toHaveText('DNS Lookup → /dns-lookup');
+    await expect(chips).toHaveCount(8);
+    await expect(chips.first()).toHaveText('HTTP Headers → /http-headers');
+    await expect(chips.nth(1)).toHaveText('DNS Lookup → /dns-lookup');
 
     // A SKU part number leads, with the encoder kept behind it because the
     // shape test is loose.
@@ -261,7 +268,7 @@ test.describe('home and shell pages', () => {
     // A wrong tool name carrying a right value: the domain lands in the panel.
     await page.goto('/whois/example.com');
     await expect(page.locator('#rt-jump-input')).toHaveValue('example.com');
-    await expect(page.locator('#rt-jump-hint a')).toHaveCount(7);
+    await expect(page.locator('#rt-jump-hint a')).toHaveCount(8);
 
     // A guess nobody could act on is worse than silence.
     await page.goto('/sdfsdfsdf');
@@ -414,7 +421,7 @@ test.describe('the index remembers', () => {
     await expect(group(page, 'Pinned')).toBeHidden();
     await expect(group(page, 'Recent').getByRole('link').first()).toHaveAttribute('href', '/jwt');
     // The catalogue beneath is untouched.
-    await expect(page.locator('.rt-card:visible')).toHaveCount(31);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('a tool can be pinned, unpinned and reordered by pinning again', async ({ page }) => {
@@ -454,7 +461,7 @@ test.describe('the index remembers', () => {
     await pin('JWT Decoder/Validator').click();
     await expect(page.locator('#rt-mine')).toBeHidden();
     expect(await stored(page)).toEqual({ pinned: null, recent: null });
-    await expect(page.locator('.rt-card:visible')).toHaveCount(31);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('the pin works from the keyboard', async ({ page }) => {
@@ -490,7 +497,7 @@ test.describe('the index remembers', () => {
     await seed(page, { recent: ['base64'] });
     await page.getByRole('button', { name: 'Clear recent tools' }).click();
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.getByRole('radio', { name: 'All 31' })).toBeFocused();
+    await expect(page.getByRole('radio', { name: 'All 33' })).toBeFocused();
   });
 
   test('a stored id the registry no longer has is ignored', async ({ page }) => {
@@ -507,7 +514,7 @@ test.describe('the index remembers', () => {
     // Nothing left to show is the same as nothing stored.
     await seed(page, { pinned: ['network-designer'], recent: ['a-tool-that-never-existed'] });
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(31);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('damaged storage leaves the index standing', async ({ page }) => {
@@ -518,7 +525,7 @@ test.describe('the index remembers', () => {
     });
     await page.reload();
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(31);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
     await expect(page.getByRole('searchbox', { name: 'Filter tools by name' })).toBeVisible();
   });
 
@@ -536,7 +543,7 @@ test.describe('the index remembers', () => {
 
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(31);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
     await expect(strip(page).getByRole('link')).toHaveCount(3);
   });
 
@@ -628,6 +635,12 @@ test.describe('param deep links — rewrite + island application', () => {
     await stubLookupApi(page);
     await expectRewrite(page, '/ssl-checker/example.com', 'SSL Certificate Checker');
     await expect(page.locator('#domain')).toHaveValue('example.com');
+  });
+
+  test('/http-headers/:domain', async ({ page }) => {
+    await stubLookupApi(page);
+    await expectRewrite(page, '/http-headers/example.com', 'HTTP Security Headers');
+    await expect(page.locator('#http-headers-target')).toHaveValue('example.com');
   });
 
   test('/whois-lookup/:query', async ({ page }) => {

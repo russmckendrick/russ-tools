@@ -46,6 +46,16 @@
           "title": "Microsoft Tenant Lookup API (same-origin only: answers the russ.tools pages, refuses other callers)"
         }
       ]
+    },
+    {
+      "anchor": "https://russ.tools/api/headers",
+      "service-doc": [
+        {
+          "href": "https://github.com/russmckendrick/russ-tools/blob/main/docs/cloudflare-workers/README.md#http-security-headers--apiheaders",
+          "type": "text/html",
+          "title": "HTTP Security Headers API (same-origin only: answers the russ.tools pages, refuses other callers)"
+        }
+      ]
     }
   ]
 }

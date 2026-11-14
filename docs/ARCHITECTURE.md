@@ -379,8 +379,8 @@ they must keep decoding forever.
 
 ## The Cloudflare boundary
 
-WHOIS, SSL analysis and Microsoft tenant discovery go through the site's own API: three
-Cloudflare Pages Functions served by the same Pages project, on the same origin as the
+WHOIS, SSL analysis, Microsoft tenant discovery and HTTP header checks go through the
+site's own API: four Cloudflare Pages Functions served by the same Pages project, on the same origin as the
 pages that call them. DNS and routing data use named public APIs directly from the browser.
 
 | Endpoint | Source | Used by |
@@ -388,6 +388,7 @@ pages that call them. DNS and routing data use named public APIs directly from t
 | `/api/whois` | `functions/api/whois.js` | whois-lookup |
 | `/api/ssl` | `functions/api/ssl.js` | ssl-checker |
 | `/api/tenant` | `functions/api/tenant.js` | tenant-lookup, microsoft-portals |
+| `/api/headers` | `functions/api/headers.js` | http-headers |
 
 Paths, timeouts and retry counts are declared in `src/utils/api/apiConfig.json` and read by
 the tools that need them; requests go through `apiFetch`/`buildUrl` from `src/core/api.js`,
