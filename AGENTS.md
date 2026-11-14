@@ -68,6 +68,16 @@ action goes through `<ToolAction>` (`ui/tool-actions.jsx`), which `ToolIsland` p
 slot beside Help. `.rt-band .rt-tool-acts :is(a, button)` in `shell.css` redraws whatever lands
 there in band tokens, so a tool passes an ordinary `<Button>` and never styles it for the band.
 
+**The index remembers, in the browser only.** `rt:shell:pinned` and `rt:shell:recent` hold
+tool ids behind the "Your tools" strip (`src/shell/YourTools.astro`). All of the logic is
+`src/shell/yourTools.js`; `paintStrip`, `planStrip` and `parseIds` are **stringified into an
+inline pre-paint script**, so each must stay self-contained — arguments only, no imports, no
+calls to a sibling function — or the strip silently stops appearing before first paint
+(`yourTools.test.js` evaluates the inlined source to catch that). The strip's links live in
+a `<template>`, not hidden in the page, because a hidden duplicate of every tool link breaks
+the `a[href="/…"]` locators the e2e suite uses. The pin is a sibling of the row link inside
+`.rt-row` (`ToolRow.astro`), never a child: a button cannot nest in an anchor.
+
 **Phones are a first-class target — the rules are in `DESIGN.md`'s Layout section.** The
 mechanics: `.rt-tap` (in `globals.css`, on every `Button` and `TabsTrigger`) is an invisible
 44px touch target on coarse pointers; `.rt-tool-body` is `minmax(0, 1fr)` because an implicit
@@ -133,7 +143,7 @@ or if any pair drops below its WCAG floor — it has caught five real contrast f
 
 A prior version of this file misdescribed the codebase. Corrected facts:
 
-- There are **28 tools** (2026-11-14). Don't take a count from prose anywhere — the generated tables
+- There are **33 tools** (2026-11-14). Don't take a count from prose anywhere — the generated tables
   in the READMEs are the only inventory that is checked (`src/tools/docs.test.js`).
 - Theming is a **pre-paint inline script** in `BaseLayout.astro` reading `vite-ui-theme`
   from localStorage, plus `src/shell/appearance-controls.js`. There is no React theme
@@ -147,8 +157,11 @@ A prior version of this file misdescribed the codebase. Corrected facts:
   `toolsConfig.json` and the `regions/` modules **have been deleted** — older docs
   reference them. The sitemap generator is `scripts/generate-sitemap.js`; the share codec
   is `src/core/sharelink.js`; the API client is `src/core/api.js`.
-- The azure-kql `*Shadcn` files **have been deleted**; they were a dead parallel
-  implementation. The live entry is `AzureKQLTool.jsx`.
+- azure-kql was **rebuilt from the ground up on 2026-11-14**. Its entry is `island.jsx`,
+  everything that decides what a query says is in `lib/`, and `AzureKQLTool.jsx`, the
+  `templates/`, `utils/` and `store/` folders and the template editor are gone. Table and
+  column names come from `src/data/microsoft/azure-monitor-tables.json`
+  (`pnpm refresh:kql-schemas`), never from memory.
 - `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, `docs/DEPLOYMENT.md` and the workers
   README were regenerated from the code at cutover. Earlier warnings about them being
   Mantine-era no longer apply.
@@ -169,20 +182,20 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
 - `pnpm install` — install deps (esbuild is the one approved build script, see `pnpm.onlyBuiltDependencies`)
 - `pnpm dev:api` — `wrangler pages dev` on :8788, serving the Pages Functions in
   `functions/api/`. Run it beside `pnpm dev`, whose Vite proxy forwards `/api` to it;
-  without it the WHOIS, SSL and tenant tools fail locally and everything else works.
+  without it the WHOIS, SSL, tenant and HTTP headers tools fail locally and everything else works.
 - `pnpm generate:tokens` — regenerate the token layer from `DESIGN.md` (needs network once).
   The exporter is **pinned** (`@google/design.md@0.3.0`) because its output shape is not a
   stable contract and an unpinned upgrade would fail the drift test on an untouched file.
   It reads only `colors`, `typography`, `rounded` and `spacing`; `borderWidth`, `shadow`,
   `motion` and `components` are documentation, transcribed by hand into `globals.css`.
-- `pnpm test` — Vitest (1732 tests; **keep these green**) · `pnpm test:watch` to iterate.
+- `pnpm test` — Vitest (2982 tests; **keep these green**) · `pnpm test:watch` to iterate.
   The count dropped from ~1000 when the palettes were retired: `tokens.contrast.test.js`
   ran its pair list over 12 palette/mode combinations and now runs it over 2. It measures
   *more* roles than before, against fewer themes.
-- `pnpm test:e2e` — Playwright deep-link, help and API matrix (99 tests) against
+- `pnpm test:e2e` — Playwright deep-link, help and API matrix (144 tests) against
   `wrangler pages dev`. It reuses whatever is already listening on :8788, so a stale
   server gets tested instead of the build — `PW_PORT=8798 pnpm test:e2e` moves it.
-- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 11 warnings remain
+- `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 6 warnings remain
   (exhaustive-deps and react-refresh) — the raw-palette and off-scale-type warnings are
   all cleared. Don't add errors, and don't let the warning count climb.
 - `pnpm generate:sitemap` — regenerate `public/sitemap.xml` **from the manifests**
@@ -198,15 +211,26 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
 ## Current architecture
 
 Astro static site, React island per tool. All processing is **client-side /
-privacy-first** — no data leaves the browser except three explicit lookups (WHOIS, SSL,
-Microsoft tenant), which go to the site's **own same-origin API** (below; client config in
+privacy-first** — no data leaves the browser except four explicit lookups (WHOIS, SSL,
+Microsoft tenant, HTTP security headers), which go to the site's **own same-origin API** (below; client config in
 `src/utils/api/apiConfig.json`, accessed via `src/core/api.js`).
 
 ### The lookup API (`/api/*`, added 2026-11-14)
 
-`/api/ssl`, `/api/whois` and `/api/tenant` are **Cloudflare Pages Functions** in
-`functions/api/`, one module per lookup, deployed with the site. They were ported from the
-three standalone workers, whose query parameters and JSON bodies they keep exactly.
+`/api/ssl`, `/api/whois`, `/api/tenant` and `/api/headers` are **Cloudflare Pages Functions**
+in `functions/api/`, one module per lookup, deployed with the site. The first three were
+ported from the three standalone workers, whose query parameters and JSON bodies they keep
+exactly. `/api/headers` (the HTTP Security Headers tool) was written as a function.
+
+- **`/api/headers` fetches a URL the caller chooses, so it is an SSRF surface.** What it may
+  fetch is decided in `functions-lib/public-host.js` and re-applied to every redirect: http
+  or https, port 80 or 443, a hostname and never an IP literal, no internal names, and every
+  A and AAAA record public (checked over Cloudflare DoH before each request). It follows at
+  most five redirects by hand, stops after eight seconds, sends no credentials, never returns
+  a body and never returns a cookie value. Do not loosen a rule there without a test in
+  `src/test/functions/headers.test.js` or `public-host.test.js`, and do not give the Pages
+  project a VPC or tunnel binding without revisiting it: the DNS check and the fetch are two
+  resolutions, and "there is no private network to reach" is what covers the gap.
 
 - **`functions-lib/http.js` is the shared guard**, and it lives outside `functions/` on
   purpose: every file under `functions/` becomes a route. Don't move it in, and don't put
@@ -245,9 +269,8 @@ Full reference: `docs/cloudflare-workers/README.md`.
 
 ### Tool structure
 
-A few files still carry a `Shadcn` suffix (`AzureNamingShadcn.jsx`,
-`AzureKQLTool.jsx`'s neighbours) — that is **migration residue**, not a convention to
-copy.
+A few files still carry a `Shadcn` suffix (`AzureNamingShadcn.jsx` and its neighbours)
+— that is **migration residue**, not a convention to copy.
 
 ### The tools
 
@@ -284,7 +307,7 @@ Four pieces — the first three manifest-driven, the fourth static:
 - **Discovery statics** (checked in, not generated): `public/_headers` puts an RFC 8288
   `Link: rel="api-catalog"` + `rel="service-doc"` on `/` and sets
   `application/linkset+json` + open CORS on the catalog; `public/.well-known/api-catalog`
-  (RFC 9727 linkset) anchors the three `/api/*` lookup endpoints from `apiConfig.json` (on `SITE_URL`, each titled as same-origin only);
+  (RFC 9727 linkset) anchors the four `/api/*` lookup endpoints from `apiConfig.json` (on `SITE_URL`, each titled as same-origin only);
   `public/.well-known/ai-catalog.json` is the ARD manifest pointing at llms.txt, the
   WebMCP manifest and the api-catalog; `robots.txt` carries
   `Content-Signal: search=yes, ai-input=yes` (`ai-train` deliberately undeclared — an

@@ -379,8 +379,8 @@ they must keep decoding forever.
 
 ## The Cloudflare boundary
 
-WHOIS, SSL analysis and Microsoft tenant discovery go through the site's own API: three
-Cloudflare Pages Functions served by the same Pages project, on the same origin as the
+WHOIS, SSL analysis, Microsoft tenant discovery and HTTP header checks go through the
+site's own API: four Cloudflare Pages Functions served by the same Pages project, on the same origin as the
 pages that call them. DNS and routing data use named public APIs directly from the browser.
 
 | Endpoint | Source | Used by |
@@ -388,6 +388,7 @@ pages that call them. DNS and routing data use named public APIs directly from t
 | `/api/whois` | `functions/api/whois.js` | whois-lookup |
 | `/api/ssl` | `functions/api/ssl.js` | ssl-checker |
 | `/api/tenant` | `functions/api/tenant.js` | tenant-lookup, microsoft-portals |
+| `/api/headers` | `functions/api/headers.js` | http-headers |
 
 Paths, timeouts and retry counts are declared in `src/utils/api/apiConfig.json` and read by
 the tools that need them; requests go through `apiFetch`/`buildUrl` from `src/core/api.js`,
@@ -435,6 +436,15 @@ cached build must still find the data where it looks for it.
 from the registry, shows sizes, and `clearTool` removes the namespaced and legacy
 generations together — per tool or all tools. Site preferences (theme, palette) and
 unrelated origin storage are outside that control.
+
+The shell owns two keys of its own, `rt:shell:pinned` and `rt:shell:recent`: arrays of
+tool ids behind the index's "Your tools" strip. `src/shell/yourTools.js` is the whole of
+the logic and is unit-tested as a pure module. `ToolLayout.astro` records a visit;
+`YourTools.astro` inlines `paintStrip` from that same module as a script directly after
+the strip's markup, so the strip is drawn before first paint by the code the tests run,
+not by a second copy of it. Each function it inlines is self-contained for that reason —
+it may only use its own arguments. `/delete` lists the pair as "Pinned and recent tools"
+through the same `clearTool` path, using `SHELL_STORAGE` as a manifest-shaped object.
 
 ## Build and hosting
 

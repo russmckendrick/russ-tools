@@ -85,6 +85,12 @@ export const TOOL_ICONS = {
   // ssl-checker
   'shield-check':
     '<path d="M12 3l7 3v5c0 5-3 8-7 10c-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+  // http-headers: a response, its lines ticked off
+  'list-checks':
+    '<path d="M3 6.5l1.8 1.8L8 5M3 12.5l1.8 1.8L8 11M3 18.5l1.8 1.8L8 17"/><path d="M12 6.5h9M12 12.5h9M12 18.5h6"/>',
+  // saml: an identity carried inside angle brackets
+  'code-xml':
+    '<path d="M7 7l-4 5 4 5M17 7l4 5-4 5"/><circle cx="12" cy="9.5" r="2"/><path d="M8.5 16.5c.8-2.6 6.2-2.6 7 0"/>',
   // base64
   binary:
     '<path d="M6 4v6M18 4v6M14 14v6M18 14v6"/><path d="M10 4h4v6h-4z"/><path d="M6 14h4v6H6z"/>',
@@ -103,6 +109,15 @@ export const TOOL_ICONS = {
   // data-converter
   'arrow-right-left':
     '<path d="M4 8h14M15 5l3 3-3 3"/><path d="M20 16H6M9 13l-3 3 3 3"/>',
+  // url: an address bar holding the "://" every URL has
+  link:
+    '<path d="M3 7h18v10H3z"/><path d="M7 10.5h.01M7 13.5h.01M10.5 14.5l2-5M14.5 14.5l2-5"/>',
+  // regex: ".*", any character any number of times
+  regex:
+    '<path d="M16 4v9M12.1 6.25l7.8 4.5M19.9 6.25l-7.8 4.5"/><path d="M4 15h5v5H4z"/>',
+  // diff: two versions side by side, a line removed and a line added
+  diff:
+    '<path d="M3 4h18v16H3z"/><path d="M12 4v16M5.5 12h4M14.5 12h4M16.5 10v4"/>',
   // markdown-table-tool
   table:
     '<path d="M3 5h18v14H3z"/><path d="M3 10h18M9 5v14M15 5v14"/>',

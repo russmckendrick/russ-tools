@@ -6,7 +6,7 @@ browser, with no accounts, analytics or uploads.
 
 Network lookups necessarily send the queried name or address to the provider named in
 that tool: Google or Cloudflare DNS-over-HTTPS, RIPEstat for routing data, and the site's
-own same-origin API for WHOIS, SSL analysis and Microsoft tenant discovery. Each tool's linked
+own same-origin API for WHOIS, SSL analysis, Microsoft tenant discovery and HTTP header checks. Each tool's linked
 documentation states its boundary explicitly.
 
 ## Available tools
@@ -23,7 +23,7 @@ documentation states its boundary explicitly.
 | **Email DNS Analyser** | Network | Check MX, SPF, DMARC, DKIM, MTA-STS and SMTP TLS reporting. | `/email-dns-analyser` | [Docs](docs/tools/email-dns-analyser/) |
 | **Subnet Calculator** | Network | IPv4 and IPv6 subnet details, with a visual split-and-join divide table. | `/subnet-calculator` | [Docs](docs/tools/subnet-calculator/) |
 | **WHOIS Lookup Tool** | Network | Registration and ownership detail for domains and IPs. | `/whois-lookup` | [Docs](docs/tools/whois-lookup/) |
-| **Azure KQL Query Builder** | Azure | Build Kusto queries for Azure services with guided forms. | `/azure-kql` | [Docs](docs/tools/azure-kql/) |
+| **Azure KQL Query Builder** | Azure | Build Log Analytics queries from scenarios with typed filters. | `/azure-kql` | [Docs](docs/tools/azure-kql/) |
 | **Azure RBAC Role Explorer** | Azure | Search 504 built-in Azure roles by name or by the action they grant. | `/azure-rbac` | [Docs](docs/tools/azure-rbac/) |
 | **Azure Regions and VM Sizes** | Azure | Look up Azure regions, their pairs and zones, and decode VM size names. | `/azure-regions` | [Docs](docs/tools/azure-regions/) |
 | **Azure Resource Naming Tool** | Azure | Generate and validate names against Microsoft CAF rules. | `/azure-naming` | [Docs](docs/tools/azure-naming/) |
@@ -35,19 +35,24 @@ documentation states its boundary explicitly.
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](docs/tools/tenant-lookup/) |
 | **Certificate & CSR Decoder** | Security | Decode PEM certificates, chains and CSRs without uploading them. | `/cert-decoder` | [Docs](docs/tools/cert-decoder/) |
 | **DNSSEC & Delegation Checker** | Security | Verify DS/DNSKEY links and inspect a domain delegation. | `/dnssec-checker` | [Docs](docs/tools/dnssec-checker/) |
+| **HTTP Security Headers** | Security | Check a site for HSTS, CSP, framing and cookie flags. | `/http-headers` | [Docs](docs/tools/http-headers/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](docs/tools/jwt/) |
 | **Password Generator** | Security | Cryptographically random passwords, generated on-device. | `/password-generator` | [Docs](docs/tools/password-generator/) |
+| **SAML Decoder** | Security | Decode a SAML response, request or assertion without uploading it. | `/saml` | [Docs](docs/tools/saml/) |
 | **SSL Certificate Checker** | Security | Inspect the chain, ciphers and expiry for any host. | `/ssl-checker` | [Docs](docs/tools/ssl-checker/) |
 | **Base64 Encoder/Decoder** | Developer | Encode and decode text and files, including URL-safe output. | `/base64` | [Docs](docs/tools/base64/) |
 | **CRON Expression Builder** | Developer | Build and read cron expressions in plain English. | `/cron` | [Docs](docs/tools/cron-builder/) |
 | **Data Converter** | Developer | Convert between JSON, YAML, TOML, CSV and XML, with validation. | `/data-converter` | [Docs](docs/tools/data-converter/) |
 | **Hash & HMAC Generator** | Developer | MD5 and SHA digests of text or a file, with HMAC and a compare check. | `/hash` | [Docs](docs/tools/hash/) |
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](docs/tools/markdown-table-tool/) |
+| **Regex Tester** | Developer | Test a regular expression: live highlights, groups, replace and a timeout. | `/regex` | [Docs](docs/tools/regex/) |
+| **Text Diff** | Developer | Compare two texts line by line, with changed words marked. | `/diff` | [Docs](docs/tools/diff/) |
 | **Timestamp Converter** | Developer | Convert Unix epoch seconds, milliseconds and ISO 8601 in any time zone. | `/timestamp` | [Docs](docs/tools/timestamp/) |
+| **URL Parser & Encoder** | Developer | Split a URL into editable parts, and percent-encode or decode text. | `/url` | [Docs](docs/tools/url/) |
 | **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](docs/tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](docs/tools/buzzword-ipsum/) |
 
-30 tools.
+35 tools.
 <!-- TOOLS:END -->
 
 ## Quick start

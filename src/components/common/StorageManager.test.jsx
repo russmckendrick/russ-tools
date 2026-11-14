@@ -43,4 +43,40 @@ describe('StorageManager', () => {
     expect(localStorage.getItem('vite-ui-theme')).toBe('dark');
     expect(await screen.findByText('Nothing stored')).toBeTruthy();
   });
+
+  it('lists the index memory by name and clears it on its own', async () => {
+    localStorage.setItem('rt:shell:pinned', '["jwt"]');
+    localStorage.setItem('rt:shell:recent', '["base64","jwt"]');
+    localStorage.setItem('rt:dns-lookup:history', '[{"domain":"example.com"}]');
+
+    render(<StorageManager />);
+
+    expect(await screen.findByText('Pinned and recent tools')).toBeTruthy();
+    expect(screen.getByText('rt:shell:pinned · rt:shell:recent')).toBeTruthy();
+    expect(screen.getByText(/across 1 tool and the index/)).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Clear saved data for Pinned and recent tools' })
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(localStorage.getItem('rt:shell:pinned')).toBeNull());
+    expect(localStorage.getItem('rt:shell:recent')).toBeNull();
+    expect(localStorage.getItem('rt:dns-lookup:history')).not.toBeNull();
+  });
+
+  it('clears the index memory with everything else', async () => {
+    localStorage.setItem('rt:shell:recent', '["base64"]');
+    localStorage.setItem('vite-ui-theme', 'dark');
+
+    render(<StorageManager />);
+
+    expect(await screen.findByText(/across the index/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all tool data' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(localStorage.getItem('rt:shell:recent')).toBeNull());
+    expect(localStorage.getItem('vite-ui-theme')).toBe('dark');
+    expect(await screen.findByText('Nothing stored')).toBeTruthy();
+  });
 });

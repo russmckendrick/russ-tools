@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 
 /**
@@ -8,7 +9,7 @@ import { test, expect } from '@playwright/test';
  * token, real domains, an IPv6 CIDR — because placeholder-shaped values are
  * exactly what `_redirects` patterns and `useParams` decoding never choke on.
  *
- * The lookups behind ssl/whois/tenant fire on mount but are NOT asserted:
+ * The lookups behind ssl/whois/tenant/headers fire on mount but are NOT asserted:
  * the matrix proves routing and param application. They are the site's own
  * `/api/*` now, which both the local runtime and a deployed target would
  * really answer — so these tests stub it, or every run would send four
@@ -40,6 +41,12 @@ const stubLookupApi = (page) =>
 /** Navigate and prove the `_redirects` 200-rewrite: no redirect happened —
  * the URL in the bar is still the deep link — and the prerendered page under
  * it is the right tool (its h1 comes from the manifest, no JS involved). */
+const KQL_CAPTURED = JSON.parse(
+  readFileSync(new URL('../src/tools/azure-kql/lib/fixtures/captured-2026-11-14.json', import.meta.url), 'utf8')
+);
+const KQL_LEGACY_SHARE = new URL(KQL_CAPTURED.shareUrl).searchParams.get('config');
+const KQL_LEGACY_STORE = KQL_CAPTURED.store;
+
 const expectRewrite = async (page, path, h1) => {
   const response = await page.goto(path);
   expect(response.status()).toBe(200);
@@ -85,7 +92,7 @@ test.describe('home and shell pages', () => {
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
   });
 
   test('the catalogue rows sit in two flush columns', async ({ page }) => {
@@ -108,7 +115,7 @@ test.describe('home and shell pages', () => {
       };
     });
 
-    expect(total).toBe(30);
+    expect(total).toBe(35);
     expect(lefts, `row left edges: ${lefts}`).toHaveLength(2);
     expect(widths, `row widths: ${widths}`).toHaveLength(1);
   });
@@ -132,17 +139,17 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
   });
 
   test('a shared category link arrives filtered', async ({ page }) => {
     await page.goto('/#security');
 
-    await expect(page.getByRole('radio', { name: 'Security 5' })).toHaveAttribute(
+    await expect(page.getByRole('radio', { name: 'Security 7' })).toHaveAttribute(
       'aria-checked',
       'true'
     );
-    await expect(page.locator('.rt-card:visible')).toHaveCount(5);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(7);
     // The anchor rides on the first row of the group, so the breadcrumb link
     // every tool page carries still has something to scroll to.
     await expect(page.locator('#security')).toHaveClass(/rt-card/);
@@ -154,11 +161,11 @@ test.describe('home and shell pages', () => {
     const input = page.locator('#rt-jump-input');
     await expect(input).toBeVisible();
 
-    // Seven tools take a bare hostname, so the panel offers all seven rather
+    // Eight tools take a bare hostname, so the panel offers all eight rather
     // than silently choosing one.
     await input.fill('example.com');
     const chips = page.locator('#rt-jump-hint a');
-    await expect(chips).toHaveCount(7);
+    await expect(chips).toHaveCount(8);
     await expect(chips.first()).toHaveText('DNS Lookup \u2192 /dns-lookup');
 
     // A CIDR can be calculated, combined or inspected in the routing table.
@@ -216,6 +223,28 @@ test.describe('home and shell pages', () => {
     await expect(chips).toHaveCount(1);
     await expect(chips.first()).toHaveAttribute('href', '/timestamp/1794651210123');
 
+    // A URL with a path or query is offered to the URL parser first, which
+    // only reads the string; the headers checker, which fetches the site, is
+    // second, and the seven other host tools follow. The URL rides in the
+    // fragment, which is never sent to the server, and every host tool gets
+    // the host alone.
+    await input.fill('https://example.com/pricing?ref=1');
+    await expect(chips).toHaveCount(9);
+    await expect(chips.first()).toHaveText('URL Parser → /url');
+    await expect(chips.first()).toHaveAttribute(
+      'href',
+      '/url#url=https%3A%2F%2Fexample.com%2Fpricing%3Fref%3D1'
+    );
+    await expect(chips.nth(1)).toHaveAttribute('href', '/http-headers/example.com');
+    await expect(chips.nth(2)).toHaveAttribute('href', '/dns-lookup/example.com');
+
+    // A bare origin has nothing for the parser to take apart, so the headers
+    // checker leads and DNS follows.
+    await input.fill('https://example.com/');
+    await expect(chips).toHaveCount(8);
+    await expect(chips.first()).toHaveText('HTTP Headers → /http-headers');
+    await expect(chips.nth(1)).toHaveText('DNS Lookup → /dns-lookup');
+
     // A SKU part number leads, with the encoder kept behind it because the
     // shape test is loose.
     await input.fill('SPE_E3');
@@ -260,7 +289,7 @@ test.describe('home and shell pages', () => {
     // A wrong tool name carrying a right value: the domain lands in the panel.
     await page.goto('/whois/example.com');
     await expect(page.locator('#rt-jump-input')).toHaveValue('example.com');
-    await expect(page.locator('#rt-jump-hint a')).toHaveCount(7);
+    await expect(page.locator('#rt-jump-hint a')).toHaveCount(8);
 
     // A guess nobody could act on is worse than silence.
     await page.goto('/sdfsdfsdf');
@@ -353,6 +382,251 @@ test.describe('home and shell pages', () => {
   });
 });
 
+test.describe('the index remembers', () => {
+  const stored = (page) =>
+    page.evaluate(() => ({
+      pinned: localStorage.getItem('rt:shell:pinned'),
+      recent: localStorage.getItem('rt:shell:recent'),
+    }));
+
+  const seed = async (page, { pinned, recent }) => {
+    await page.goto('/');
+    await page.evaluate(
+      ([pinned, recent]) => {
+        if (pinned) localStorage.setItem('rt:shell:pinned', JSON.stringify(pinned));
+        if (recent) localStorage.setItem('rt:shell:recent', JSON.stringify(recent));
+      },
+      [pinned, recent]
+    );
+    await page.reload();
+  };
+
+  const strip = (page) => page.getByRole('navigation', { name: 'Your tools' });
+  const group = (page, name) => strip(page).getByRole('group', { name });
+
+  test('with nothing stored the index is as it was', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    await expect(page.locator('#rt-mine a')).toHaveCount(0);
+    // The strip takes no room: the filter row still starts where the band ends.
+    const gap = await page.evaluate(() => {
+      const band = document.querySelector('.rt-band').getBoundingClientRect();
+      const chip = document.querySelector('.rt-chip').getBoundingClientRect();
+      return Math.round(chip.top - band.bottom);
+    });
+    expect(gap).toBe(36);
+    // Looking at the catalogue is not a visit.
+    expect(await stored(page)).toEqual({ pinned: null, recent: null });
+  });
+
+  test('visiting a tool records it, most recent first, and help does not count', async ({
+    page,
+  }) => {
+    await page.goto('/jwt');
+    await page.goto('/subnet-calculator/10.0.0.0/22');
+    await page.goto('/base64');
+    await page.goto('/dns-lookup/help');
+    await page.goto('/jwt');
+    await expect.poll(async () => (await stored(page)).recent).toBe(
+      '["jwt","base64","subnet-calculator"]'
+    );
+
+    await page.goto('/');
+    await expect(group(page, 'Recent').getByRole('link')).toHaveText([
+      'JWT Decoder/Validator',
+      'Base64 Encoder/Decoder',
+      'Subnet Calculator',
+    ]);
+    await expect(group(page, 'Pinned')).toBeHidden();
+    await expect(group(page, 'Recent').getByRole('link').first()).toHaveAttribute('href', '/jwt');
+    // The catalogue beneath is untouched.
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
+  });
+
+  test('a tool can be pinned, unpinned and reordered by pinning again', async ({ page }) => {
+    await page.goto('/');
+    const pin = (title) => page.getByRole('button', { name: `Pin ${title}`, exact: true });
+
+    await expect(pin('Subnet Calculator')).toHaveAttribute('aria-pressed', 'false');
+    await pin('Subnet Calculator').click();
+    await expect(pin('Subnet Calculator')).toHaveAttribute('aria-pressed', 'true');
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['Subnet Calculator']);
+    await expect(group(page, 'Recent')).toBeHidden();
+
+    await pin('JWT Decoder/Validator').click();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText([
+      'Subnet Calculator',
+      'JWT Decoder/Validator',
+    ]);
+    expect((await stored(page)).pinned).toBe('["subnet-calculator","jwt"]');
+
+    // Pins outlive the page, and are drawn before the page's own script runs.
+    await page.reload();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText([
+      'Subnet Calculator',
+      'JWT Decoder/Validator',
+    ]);
+    await expect(pin('JWT Decoder/Validator')).toHaveAttribute('aria-pressed', 'true');
+
+    await pin('Subnet Calculator').click();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['JWT Decoder/Validator']);
+    await pin('Subnet Calculator').click();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText([
+      'JWT Decoder/Validator',
+      'Subnet Calculator',
+    ]);
+
+    await pin('Subnet Calculator').click();
+    await pin('JWT Decoder/Validator').click();
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    expect(await stored(page)).toEqual({ pinned: null, recent: null });
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
+  });
+
+  test('the pin works from the keyboard', async ({ page }) => {
+    await page.goto('/');
+    const pin = page.getByRole('button', { name: 'Pin Subnet Calculator', exact: true });
+    await pin.focus();
+    await page.keyboard.press('Enter');
+    await expect(pin).toHaveAttribute('aria-pressed', 'true');
+    await expect(pin).toBeFocused();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['Subnet Calculator']);
+  });
+
+  test('a pinned tool is listed once, under Pinned', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64', 'jwt'] });
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['JWT Decoder/Validator']);
+    await expect(group(page, 'Recent').getByRole('link')).toHaveText(['Base64 Encoder/Decoder']);
+  });
+
+  test('Clear removes recents and keeps pins', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64', 'subnet-calculator'] });
+    await expect(group(page, 'Recent').getByRole('link')).toHaveCount(2);
+
+    await page.getByRole('button', { name: 'Clear recent tools' }).click();
+    await expect(group(page, 'Recent')).toBeHidden();
+    await expect(group(page, 'Pinned').getByRole('link')).toHaveText(['JWT Decoder/Validator']);
+    expect(await stored(page)).toEqual({ pinned: '["jwt"]', recent: null });
+    await expect(page.locator('#rt-status')).toHaveText('Recent tools cleared');
+    // Focus is not dropped with the button that was pressed.
+    await expect(group(page, 'Pinned').getByRole('link')).toBeFocused();
+  });
+
+  test('Clear with no pins takes the strip away', async ({ page }) => {
+    await seed(page, { recent: ['base64'] });
+    await page.getByRole('button', { name: 'Clear recent tools' }).click();
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    await expect(page.getByRole('radio', { name: 'All 35' })).toBeFocused();
+  });
+
+  test('a stored id the registry no longer has is ignored', async ({ page }) => {
+    await seed(page, {
+      pinned: ['network-designer', 'jwt'],
+      recent: ['a-tool-that-never-existed', 'base64'],
+    });
+    await expect(strip(page).getByRole('link')).toHaveText([
+      'JWT Decoder/Validator',
+      'Base64 Encoder/Decoder',
+    ]);
+    await expect(page.locator('a[href*="network-designer"]')).toHaveCount(0);
+
+    // Nothing left to show is the same as nothing stored.
+    await seed(page, { pinned: ['network-designer'], recent: ['a-tool-that-never-existed'] });
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
+  });
+
+  test('damaged storage leaves the index standing', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.setItem('rt:shell:pinned', '{not json');
+      localStorage.setItem('rt:shell:recent', '{"jwt":true}');
+    });
+    await page.reload();
+    await expect(page.locator('#rt-mine')).toBeHidden();
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
+    await expect(page.getByRole('searchbox', { name: 'Filter tools by name' })).toBeVisible();
+  });
+
+  test('the filters leave the strip alone', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64', 'subnet-calculator'] });
+
+    await page.getByRole('radio', { name: 'Network 7' }).click();
+    await expect(page.locator('.rt-card:visible')).toHaveCount(7);
+    await expect(page).toHaveURL(/#network$/);
+    await expect(strip(page).getByRole('link')).toHaveCount(3);
+
+    await page.getByRole('searchbox', { name: 'Filter tools by name' }).fill('zzzz');
+    await expect(page.locator('.rt-card:visible')).toHaveCount(0);
+    await expect(strip(page).getByRole('link')).toHaveCount(3);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(35);
+    await expect(strip(page).getByRole('link')).toHaveCount(3);
+  });
+
+  test('the strip is drawn before the page script loads', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64'] });
+    await page.route('**/*.js', (route) => route.abort());
+    await page.reload();
+    await expect(strip(page).getByRole('link')).toHaveText([
+      'JWT Decoder/Validator',
+      'Base64 Encoder/Decoder',
+    ]);
+    // The pins are the page script's to reveal: without it there is no dead control.
+    await expect(page.locator('.rt-pin:visible')).toHaveCount(0);
+  });
+
+  test('on a phone the strip scrolls sideways and the page does not', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seed(page, {
+      pinned: ['jwt', 'subnet-calculator'],
+      recent: ['base64', 'dns-lookup', 'm365-licenses', 'hash'],
+    });
+
+    const scroller = page.locator('.rt-mine-scroll');
+    await expect(scroller).toHaveAttribute('data-more-end', '');
+    await expect(scroller).not.toHaveAttribute('data-more-start', '');
+    await expect(page.locator('#filters')).toHaveAttribute('data-more-end', '');
+
+    const { pageWidth, stripOverflows, linkHeight } = await page.evaluate(() => {
+      const el = document.querySelector('.rt-mine-scroll');
+      return {
+        pageWidth: document.documentElement.scrollWidth,
+        stripOverflows: el.scrollWidth > el.clientWidth,
+        linkHeight: el.querySelector('a').getBoundingClientRect().height,
+      };
+    });
+    expect(pageWidth).toBe(390);
+    expect(stripOverflows).toBe(true);
+    expect(linkHeight).toBeGreaterThanOrEqual(44);
+
+    await scroller.evaluate((el) => el.scrollTo({ left: el.scrollWidth }));
+    await expect(scroller).toHaveAttribute('data-more-start', '');
+    await expect(scroller).not.toHaveAttribute('data-more-end', '');
+  });
+
+  test('/delete names the index memory and clears it', async ({ page }) => {
+    await seed(page, { pinned: ['jwt'], recent: ['base64'] });
+    await page.goto('/delete');
+
+    await expect(page.getByText('Pinned and recent tools')).toBeVisible();
+    await expect(page.getByText('rt:shell:pinned · rt:shell:recent')).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Clear saved data for Pinned and recent tools' })
+      .click();
+    await page.getByRole('button', { name: 'Delete' }).click();
+    await expect(page.getByText('Nothing stored')).toBeVisible();
+    expect(await stored(page)).toEqual({ pinned: null, recent: null });
+
+    await page.goto('/');
+    await expect(page.locator('#rt-mine')).toBeHidden();
+  });
+});
+
 test.describe('the retired path', () => {
   test('/network-designer 301s to /subnet-calculator', async ({ page }) => {
     const response = await page.request.get('/network-designer', {
@@ -382,6 +656,12 @@ test.describe('param deep links — rewrite + island application', () => {
     await stubLookupApi(page);
     await expectRewrite(page, '/ssl-checker/example.com', 'SSL Certificate Checker');
     await expect(page.locator('#domain')).toHaveValue('example.com');
+  });
+
+  test('/http-headers/:domain', async ({ page }) => {
+    await stubLookupApi(page);
+    await expectRewrite(page, '/http-headers/example.com', 'HTTP Security Headers');
+    await expect(page.locator('#http-headers-target')).toHaveValue('example.com');
   });
 
   test('/whois-lookup/:query', async ({ page }) => {
@@ -471,6 +751,7 @@ test.describe('param deep links — rewrite + island application', () => {
   test('/azure-kql/:service', async ({ page }) => {
     await expectRewrite(page, '/azure-kql/azure-firewall', 'Azure KQL Query Builder');
     await expect(page.getByText('Azure Firewall').first()).toBeVisible();
+    await expect(page.getByLabel('KQL query')).toContainText('AZFWNetworkRule');
   });
 
   test('/azure-kql/:service/:template', async ({ page }) => {
@@ -479,7 +760,40 @@ test.describe('param deep links — rewrite + island application', () => {
       '/azure-kql/azure-firewall/application',
       'Azure KQL Query Builder'
     );
-    await expect(page.getByText('Application Rule Query').first()).toBeVisible();
+    await expect(page.getByText('Application rule log').first()).toBeVisible();
+    await expect(page.getByLabel('KQL query')).toContainText('AZFWApplicationRule');
+  });
+
+  test('/azure-kql restores a share link made before the rebuild', async ({ page }) => {
+    await page.goto(`/azure-kql?config=${KQL_LEGACY_SHARE}`);
+    const query = page.getByLabel('KQL query');
+    await expect(query).toContainText('ipv4_is_in_range(SourceIp, "10.0.0.0/8")');
+    await expect(query).toContainText('DestinationPort == 443');
+    await expect(query).toContainText('top 1000 by TimeGenerated desc');
+  });
+
+  test('/azure-kql opens on a query and finds a scenario by search', async ({ page }) => {
+    await page.goto('/azure-kql');
+    const query = page.getByLabel('KQL query');
+    await expect(query).toContainText('SigninLogs');
+    await page.keyboard.press('/');
+    await page.getByRole('combobox', { name: 'Search scenarios' }).fill('secret reads');
+    await page.keyboard.press('Enter');
+    await expect(query).toContainText('OperationName == "SecretGet"');
+    await query.getByText('ago(24h)').click();
+    await expect(page.getByRole('button', { name: 'Last 24 hours' })).toBeFocused();
+    await page.getByRole('button', { name: 'Last 7 days' }).click();
+    await expect(query).toContainText('ago(7d)');
+  });
+
+  test('/azure-kql carries saved data from before the rebuild', async ({ page }) => {
+    await page.addInitScript((store) => {
+      if (!localStorage.getItem('rt:azure-kql:store')) localStorage.setItem('rt:azure-kql:store', store);
+    }, KQL_LEGACY_STORE);
+    await page.goto('/azure-kql');
+    await page.getByRole('button', { name: 'Open' }).first().click();
+    await expect(page.getByLabel('KQL query')).toContainText('DestinationIp == "8.8.8.8"');
+    expect(await page.evaluate(() => localStorage.getItem('rt:azure-kql:store'))).toBe(KQL_LEGACY_STORE);
   });
 
   test('/subnet-calculator/:ip defaults the prefix', async ({ page }) => {
@@ -544,6 +858,24 @@ test.describe('param deep links — rewrite + island application', () => {
     // The region is selected, not merely filtered to: its pair is on screen.
     await expect(page.getByRole('heading', { name: 'UK South', exact: true })).toBeVisible();
     await expect(page.getByText('UK West (ukwest)')).toBeVisible();
+  });
+
+  test('the region map frames what the list is filtered to and opens a region', async ({ page }) => {
+    await page.goto('/azure-regions');
+    const map = page.getByRole('group', { name: 'Map of Azure regions' });
+    await expect(map).toBeVisible();
+    const whole = await map.getAttribute('viewBox');
+
+    // Narrowing the list zooms the map, which is also what separates two
+    // markers that sit on top of each other at world scale.
+    await page.locator('#region-query').fill('japan');
+    await expect(map).not.toHaveAttribute('viewBox', whole);
+
+    await map.getByRole('button', { name: /^Japan West \(japanwest\)/ }).click();
+    await expect(page.getByRole('heading', { name: 'Japan West', exact: true })).toBeVisible();
+    await expect(page.getByText('Japan East (japaneast)')).toBeVisible();
+    // The pair is drawn, not just named.
+    await expect(map.locator('line')).toHaveCount(1);
   });
 
   test('/azure-regions/:query opens a VM size on the sizes tab, decoded', async ({ page }) => {
@@ -634,6 +966,96 @@ test.describe('param deep links — rewrite + island application', () => {
     await expectRewrite(page, '/timestamp/2022-02-22T19:22:22.000Z', 'Timestamp Converter');
     await expect(page.getByText('ISO 8601 with its own offset.')).toBeVisible();
     await expect(page.getByText('1645557742000', { exact: true })).toBeVisible();
+  });
+
+  test('/url/:input splits an encoded URL, its own escapes intact', async ({ page }) => {
+    // The value is a URL, so it carries every character a path segment
+    // cannot: slashes, a question mark, an ampersand and a hash, plus a %2F
+    // of its own that must arrive still escaped rather than as a slash.
+    const url = 'https://example.com:8443/a%20b?next=%2Fhome&q=one+two#top';
+    await expectRewrite(page, `/url/${encodeURIComponent(url)}`, 'URL Parser & Encoder');
+    await expect(page.getByLabel('URL', { exact: true })).toHaveValue(url);
+    await expect(page.getByLabel('Host')).toHaveValue('example.com');
+    await expect(page.getByLabel('Path')).toHaveValue('/a b');
+    await expect(page.getByLabel('Value of parameter 1')).toHaveValue('/home');
+    await expect(page.getByLabel('Value of parameter 2')).toHaveValue('one two');
+
+    // Editing one part rebuilds the URL and leaves the rest as it was.
+    await page.getByLabel('Value of parameter 2').fill('three & four');
+    await expect(page.getByLabel('URL', { exact: true })).toHaveValue(
+      'https://example.com:8443/a%20b?next=%2Fhome&q=three+%26+four#top'
+    );
+  });
+
+  test('/url reads the fragment the paste panel writes, and flags what is wrong', async ({ page }) => {
+    const url = 'http://admin:hunter2@example.com/cb?access_token=abc&next=%252Fhome';
+    await page.goto(`/url#url=${encodeURIComponent(url)}`);
+    await expect(page.getByLabel('URL', { exact: true })).toHaveValue(url);
+    await expect(page.getByText('A user name and password are in the URL')).toBeVisible();
+    await expect(page.getByText('One parameter is named like a secret')).toBeVisible();
+    await expect(page.getByText(/flagged by name only/)).toBeVisible();
+    await expect(page.getByText('Looks double-encoded')).toBeVisible();
+  });
+
+  test('/regex highlights matches, lists groups and shares its state in the hash', async ({ page }) => {
+    await expectRewrite(page, '/regex', 'Regex Tester');
+    await expect(page.getByText('3 matches.')).toBeVisible();
+    await expect(page.locator('[data-highlight] [data-match]')).toHaveCount(3);
+    await expect(page.getByRole('table', { name: 'Matches' }).getByText('203.0.113.7', { exact: true })).toBeVisible();
+    expect(new URL(page.url()).hash).toBe('');
+
+    await page.getByLabel('Pattern', { exact: true }).fill('(?<octet>\\d+)\\.');
+    await expect(page.getByText('15 matches.')).toBeVisible();
+    await expect(page).toHaveURL(/#config=[A-Za-z0-9_-]+$/);
+
+    // The link restores the pattern, in a fresh page.
+    const shared = page.url();
+    await page.goto('/');
+    await page.goto(shared);
+    await expect(page.getByLabel('Pattern', { exact: true })).toHaveValue('(?<octet>\\d+)\\.');
+    await expect(page.getByText('15 matches.')).toBeVisible();
+  });
+
+  test('/regex stops a catastrophic pattern instead of freezing the tab', async ({ page }) => {
+    await page.goto('/regex');
+    await expect(page.getByText('3 matches.')).toBeVisible();
+    await page.getByLabel('Test text').fill(`${'a'.repeat(40)}!`);
+    await page.getByLabel('Pattern', { exact: true }).fill('(a+)+$');
+    await expect(page.getByText('Stopped after 1 second')).toBeVisible({ timeout: 10_000 });
+
+    // The page is still answering: a sane pattern matches straight away.
+    await page.getByLabel('Pattern', { exact: true }).fill('a+');
+    await expect(page.getByText('1 match.')).toBeVisible();
+    await expect(page.getByText('Stopped after 1 second')).toHaveCount(0);
+  });
+
+  test('/diff opens on a sample and offers side by side only on a wide screen', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expectRewrite(page, '/diff', 'Text Diff');
+    await expect(page.locator('[data-view="unified"] [data-row="added"]')).toHaveCount(5);
+    await expect(page.locator('[data-view="unified"] [data-row="removed"]')).toHaveCount(5);
+    await page.getByRole('tab', { name: 'Side by side' }).click();
+    await expect(page.locator('[data-view="split"]')).toBeVisible();
+
+    // On a phone the same state collapses to the unified view.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator('[data-view="unified"]')).toBeVisible();
+    await expect(page.locator('[data-view="split"]')).toHaveCount(0);
+    await expect(page.getByRole('tab', { name: 'Side by side' })).toBeHidden();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('/diff normalises JSON when both sides are JSON', async ({ page }) => {
+    await page.goto('/diff');
+    await page.getByLabel('Original', { exact: true }).fill('{"b":1,"a":{"d":2,"c":3}}');
+    await page.getByLabel('Changed', { exact: true }).fill('{\n  "a": { "c": 3, "d": 2 },\n  "b": 1\n}');
+    await expect(page.getByRole('switch', { name: 'Normalise JSON before diffing' })).toBeChecked();
+    await expect(page.getByText('Identical')).toBeVisible();
+    await page.getByRole('switch', { name: 'Normalise JSON before diffing' }).click();
+    await expect(page.getByText('Identical')).toHaveCount(0);
   });
 
   test('/cron/:expression seeds the builder', async ({ page }) => {

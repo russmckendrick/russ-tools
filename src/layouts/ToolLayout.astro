@@ -97,7 +97,7 @@ const schema = [
   <!-- The head sits on the ink band and is drawn in band tokens. The
        category hue is set once on the body wrapper below it: `--cat` is the
        text hue, `--cat-fill` the solid badge block. -->
-  <div slot="band" class="rt-tool-head">
+  <div slot="band" class="rt-tool-head" data-tool-id={tool.id}>
       <div class="rt-tool-top rt-rise">
         <nav class="rt-crumb" aria-label="Breadcrumb">
           <a href="/">Tools</a> / <a href={categoryHref}><b>{categoryLabel(tool.category)}</b></a>
@@ -134,3 +134,9 @@ const schema = [
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  import { noteVisit } from '../shell/yourTools.js';
+
+  noteVisit(document.querySelector('[data-tool-id]')?.dataset.toolId);
+</script>

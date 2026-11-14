@@ -37,6 +37,7 @@ export default [
   {
     ignores: [
       'dist',
+      '.claude',
       '.astro',
       '.wrangler',
       'coverage',

@@ -26,6 +26,18 @@
  *  4. Families: articles/virtual-machines/sizes/overview.md, for the
  *     family-to-workload list.
  *
+ *  5. Region coordinates, for the map:
+ *     https://datacenters.microsoft.com/globe/data/geo/regions.json
+ *     the data file behind Microsoft's own datacentre globe. Matched to the
+ *     regions list by programmatic name, then by display name. A region the
+ *     globe does not place gets no coordinates and is not drawn.
+ *
+ *  6. The land outline the map is drawn on: Natural Earth 1:110m land
+ *     (public domain), from
+ *     https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_land.geojson
+ *     projected here with the tool's own `project()` and written as one SVG
+ *     path, so the browser needs no mapping library and calls no tile server.
+ *
  * What is NOT here, because it cannot be had without credentials: which sizes
  * a given region offers, zone and capacity restrictions, and prices. Those
  * come from the Resource SKUs API (`Microsoft.Compute/skus`), which needs a
@@ -49,11 +61,18 @@ import {
   stripFrontMatter,
 } from './lib/markdown-tables.mjs';
 
+import { MAP_HEIGHT, MAP_WIDTH, SOUTH_LIMIT, project } from '../src/tools/azure-regions/lib/map.js';
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REGIONS_OUT = resolve(HERE, '../src/data/azure/regions.json');
+const LAND_OUT = resolve(HERE, '../src/data/azure/world-land.json');
 const SIZES_OUT = resolve(HERE, '../src/data/azure/vm-sizes.json');
 
 const REGIONS_URL = 'https://learn.microsoft.com/en-us/azure/reliability/regions-list';
+const COORDINATES_URL = 'https://datacenters.microsoft.com/globe/data/geo/regions.json';
+const COORDINATES_HUMAN = 'https://datacenters.microsoft.com/globe/explore';
+const LAND_URL =
+  'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_land.geojson';
 const COMPUTE_REPO = 'MicrosoftDocs/azure-compute-docs';
 const COMPUTE_TREE = `https://api.github.com/repos/${COMPUTE_REPO}/git/trees/main?recursive=1`;
 const COMPUTE_RAW = `https://raw.githubusercontent.com/${COMPUTE_REPO}/main/articles/virtual-machines`;
@@ -126,6 +145,31 @@ for (const region of regions) {
   region.paired = region.pairedDisplayName ? nameByDisplay.get(region.pairedDisplayName.toLowerCase()) ?? null : null;
 }
 
+console.log(`Fetching ${COORDINATES_URL}`);
+const globe = JSON.parse(await fetchText(COORDINATES_URL));
+const foldName = (value) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const globeById = new Map(globe.map((entry) => [foldName(entry.id), entry]));
+const globeByDisplay = new Map(globe.map((entry) => [foldName(entry.displayName), entry]));
+
+let placed = 0;
+for (const region of regions) {
+  const entry = globeById.get(region.name) ?? globeByDisplay.get(foldName(region.displayName));
+  const valid =
+    entry &&
+    Number.isFinite(entry.latitude) &&
+    Number.isFinite(entry.longitude) &&
+    Math.abs(entry.latitude) <= 90 &&
+    Math.abs(entry.longitude) <= 180;
+  region.latitude = valid ? Math.round(entry.latitude * 1e4) / 1e4 : null;
+  region.longitude = valid ? Math.round(entry.longitude * 1e4) / 1e4 : null;
+  if (valid) placed += 1;
+}
+
+if (placed < regions.length / 2) {
+  console.error(`Only ${placed} of ${regions.length} regions were found in the globe data; its shape has changed.`);
+  process.exit(1);
+}
+
 if (regions.length !== allTable.rows.length) {
   console.error(`Parsed ${regions.length} regions from ${allTable.rows.length} rows; a programmatic name is malformed.`);
   process.exit(1);
@@ -136,9 +180,58 @@ write(REGIONS_OUT, {
   licence: `CC-BY-4.0, (c) Microsoft. See ${REGIONS_URL}`,
   generatedAt: today,
   coverage: 'Azure public cloud regions. Sovereign clouds (US Government, China) are not included.',
+  coordinatesSource: COORDINATES_HUMAN,
   regions,
 }, ['regions']);
-console.log(`Wrote ${regions.length} regions to src/data/azure/regions.json`);
+console.log(
+  `Wrote ${regions.length} regions to src/data/azure/regions.json, ${placed} with coordinates ` +
+    `(none published for: ${regions.filter((region) => region.latitude === null).map((region) => region.name).join(', ')})`
+);
+
+/* --------------------------------------------------------------- land outline */
+
+console.log(`Fetching ${LAND_URL}`);
+const land = JSON.parse(await fetchText(LAND_URL));
+const point = ([longitude, latitude]) =>
+  project(longitude, latitude)
+    .map((value) => Math.round(value * 10) / 10)
+    .join(',');
+
+const landPath = land.features
+  .flatMap((feature) =>
+    feature.geometry.type === 'Polygon' ? [feature.geometry.coordinates] : feature.geometry.coordinates
+  )
+  .flat()
+  // Antarctica and its islands lie wholly below the map's southern edge.
+  .filter((ring) => ring.some(([, latitude]) => latitude > SOUTH_LIMIT))
+  .map((ring) => {
+    const points = ring.map(point).filter((value, index, all) => value !== all[index - 1]);
+    return points.length > 2 ? `M${points.join('L')}Z` : '';
+  })
+  .join('');
+
+if (landPath.length < 10000) {
+  console.error('The land outline came back nearly empty; the Natural Earth file has changed shape.');
+  process.exit(1);
+}
+
+mkdirSync(dirname(LAND_OUT), { recursive: true });
+writeFileSync(
+  LAND_OUT,
+  `${JSON.stringify(
+    {
+      source: LAND_URL,
+      licence: 'Public domain. Made with Natural Earth, naturalearthdata.com.',
+      projection: 'Equal Earth',
+      width: MAP_WIDTH,
+      height: MAP_HEIGHT,
+      path: landPath,
+    },
+    null,
+    1
+  )}\n`
+);
+console.log(`Wrote the land outline to src/data/azure/world-land.json (${landPath.length} characters)`);
 
 /* ----------------------------------------------------------------- vm sizes */
 

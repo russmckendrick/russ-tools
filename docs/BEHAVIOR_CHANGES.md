@@ -89,6 +89,225 @@ Conditional Access explainer reads: four directory roles Microsoft has added sin
 now resolve to names there (Resource Policy Evaluator, Reader and Administrator, and Entra
 SOC Identity Responder).
 
+### A fourth server-side lookup: `/api/headers` (2026-11-14)
+
+The HTTP Security Headers tool (`/http-headers`) cannot work in the browser: a page is not
+allowed to read another site's response headers. So the site's API gains a fourth Pages
+Function, `/api/headers`, and **the list of things that leave the browser grows by one.**
+
+- **What is sent.** The URL or hostname the user enters goes to `/api/headers` on the
+  site's own origin. The function resolves the hostname through Cloudflare DNS-over-HTTPS
+  and requests the URL itself, so the target site sees a request from Cloudflare with the
+  User-Agent `russ.tools-http-headers/1.0`, not from the user. Nothing else about the user
+  is forwarded, and nothing is stored on the server.
+- **What comes back.** Status codes and URLs for each redirect hop, the final response's
+  headers, and for each cookie its name and attributes. A cookie's value is discarded in
+  the function. No response body is read or returned.
+- **What it refuses.** Anything that is not a public website on port 80 or 443: IP
+  literals of any kind, loopback, private, link-local and carrier-grade NAT addresses,
+  `localhost`, `.local`, `.internal` and similar names, cloud metadata addresses, other
+  schemes, and URLs carrying credentials. The same rules are applied to every redirect and
+  to the addresses a hostname resolves to. The full list, and what it does not protect
+  against, is in `docs/cloudflare-workers/README.md#http-security-headers--apiheaders`.
+- **Same access model as the other three.** Same-origin only, GET only, no CORS, no key,
+  no rate limiting in code. The zone rate-limiting rule covers it because it matches
+  `/api/`.
+
+Statements that said "three lookups" were corrected in the same change: `PRODUCT.md` (which
+still said "three Cloudflare Workers"), `README.md`, `docs/README.md`, `AGENTS.md`,
+`docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, `docs/DEVELOPMENT.md`, `docs/api/API_CONFIG.md`,
+the generated `/agents.md`, and `public/.well-known/api-catalog`. The contract is pinned by
+`src/test/functions/headers.test.js`, `public-host.test.js` and the `/api/headers` cases in
+`e2e/api.spec.js`. It has no production capture to replay, because it was never a Worker.
+
+The SAML Decoder added alongside it (`/saml`) is entirely client-side and changes no
+boundary.
+
+### The paste panel offers the headers checker for a domain or a URL (2026-11-14)
+
+This entry is read after the URL parser entry below it, which landed first.
+
+- **A bare hostname** (`example.com`) used to offer seven tools and now offers eight: HTTP
+  Headers sits sixth, after SSL Checker and before Tenant Lookup. The order of the other
+  seven is unchanged and **Enter still opens DNS Lookup**.
+- **A web address with no path or query** (`https://example.com`, `https://example.com/`,
+  or one with only a fragment) used to dispatch exactly as the bare hostname. It now offers
+  the same eight with **HTTP Headers first**, and Enter opens the headers checker where it
+  used to open DNS Lookup. Someone who typed the scheme is talking about a site, and the
+  checker is the one tool in the list that reads a web address as one.
+- **A web address with a path or query** (`https://example.com/pricing?ref=1`) was eight
+  chips, URL Parser first. It is now nine: **URL Parser first, HTTP Headers second**, then
+  the seven other host tools. Enter still opens the URL parser. The order is deliberate:
+  the parser only reads the string, while the checker sends the host to the site's server,
+  which requests it. The step that touches nothing comes first.
+- **Unchanged:** a host with a path but no scheme (`example.com/pricing`), any scheme other
+  than http and https, and a URL whose host is an IP address (the URL parser when it has a
+  path, then the four address tools), because the checker refuses IP literals.
+
+The headers chip links to `/http-headers/<host>`. It is handed the host alone, like every
+other host tool, so a path or query is not carried into the link; the checker therefore
+looks at the site's root, not the pasted page.
+
+`src/lib/paste.test.js` and the paste-panel and 404 tests in `e2e/deeplinks.spec.js` assert
+the new counts and orders.
+
+### The paste panel offers the URL parser for a URL with a path or query (2026-11-14)
+
+A pasted `http://` or `https://` URL used to be reduced to its host and dispatched as that
+host, whatever else it carried. It still is, but when the URL has a **path or a query** the
+new URL Parser is now offered first, ahead of the tools that read the host.
+
+- `https://example.com/pricing?ref=1` was seven chips, DNS Lookup first. It is now eight,
+  URL Parser first, and **Enter opens the URL parser** where it used to open DNS Lookup.
+- `https://10.0.0.1:8443/admin` was the four IP tools and is now URL Parser and then those four.
+- **Unchanged:** a bare hostname (`example.com`), a URL with neither path nor query
+  (`https://example.com`, `https://example.com/`), a URL with only a fragment, a host with a
+  path but no scheme (`example.com/pricing`), and any scheme other than http and https.
+
+The chip's link is `/url#url=<encoded URL>`, not `/url/<encoded URL>`. Every other chip
+carries its value in the path; this one uses the fragment, as the certificate chip does,
+because a pasted URL can hold a token and a fragment is never sent to the server. The
+`/url/:input` deep link exists and is frozen, for links written by hand.
+
+`src/lib/paste.test.js` (one existing assertion narrowed to the host tools, three added) and
+the paste-panel test in `e2e/deeplinks.spec.js` assert the new behaviour.
+
+### The index stores what you pin and what you open (2026-11-14)
+
+The shell writes to `localStorage` for the first time since the theme preference. Two keys,
+both in this browser only and never sent anywhere:
+
+- **`rt:shell:recent`** — a JSON array of tool ids, most recent first, no repeats, capped at
+  twelve. Opening any tool page appends to it, including through a deep link such as
+  `/jwt/:token`. A tool's `/help` page, the index, `/delete` and `/404` do not count.
+- **`rt:shell:pinned`** — a JSON array of tool ids in the order they were pinned. Written only
+  by the pin control on an index row. Unpinning the last one removes the key.
+
+`shell` is not a tool id and cannot become one (`src/shell/yourTools.test.js` asserts it), so
+the two keys never collide with a manifest's `storageKeys`.
+
+What a visitor sees:
+
+- With either list non-empty the index shows a strip between the band and the filter row:
+  pinned tools, then up to six recent ones that are not already pinned. With both empty, or
+  holding only ids the registry no longer has, the page is exactly as it was.
+- Ids are stored, not paths. An id with no manifest is skipped when the strip is drawn and
+  is left in storage, so a retired tool cannot produce a dead link.
+- "Clear" on the strip removes `rt:shell:recent` and leaves the pins.
+- `/delete` lists both keys as one row, "Pinned and recent tools", with its own clear
+  button. **"Clear all tool data" now removes them too**, where before it touched nothing
+  the shell owned. The theme preference is still left alone. The summary line reads
+  "across 2 tools and the index" when that row is present.
+
+There is no opt-out other than clearing: recording a visit is unconditional. Where
+`localStorage` is unavailable nothing is recorded, the strip never appears and the pin
+controls stay hidden.
+
+Every index row gains one tab stop (its pin), so the catalogue is 56 stops by keyboard
+where it was 28.
+
+### The Azure KQL Query Builder is rebuilt (2026-11-14)
+
+| | |
+|---|---|
+| **Where** | `src/tools/azure-kql/` (everything), `src/data/microsoft/azure-monitor-tables.json` |
+| **Pinned by** | `src/tools/azure-kql/lib/*.test.js`, `e2e/deeplinks.spec.js` |
+
+The tool was replaced, not ported, so nearly everything a user sees changed. What
+follows is every difference that a link, a saved entry or a habit could notice.
+
+**Still true.** `/azure-kql`, `/azure-kql/:service` and `/azure-kql/:service/:template`
+resolve, and the four ids the old tool had (`azure-firewall/basic`,
+`azure-firewall/application`, `azure-virtual-desktop/basic`,
+`azure-application-gateway/basic`) open the same table they did. A share link made by
+the old tool still restores its service, template, time range, limit and filters; one
+captured from the old tool before the rebuild is pinned in
+`lib/fixtures/captured-2026-11-14.json` and replayed by a unit test and an e2e test.
+The band button is still called **Share Configuration**.
+
+**The query text is different for the same input.**
+
+- There is no Generate button. The query is rebuilt on every change.
+- `TimeGenerated > ago(24h)` where it was `>=`; `| top N by TimeGenerated desc` where it
+  was `| order by TimeGenerated desc` then `| limit N`.
+- A new session starts at 100 rows, not 1,000. A link or saved entry keeps its own limit.
+- Values are escaped. `bob" or 1==1 //` used to end the string literal; it is now one
+  literal.
+- A value that is not valid for its column no longer blocks the query. That filter is
+  left out, with the reason shown under it, and the rest is built.
+- Columns documented as taking one of a set of values compare with `=~` and `in~`.
+- `azure-virtual-desktop/basic` and `azure-application-gateway/basic` now `project` a
+  set of columns; both used to return every column.
+
+**Two old filters were wrong and are corrected on the way in.**
+
+- The AVD template filtered on `ClientIPAddress`. `WVDConnections` has no such column;
+  the reference has `ClientSideIPAddress`. Old links and saved entries are mapped to it.
+- The AVD "State" list offered `Failed`, which is not a connection state. An old entry
+  carrying it opens with that filter flagged and left out.
+
+**Application Gateway.** The service now opens on `AGWAccessLogs`. The old
+`AzureDiagnostics` query is still there as **Access log (AzureDiagnostics)**, id `basic`.
+With the old tool that template could not generate at all (its own default failed its own
+validation), so no saved query for it can exist; a share link for it restores.
+
+**Open in Portal is gone.** It built a URL in a format Microsoft does not document.
+Every Logs link the portal itself produces needs a workspace resource ID, which this
+tool does not have.
+
+**Favourites, history and templates became two lists.**
+
+- Favourites and custom templates are **Saved**; history is **Recent**.
+- The template editor is removed. A custom template is converted once into a saved KQL
+  query holding what the old generator would have written for it (table, the last 24
+  hours, its aggregation, order, limit and projection). Its custom fields are not
+  carried: they were free-text column names with no schema behind them.
+- A favourite keeps its name, description and tags. A favourite still called
+  `azure-firewall - basic` (the old default) is shown as `Azure Firewall: Network rule
+  log`. Names can be changed; descriptions and tags are shown but can no longer be
+  edited. The old edit dialog deleted the favourite it was editing.
+- Recent records a query when it is copied or downloaded, since nothing is "generated"
+  any more. It still holds 50.
+- Deleting a saved query and clearing Recent can be undone from the notice.
+
+**Storage.** Everything lives in one new slot, `rt:azure-kql:library`. On first load it
+is filled from `rt:azure-kql:store`, `rt:azure-kql:custom-templates` and the older
+`azure-kql-custom-templates`, none of which is written to or removed. The read happens
+once: something saved afterwards by a cached copy of the old tool does not come across.
+The manifest now declares all three namespaced slots, so the Saved data page clears
+`custom-templates` too, which it could not before.
+
+**Share links.** New links use the site codec (`src/core/sharelink.js`, untouched) with a
+`v: 2` payload, and are available in Write KQL as well, carrying the text. Old links
+were plain `btoa` JSON; they are read first as that, and a `+` that a query string
+turned into a space is put back.
+
+**Deep links.** A scenario id the service does not have opens the service's first
+scenario; a service id that does not exist opens the empty page. A legacy custom
+template id in the scenario position opens the saved query it became.
+
+**It opens on a query, and remembers the last one.** A first visit to `/azure-kql` shows
+failed Entra ID sign-ins rather than an empty page, and later visits reopen whatever was
+last being built (a new `rt:azure-kql:last` slot, declared in the manifest). A share link
+or a deep link still wins. A service id that does not exist now opens that default rather
+than nothing.
+
+**One searchable scenario field replaces the service and template selects**, covering 34
+services and 181 scenarios (the old tool had 3 and 4). `/` opens it.
+
+**A query can be reshaped.** Count by up to four columns, or over time, replaces the
+scenario's own output; a filter can be switched off without being removed. Both travel in
+share links and saved queries as optional keys (`group`, and `off` on a filter), so a link
+without them encodes and restores exactly as before.
+
+**Copy says so on the button** instead of raising a notice.
+
+**Also.** Download is named `<service>-<scenario>.kql` with no timestamp. The scenario
+names changed (**Network Rule Query** is **Network rule log**, **Application Rule Query**
+is **Application rule log**), and `e2e/deeplinks.spec.js` was changed to match. A
+`build_kql_query` WebMCP tool is registered. `zustand` and `src/utils/prism-kql.js` had
+no other user and are removed.
+
 ### The paste panel reads timestamps, and a GUID gets a third answer (2026-11-14)
 
 Two inputs to the index's paste panel now dispatch differently, both because of tools that

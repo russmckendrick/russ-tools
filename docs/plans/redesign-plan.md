@@ -3447,6 +3447,425 @@ everything together the registry holds 28 tools and the frozen list 51 routes,
 the paste panel keeps the PEM rule and gains the GUID third chip and the
 timestamp rule, and the placeholder now names both PEM and timestamp.
 
+### 2026-11-14 — The Azure KQL Query Builder, rebuilt
+
+The owner's brief was one line: the tool is horrible, rebuild it from the ground up.
+No specifics, so the first job was finding out what "horrible" was made of.
+
+**What was wrong.** Using it at 390px and 1440px turned up more than taste:
+
+- Application Gateway could not produce a query at all. Its own default
+  (`Category: ApplicationGatewayAccessLog`) failed its own validation, because the
+  template's options were strings and the validator read `option.value`. The same
+  mismatch drew two dropdowns with four blank options.
+- The AVD client-address filter named `ClientIPAddress`, a column `WVDConnections` does
+  not have.
+- Nothing was escaped: a user name of `bob" or 1==1 //` closed the literal.
+- Editing a favourite deleted it. The handler removed it from the store and pushed the
+  edited copy onto the props array in a timeout.
+- The flow was four tabs and a Generate button around four templates of one shape.
+  At 390px the query began 1,474px down the page, after a button press.
+- Labels were regexed out of column names ("Client I P Address", "http Status_d"), the
+  query block was a hard-coded dark Prism theme in both site themes, and the page still
+  used the two-column split that was withdrawn everywhere else.
+
+**The shape of the replacement.** One column, no Generate button: service and scenario,
+time range and rows, filters, and the query directly under them, rebuilt on every
+change, with one sentence saying what it returns. A second tab, **Write KQL**, is a
+plain editor with the same highlighting; **Edit as KQL** carries a built query into it.
+Saved and recent queries sit below as two lists. The order is controls then query on
+purpose: with the query above the filters, a filter becoming valid adds a line above
+the field being typed in and moves it.
+
+**Typed filters, from a schema that is data.** `scripts/refresh-kql-schemas.mjs` reads
+each table's page in the Azure Monitor table reference on Microsoft Learn and writes
+`src/data/microsoft/azure-monitor-tables.json`: 28 tables and 997 columns with their
+types. `lib/columns.js` adds only what the reference cannot say in a type: which
+string columns are IP addresses or ports, and which take one of a documented set of
+values. Operators follow the type. A value that is wrong says why and its filter is
+left out, so the output always parses; a value that is right is written through
+`stringLiteral` or `verbatimLiteral`, which follow the Kusto string rules as Learn
+states them. `catalog.test.js` fails if any scenario, filter or note names a column
+the reference does not list, and it earned its place inside the first hour by catching
+a `DestinationIp` note on `AZFWApplicationRule`, which has no such column.
+
+**Coverage.** Twelve services and 73 scenarios at first (see the steer below), in three shapes: rows, top-N
+summaries and time charts whose bucket follows the time range. Every scenario's exact
+query is pinned in `lib/fixtures/scenarios.json`, read once by eye before pinning.
+
+**Three things left out, each on the evidence.**
+
+- *Open in Log Analytics.* Microsoft documents no deep-link format. The ones the
+  portal emits (`.../LogsBlade/resourceId/<id>/source/LogsBlade.AnalyticsShareLinkToQuery/q/<gzip+base64>`)
+  are known only from community posts and all need a workspace resource ID.
+- *A pipeline diagram.* The query is already a top-to-bottom pipeline of five to
+  eight lines and the sentence above it does the explaining. A diagram would restate
+  it and push it off a phone.
+- *NSG flow logs.* `AzureNetworkAnalytics_CL` is a custom table outside the table
+  reference. VNet flow logs (`NTANetAnalytics`) are in.
+
+**Where the documentation disagrees with itself, the query hedges.** The traffic
+analytics schema page gives `FlowStatus` as both a letter and a word depending on the
+section, so the denied-flows scenario filters `in ("Denied", "D")`. The activity log
+schema says a status is `Failed`; workspaces also hold `Failure`. That scenario takes
+both. Sets of values documented in lower case (`member`, `failure`) compare with `=~`
+because the data is not reliably that case.
+
+**Contracts.** The three routes and the four old ids resolve. A share link and a store
+captured from the old tool in a browser, before a line changed, are a fixture replayed
+by unit and e2e tests. Old data is read once into `rt:azure-kql:library` and left
+where it was. Custom templates could not survive as templates, since their fields were
+free-text column names with nothing behind them, so each becomes a saved KQL query.
+The ledger entry lists every visible difference.
+
+**Smaller things.** `build_kql_query` is registered through `useWebMCPTool` and lists
+the catalogue when called with nothing. Radix's empty `onValueChange` echo, which bit
+the Subnet Calculator, is guarded on every select here. `zustand` had no other user and
+is removed, as is the shared `prism-kql.js` grammar nothing loaded. The five
+`exhaustive-deps` warnings went with the old island: lint is 0 errors, 6 warnings.
+
+**The owner's steer, the same day: more services, more interactive, slicker.**
+
+- *More services.* 12 became 34, 73 scenarios became 181, over 69 tables and 2,729
+  columns: Front Door, DNS query logs, Bastion, Entra ID Protection, Graph activity,
+  Sentinel and Defender alerts, Windows security events, CEF, Defender XDR, Microsoft 365,
+  Intune, Azure SQL, Cosmos DB, Backup, the workspace's own usage and query audit, the
+  Windows event log, syslog, performance counters, updates, Application Insights, API
+  Management, Functions, Container Apps and Container Registry. Front Door has no
+  resource-specific table in the reference, so it is queried through `AzureDiagnostics`
+  with the two category names Learn's Front Door page gives. The reference rarely lists a
+  column's values, so the values new scenarios filter on (`LogonFailed`, `Closed`,
+  `Needed`, `Failed`, syslog severities) come from each product's own documentation and
+  are offered as suggestions, not enforced; where Learn does list them
+  (`AADUserRiskEvents.RiskLevel`, `FunctionAppLogs.Level`) they are a set.
+- *More interactive.* One searchable scenario field (`/` opens it) replaces two selects.
+  Time is four one-tap buttons plus the rest. Any scenario can be counted by up to four
+  columns or drawn over time. Filters are added from one-tap column chips and can be
+  switched off without deleting them. Every line of the query is a control that jumps to
+  what wrote it, which is the pipeline view the query already was.
+- *Slicker.* The page opens on a real query and remembers the last one, so there is no
+  empty state and the `<Ghost>` went. The query moved directly under the main controls
+  and is pinned on a tall desktop window while the filters scroll; its block reserves
+  seven lines so adding a filter does not move the page. A changed line is highlighted
+  for under a second, new rows ease in over `--duration-settle`, and the copy button
+  says "Copied" itself. All of it sits under the reduced-motion floor in `globals.css`.
+  On a phone a filter row is about 100px, down from about 190.
+
+Verified on the branch with `main` (through PR 41) merged in: `pnpm test` 2085 passing,
+`pnpm lint` 0 errors and 6 warnings (was 11), `pnpm build`, `PW_PORT=8830 pnpm test:e2e`
+94 passing, `pnpm generate:docs` and `pnpm generate:og` run (one card changed). The tool
+was used in a browser at 390px and 1440px in both themes: building, an invalid then a
+valid filter, a custom range, a time chart, saving, renaming, deleting, copying, sharing,
+and opening the captured old share link and an old store with a favourite, a history
+entry and a custom template.
+
+After `main` moved again (PR 39, three more tools) it was merged in once more and the
+checks re-run: 2251 unit tests, 0 lint errors and 6 warnings, a clean build, 102 e2e.
+
+Not verified: no query was run against a real Log Analytics workspace. Names are from
+Microsoft Learn; data in a given workspace depends on its diagnostic settings. The phone
+checks were an emulated 390px touch viewport, not a handset.
+
+Left for whoever merges the parallel branches: the test and tool counts in `AGENTS.md`.
+
+### 2026-11-14 — The index gets a memory
+
+A review of the index noted it knew nothing about the visitor: twenty-eight
+tools, the same order for someone who uses three of them daily as for someone
+arriving cold. It now keeps two lists, in `localStorage` and nowhere else:
+tools the visitor pinned, and tools they recently opened.
+
+**Storage.** `rt:shell:pinned` and `rt:shell:recent`, each a JSON array of tool
+ids. Ids rather than paths, so a retired tool is skipped at draw time instead of
+becoming a dead link, and comes back if the tool does. Recents are stored to
+twelve and shown to six after the pinned ones are taken out: with a cap of six
+on the stored list, someone with six pins would never see a recent at all.
+`src/shell/yourTools.js` holds all of it and is unit-tested as a pure module
+(35 tests). `ToolLayout.astro` records the visit from one small script, so no
+tool knows about it; help pages use `BaseLayout` and so are not counted.
+
+**The strip.** Between the band and the filter row: Pinned, then Recent, each a
+labelled row of small links, with "Clear" ranged right on the Recent row. With
+nothing to show it is `hidden` and takes no room, and the e2e suite measures
+that the filter row still starts 36px under the band.
+
+It is drawn **before first paint**. The links are prerendered into a
+`<template>` and an inline script immediately after the strip's markup clones
+the stored ones into place. That script is not a second implementation:
+`YourTools.astro` stringifies `paintStrip`, `planStrip` and `parseIds` out of
+the tested module, which is why each of the three takes everything it needs as
+an argument. A unit test evaluates the inlined source on its own to hold that
+line. Measured in Chromium, a load with stored tools reports the same
+layout-shift score as a load without, at 1440px and at 390px.
+
+Two things that looked simpler were tried on paper and rejected. Prerendering
+the links as hidden anchors puts a second `a[href="/subnet-calculator"]` ahead
+of the catalogue's, which fails the existing index tests in strict mode; the
+template keeps them out of the document. And nesting the pin inside the row is
+not possible, because the row is the link: `ToolRow.astro` wraps the row and
+the pin as siblings in `.rt-row`, which also takes over the
+`view-transition-name` so the pin travels with its row when a chip refilters.
+`ToolCard`'s `travel` prop went with that; /404 never used it.
+
+**The pin.** One per row, 32px with the 44px `.rt-tap` target, shown on hover or
+focus where there is a pointer, always on touch, and always when pinned. It is
+a real button in the tab order with `aria-pressed`, hidden until the page
+script runs so there is no dead control without JavaScript or without storage.
+Pinning appends, so unpin and pin again is the reorder. Drag to reorder was
+left out.
+
+**Edge fades.** The strip on a phone is one line that scrolls sideways, and it
+fades at whichever edge has more behind it. The filter chips had the same
+scroll and no such cue, so they share it now (`src/shell/edgeFade.js`). The mask
+is applied only while a row actually overflows, because a mask clips the focus
+ring of anything inside it.
+
+**/delete.** Lists the pair as "Pinned and recent tools", clears it alone or
+with everything else. Logged in `BEHAVIOR_CHANGES.md`, including that "Clear all
+tool data" now reaches these two keys.
+
+**Checked.** `pnpm test` 1769 (was 1732), `pnpm lint` 0 errors and the same 11
+warnings, `pnpm build && pnpm test:e2e` 112 (was 99; the thirteen new cases
+cover recording, pinning, the keyboard, unpinning, clearing, the untouched
+empty state, a retired id, damaged storage, the filters, the pre-paint draw
+with the page script blocked, the phone scroll and /delete). Driven in Chromium
+at 1440px and 390px (touch), light and dark, with and without stored data, and
+with `prefers-reduced-motion`, where pinning starts no view transition.
+
+**Not checked, and known costs.** Safari and Firefox were not run; the mask and
+`:has()` rules are standard but unverified there. A back-forward cache restore
+repaints the strip on `pageshow`, which no test exercises. The index HTML grew
+from about 61 kB to 96 kB (14.3 kB to 17.5 kB gzipped): the template of
+twenty-eight links and twenty-eight pin buttons. Keyboard users get one more
+tab stop per row.
+
+**Noticed, not touched.** The phone index already reports a layout shift of
+about 0.23 on load with nothing stored, from the shell below the band; and the
+index's meta description still says "Twenty-four small utilities".
+
+**After taking `main` in.** The Azure KQL rebuild landed first. Nothing
+overlapped in code: the two logs conflicted only because both append. The
+registry is still 28 tools, so the catalogue counts in the new e2e cases stand.
+With both together `pnpm test` is 2288, `pnpm test:e2e` is 115 and `pnpm lint`
+is 0 errors and 6 warnings.
+
+### 2026-11-14 — Three more developer tools: URL, Regex, Text Diff (28 → 31)
+
+Part of the second wave from the same review. Three new folders under
+`src/tools/`, each the shape of `hash/`, `uuid/` and `timestamp/`: manifest,
+island, `lib/` with tests, an island test, a help README and a WebMCP tool.
+No dependency was added.
+
+**URL Parser & Encoder** (`/url`, `/url/:input`). `lib/url.js` splits with the
+RFC 3986 pattern rather than `new URL`, because the checks need the text as it
+was written and `URL` normalises it away. Each part is kept twice, raw and
+decoded, and **only the part that is edited is re-encoded**, so pasting a URL
+and changing one parameter does not rewrite the rest of it. The path keeps
+`%2F`, `%3F`, `%23` and `%25` escaped, since decoding those changes where the
+path ends. `+` is read as a space only when the query uses one. Checks:
+credentials (naming the real host), secret-looking parameter names, plain
+http carrying either, double-encoding, characters that must be encoded, a
+stray `%`, escapes that are not UTF-8, an unencoded inner URL, plus notes for
+brackets, non-ASCII, repeated names, a default port and an IDN host. The
+secret check is by name only and says so in the finding itself. `URL` does the
+punycode encoding; `lib/punycode.js` is an RFC 3492 decoder (no browser API
+goes that way), tested against the platform encoder.
+
+One thing worth knowing: `useParams` hands back a URL whose own `%2F` has
+become a slash. The segment arrives as `%252F`, and react-router appears to
+decode it twice (once for the path, once for the param); the island test
+caught it. The island
+reads the raw segment off `useLocation().pathname` and decodes it once. The
+e2e deep-link test carries a `%2F` to pin this through the Pages layer.
+
+**Regex Tester** (`/regex`). The browser's own `RegExp`, and the page says the
+flavour is ECMAScript and what that lacks. Matching runs in a module Worker
+(`lib/regex.worker.js`, the repo's first) driven by `lib/runner.js`: a job
+that has not answered after one second has its worker terminated and reports
+a timeout, and a newer job supersedes one in flight. The clock starts when
+the worker says it has loaded, so a slow first fetch is not a false timeout.
+With no `Worker` at all (jsdom) it runs in place and flags the result
+`unprotected`; a worker that fails to start is an error, never a silent
+main-thread run. Highlighting is a transparent textarea over a mirrored
+backdrop in one CSS grid cell, so the two wrap identically with no scroll
+syncing; the backdrop copies the 16px touch font rule. Group names come from
+scanning the pattern source, checked against the real group count. Eight
+library patterns (IPv4, IPv6, IPv4 CIDR, MAC, GUID, FQDN, email, ISO 8601),
+each anchored and each tested line by line against its own good and bad
+samples, which are also the sample text it loads. State is shared as
+`#config=` using `compressConfig` from `src/core/sharelink.js` unchanged, with
+a captured link pinned in the tests. The hash is written only after the first
+edit, and not at all past 6,000 characters.
+
+**Text Diff** (`/diff`). `lib/myers.js` is Myers' algorithm in its
+linear-space form (bidirectional search for a split point, then recursion),
+written here rather than imported. A fuzz test checks 400 random pairs against
+an LCS table for both validity and minimality. A budget on the search depth
+keeps two large unrelated texts from hanging: past it the region is emitted
+whole and the result is flagged, and the page says so. Hard caps of 1,000,000
+characters and 20,000 lines a side refuse with a message. Changed lines are
+paired by similarity before word-level highlighting, so a line inserted beside
+a changed one does not knock the pairing out of step; pairs with little in
+common are left unmarked. A last line with no final newline is a different
+line from the same text with one, which is what makes the copied unified diff
+apply: 199 random cases were fed to `patch` and all reproduced the changed
+text. "Normalise JSON" appears only when both sides parse as an object or
+array. Side by side is offered from 768px; below it the view is unified.
+
+**Paste panel.** An `http(s)` URL with a path or query now offers the URL
+parser first, with the host's tools behind it. The link uses the fragment
+(`/url#url=`), as the certificate chip does, so a pasted URL is not sent to
+the server. A bare host is unchanged. Logged in `BEHAVIOR_CHANGES.md`. The
+change is a wrapper round the old `suggest` (now `route`), so the routing
+branches other sessions are editing are untouched.
+
+**Icons.** `link` (an address bar holding `://`), `regex` (`.*`) and `diff`
+(two panes, a minus and a plus). The dnssec glyph is already a chain, so the
+URL tool could not be one.
+
+**Found by looking.** The match table was 28px wider than its panel at 390px;
+cell padding now steps down on a phone and it fits. The diff collapsed two
+unchanged lines into a "2 unchanged lines" row, which saved nothing; a run is
+now collapsed only when it hides four or more.
+
+Each tool was driven in Chromium at 390px (touch) and 1440px in both themes:
+eleven scenes, no sideways page scroll, no console errors. `pnpm test` 2011,
+`pnpm lint` 0 errors and 11 warnings, `pnpm build` clean, `pnpm test:e2e` 108
+including the help matrix and six new tests, one of which runs `(a+)+$`
+against a real worker and then shows the page still answers.
+
+Not verified: Safari and Firefox (Chromium only), and a real phone. Not done:
+a hex view of non-UTF-8 escapes, regex flavours other than the browser's, and
+a diff of more than two texts or of files dropped onto the page.
+
+**After taking `main` in.** The Azure KQL rebuild (PR 42) and the dependency
+updates (PR 43) landed first. Only the two append-only logs conflicted and
+both sides were kept. The counts above were this branch alone; on the merged
+tree `pnpm test` is 2530, `pnpm lint` is 0 errors and 6 warnings, the build is
+clean and `pnpm test:e2e` is 111. The generated README tables were unchanged.
+
+**And again, behind the index's memory (PR 44).** The same two logs and the
+counts in `AGENTS.md` conflicted; every entry kept. Six catalogue counts in
+that branch's new index tests said 28 and now say 31. The three new rows carry
+the pin control like every other row, and pinning and opening them fills the
+"Your tools" strip, checked at 390px and 1440px. On this tree `pnpm test` is
+2567, `pnpm lint` is 0 errors and 6 warnings, the build is clean and
+`pnpm test:e2e` is 124.
+
+### 2026-11-14 — HTTP Security Headers and SAML Decoder (28 → 30)
+
+Two security tools from the 2026-11-14 gap review. One needs a server and one must not
+have one.
+
+**HTTP Security Headers (`/http-headers`, deep link `/http-headers/:domain`).** A browser
+cannot read another site's response headers, so this is the fourth lookup behind the
+site's API: `functions/api/headers.js`, on `lookupHandler` like the other three. It is a
+function that fetches a URL the caller chooses, and was written as the SSRF surface that
+makes it. `functions-lib/public-host.js` decides what may be fetched (http or https, port
+80 or 443, a hostname and never an IP literal, no internal names, no credentials), the
+handler resolves the name over Cloudflare DoH and refuses any private answer, and both are
+applied again to every redirect, which it follows by hand to a limit of five. HEAD first,
+GET if that is refused, body cancelled unread, eight seconds in all. Cookie values are
+dropped in the function; only names and flags come back.
+
+Two decisions the brief left open:
+
+- **Every IP literal is refused, public ones too.** The brief asked for private and
+  loopback literals to be refused. Refusing all of them removes the whole class of
+  parser-differential tricks (decimal, hex, octal, IPv4-mapped, NAT64) at the cost of a
+  case nobody needs: a security-headers check of a bare address.
+- **The function returns facts and the browser grades them.** Pass, warning and fail are
+  decided in `src/tools/http-headers/lib/analyse.js`, so rewording a finding or moving a
+  threshold is not an API contract change. There is no letter grade: four counts (passed,
+  warnings, failed, notes) and a specific sentence per header.
+
+What it cannot promise is written in the API reference and not softened: the DNS check and
+the fetch are two resolutions, so a rebinding name passes the check, and what covers that
+on Cloudflare is that the function has no private network to be steered into. Under
+`wrangler pages dev` the fetch leaves from the developer's machine, which is why
+`localtest.me` (a public name for 127.0.0.1) was the manual test, and it is refused.
+
+**SAML Decoder (`/saml`).** Entirely client-side. `lib/decode.js` detects raw XML, base64,
+base64 over DEFLATE, URL encoding, or a whole redirect URL or form body, and says which it
+found; `pako` (already here for the share-link codec) inflates, capped at 4 MB so a
+compression bomb stops. `lib/parse.js` reads the result with the browser's `DOMParser`
+and refuses any document with a DOCTYPE outright, since SAML never has one. The summary
+covers issuer, subject and NameID format, audience, destination and recipient, the
+validity window on the shared `ValidityBar`, authentication context, every attribute with
+Entra ID claim URIs labelled, and the signature and digest algorithms. Findings: expired or
+not yet valid, no audience restriction, SHA-1, nothing signed, an assertion signed only by
+the response around it, and a signature whose Reference names some other element.
+Signatures are reported and never verified, and the page says so in the signatures panel,
+the help and the WebMCP tool's output.
+
+The XML view is not Prism. `lib/pretty.js` walks the DOM into typed tokens and the
+component renders spans, so there is no `innerHTML` anywhere near pasted markup, and the
+colours are tokens (the existing Prism stylesheet in the data converter is raw hexes).
+
+**Shared files touched.** `src/shell/icons.mjs` (`list-checks`, `code-xml`),
+`src/lib/paste.js` (the headers checker joins the hostname list, sixth of eight),
+`src/tools/registry.test.js` (30 tools, 54 frozen routes), `e2e/deeplinks.spec.js`,
+`e2e/api.spec.js`, `src/utils/api/apiConfig.json`, `public/.well-known/api-catalog`,
+`scripts/generate-llms.mjs`, `src/tools/agent-discovery.test.js`,
+`src/test/functions/guard.test.js`, and the docs that listed three lookups. No dependency
+was added.
+
+**Found by looking.** A real CSP is two thousand characters, and Mozilla sends it twice
+(enforced and report-only), which made the phone page 5,200px tall; values over 280
+characters now open on request. "hello this is not saml" is made entirely of base64
+characters, so the first error message claimed it had decoded; it now says it is neither
+XML nor base64.
+
+Checked at 390px and 1440px in both themes, against `wrangler pages dev dist`: a real
+result for mozilla.org (two redirects), bing.com (cookies) and russ.tools, and refusals for
+`http://127.0.0.1`, `http://169.254.169.254`, `http://10.1.2.3`, `http://192.168.0.1`,
+`http://[::1]/` and `localtest.me`. `pnpm test` 2146, `pnpm lint` 0 errors and 11 warnings,
+`pnpm build` clean, `pnpm test:e2e` 119.
+
+Not verified: the function on Cloudflare's own network (only the local runtime was
+available, and nothing was deployed), so whether Cloudflare's edge refuses a fetch to a
+private address by itself is asserted from the platform's design and not observed here.
+Not done: a `<meta http-equiv>` CSP (the body is never read), checking more than one URL
+per site, SAML 1.1 and WS-Federation, decrypting an `EncryptedAssertion`, and verifying a
+signature.
+
+Left for the owner: `SITE_DESCRIPTION` in `src/shell/site.mjs` (and the copy of it in
+`public/.well-known/ai-catalog.json`) still says "Twenty-four focused tools" and
+"Everything runs in your browser ... nothing uploaded". The count was stale before this
+branch and the second sentence was already untrue of the lookups; it is site-wide meta
+copy, so it was not rewritten here.
+
+**After taking `main` in.** The Azure KQL rebuild, the dependency updates and the
+index's pinned and recent tools landed first. Three files conflicted, all of them
+because both sides append: this log, `BEHAVIOR_CHANGES.md` and the count lines in
+`AGENTS.md`. Every entry was kept. The five new index e2e cases counted 28 cards and
+"All 28"; they now count 30. With everything together the registry holds 30 tools and
+the frozen list 54 routes, `pnpm test` is 2702, `pnpm test:e2e` is 135 and `pnpm lint`
+is 0 errors and 6 warnings.
+
+**After taking `main` in again.** The URL parser, regex tester and text diff landed
+just ahead (28 → 31), so with these two the registry holds 33 tools and the frozen list
+58 routes. Eight files conflicted. Five were the usual ones: this log,
+`BEHAVIOR_CHANGES.md`, the count lines in `AGENTS.md` and the two generated README tables
+(regenerated, not merged by hand). `registry.test.js` and nine catalogue counts in
+`e2e/deeplinks.spec.js` were recounted to 33.
+
+The one real overlap was the paste panel, where both branches had a rule for a pasted
+`http(s)://` URL. The order was decided, not left to whichever merged last:
+
+- a URL with a path or query: **URL Parser, then HTTP Headers**, then the seven other host
+  tools. The parser only reads the string; the checker sends the host to the site's server
+  and requests it. Enter should take the step that touches nothing.
+- a bare origin (`https://example.com`): nothing for the parser to take apart, so **HTTP
+  Headers leads** and DNS Lookup follows. This changes what Enter opens for that input,
+  which is logged in the ledger.
+- a bare hostname with no scheme: unchanged, DNS Lookup first and the headers checker
+  sixth of eight.
+
+The headers chip still carries the host alone, so a pasted page URL checks the site's
+root. `pnpm test` is 2982, `pnpm test:e2e` is 144, `pnpm lint` is 0 errors and 6 warnings,
+and the build is clean.
+
 ### 2026-11-14 — Two reference tools: Azure Regions and VM Sizes, Entra ID Lookup (28 → 30)
 
 Second wave of the tools the catalogue lacked. Both follow the snapshot pattern
@@ -3524,6 +3943,64 @@ deep-link tests. The frozen list is 55 routes.
 Not done: per-region VM availability and prices (authenticated), sovereign
 regions, GPU counts in the size table, permissions of APIs other than Graph,
 and a complete first-party application list (not published).
+
+**A map of the regions, added the same day.** The Regions view now opens on an
+interactive map above the table: a marker per region (filled where there are
+availability zones), a click selects the region, and its pair gets a dashed
+ring and a line. Filtering the list zooms the map to what is left; three
+buttons and a drag do the rest.
+
+It is drawn without a mapping library and without map tiles. A tile server
+would see every visitor's address, which the site promises not to do, and a
+library is most of a megabyte to place fifty dots. Instead `lib/map.js` holds
+an Equal Earth projection and the `viewBox` arithmetic; the refresh script
+imports the same `project()` to turn Natural Earth's 1:110m land outline
+(public domain) into one SVG path, `world-land.json`, 50 kB (19.8 kB gzip) and
+loaded after the island. Markers and coastline therefore cannot disagree.
+
+Coordinates are Microsoft's, from the data file behind its datacentre globe
+(`datacenters.microsoft.com/globe/data/geo/regions.json`), matched by
+programmatic name and then by display name. It places 48 of the 59 regions.
+The other eleven, mostly restricted pairs, are listed under the map by name
+and open from there; none was positioned by hand.
+
+On a phone a world map 350px wide is 150px tall and its markers cannot be
+pressed, so there the frame is a fixed 256px and `minZoom(aspect)` raises the
+floor: the map fills the frame top to bottom, opens on Europe and Africa, and
+pans sideways for the rest. At that floor the drawing only needs horizontal
+drags, so `touch-action` is `pan-y` and the page still scrolls under a thumb;
+it becomes `none` once zoomed in. The zoom buttons sit above the map, not on
+it, after covering Japan in the first attempt. Markers are not tab stops: the
+table under the map is the keyboard route to every region, and 48 extra stops
+before it would be a worse one.
+
+`pnpm test` 1844, `pnpm test:e2e` 107, lint unchanged. Checked at 390px and
+1440px in both themes, including a real drag.
+
+**Help tables.** Both new help blocks used a pipe table, and the help page
+renders CommonMark without GFM, so each reached the reader as a paragraph of
+pipes. They are lists now, and `docs.test.js` fails on a table row inside any
+tool's `help:start` / `help:end` block. `pnpm test` is 1874 with that check.
+
+**After taking `main` in.** This branch landed behind the Azure KQL rebuild,
+the dependency updates, the index's pinned and recent strip, and the URL
+Parser, Regex Tester and Text Diff. The counts above were this branch alone;
+together the registry holds 33 tools and the frozen list 59 routes, `pnpm test`
+is 2712 and `pnpm test:e2e` is 132. The overlaps were additive. In
+`src/lib/paste.js`, `suggest()` became a wrapper over `route()` that offers the
+URL Parser for an address with a path or query; `refine()` sits after it
+unchanged, and the GUID branch it reorders now lives in `route()`. Both sides
+had moved the frozen route count from 51 to 55, so git saw no conflict there
+and the number was simply wrong until the test said 59.
+
+**After taking `main` in a third time.** The HTTP Security Headers checker and
+the SAML Decoder landed first, so this branch is the last of the wave. With
+everything together the registry holds 35 tools and the frozen list 62 routes,
+`pnpm test` is 3129 and `pnpm test:e2e` is 152. The same trap as before, twice
+over: both branches had independently written 33 for the tool count in the
+registry and e2e tests, so git merged them without complaint and every one of
+those numbers was two short. The paste panel's GUID order is unchanged beside
+the new URL and domain rules.
 
 ### 2026-11-14 — The Conditional Access application ids, checked against Microsoft
 

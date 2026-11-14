@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { loadAzureRegionData } from '@/utils/azure/region-parser';
 import { distinct, findRegion, searchRegions } from '../lib/regions.js';
 import { RegionDetail } from './RegionDetail.jsx';
+import { RegionMap } from './RegionMap.jsx';
 
 const ALL = 'all';
 
@@ -119,6 +120,8 @@ export function RegionsView({ data, initialQuery = '' }) {
           </div>
         </CardContent>
       </Card>
+
+      <RegionMap regions={regions} matches={matches} selectedName={selectedName} onSelect={select} />
 
       <div ref={detailRef} className="scroll-mt-4">
         {selected && <RegionDetail region={selected} regions={regions} codes={codes} onSelect={select} />}

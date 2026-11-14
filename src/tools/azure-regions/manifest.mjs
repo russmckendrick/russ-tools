@@ -7,7 +7,8 @@
  *
  * Both datasets are snapshots of Microsoft's published pages, written by
  * `pnpm refresh:azure-regions` to src/data/azure/regions.json and
- * src/data/azure/vm-sizes.json. Per-region size availability and prices need
+ * src/data/azure/vm-sizes.json. The same script writes world-land.json, the
+ * outline the region map is drawn on, so the map needs no tile server. Per-region size availability and prices need
  * an authenticated Azure API and are deliberately out of scope.
  *
  * Routes this manifest owns:
@@ -21,19 +22,20 @@ export default {
 
   shortDescription: 'Look up Azure regions, their pairs and zones, and decode VM size names.',
   description:
-    'Search Azure regions by name, geography or city to find the programmatic name, paired region, ' +
-    'availability-zone support and physical location, and search VM sizes by name, family, vCPUs and memory ' +
+    'Search Azure regions by name, geography or city, or pick them off a map, to find the programmatic name, ' +
+    'paired region, availability-zone support and physical location, and search VM sizes by name, family, vCPUs and memory ' +
     'with every size name decoded into its parts. A dated snapshot of Microsoft’s published references, ' +
     'searched in the browser.',
 
   category: 'azure',
   icon: 'map-pinned',
-  badges: ['Region pairs', 'Availability zones', 'VM size decoder', 'Offline lookup'],
+  badges: ['Region map', 'Region pairs', 'Availability zones', 'VM size decoder'],
 
   params: ['query'],
 
   features: [
     'Region search by name, geography, area or city',
+    'Interactive map of regions, with each pair drawn',
     'Paired region and availability-zone support',
     'Programmatic names and naming short codes, one click to copy',
     'VM size search by name, family, vCPUs and memory',
@@ -49,6 +51,7 @@ export default {
       'azure paired regions',
       'azure availability zones regions',
       'azure region names',
+      'azure regions map',
       'azure vm sizes',
       'azure vm size naming',
       'standard_d4s_v5',
