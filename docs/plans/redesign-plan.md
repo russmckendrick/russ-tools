@@ -3557,3 +3557,8 @@ before it would be a worse one.
 
 `pnpm test` 1844, `pnpm test:e2e` 107, lint unchanged. Checked at 390px and
 1440px in both themes, including a real drag.
+
+**Help tables.** Both new help blocks used a pipe table, and the help page
+renders CommonMark without GFM, so each reached the reader as a paragraph of
+pipes. They are lists now, and `docs.test.js` fails on a table row inside any
+tool's `help:start` / `help:end` block. `pnpm test` is 1874 with that check.
