@@ -1,49 +1,149 @@
 # Azure KQL Query Builder
 
-Build Kusto Query Language queries for supported Azure services from guided templates, then copy, download, save, or open the result in Azure Portal.
+Build Kusto (KQL) queries for Azure Monitor Logs from ready-made scenarios with typed filters, or write KQL freely, then copy, save or share the result.
 
 <!-- help:start -->
 
 ## Quick start
 
-1. Choose an Azure service in the Query Builder tab.
-2. Select a template for the investigation or report you want to run.
-3. Complete the required parameters and any useful optional filters.
-4. Select **Generate Query** and review the KQL preview.
-5. Copy or download the query, open it in Azure Portal, or add it to Favorites.
+The page opens on a working query (failed Entra ID sign-ins the first time, and wherever you left off after that).
 
-## Builder, favorites, history, and templates
+1. Select the **Scenario** field, or press `/`, and search: a service, a table name or a word such as "failed" or "WAF".
+2. Pick a **Time range** with the 1h, 24h, 7d and 30d buttons, or choose another under **Other**.
+3. Add filters with the column buttons under **Filters**. The query and the sentence above it change as you type.
+4. Select **Copy query** and paste it into the Logs blade of your Log Analytics workspace.
 
-- **Query Builder** combines a service template with your parameters and validates required values before generating KQL.
-- **Favorites** keeps useful generated queries for reuse.
-- **History** records generated queries and can load their service, template, parameters, and output back into the builder.
-- **Templates** manages custom templates. A custom template must define the query pattern and any parameters it expects.
+There is no Generate button and nothing is sent anywhere: the query is built in your browser and is never run.
 
-## Query tips
+## What it covers
 
-- Start with the narrowest practical time range; filtering `TimeGenerated` early reduces work in Log Analytics.
-- Prefer exact values and selective filters to broad wildcard searches.
-- Treat the generated query as a starting point and review it before running it against a production workspace.
-- If **Open in Portal** cannot carry a long query reliably, copy the KQL and paste it into the Logs blade instead.
-- A shared configuration URL contains the selected service, template, and parameter values. Review those values before sharing the link.
+34 services and 181 scenarios:
 
-## Privacy and saved data
+- **Azure Firewall** (Network): `AZFWNetworkRule`, `AZFWApplicationRule`, `AZFWDnsQuery`, `AZFWThreatIntel`, `AZFWIdpsSignature`, `AZFWNatRule`
+- **Application Gateway** (Network): `AGWAccessLogs`, `AGWFirewallLogs`, `AzureDiagnostics`
+- **VNet flow logs** (Network): `NTANetAnalytics`
+- **Front Door** (Network): `AzureDiagnostics`
+- **DNS query logs** (Network): `DNSQueryLogs`
+- **Bastion** (Network): `MicrosoftAzureBastionAuditLogs`
+- **Entra ID sign-ins** (Identity): `SigninLogs`, `AADNonInteractiveUserSignInLogs`, `AADManagedIdentitySignInLogs`, `AADServicePrincipalSignInLogs`
+- **Entra ID audit log** (Identity): `AuditLogs`
+- **Entra ID Protection** (Identity): `AADUserRiskEvents`, `AADRiskyUsers`
+- **Microsoft Graph activity** (Identity): `MicrosoftGraphActivityLogs`
+- **Sentinel and Defender alerts** (Security): `SecurityIncident`, `SecurityAlert`
+- **Windows security events** (Security): `SecurityEvent`
+- **Firewalls and appliances (CEF)** (Security): `CommonSecurityLog`
+- **Defender XDR** (Security): `DeviceLogonEvents`, `DeviceProcessEvents`, `DeviceNetworkEvents`, `EmailEvents`, `IdentityLogonEvents`
+- **Microsoft 365 activity** (Microsoft 365): `OfficeActivity`
+- **Intune** (Microsoft 365): `IntuneAuditLogs`, `IntuneDevices`, `IntuneOperationalLogs`
+- **Activity log** (Platform): `AzureActivity`
+- **Key Vault** (Platform): `AZKVAuditLogs`
+- **Storage** (Platform): `StorageBlobLogs`, `StorageFileLogs`, `StorageQueueLogs`, `StorageTableLogs`
+- **Log Analytics workspace** (Platform): `Usage`, `LAQueryLogs`
+- **Azure SQL** (Data): `SQLSecurityAuditEvents`
+- **Cosmos DB** (Data): `CDBDataPlaneRequests`
+- **Azure Backup** (Data): `AddonAzureBackupJobs`
+- **App Service** (Compute): `AppServiceHTTPLogs`, `AppServiceConsoleLogs`, `AppServiceAppLogs`
+- **Kubernetes (AKS)** (Compute): `ContainerLogV2`, `KubeEvents`, `KubePodInventory`, `AKSAudit`, `KubeNodeInventory`, `AKSControlPlane`
+- **Azure Virtual Desktop** (Compute): `WVDConnections`, `WVDErrors`
+- **Virtual machines** (Compute): `Heartbeat`, `Perf`, `Update`
+- **Windows event log** (Compute): `Event`
+- **Linux syslog** (Compute): `Syslog`
+- **Application Insights** (Applications): `AppRequests`, `AppExceptions`, `AppDependencies`, `AppTraces`
+- **API Management** (Applications): `ApiManagementGatewayLogs`
+- **Azure Functions** (Applications): `FunctionAppLogs`
+- **Container Apps** (Applications): `ContainerAppConsoleLogs`, `ContainerAppSystemLogs`
+- **Container Registry** (Applications): `ContainerRegistryLoginEvents`
 
-Query generation is client-side. The tool does not run the query or send its parameters to Azure. The local store retains builder state, history, and favorites in this browser. Opening Azure Portal is an explicit external action, and a share URL contains the configuration you chose to encode.
+Scenarios come in three shapes: **rows** (newest first, or slowest first), **top-N summaries** (counts by caller, by rule, by status), and **time charts** (a count per bucket, with the bucket sized to the time range).
+
+Table and column names are taken from Microsoft's Azure Monitor table reference. A table only holds data if the matching diagnostic setting, data collection rule or Sentinel connector sends it to your workspace, so an empty result usually means the log is not being collected, not that the query is wrong.
+
+## Reading and steering the query
+
+- Every line of the query is a control. Select a line, or tab to it and press Enter, to jump to what wrote it: the scenario, the time range, a filter, the row limit or the summary.
+- A line that has just changed is highlighted for a moment.
+- On a tall desktop window the query stays pinned while you scroll through the filters.
+
+## Summarise
+
+**Count by…** turns any scenario into a count grouped by up to four columns of your choosing, and **Over time** turns it into a time chart. **Reset** goes back to the scenario's own output. Your filters and time range stay as they are.
+
+## Filters
+
+A filter is one column, one operator and a value. What you can choose depends on the column's type:
+
+- **Text**: is, is not, equals in any case, contains, does not contain, has the term, starts with, ends with, is one of, is none of, matches regex, is empty, is not empty.
+- **IP address**: is and is not take an address or a CIDR range (`10.0.0.0/8`), and a range becomes `ipv4_is_in_range`. Is one of takes a list of addresses and ranges. Is a private address and is a public address need no value. IPv6 addresses and ranges work for is and is not.
+- **Port and number**: equals, not equals, greater or less than, between, and is one of. A port must be 0 to 65535.
+- **One of a set**: columns with a documented set of values offer them as a list, and compare without regard to case.
+- **True or false** and **date and time** columns have their own operators. Dates are UTC.
+
+For is one of and is none of, separate values with commas or new lines.
+
+A value that is not valid for its column says why underneath, and that filter is left out of the query until it is fixed, so what you copy always parses. Values are escaped for you: quotes and backslashes in a value cannot break out of the string.
+
+The switch at the start of a filter takes it out of the query without deleting it, so you can compare with and without.
+
+Filters marked **from the scenario** are what make the scenario what it is (for example `Action == "Deny"` in Top denied flows). You can change or remove them like any other.
+
+## Time range
+
+- **1h, 24h, 7d, 30d** and the other ranges from 15 minutes to 90 days write `TimeGenerated > ago(...)`.
+- **Custom range (UTC)** writes `TimeGenerated between (datetime(...) .. datetime(...))`.
+- **Set in the portal** writes no time filter, so the time picker in the Logs blade decides.
+
+## Write KQL
+
+**Write KQL** is a plain editor with the same highlighting, copy, save and download. Use **Edit as KQL** on a built query to carry it across and change it by hand. Nothing you write there is checked or altered. Going back to **Build** keeps both.
+
+## Saved and recent
+
+- **Save** keeps the query under a name, with its filters, so it reopens in the builder. Rename or delete it from the list; a delete can be undone from the notice that appears.
+- **Recent** records each query you copy or download, newest first, up to 50.
+- The page also remembers the query you were last building.
+- Both lists are kept in this browser only. Use the Saved data page to clear them.
+- Favourites, history and custom templates from the earlier version of this tool are carried over the first time you open it. Custom templates become saved KQL queries.
+
+## Sharing and deep links
+
+**Share Configuration**, beside Help, copies a link that reopens the same service, scenario, time range, rows and filters, or the KQL you wrote. Everything in the link is in the address itself, so check the filter values before sending it to someone.
+
+`/azure-kql/<service>` opens a service and `/azure-kql/<service>/<scenario>` opens one scenario, for example `/azure-kql/entra-sign-ins/failed`.
+
+## What it does not do
+
+- It does not run queries or connect to Azure.
+- It does not open the query in the portal. Microsoft publishes no link format for the Logs blade, and the ones the portal generates need your workspace's resource ID, so copy and paste is the reliable route.
+- It does not cover NSG flow logs in `AzureNetworkAnalytics_CL`, which is outside the table reference. VNet flow logs are covered.
 
 ## Troubleshooting
 
-- If a query will not generate, resolve the field-level validation messages and confirm every required parameter has a value.
-- If a deep link selects a service but no template, choose one in the builder; not every service supports every template.
-- If history or favorites do not persist, check that browser storage is enabled and has available space.
+- **"Failed to resolve table"** in Log Analytics: the table does not exist in that workspace yet. Enable the resource-specific log category on the resource.
+- **No rows**: widen the time range, remove filters one at a time, and check the casing of exact-match values. Text comparisons with "is" are case-sensitive; "equals (any case)" and "contains" are not.
+- **A filter is missing from the query**: look for the message under it.
+- **An old link opens with a filter flagged**: the earlier version accepted values the table does not have. Change or remove the flagged filter.
 
 <!-- help:end -->
 
-## Further documentation
+## For maintainers
 
-- [User guide](user-guide.md)
-- [Architecture](architecture.md)
-- [Template development](template-development.md)
-- [Azure Virtual Desktop queries](azure-virtual-desktop-queries.md)
+The tool contract is [`src/tools/azure-kql/manifest.mjs`](../../../src/tools/azure-kql/manifest.mjs). Everything that decides what a query says is plain JavaScript in `src/tools/azure-kql/lib/`, with tests beside it.
 
-The tool contract is defined in [`src/tools/azure-kql/manifest.mjs`](../../../src/tools/azure-kql/manifest.mjs).
+| File | What it holds |
+|---|---|
+| `lib/catalog/*.js`, `lib/catalog.js` | Services and scenarios |
+| `lib/columns.js`, `lib/columns/*.js` | Per-table notes: the most-used columns, and which columns are IPs, ports or sets |
+| `lib/schema.js` | Column lookups over `src/data/microsoft/azure-monitor-tables.json` |
+| `lib/operators.js`, `lib/values.js`, `lib/kql.js` | Operators per type, value parsing with messages, KQL literals and escaping |
+| `lib/build.js`, `lib/time.js` | State to query text and its plain-English reading |
+| `lib/state.js` | The reducer, and `portable` / `restore` for anything that leaves the page |
+| `lib/library.js`, `lib/legacy.js` | Saved and recent queries, and the one-time read of the old store and templates |
+| `lib/share.js` | Share links, new and old |
+| `lib/webmcp.js` | The `build_kql_query` WebMCP tool |
+| `lib/search.js`, `lib/session.js` | Scenario search, and what the page opens on |
+
+**Adding a scenario.** Add it to the service in `lib/catalog/`, then add its exact query, line by line, to `lib/fixtures/scenarios.json`; `build.test.js` fails until every scenario is pinned there. `catalog.test.js` fails if the scenario names a table or column that is not in the reference data.
+
+**Adding a table.** Add its name to `TABLES` in `scripts/refresh-kql-schemas.mjs`, run `pnpm refresh:kql-schemas`, and give it an entry in `lib/columns.js`. The script reads the table's page in the Azure Monitor table reference on Microsoft Learn; a column goes in the data only if that page lists it.
+
+**Stable ids.** `azure-firewall/basic`, `azure-firewall/application`, `azure-virtual-desktop/basic` and `azure-application-gateway/basic` are the ids the previous version used in deep links, share links and saved data. Keep them resolving.

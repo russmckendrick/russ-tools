@@ -1,0 +1,1173 @@
+{
+  "azure-firewall/basic": [
+    "AZFWNetworkRule",
+    "| where TimeGenerated > ago(24h)",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-firewall/application": [
+    "AZFWApplicationRule",
+    "| where TimeGenerated > ago(24h)",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-firewall/denied": [
+    "AZFWNetworkRule",
+    "| where TimeGenerated > ago(24h)",
+    "| where Action == \"Deny\"",
+    "| summarize Hits = count() by SourceIp, DestinationIp, DestinationPort, Protocol",
+    "| top 20 by Hits desc"
+  ],
+  "azure-firewall/actions-over-time": [
+    "AZFWNetworkRule",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Hits = count() by Action, bin(TimeGenerated, 1h)",
+    "| sort by TimeGenerated asc",
+    "| render timechart"
+  ],
+  "azure-firewall/top-fqdns": [
+    "AZFWApplicationRule",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count() by Fqdn, Action",
+    "| top 20 by Requests desc"
+  ],
+  "azure-firewall/dns": [
+    "AZFWDnsQuery",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, SourceIp, QueryName, QueryType, ResponseCode, RequestDurationSecs",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-firewall/threat-intel": [
+    "AZFWThreatIntel",
+    "| where TimeGenerated > ago(24h)",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-firewall/idps": [
+    "AZFWIdpsSignature",
+    "| where TimeGenerated > ago(24h)",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-firewall/nat": [
+    "AZFWNatRule",
+    "| where TimeGenerated > ago(24h)",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-application-gateway/access": [
+    "AGWAccessLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, ClientIp, HttpMethod, Host, RequestUri, HttpStatus, ServerStatus, TimeTaken, ServerRouted",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-application-gateway/errors": [
+    "AGWAccessLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where HttpStatus >= 500",
+    "| summarize Requests = count() by HttpStatus, Host, ServerRouted",
+    "| top 20 by Requests desc"
+  ],
+  "azure-application-gateway/slow": [
+    "AGWAccessLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, TimeTaken, ServerResponseLatency, HttpMethod, Host, RequestUri, HttpStatus, ServerRouted",
+    "| top 100 by TimeTaken desc"
+  ],
+  "azure-application-gateway/status-over-time": [
+    "AGWAccessLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count() by HttpStatus, bin(TimeGenerated, 1h)",
+    "| sort by TimeGenerated asc",
+    "| render timechart"
+  ],
+  "azure-application-gateway/waf": [
+    "AGWFirewallLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Action, RuleId, Message, ClientIp, Hostname, RequestUri, PolicyId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-application-gateway/waf-rules": [
+    "AGWFirewallLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Hits = count() by RuleId, Action, Message",
+    "| top 20 by Hits desc"
+  ],
+  "azure-application-gateway/basic": [
+    "AzureDiagnostics",
+    "| where TimeGenerated > ago(24h)",
+    "| where Category == \"ApplicationGatewayAccessLog\"",
+    "| project TimeGenerated, clientIP_s, httpMethod_s, host_s, requestUri_s, httpStatus_d, Resource",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "vnet-flow-logs/flows": [
+    "NTANetAnalytics",
+    "| where TimeGenerated > ago(24h)",
+    "| where SubType == \"FlowLog\"",
+    "| project TimeGenerated, FlowDirection, FlowStatus, SrcIp, DestIp, DestPort, L4Protocol, FlowType, AclRule, BytesSrcToDest, BytesDestToSrc",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "vnet-flow-logs/denied": [
+    "NTANetAnalytics",
+    "| where TimeGenerated > ago(24h)",
+    "| where SubType == \"FlowLog\"",
+    "| where FlowStatus in (\"Denied\", \"D\")",
+    "| summarize Flows = sum(DeniedInFlows + DeniedOutFlows) by SrcIp, DestIp, DestPort, L4Protocol, AclRule",
+    "| top 20 by Flows desc"
+  ],
+  "vnet-flow-logs/top-talkers": [
+    "NTANetAnalytics",
+    "| where TimeGenerated > ago(24h)",
+    "| where SubType == \"FlowLog\"",
+    "| summarize Bytes = sum(BytesSrcToDest + BytesDestToSrc) by SrcIp, DestIp",
+    "| top 20 by Bytes desc"
+  ],
+  "vnet-flow-logs/internet": [
+    "NTANetAnalytics",
+    "| where TimeGenerated > ago(24h)",
+    "| where SubType == \"FlowLog\"",
+    "| where FlowType =~ \"ExternalPublic\"",
+    "| summarize Bytes = sum(BytesSrcToDest + BytesDestToSrc), Records = count() by SrcIp, DestIp, DestPort, Country",
+    "| top 20 by Bytes desc"
+  ],
+  "vnet-flow-logs/malicious": [
+    "NTANetAnalytics",
+    "| where TimeGenerated > ago(24h)",
+    "| where SubType == \"FlowLog\"",
+    "| where FlowType =~ \"MaliciousFlow\"",
+    "| project TimeGenerated, FlowDirection, FlowStatus, SrcIp, DestIp, DestPort, L4Protocol, Country, AclRule",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-front-door/access": [
+    "AzureDiagnostics",
+    "| where TimeGenerated > ago(24h)",
+    "| where Category == \"FrontDoorAccessLog\"",
+    "| project TimeGenerated, clientIp_s, httpMethod_s, host_s, requestUri_s, httpStatusCode_s, Resource",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-front-door/errors": [
+    "AzureDiagnostics",
+    "| where TimeGenerated > ago(24h)",
+    "| where Category == \"FrontDoorAccessLog\"",
+    "| where httpStatusCode_s startswith \"5\"",
+    "| project TimeGenerated, clientIp_s, host_s, requestUri_s, httpStatusCode_s, Resource",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-front-door/by-status": [
+    "AzureDiagnostics",
+    "| where TimeGenerated > ago(24h)",
+    "| where Category == \"FrontDoorAccessLog\"",
+    "| summarize Requests = count() by httpStatusCode_s, host_s",
+    "| top 20 by Requests desc"
+  ],
+  "azure-front-door/top-clients": [
+    "AzureDiagnostics",
+    "| where TimeGenerated > ago(24h)",
+    "| where Category == \"FrontDoorAccessLog\"",
+    "| summarize Requests = count() by clientIp_s",
+    "| top 20 by Requests desc"
+  ],
+  "azure-front-door/waf": [
+    "AzureDiagnostics",
+    "| where TimeGenerated > ago(24h)",
+    "| where Category == \"FrontDoorWebApplicationFirewallLog\"",
+    "| project TimeGenerated, action_s, ruleName_s, policy_s, policyMode_s, host_s, requestUri_s, Resource",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-front-door/waf-rules": [
+    "AzureDiagnostics",
+    "| where TimeGenerated > ago(24h)",
+    "| where Category == \"FrontDoorWebApplicationFirewallLog\"",
+    "| summarize Hits = count() by ruleName_s, action_s, policy_s",
+    "| top 20 by Hits desc"
+  ],
+  "dns-queries/queries": [
+    "DNSQueryLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, SourceIpAddress, QueryName, QueryType, ResponseCode, ResolverPolicyRuleAction, ResolutionPath",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "dns-queries/by-action": [
+    "DNSQueryLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Queries = count() by ResolverPolicyRuleAction, QueryName",
+    "| top 20 by Queries desc"
+  ],
+  "dns-queries/top-names": [
+    "DNSQueryLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Queries = count() by QueryName, QueryType",
+    "| top 20 by Queries desc"
+  ],
+  "dns-queries/top-sources": [
+    "DNSQueryLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Queries = count() by SourceIpAddress",
+    "| top 20 by Queries desc"
+  ],
+  "azure-bastion/sessions": [
+    "MicrosoftAzureBastionAuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, UserName, ClientIpAddress, Protocol, TargetVMIPAddress, TargetResourceId, Duration",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-bastion/by-user": [
+    "MicrosoftAzureBastionAuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Sessions = count() by UserName, TargetVMIPAddress, Protocol",
+    "| top 20 by Sessions desc"
+  ],
+  "entra-sign-ins/sign-ins": [
+    "SigninLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, UserPrincipalName, AppDisplayName, IPAddress, Location, ResultType, ResultDescription, ConditionalAccessStatus",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-sign-ins/failed": [
+    "SigninLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where ResultType != \"0\"",
+    "| project TimeGenerated, UserPrincipalName, AppDisplayName, IPAddress, Location, ResultType, ResultDescription, ConditionalAccessStatus",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-sign-ins/failures-by-user": [
+    "SigninLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where ResultType != \"0\"",
+    "| summarize Failures = count(), Addresses = dcount(IPAddress) by UserPrincipalName, ResultType, ResultDescription",
+    "| top 20 by Failures desc"
+  ],
+  "entra-sign-ins/conditional-access": [
+    "SigninLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where ConditionalAccessStatus =~ \"failure\"",
+    "| project TimeGenerated, UserPrincipalName, AppDisplayName, IPAddress, Location, ResultType, ResultDescription, ConditionalAccessStatus",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-sign-ins/risky": [
+    "SigninLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where RiskLevelDuringSignIn in~ (\"medium\", \"high\")",
+    "| project TimeGenerated, UserPrincipalName, AppDisplayName, IPAddress, Location, ResultType, RiskLevelDuringSignIn, RiskState",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-sign-ins/by-location": [
+    "SigninLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize SignIns = count(), Users = dcount(UserPrincipalName) by Location",
+    "| top 20 by SignIns desc"
+  ],
+  "entra-sign-ins/non-interactive": [
+    "AADNonInteractiveUserSignInLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, UserPrincipalName, AppDisplayName, ResourceDisplayName, IPAddress, ResultType, ResultDescription",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-sign-ins/managed-identities": [
+    "AADManagedIdentitySignInLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, ServicePrincipalName, ResourceDisplayName, IPAddress, ResultType, ResultDescription",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-sign-ins/service-principals": [
+    "AADServicePrincipalSignInLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, ServicePrincipalName, AppId, ResourceDisplayName, IPAddress, ResultType, ResultDescription",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-audit/changes": [
+    "AuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| extend InitiatedByUser = tostring(InitiatedBy.user.userPrincipalName)",
+    "| extend InitiatedByApp = tostring(InitiatedBy.app.displayName)",
+    "| extend Target = tostring(TargetResources[0].displayName)",
+    "| project TimeGenerated, OperationName, Result, InitiatedByUser, InitiatedByApp, Target, LoggedByService",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-audit/failed": [
+    "AuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where Result =~ \"failure\"",
+    "| extend InitiatedByUser = tostring(InitiatedBy.user.userPrincipalName)",
+    "| extend InitiatedByApp = tostring(InitiatedBy.app.displayName)",
+    "| extend Target = tostring(TargetResources[0].displayName)",
+    "| project TimeGenerated, OperationName, Result, InitiatedByUser, InitiatedByApp, Target, LoggedByService, ResultReason",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-audit/role-changes": [
+    "AuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where OperationName contains \"role\"",
+    "| extend InitiatedByUser = tostring(InitiatedBy.user.userPrincipalName)",
+    "| extend InitiatedByApp = tostring(InitiatedBy.app.displayName)",
+    "| extend Target = tostring(TargetResources[0].displayName)",
+    "| project TimeGenerated, OperationName, Result, InitiatedByUser, InitiatedByApp, Target, LoggedByService",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-audit/by-operation": [
+    "AuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count() by OperationName, Result",
+    "| top 20 by Events desc"
+  ],
+  "entra-audit/by-initiator": [
+    "AuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| extend InitiatedByUser = tostring(InitiatedBy.user.userPrincipalName)",
+    "| extend InitiatedByApp = tostring(InitiatedBy.app.displayName)",
+    "| summarize Events = count() by InitiatedByUser, InitiatedByApp",
+    "| top 20 by Events desc"
+  ],
+  "entra-id-protection/risk-detections": [
+    "AADUserRiskEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, UserPrincipalName, RiskEventType, RiskLevel, RiskState, IpAddress, Source",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-id-protection/high-risk": [
+    "AADUserRiskEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| where RiskLevel =~ \"high\"",
+    "| project TimeGenerated, UserPrincipalName, RiskEventType, RiskState, RiskDetail, IpAddress",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "entra-id-protection/by-type": [
+    "AADUserRiskEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Detections = count(), Users = dcount(UserPrincipalName) by RiskEventType, RiskLevel",
+    "| top 20 by Detections desc"
+  ],
+  "entra-id-protection/risky-users": [
+    "AADRiskyUsers",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, UserPrincipalName, RiskLevel, RiskState, RiskDetail, RiskLastUpdatedDateTime",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "graph-activity/requests": [
+    "MicrosoftGraphActivityLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, RequestMethod, RequestUri, ResponseStatusCode, AppId, UserId, IPAddress, DurationMs",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "graph-activity/errors": [
+    "MicrosoftGraphActivityLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where ResponseStatusCode >= 400",
+    "| project TimeGenerated, RequestMethod, RequestUri, ResponseStatusCode, AppId, UserId, IPAddress",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "graph-activity/throttled": [
+    "MicrosoftGraphActivityLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where ResponseStatusCode == 429",
+    "| summarize Requests = count() by AppId",
+    "| top 20 by Requests desc"
+  ],
+  "graph-activity/by-app": [
+    "MicrosoftGraphActivityLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count() by AppId, ResponseStatusCode",
+    "| top 20 by Requests desc"
+  ],
+  "sentinel/incidents": [
+    "SecurityIncident",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, IncidentNumber, Title, Severity, Status, Classification, ProviderName, IncidentUrl",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "sentinel/open-incidents": [
+    "SecurityIncident",
+    "| where TimeGenerated > ago(24h)",
+    "| where Status != \"Closed\"",
+    "| project TimeGenerated, IncidentNumber, Title, Severity, Status, Classification, ProviderName, IncidentUrl",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "sentinel/incidents-by-severity": [
+    "SecurityIncident",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Incidents = dcount(IncidentNumber) by Severity, Status",
+    "| top 20 by Incidents desc"
+  ],
+  "sentinel/alerts": [
+    "SecurityAlert",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, AlertName, AlertSeverity, ProductName, CompromisedEntity, Status, Tactics, AlertLink",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "sentinel/high-alerts": [
+    "SecurityAlert",
+    "| where TimeGenerated > ago(24h)",
+    "| where AlertSeverity == \"High\"",
+    "| project TimeGenerated, AlertName, AlertSeverity, ProductName, CompromisedEntity, Status, Tactics, AlertLink",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "sentinel/alerts-by-product": [
+    "SecurityAlert",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Alerts = count() by ProductName, AlertSeverity",
+    "| top 20 by Alerts desc"
+  ],
+  "sentinel/alerts-over-time": [
+    "SecurityAlert",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Alerts = count() by AlertSeverity, bin(TimeGenerated, 1h)",
+    "| sort by TimeGenerated asc",
+    "| render timechart"
+  ],
+  "windows-security-events/events": [
+    "SecurityEvent",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Computer, EventID, Activity, Account",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "windows-security-events/failed-logons": [
+    "SecurityEvent",
+    "| where TimeGenerated > ago(24h)",
+    "| where EventID == 4625",
+    "| project TimeGenerated, Computer, Account, IpAddress, LogonType, WorkstationName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "windows-security-events/failed-logons-by-account": [
+    "SecurityEvent",
+    "| where TimeGenerated > ago(24h)",
+    "| where EventID == 4625",
+    "| summarize Failures = count(), Sources = dcount(IpAddress) by Account, Computer",
+    "| top 20 by Failures desc"
+  ],
+  "windows-security-events/lockouts": [
+    "SecurityEvent",
+    "| where TimeGenerated > ago(24h)",
+    "| where EventID == 4740",
+    "| project TimeGenerated, Computer, TargetAccount, Activity",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "windows-security-events/by-event": [
+    "SecurityEvent",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count() by EventID, Activity",
+    "| top 20 by Events desc"
+  ],
+  "cef/events": [
+    "CommonSecurityLog",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, DeviceVendor, DeviceProduct, Activity, DeviceAction, SourceIP, DestinationIP, DestinationPort",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "cef/by-vendor": [
+    "CommonSecurityLog",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count() by DeviceVendor, DeviceProduct, DeviceAction",
+    "| top 20 by Events desc"
+  ],
+  "cef/top-sources": [
+    "CommonSecurityLog",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count() by SourceIP, DestinationIP, DestinationPort",
+    "| top 20 by Events desc"
+  ],
+  "defender-xdr/device-logons": [
+    "DeviceLogonEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, DeviceName, AccountName, ActionType, LogonType, RemoteIP",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "defender-xdr/failed-device-logons": [
+    "DeviceLogonEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| where ActionType == \"LogonFailed\"",
+    "| summarize Failures = count() by AccountName, DeviceName, RemoteIP",
+    "| top 20 by Failures desc"
+  ],
+  "defender-xdr/processes": [
+    "DeviceProcessEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, DeviceName, AccountName, FileName, ProcessCommandLine, InitiatingProcessFileName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "defender-xdr/network": [
+    "DeviceNetworkEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, DeviceName, ActionType, RemoteIP, RemotePort, RemoteUrl, InitiatingProcessFileName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "defender-xdr/top-remote": [
+    "DeviceNetworkEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Connections = count(), Devices = dcount(DeviceName) by RemoteIP, RemotePort",
+    "| top 20 by Connections desc"
+  ],
+  "defender-xdr/email": [
+    "EmailEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, SenderFromAddress, RecipientEmailAddress, Subject, DeliveryAction, ThreatTypes",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "defender-xdr/email-threats": [
+    "EmailEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| where isnotempty(ThreatTypes)",
+    "| project TimeGenerated, SenderFromAddress, RecipientEmailAddress, Subject, ThreatTypes, DeliveryAction, DeliveryLocation",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "defender-xdr/identity-logons": [
+    "IdentityLogonEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, AccountUpn, ActionType, Application, LogonType, IPAddress, FailureReason",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "microsoft-365/activity": [
+    "OfficeActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OfficeWorkload, Operation, UserId, ClientIP, ResultStatus",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "microsoft-365/files": [
+    "OfficeActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| where OfficeWorkload in (\"SharePoint\", \"OneDrive\")",
+    "| project TimeGenerated, Operation, UserId, ClientIP, OfficeObjectId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "microsoft-365/exchange": [
+    "OfficeActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| where OfficeWorkload == \"Exchange\"",
+    "| project TimeGenerated, Operation, UserId, ClientIP, MailboxOwnerUPN, ResultStatus",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "microsoft-365/inbox-rules": [
+    "OfficeActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| where Operation in (\"New-InboxRule\", \"Set-InboxRule\")",
+    "| project TimeGenerated, Operation, UserId, ClientIP, Parameters",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "microsoft-365/by-operation": [
+    "OfficeActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count() by OfficeWorkload, Operation",
+    "| top 20 by Events desc"
+  ],
+  "microsoft-365/by-user": [
+    "OfficeActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count(), Addresses = dcount(ClientIP) by UserId",
+    "| top 20 by Events desc"
+  ],
+  "intune/audit": [
+    "IntuneAuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationName, Identity, ResultType, Category",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "intune/devices": [
+    "IntuneDevices",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, DeviceName, UPN, OS, OSVersion, CompliantState, LastContact",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "intune/non-compliant": [
+    "IntuneDevices",
+    "| where TimeGenerated > ago(24h)",
+    "| where CompliantState != \"Compliant\"",
+    "| project TimeGenerated, DeviceName, UPN, OS, OSVersion, CompliantState, LastContact",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "intune/devices-by-os": [
+    "IntuneDevices",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Devices = dcount(DeviceId) by OS, CompliantState",
+    "| top 20 by Devices desc"
+  ],
+  "intune/operational": [
+    "IntuneOperationalLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationName, Result, Category",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "activity-log/operations": [
+    "AzureActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationNameValue, ActivityStatusValue, Caller, CallerIpAddress, ResourceGroup, _ResourceId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "activity-log/failed": [
+    "AzureActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| where ActivityStatusValue in (\"Failure\", \"Failed\")",
+    "| project TimeGenerated, OperationNameValue, ActivityStatusValue, Caller, CallerIpAddress, ResourceGroup, _ResourceId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "activity-log/deletes": [
+    "AzureActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| where OperationNameValue endswith \"/delete\"",
+    "| project TimeGenerated, OperationNameValue, ActivityStatusValue, Caller, CallerIpAddress, ResourceGroup, _ResourceId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "activity-log/role-assignments": [
+    "AzureActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| where OperationNameValue =~ \"Microsoft.Authorization/roleAssignments/write\"",
+    "| project TimeGenerated, OperationNameValue, ActivityStatusValue, Caller, CallerIpAddress, ResourceGroup, _ResourceId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "activity-log/by-caller": [
+    "AzureActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Operations = count() by Caller, CallerIpAddress",
+    "| top 20 by Operations desc"
+  ],
+  "activity-log/by-operation": [
+    "AzureActivity",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Operations = count() by OperationNameValue, ActivityStatusValue",
+    "| top 20 by Operations desc"
+  ],
+  "key-vault/operations": [
+    "AZKVAuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationName, ResultSignature, HttpStatusCode, CallerIpAddress, RequestUri, DurationMs, _ResourceId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "key-vault/failed": [
+    "AZKVAuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where HttpStatusCode >= 400",
+    "| project TimeGenerated, OperationName, ResultSignature, HttpStatusCode, CallerIpAddress, RequestUri, DurationMs, _ResourceId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "key-vault/denied": [
+    "AZKVAuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where HttpStatusCode in (401, 403)",
+    "| project TimeGenerated, OperationName, ResultSignature, HttpStatusCode, CallerIpAddress, RequestUri, DurationMs, _ResourceId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "key-vault/secret-reads": [
+    "AZKVAuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where OperationName == \"SecretGet\"",
+    "| project TimeGenerated, OperationName, ResultSignature, HttpStatusCode, CallerIpAddress, RequestUri, DurationMs, _ResourceId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "key-vault/by-caller": [
+    "AZKVAuditLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count() by CallerIpAddress, OperationName",
+    "| top 20 by Requests desc"
+  ],
+  "storage/requests": [
+    "StorageBlobLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationName, StatusText, StatusCode, AuthenticationType, CallerIpAddress, Uri, DurationMs",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "storage/failed": [
+    "StorageBlobLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where StatusText !contains \"Success\"",
+    "| project TimeGenerated, OperationName, StatusText, StatusCode, AuthenticationType, CallerIpAddress, Uri, DurationMs",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "storage/anonymous": [
+    "StorageBlobLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where AuthenticationType == \"Anonymous\"",
+    "| project TimeGenerated, OperationName, StatusText, StatusCode, AuthenticationType, CallerIpAddress, Uri, DurationMs",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "storage/deletes": [
+    "StorageBlobLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where OperationName == \"DeleteBlob\"",
+    "| project TimeGenerated, OperationName, StatusText, StatusCode, AuthenticationType, CallerIpAddress, Uri, DurationMs, RequesterUpn",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "storage/file-requests": [
+    "StorageFileLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationName, StatusText, StatusCode, AuthenticationType, CallerIpAddress, Uri, DurationMs",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "storage/queue-requests": [
+    "StorageQueueLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationName, StatusText, StatusCode, AuthenticationType, CallerIpAddress, Uri, DurationMs",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "storage/table-requests": [
+    "StorageTableLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationName, StatusText, StatusCode, AuthenticationType, CallerIpAddress, Uri, DurationMs",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "storage/by-operation": [
+    "StorageBlobLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count(), AverageMs = avg(DurationMs) by OperationName, StatusText",
+    "| top 20 by Requests desc"
+  ],
+  "storage/by-caller": [
+    "StorageBlobLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count() by CallerIpAddress, AuthenticationType",
+    "| top 20 by Requests desc"
+  ],
+  "log-analytics-workspace/ingestion-by-table": [
+    "Usage",
+    "| where TimeGenerated > ago(30d)",
+    "| summarize GB = sum(Quantity) / 1000 by DataType, IsBillable",
+    "| top 20 by GB desc"
+  ],
+  "log-analytics-workspace/ingestion-over-time": [
+    "Usage",
+    "| where TimeGenerated > ago(30d)",
+    "| summarize GB = sum(Quantity) / 1000 by DataType, bin(TimeGenerated, 1d)",
+    "| sort by TimeGenerated asc",
+    "| render timechart"
+  ],
+  "log-analytics-workspace/queries": [
+    "LAQueryLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, AADEmail, RequestClientApp, ResponseCode, ResponseDurationMs, QueryText",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "log-analytics-workspace/slow-queries": [
+    "LAQueryLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, AADEmail, ResponseDurationMs, StatsCPUTimeMs, ResponseRowCount, QueryText",
+    "| top 100 by ResponseDurationMs desc"
+  ],
+  "log-analytics-workspace/queries-by-user": [
+    "LAQueryLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Queries = count() by AADEmail, RequestClientApp",
+    "| top 20 by Queries desc"
+  ],
+  "azure-sql/audit": [
+    "SQLSecurityAuditEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, ServerPrincipalName, DatabaseName, ActionName, Succeeded, ClientIp, Statement",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-sql/failed": [
+    "SQLSecurityAuditEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| where Succeeded == false",
+    "| project TimeGenerated, ServerPrincipalName, DatabaseName, ActionName, Succeeded, ClientIp, Statement",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-sql/by-principal": [
+    "SQLSecurityAuditEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count() by ServerPrincipalName, ClientIp, DatabaseName",
+    "| top 20 by Events desc"
+  ],
+  "azure-sql/by-action": [
+    "SQLSecurityAuditEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count() by ActionName, Succeeded",
+    "| top 20 by Events desc"
+  ],
+  "cosmos-db/requests": [
+    "CDBDataPlaneRequests",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationName, StatusCode, DatabaseName, CollectionName, RequestCharge, DurationMs, ClientIpAddress",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "cosmos-db/throttled": [
+    "CDBDataPlaneRequests",
+    "| where TimeGenerated > ago(24h)",
+    "| where StatusCode == 429",
+    "| summarize Requests = count() by DatabaseName, CollectionName, OperationName",
+    "| top 20 by Requests desc"
+  ],
+  "cosmos-db/expensive": [
+    "CDBDataPlaneRequests",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, OperationName, StatusCode, DatabaseName, CollectionName, RequestCharge, DurationMs, ClientIpAddress",
+    "| top 100 by RequestCharge desc"
+  ],
+  "cosmos-db/charge-by-collection": [
+    "CDBDataPlaneRequests",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize RequestUnits = sum(RequestCharge), Requests = count() by DatabaseName, CollectionName, OperationName",
+    "| top 20 by RequestUnits desc"
+  ],
+  "backup/jobs": [
+    "AddonAzureBackupJobs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, BackupItemFriendlyName, JobOperation, JobStatus, JobFailureCode, JobDurationInSecs, VaultName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "backup/failed": [
+    "AddonAzureBackupJobs",
+    "| where TimeGenerated > ago(24h)",
+    "| where JobStatus == \"Failed\"",
+    "| project TimeGenerated, BackupItemFriendlyName, JobOperation, JobStatus, JobFailureCode, JobDurationInSecs, VaultName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "backup/by-status": [
+    "AddonAzureBackupJobs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Jobs = count() by JobOperation, JobStatus, BackupManagementType",
+    "| top 20 by Jobs desc"
+  ],
+  "app-service/http": [
+    "AppServiceHTTPLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, CsMethod, CsHost, CsUriStem, ScStatus, TimeTaken, CIp, UserAgent",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "app-service/errors": [
+    "AppServiceHTTPLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where ScStatus >= 500",
+    "| project TimeGenerated, CsMethod, CsHost, CsUriStem, ScStatus, TimeTaken, CIp, UserAgent",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "app-service/slow": [
+    "AppServiceHTTPLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, CsMethod, CsHost, CsUriStem, ScStatus, TimeTaken, CIp, UserAgent",
+    "| top 100 by TimeTaken desc"
+  ],
+  "app-service/status-over-time": [
+    "AppServiceHTTPLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count() by ScStatus, bin(TimeGenerated, 1h)",
+    "| sort by TimeGenerated asc",
+    "| render timechart"
+  ],
+  "app-service/top-clients": [
+    "AppServiceHTTPLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count() by CIp",
+    "| top 20 by Requests desc"
+  ],
+  "app-service/console": [
+    "AppServiceConsoleLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Level, ResultDescription, Host, ContainerId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "app-service/app-logs": [
+    "AppServiceAppLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Level, Message, ExceptionClass, Host",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "aks/container-logs": [
+    "ContainerLogV2",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, PodNamespace, PodName, ContainerName, LogLevel, LogMessage",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "aks/stderr": [
+    "ContainerLogV2",
+    "| where TimeGenerated > ago(24h)",
+    "| where LogSource =~ \"stderr\"",
+    "| project TimeGenerated, PodNamespace, PodName, ContainerName, LogLevel, LogMessage",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "aks/events": [
+    "KubeEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| where KubeEventType != \"Normal\"",
+    "| project TimeGenerated, Namespace, Name, ObjectKind, Reason, Message, Count",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "aks/restarts": [
+    "KubePodInventory",
+    "| where TimeGenerated > ago(24h)",
+    "| where ContainerRestartCount > 0",
+    "| summarize Restarts = max(ContainerRestartCount) by Namespace, Name, ContainerName",
+    "| top 20 by Restarts desc"
+  ],
+  "aks/pod-status": [
+    "KubePodInventory",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Pods = dcount(Name) by Namespace, PodStatus",
+    "| top 20 by Pods desc"
+  ],
+  "aks/audit": [
+    "AKSAudit",
+    "| where TimeGenerated > ago(24h)",
+    "| extend Username = tostring(User.username)",
+    "| project TimeGenerated, Verb, RequestUri, Username, UserAgent, Stage, Level",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "aks/nodes": [
+    "KubeNodeInventory",
+    "| where TimeGenerated > ago(24h)",
+    "| where Status != \"Ready\"",
+    "| project TimeGenerated, Computer, Status, KubeletVersion, ClusterName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "aks/control-plane": [
+    "AKSControlPlane",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Category, Level, PodName, Message",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-virtual-desktop/basic": [
+    "WVDConnections",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, UserName, State, SessionHostName, ClientOS, ClientType, ConnectionType, ClientSideIPAddress, CorrelationId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-virtual-desktop/errors": [
+    "WVDErrors",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, UserName, CodeSymbolic, Message, Source, ServiceError, CorrelationId",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-virtual-desktop/top-errors": [
+    "WVDErrors",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Errors = count(), Users = dcount(UserName) by CodeSymbolic, Source",
+    "| top 20 by Errors desc"
+  ],
+  "azure-virtual-desktop/sessions-by-host": [
+    "WVDConnections",
+    "| where TimeGenerated > ago(24h)",
+    "| where State =~ \"Connected\"",
+    "| summarize Connections = count(), Users = dcount(UserName) by SessionHostName",
+    "| top 20 by Connections desc"
+  ],
+  "azure-virtual-desktop/by-client": [
+    "WVDConnections",
+    "| where TimeGenerated > ago(24h)",
+    "| where State =~ \"Connected\"",
+    "| summarize Connections = count() by ClientOS, ClientType",
+    "| top 20 by Connections desc"
+  ],
+  "virtual-machines/heartbeats": [
+    "Heartbeat",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Computer, OSType, Version, ComputerIP, ResourceGroup, Category",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "virtual-machines/last-seen": [
+    "Heartbeat",
+    "| where TimeGenerated > ago(7d)",
+    "| summarize LastHeartbeat = max(TimeGenerated) by Computer, OSType, ResourceGroup",
+    "| top 20 by LastHeartbeat asc"
+  ],
+  "virtual-machines/by-os": [
+    "Heartbeat",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Machines = dcount(Computer) by OSType, OSName",
+    "| top 20 by Machines desc"
+  ],
+  "virtual-machines/cpu": [
+    "Perf",
+    "| where TimeGenerated > ago(24h)",
+    "| where ObjectName == \"Processor\"",
+    "| where CounterName == \"% Processor Time\"",
+    "| summarize AverageCpu = avg(CounterValue), PeakCpu = max(CounterValue) by Computer",
+    "| top 20 by AverageCpu desc"
+  ],
+  "virtual-machines/cpu-over-time": [
+    "Perf",
+    "| where TimeGenerated > ago(24h)",
+    "| where ObjectName == \"Processor\"",
+    "| where CounterName == \"% Processor Time\"",
+    "| summarize AverageCpu = avg(CounterValue) by Computer, bin(TimeGenerated, 1h)",
+    "| sort by TimeGenerated asc",
+    "| render timechart"
+  ],
+  "virtual-machines/missing-updates": [
+    "Update",
+    "| where TimeGenerated > ago(24h)",
+    "| where UpdateState =~ \"Needed\"",
+    "| summarize Missing = dcount(Title) by Computer, Classification",
+    "| top 20 by Missing desc"
+  ],
+  "windows-event-log/events": [
+    "Event",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Computer, EventLog, EventLevelName, EventID, Source, RenderedDescription",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "windows-event-log/errors": [
+    "Event",
+    "| where TimeGenerated > ago(24h)",
+    "| where EventLevelName == \"Error\"",
+    "| project TimeGenerated, Computer, EventLog, EventLevelName, EventID, Source, RenderedDescription",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "windows-event-log/by-event": [
+    "Event",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count() by Computer, EventLog, Source, EventID",
+    "| top 20 by Events desc"
+  ],
+  "linux-syslog/messages": [
+    "Syslog",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Computer, Facility, SeverityLevel, ProcessName, SyslogMessage",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "linux-syslog/errors": [
+    "Syslog",
+    "| where TimeGenerated > ago(24h)",
+    "| where SeverityLevel in (\"err\", \"crit\", \"alert\", \"emerg\")",
+    "| project TimeGenerated, Computer, Facility, SeverityLevel, ProcessName, SyslogMessage",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "linux-syslog/auth": [
+    "Syslog",
+    "| where TimeGenerated > ago(24h)",
+    "| where Facility in (\"auth\", \"authpriv\")",
+    "| project TimeGenerated, Computer, Facility, SeverityLevel, ProcessName, SyslogMessage",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "linux-syslog/by-process": [
+    "Syslog",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Messages = count() by Computer, ProcessName, SeverityLevel",
+    "| top 20 by Messages desc"
+  ],
+  "application-insights/requests": [
+    "AppRequests",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Name, Url, ResultCode, Success, DurationMs, AppRoleName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "application-insights/failed-requests": [
+    "AppRequests",
+    "| where TimeGenerated > ago(24h)",
+    "| where Success == false",
+    "| project TimeGenerated, Name, Url, ResultCode, Success, DurationMs, AppRoleName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "application-insights/slow-requests": [
+    "AppRequests",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Name, Url, ResultCode, Success, DurationMs, AppRoleName",
+    "| top 100 by DurationMs desc"
+  ],
+  "application-insights/requests-by-operation": [
+    "AppRequests",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count(), AverageMs = avg(DurationMs), P95Ms = percentile(DurationMs, 95) by Name, ResultCode",
+    "| top 20 by Requests desc"
+  ],
+  "application-insights/requests-over-time": [
+    "AppRequests",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count() by ResultCode, bin(TimeGenerated, 1h)",
+    "| sort by TimeGenerated asc",
+    "| render timechart"
+  ],
+  "application-insights/exceptions": [
+    "AppExceptions",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, ExceptionType, OuterMessage, ProblemId, AppRoleName, OperationName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "application-insights/top-exceptions": [
+    "AppExceptions",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Exceptions = count() by ExceptionType, ProblemId",
+    "| top 20 by Exceptions desc"
+  ],
+  "application-insights/failed-dependencies": [
+    "AppDependencies",
+    "| where TimeGenerated > ago(24h)",
+    "| where Success == false",
+    "| summarize Failures = count() by Target, DependencyType, ResultCode",
+    "| top 20 by Failures desc"
+  ],
+  "application-insights/traces": [
+    "AppTraces",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, SeverityLevel, Message, AppRoleName, OperationName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "application-insights/error-traces": [
+    "AppTraces",
+    "| where TimeGenerated > ago(24h)",
+    "| where SeverityLevel >= 3",
+    "| project TimeGenerated, SeverityLevel, Message, AppRoleName, OperationName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "api-management/requests": [
+    "ApiManagementGatewayLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Method, Url, ResponseCode, TotalTime, BackendTime, ApiId, OperationId, CallerIpAddress",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "api-management/failures": [
+    "ApiManagementGatewayLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where ResponseCode >= 400",
+    "| project TimeGenerated, Method, Url, ResponseCode, TotalTime, BackendTime, ApiId, OperationId, CallerIpAddress, LastErrorReason",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "api-management/slow": [
+    "ApiManagementGatewayLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Method, Url, ResponseCode, TotalTime, BackendTime, ApiId, OperationId, CallerIpAddress",
+    "| top 100 by TotalTime desc"
+  ],
+  "api-management/by-api": [
+    "ApiManagementGatewayLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Requests = count(), AverageMs = avg(TotalTime) by ApiId, ResponseCode",
+    "| top 20 by Requests desc"
+  ],
+  "azure-functions/logs": [
+    "FunctionAppLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, FunctionName, Level, Message, ExceptionType, AppName",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-functions/errors": [
+    "FunctionAppLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where Level =~ \"Error\"",
+    "| project TimeGenerated, FunctionName, Level, Message, ExceptionType, AppName, ExceptionMessage",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "azure-functions/by-function": [
+    "FunctionAppLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Entries = count() by FunctionName, Level",
+    "| top 20 by Entries desc"
+  ],
+  "container-apps/console": [
+    "ContainerAppConsoleLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, ContainerAppName, RevisionName, ContainerName, Stream, Log",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "container-apps/stderr": [
+    "ContainerAppConsoleLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| where Stream == \"stderr\"",
+    "| project TimeGenerated, ContainerAppName, RevisionName, ContainerName, Stream, Log",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "container-apps/system": [
+    "ContainerAppSystemLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, ContainerAppName, RevisionName, Reason, Log",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "container-apps/by-reason": [
+    "ContainerAppSystemLogs",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Events = count() by ContainerAppName, Reason",
+    "| top 20 by Events desc"
+  ],
+  "container-registry/logins": [
+    "ContainerRegistryLoginEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| project TimeGenerated, Identity, CallerIpAddress, LoginServer, ResultType, ResultDescription",
+    "| top 100 by TimeGenerated desc"
+  ],
+  "container-registry/by-identity": [
+    "ContainerRegistryLoginEvents",
+    "| where TimeGenerated > ago(24h)",
+    "| summarize Logins = count() by Identity, CallerIpAddress, ResultType",
+    "| top 20 by Logins desc"
+  ]
+}

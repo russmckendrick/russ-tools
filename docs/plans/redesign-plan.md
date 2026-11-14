@@ -3447,6 +3447,127 @@ everything together the registry holds 28 tools and the frozen list 51 routes,
 the paste panel keeps the PEM rule and gains the GUID third chip and the
 timestamp rule, and the placeholder now names both PEM and timestamp.
 
+### 2026-11-14 — The Azure KQL Query Builder, rebuilt
+
+The owner's brief was one line: the tool is horrible, rebuild it from the ground up.
+No specifics, so the first job was finding out what "horrible" was made of.
+
+**What was wrong.** Using it at 390px and 1440px turned up more than taste:
+
+- Application Gateway could not produce a query at all. Its own default
+  (`Category: ApplicationGatewayAccessLog`) failed its own validation, because the
+  template's options were strings and the validator read `option.value`. The same
+  mismatch drew two dropdowns with four blank options.
+- The AVD client-address filter named `ClientIPAddress`, a column `WVDConnections` does
+  not have.
+- Nothing was escaped: a user name of `bob" or 1==1 //` closed the literal.
+- Editing a favourite deleted it. The handler removed it from the store and pushed the
+  edited copy onto the props array in a timeout.
+- The flow was four tabs and a Generate button around four templates of one shape.
+  At 390px the query began 1,474px down the page, after a button press.
+- Labels were regexed out of column names ("Client I P Address", "http Status_d"), the
+  query block was a hard-coded dark Prism theme in both site themes, and the page still
+  used the two-column split that was withdrawn everywhere else.
+
+**The shape of the replacement.** One column, no Generate button: service and scenario,
+time range and rows, filters, and the query directly under them, rebuilt on every
+change, with one sentence saying what it returns. A second tab, **Write KQL**, is a
+plain editor with the same highlighting; **Edit as KQL** carries a built query into it.
+Saved and recent queries sit below as two lists. The order is controls then query on
+purpose: with the query above the filters, a filter becoming valid adds a line above
+the field being typed in and moves it.
+
+**Typed filters, from a schema that is data.** `scripts/refresh-kql-schemas.mjs` reads
+each table's page in the Azure Monitor table reference on Microsoft Learn and writes
+`src/data/microsoft/azure-monitor-tables.json`: 28 tables and 997 columns with their
+types. `lib/columns.js` adds only what the reference cannot say in a type: which
+string columns are IP addresses or ports, and which take one of a documented set of
+values. Operators follow the type. A value that is wrong says why and its filter is
+left out, so the output always parses; a value that is right is written through
+`stringLiteral` or `verbatimLiteral`, which follow the Kusto string rules as Learn
+states them. `catalog.test.js` fails if any scenario, filter or note names a column
+the reference does not list, and it earned its place inside the first hour by catching
+a `DestinationIp` note on `AZFWApplicationRule`, which has no such column.
+
+**Coverage.** Twelve services and 73 scenarios at first (see the steer below), in three shapes: rows, top-N
+summaries and time charts whose bucket follows the time range. Every scenario's exact
+query is pinned in `lib/fixtures/scenarios.json`, read once by eye before pinning.
+
+**Three things left out, each on the evidence.**
+
+- *Open in Log Analytics.* Microsoft documents no deep-link format. The ones the
+  portal emits (`.../LogsBlade/resourceId/<id>/source/LogsBlade.AnalyticsShareLinkToQuery/q/<gzip+base64>`)
+  are known only from community posts and all need a workspace resource ID.
+- *A pipeline diagram.* The query is already a top-to-bottom pipeline of five to
+  eight lines and the sentence above it does the explaining. A diagram would restate
+  it and push it off a phone.
+- *NSG flow logs.* `AzureNetworkAnalytics_CL` is a custom table outside the table
+  reference. VNet flow logs (`NTANetAnalytics`) are in.
+
+**Where the documentation disagrees with itself, the query hedges.** The traffic
+analytics schema page gives `FlowStatus` as both a letter and a word depending on the
+section, so the denied-flows scenario filters `in ("Denied", "D")`. The activity log
+schema says a status is `Failed`; workspaces also hold `Failure`. That scenario takes
+both. Sets of values documented in lower case (`member`, `failure`) compare with `=~`
+because the data is not reliably that case.
+
+**Contracts.** The three routes and the four old ids resolve. A share link and a store
+captured from the old tool in a browser, before a line changed, are a fixture replayed
+by unit and e2e tests. Old data is read once into `rt:azure-kql:library` and left
+where it was. Custom templates could not survive as templates, since their fields were
+free-text column names with nothing behind them, so each becomes a saved KQL query.
+The ledger entry lists every visible difference.
+
+**Smaller things.** `build_kql_query` is registered through `useWebMCPTool` and lists
+the catalogue when called with nothing. Radix's empty `onValueChange` echo, which bit
+the Subnet Calculator, is guarded on every select here. `zustand` had no other user and
+is removed, as is the shared `prism-kql.js` grammar nothing loaded. The five
+`exhaustive-deps` warnings went with the old island: lint is 0 errors, 6 warnings.
+
+**The owner's steer, the same day: more services, more interactive, slicker.**
+
+- *More services.* 12 became 34, 73 scenarios became 181, over 69 tables and 2,729
+  columns: Front Door, DNS query logs, Bastion, Entra ID Protection, Graph activity,
+  Sentinel and Defender alerts, Windows security events, CEF, Defender XDR, Microsoft 365,
+  Intune, Azure SQL, Cosmos DB, Backup, the workspace's own usage and query audit, the
+  Windows event log, syslog, performance counters, updates, Application Insights, API
+  Management, Functions, Container Apps and Container Registry. Front Door has no
+  resource-specific table in the reference, so it is queried through `AzureDiagnostics`
+  with the two category names Learn's Front Door page gives. The reference rarely lists a
+  column's values, so the values new scenarios filter on (`LogonFailed`, `Closed`,
+  `Needed`, `Failed`, syslog severities) come from each product's own documentation and
+  are offered as suggestions, not enforced; where Learn does list them
+  (`AADUserRiskEvents.RiskLevel`, `FunctionAppLogs.Level`) they are a set.
+- *More interactive.* One searchable scenario field (`/` opens it) replaces two selects.
+  Time is four one-tap buttons plus the rest. Any scenario can be counted by up to four
+  columns or drawn over time. Filters are added from one-tap column chips and can be
+  switched off without deleting them. Every line of the query is a control that jumps to
+  what wrote it, which is the pipeline view the query already was.
+- *Slicker.* The page opens on a real query and remembers the last one, so there is no
+  empty state and the `<Ghost>` went. The query moved directly under the main controls
+  and is pinned on a tall desktop window while the filters scroll; its block reserves
+  seven lines so adding a filter does not move the page. A changed line is highlighted
+  for under a second, new rows ease in over `--duration-settle`, and the copy button
+  says "Copied" itself. All of it sits under the reduced-motion floor in `globals.css`.
+  On a phone a filter row is about 100px, down from about 190.
+
+Verified on the branch with `main` (through PR 41) merged in: `pnpm test` 2085 passing,
+`pnpm lint` 0 errors and 6 warnings (was 11), `pnpm build`, `PW_PORT=8830 pnpm test:e2e`
+94 passing, `pnpm generate:docs` and `pnpm generate:og` run (one card changed). The tool
+was used in a browser at 390px and 1440px in both themes: building, an invalid then a
+valid filter, a custom range, a time chart, saving, renaming, deleting, copying, sharing,
+and opening the captured old share link and an old store with a favourite, a history
+entry and a custom template.
+
+After `main` moved again (PR 39, three more tools) it was merged in once more and the
+checks re-run: 2251 unit tests, 0 lint errors and 6 warnings, a clean build, 102 e2e.
+
+Not verified: no query was run against a real Log Analytics workspace. Names are from
+Microsoft Learn; data in a given workspace depends on its diagnostic settings. The phone
+checks were an emulated 390px touch viewport, not a handset.
+
+Left for whoever merges the parallel branches: the test and tool counts in `AGENTS.md`.
+
 ### 2026-11-14 — Three more developer tools: URL, Regex, Text Diff (28 → 31)
 
 Part of the second wave from the same review. Three new folders under
@@ -3535,3 +3656,9 @@ against a real worker and then shows the page still answers.
 Not verified: Safari and Firefox (Chromium only), and a real phone. Not done:
 a hex view of non-UTF-8 escapes, regex flavours other than the browser's, and
 a diff of more than two texts or of files dropped onto the page.
+
+**After taking `main` in.** The Azure KQL rebuild (PR 42) and the dependency
+updates (PR 43) landed first. Only the two append-only logs conflicted and
+both sides were kept. The counts above were this branch alone; on the merged
+tree `pnpm test` is 2530, `pnpm lint` is 0 errors and 6 warnings, the build is
+clean and `pnpm test:e2e` is 111. The generated README tables were unchanged.
