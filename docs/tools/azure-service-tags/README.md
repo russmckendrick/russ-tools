@@ -22,7 +22,7 @@ Load an older Microsoft service-tags JSON file to see prefixes added and removed
 
 ## Data freshness
 
-The dataset is refreshed from Microsoft’s official download page with `pnpm refresh:azure-service-tags`. Each refresh records the source URL, date, global change number and per-tag metadata. The refresh script refuses an unexpectedly large tag-count drop as a guard against publishing a partial response.
+The dataset is re-pulled from Microsoft’s official download page weekly. The snapshot’s date and global change number are shown under the search box.
 
 This is published reference data, not a live Azure control-plane API. Check the displayed snapshot date before using the ranges in a production change.
 

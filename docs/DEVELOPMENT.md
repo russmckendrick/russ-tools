@@ -44,6 +44,7 @@ Every script below exists in `package.json`.
 | `pnpm generate:tokens` | `scripts/generate-tokens.mjs` | Regenerate `src/styles/tokens.generated.css` after editing `DESIGN.md`. Needs network access. |
 | `pnpm generate:og` | `scripts/generate-og.mjs` | Regenerate the committed Open Graph cards in `public/og/`. |
 | `pnpm generate:icons` | `scripts/generate-icons.mjs` | Regenerate `logo.svg`, `favicon.ico` and the touch and home-screen PNGs from `SiteMark.astro`. |
+| `pnpm refresh:all` | `scripts/refresh-all.mjs` | Run every `refresh:*` script and report what changed. The weekly `refresh-data` workflow runs this and opens a pull request. |
 | `pnpm generate:docs` | `scripts/generate-docs.mjs` | Regenerate the tool tables in `README.md` and `docs/README.md`. |
 
 ## The lookup API locally

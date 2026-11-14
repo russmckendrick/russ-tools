@@ -1,0 +1,115 @@
+name: Refresh data
+
+# Once a week, re-pull every bundled dataset from its Microsoft source and
+# open a pull request with whatever changed. Nothing reaches the site until
+# that pull request is merged.
+#
+# Pull requests opened with the workflow token do not trigger other workflows,
+# so CI would not run on them. This job therefore builds, tests and lints the
+# refreshed tree itself before it opens one, and says so in the body.
+#
+# Needs "Allow GitHub Actions to create and approve pull requests" switched on
+# under Settings > Actions > General.
+
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+env:
+  BRANCH: chore/data-refresh
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Refresh every dataset
+        id: refresh
+        run: pnpm refresh:all
+
+      - name: Regenerate what is derived from the data
+        run: |
+          pnpm generate:docs
+          pnpm generate:llms
+
+      - name: See whether anything changed
+        id: diff
+        run: |
+          git add -A src/data README.md docs/README.md
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No dataset changed." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build, test and lint the refreshed tree
+        id: verify
+        if: steps.diff.outputs.changed == 'true'
+        continue-on-error: true
+        run: |
+          pnpm build
+          pnpm test
+          pnpm lint
+
+      - name: Open or update the pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERIFY: ${{ steps.verify.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$BRANCH"
+          git commit -m "🔄 chore(data): weekly refresh of bundled datasets"
+          git push --force origin "$BRANCH"
+
+          {
+            echo "Weekly refresh of the datasets the tools ship with, pulled from their Microsoft sources by \`pnpm refresh:all\`."
+            echo
+            cat "$RUNNER_TEMP/refresh-report.md"
+            echo
+            if [ "$VERIFY" = "success" ]; then
+              echo "Build, tests and lint **passed** on this tree in [the run that opened this]($RUN_URL)."
+            else
+              echo "**Build, tests or lint failed** on this tree. See [the run]($RUN_URL) before merging."
+            fi
+            echo
+            echo "CI does not run on pull requests opened by the workflow token, which is why the checks ran in that job instead. Cloudflare Pages still builds a preview."
+          } > "$RUNNER_TEMP/body.md"
+
+          if [ "$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')" = "0" ]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "🔄 Weekly data refresh" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/body.md"
+          fi
+
+      - name: Fail the run if a script or a check failed
+        if: steps.refresh.outputs.failed != '0' || steps.verify.outcome == 'failure'
+        run: |
+          echo "refresh scripts failed: ${{ steps.refresh.outputs.failed }}; verify: ${{ steps.verify.outcome }}"
+          exit 1

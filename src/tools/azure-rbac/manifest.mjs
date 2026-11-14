@@ -3,7 +3,7 @@
  *
  * Answers the question the built-in-roles reference cannot: not "what does
  * Contributor do" but "which role lets someone do exactly this, and nothing
- * more". Search runs over 504 built-in roles by name or by the action they
+ * more". Search runs over every built-in role by name or by the action they
  * grant, honouring wildcards and subtracting notActions.
  *
  * The dataset is vendored at src/data/azure/rbac-built-in-roles.json and
@@ -20,7 +20,7 @@ export default {
   title: 'Azure RBAC Role Explorer',
 
   shortDescription:
-    'Search 504 built-in Azure roles by name or by the action they grant.',
+    'Search every built-in Azure role by name or by the action they grant.',
   description:
     'Explore Azure built-in RBAC roles: search by name or by action ' +
     'pattern, see Actions, NotActions, DataActions and NotDataActions, ' +
@@ -41,7 +41,7 @@ export default {
   ],
 
   features: [
-    'Search 504 built-in roles by name or description',
+    'Search every built-in role by name or description',
     'Reverse lookup by action pattern with wildcard support',
     'Least-privilege ranking by granted operation count',
     'NotActions correctly subtracted from grants',

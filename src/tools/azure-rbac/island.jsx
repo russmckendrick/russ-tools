@@ -392,7 +392,7 @@ const AzureRbacTool = () => {
   );
 };
 
-/** A searchable role picker. The list is 504 long, so it is capped and the
+/** A searchable role picker. The list is some five hundred long, so it is capped and the
  * label says so rather than silently truncating. */
 function RolePicker({ label, roles, value, onChange }) {
   const sorted = useMemo(() => [...roles].sort((a, b) => a.name.localeCompare(b.name)), [roles]);
