@@ -153,6 +153,11 @@ What did change, all of it outside the body of a successful lookup:
   already shows. Before, both cases were indistinguishable from a real
   grade-`T` result. Every other fallback is unchanged, which the
   `ssl.error.json` replay still pins.
+- **Tenant: a refused Graph token is logged with its cause.** The worker
+  logged the HTTP status alone. The function adds Microsoft's OAuth `error`
+  and `error_codes` to that one line and nothing else — never
+  `error_description`, a `GRAPH_*` value or the request body — and the
+  response body is unchanged. Pinned in `tenant.test.js`.
 - **Logging.** The workers logged the env keys, the SSL Labs email, whole
   upstream responses and every query. The functions log failures only.
 - **`buildUrl` accepts a root-relative base**, resolving it against the page

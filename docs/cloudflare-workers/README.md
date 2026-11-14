@@ -371,6 +371,15 @@ Success is 200 with:
 }
 ```
 
+When the Graph token request is refused, the function logs one line — the HTTP status,
+Microsoft's OAuth `error` and its `error_codes` (the AADSTS numbers), for example
+`Failed to get Graph access token: 400 unauthorized_client 700016` — and carries on without
+Graph. That line is the only way to tell a bad secret from a bad ID, because the response
+looks the same either way: `tenantId: null` and `method: "GetUserRealm API"`. It never
+includes `error_description` (which names the tenant and app and carries trace IDs), any
+`GRAPH_*` value or the request body, and nothing about the failure is added to the response.
+Read it with `wrangler pages deployment tail <deployment-id> --project-name russ-tools`.
+
 Failure is also 200, with `success: false`, an `error` string and a `suggestions` array;
 the client (`src/tools/tenant-lookup/island.jsx`) checks `success` rather than the status
 code. Unhandled errors are **500** with `error` and `message`.

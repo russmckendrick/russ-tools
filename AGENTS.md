@@ -151,7 +151,7 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
   stable contract and an unpinned upgrade would fail the drift test on an untouched file.
   It reads only `colors`, `typography`, `rounded` and `spacing`; `borderWidth`, `shadow`,
   `motion` and `components` are documentation, transcribed by hand into `globals.css`.
-- `pnpm test` — Vitest (1071 tests; **keep these green**) · `pnpm test:watch` to iterate.
+- `pnpm test` — Vitest (1080 tests; **keep these green**) · `pnpm test:watch` to iterate.
   The count dropped from ~1000 when the palettes were retired: `tokens.contrast.test.js`
   ran its pair list over 12 palette/mode combinations and now runs it over 2. It measures
   *more* roles than before, against fewer themes.

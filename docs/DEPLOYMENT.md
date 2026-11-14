@@ -168,7 +168,12 @@ that by hand after the first deploy:
   registered email" means the address is not registered with SSL Labs. Grade `T` with one
   "basic check" endpoint and neither message means SSL Labs itself failed for that host.
 - `/tenant-lookup/microsoft.com` shows a tenant ID. "Detection Method: GetUserRealm API"
-  with no tenant ID means the `GRAPH_*` secrets are missing or wrong.
+  with no tenant ID means the `GRAPH_*` secrets are missing or wrong. If they are set, the
+  function log names the cause: tail the deployment
+  (`pnpm dlx wrangler pages deployment tail <deployment-id> --project-name russ-tools`),
+  repeat the lookup and read the `Failed to get Graph access token: <status> <error>
+  <AADSTS codes>` line. No line at all means one of the three secrets is not bound to that
+  environment.
 - From any other site's console, `fetch('https://russ.tools/api/whois?query=github.com')`
   rejects with a CORS error.
 

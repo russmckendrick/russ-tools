@@ -62,11 +62,28 @@ async function getGraphAccessToken(env) {
       return data.access_token;
     }
 
-    console.error('Failed to get Graph access token:', response.status);
+    const cause = await readTokenError(response);
+    console.error('Failed to get Graph access token:', response.status, cause.error, cause.error_codes);
     return null;
   } catch (error) {
-    console.error('Error getting Graph access token:', error);
+    console.error('Error getting Graph access token:', error.message);
     return null;
+  }
+}
+
+const OAUTH_ERROR = /^[a-z_]{1,64}$/;
+
+async function readTokenError(response) {
+  try {
+    const body = await response.json();
+    return {
+      error: typeof body?.error === 'string' && OAUTH_ERROR.test(body.error) ? body.error : 'unknown',
+      error_codes: Array.isArray(body?.error_codes)
+        ? body.error_codes.filter((code) => Number.isInteger(code)).join(',') || 'none'
+        : 'none',
+    };
+  } catch {
+    return { error: 'unreadable', error_codes: 'none' };
   }
 }
 

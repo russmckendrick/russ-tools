@@ -108,6 +108,114 @@ describe('/api/tenant', () => {
     expect(body.tenantCategory).toBe('Custom Domain');
   });
 
+  describe('when Microsoft refuses the Graph token', () => {
+    const SENSITIVE = [
+      'fixture-client-id',
+      'fixture-client-secret',
+      'fixture-tenant-id',
+      'trace-id-fixture',
+      'correlation-id-fixture',
+      'AADSTS700016: Application with identifier',
+    ];
+
+    const refusedWith = (response) => {
+      const routes = upstreamFor(tenantMicrosoft).filter(([matches]) => !matches(TOKEN_URL));
+      return stubUpstream([[startsWith(TOKEN_URL), response], ...routes]);
+    };
+
+    const loggedLines = (spy) => spy.mock.calls.map((args) => args.map(String).join(' '));
+
+    it('logs the status, error and error_codes, and nothing that identifies the tenant or app', async () => {
+      const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const otherLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const { calls } = refusedWith(
+        () =>
+          new Response(
+            JSON.stringify({
+              error: 'unauthorized_client',
+              error_description:
+                "AADSTS700016: Application with identifier 'fixture-client-id' was not found in the directory 'fixture-tenant-id'. Trace ID: trace-id-fixture Correlation ID: correlation-id-fixture",
+              error_codes: [700016],
+              trace_id: 'trace-id-fixture',
+              correlation_id: 'correlation-id-fixture',
+            }),
+            { status: 400, statusText: 'Bad Request', headers: { 'content-type': 'application/json' } }
+          )
+      );
+
+      const { status, body } = await lookup('?domain=microsoft.com');
+
+      expect(errorLog.mock.calls).toEqual([['Failed to get Graph access token:', 400, 'unauthorized_client', '700016']]);
+
+      const everything = [...loggedLines(errorLog), ...loggedLines(otherLog)].join('\n');
+      for (const secret of SENSITIVE) expect(everything).not.toContain(secret);
+
+      expect(status).toBe(200);
+      expect(body.method).toBe('GetUserRealm API');
+      expect(body.tenantId).toBe(null);
+      expect(JSON.stringify(body)).not.toMatch(/unauthorized_client|700016|AADSTS/);
+      expect(calls.some((c) => c.url.startsWith('https://graph.microsoft.com/'))).toBe(false);
+
+      errorLog.mockRestore();
+      otherLog.mockRestore();
+    });
+
+    it('joins several error codes', async () => {
+      const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+      refusedWith(
+        () => new Response(JSON.stringify({ error: 'invalid_client', error_codes: [7000215, 7000222] }), { status: 401 })
+      );
+
+      await lookup('?domain=microsoft.com');
+
+      expect(errorLog.mock.calls).toEqual([['Failed to get Graph access token:', 401, 'invalid_client', '7000215,7000222']]);
+      errorLog.mockRestore();
+    });
+
+    it.each([
+      ['an HTML error page', () => new Response('<html>Bad Request</html>', { status: 400 }), 'unreadable', 'none'],
+      ['an empty body', () => new Response('', { status: 400 }), 'unreadable', 'none'],
+      ['JSON without the fields', () => new Response('{"message":"nope"}', { status: 400 }), 'unknown', 'none'],
+      ['JSON null', () => new Response('null', { status: 400 }), 'unknown', 'none'],
+      [
+        'an error string that is not an OAuth error code',
+        () => new Response(JSON.stringify({ error: 'tenant fixture-tenant-id not found', error_codes: [90002] }), { status: 400 }),
+        'unknown',
+        '90002',
+      ],
+      [
+        'fields of the wrong type',
+        () => new Response(JSON.stringify({ error: { secret: 'fixture-client-secret' }, error_codes: ['fixture-tenant-id'] }), { status: 400 }),
+        'unknown',
+        'none',
+      ],
+    ])('still logs the status for %s', async (_label, response, error, codes) => {
+      const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+      refusedWith(response);
+
+      const { status, body } = await lookup('?domain=microsoft.com');
+
+      expect(errorLog.mock.calls).toEqual([['Failed to get Graph access token:', 400, error, codes]]);
+      for (const secret of SENSITIVE) expect(loggedLines(errorLog).join('\n')).not.toContain(secret);
+      expect(status).toBe(200);
+      expect(body.success).toBe(true);
+      errorLog.mockRestore();
+    });
+
+    it('logs only the message when the token request cannot be made at all', async () => {
+      const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+      refusedWith(() => {
+        throw new Error('network unreachable');
+      });
+
+      const { body } = await lookup('?domain=microsoft.com');
+
+      expect(errorLog.mock.calls).toEqual([['Error getting Graph access token:', 'network unreachable']]);
+      expect(body.method).toBe('GetUserRealm API');
+      errorLog.mockRestore();
+    });
+  });
+
   it('accepts an email address and looks up its domain', async () => {
     stubUpstream(upstreamFor(tenantMicrosoft));
     const { body } = await lookup(`?domain=${encodeURIComponent('Someone@Microsoft.com')}`);
