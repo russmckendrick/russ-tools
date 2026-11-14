@@ -8,6 +8,8 @@ This directory contains the sample data files used by the Data Format Converter 
 - **`sample.yaml`** - YAML format sample data (E-commerce product catalog)  
 - **`sample.toml`** - TOML format sample data (Server configuration)
 
+The CSV and XML samples offered in the tool's Samples dialog are defined inline in [`src/tools/data-converter/samples.js`](../../../src/tools/data-converter/samples.js) (`CSV_SAMPLES`, `XML_SAMPLES`).
+
 ## Updating Sample Data
 
 You can edit these files directly to change the sample data that appears when users click the format buttons (JSON, YAML, TOML) in the converter tool.

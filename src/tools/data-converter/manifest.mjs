@@ -3,7 +3,9 @@
  *
  * Ported (Phase 5). Validation is debounced, history is written by the
  * Convert button rather than every keystroke, and the suggestion tables
- * live in lib/errorSuggestions.js. Settings and history persist under
+ * live in lib/errorSuggestions.js. CSV (lib/csv.js) and XML (lib/xml.js,
+ * on the browser's DOMParser and XMLSerializer) joined JSON, YAML and
+ * TOML on 2026-11-14; lib/convert.js writes all five. Settings and history persist under
  * rt:data-converter:* with the pre-port keys read forward.
  *
  * Routes this manifest owns (frozen contract #1 — do not rename or drop):
@@ -16,11 +18,11 @@ export default {
 
   // Rendered on the card, so a tool can never ship as a bare icon and a name.
   shortDescription:
-    'Convert between JSON, YAML and TOML, with validation.',
+    'Convert between JSON, YAML, TOML, CSV and XML, with validation.',
   description:
-    'Convert between JSON, YAML, and TOML formats with validation and ' +
-    'formatting. Features auto-detection, syntax highlighting, and ' +
-    'structure analysis.',
+    'Convert between JSON, YAML, TOML, CSV, and XML formats with ' +
+    'validation and formatting. Features auto-detection, syntax ' +
+    'highlighting, and structure analysis.',
 
   // Selects the tool's hue everywhere it appears. A tool never picks a colour.
   category: 'developer',
@@ -29,6 +31,8 @@ export default {
     'JSON',
     'YAML',
     'TOML',
+    'CSV',
+    'XML',
   ],
 
   // Deep-link segments. The generated _redirects turns each into a 200
@@ -38,7 +42,9 @@ export default {
   // Concrete capabilities, rendered into the page's schema.org
   // `featureList`. Migrated off toolsConfig.json, which is retiring.
   features: [
-    'Multi-format support (JSON, YAML, TOML)',
+    'Multi-format support (JSON, YAML, TOML, CSV, XML)',
+    'CSV with quoted fields and a configurable delimiter',
+    'XML with attributes, text and repeated elements',
     'Auto-format detection',
     'Syntax highlighting',
     'Data validation',
@@ -47,7 +53,7 @@ export default {
   ],
 
   seo: {
-    title: 'Data Converter - JSON, YAML & TOML Format Converter',
+    title: 'Data Converter - JSON, YAML, TOML, CSV & XML Format Converter',
     keywords: [
       'data converter',
       'json converter',
@@ -55,6 +61,10 @@ export default {
       'toml converter',
       'json to yaml',
       'yaml to json',
+      'csv to json',
+      'json to csv',
+      'xml to json',
+      'json to xml',
       'json formatter',
       'yaml formatter',
       'data format',

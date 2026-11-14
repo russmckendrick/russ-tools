@@ -32,6 +32,43 @@ the guaranteed characters from the filtered classes.
 
 ## Landed
 
+### Data Converter: CSV and XML, and TOML integers that convert (2026-11-14)
+
+CSV and XML are input and output formats beside JSON, YAML and TOML
+(`lib/csv.js`, `lib/xml.js`; the mappings are in the tool's help). What
+changed for input that worked, or failed, before:
+
+- **Auto Detect has two new answers.** Text starting with `<` is XML, and if
+  it is not well formed it reports XML errors; it used to be accepted as one
+  long YAML string. A consistent table with a plausible header row (two or
+  more columns, two or more rows) is CSV; it also used to be a YAML string.
+  A YAML mapping or list, TOML, and a single line of prose are detected as
+  before, and `convert.test.js` pins those.
+- **A chosen input format is honoured as you type.** The live path ignored
+  the format select and always auto-detected. It now tries the chosen format
+  first and falls back to detection only when that fails, which is what lets
+  a single-column CSV be read as CSV. Input that parsed before still parses
+  to the same thing.
+- **TOML with integers converts to JSON and YAML.** `@ltd/j-toml` returns
+  integers as `BigInt`, which `JSON.stringify` and `js-yaml` both throw on,
+  so any TOML document with a whole number failed with "Conversion failed:
+  Do not know how to serialize a BigInt". `toPlainData` now turns them into
+  numbers (or text, past 2^53) on the way to JSON, YAML, CSV and XML. TOML to
+  TOML keeps them as integers.
+- **A refused conversion is shown, not toasted on every pause.** When input
+  parses but cannot be written in the output format, the reason is drawn
+  under the output editor. The live path used to raise a "Conversion failed"
+  toast each time typing paused; only the **Convert** button toasts now, and
+  it no longer follows a failure with "Successfully converted".
+- **Two settings were added** to the stored settings object, with defaults:
+  `csvDelimiter: 'auto'` and `inferTypes: true`. Existing saved settings are
+  read as before and gain the defaults.
+
+One deliberate step past the stated XML mapping: a top-level list, which has
+no root name, is written as `<rows><row>...</row></rows>` instead of being
+refused, so CSV converts to XML and back. Any other document without a
+single root is refused with a message.
+
 ### JWT: verify against the issuer's published keys, and an honest signature state (2026-11-14)
 
 **The tool can now make network requests, on a button press only.** For an

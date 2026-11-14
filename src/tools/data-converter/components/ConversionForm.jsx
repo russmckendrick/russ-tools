@@ -3,23 +3,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Download, 
   Upload, 
   Copy, 
   Trash2, 
   RotateCcw, 
-  ArrowRightLeft 
+  ArrowRightLeft,
+  AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import CodeEditor from './CodeEditor';
+import { FILE_EXTENSIONS, FORMATS } from '../lib/convert';
 
-const FORMAT_OPTIONS = [
-  { value: 'auto', label: 'Auto Detect' },
-  { value: 'json', label: 'JSON', extension: '.json', mime: 'application/json' },
-  { value: 'yaml', label: 'YAML', extension: '.yml', mime: 'text/yaml' },
-  { value: 'toml', label: 'TOML', extension: '.toml', mime: 'text/toml' }
-];
+const FORMAT_OPTIONS = [{ value: 'auto', label: 'Auto Detect' }, ...FORMATS];
+
+const ACCEPTED_FILES = Object.keys(FILE_EXTENSIONS).map((extension) => `.${extension}`).join(',');
 
 const ConversionForm = ({
   inputData,
@@ -34,7 +34,8 @@ const ConversionForm = ({
   onConvert,
   onClear,
   onFileUpload,
-  validationResult
+  validationResult,
+  conversionError
 }) => {
 
   const copyToClipboard = async (text) => {
@@ -131,7 +132,7 @@ const ConversionForm = ({
               value={inputData}
               onChange={(e) => setInputData(e.target.value)}
               language={inputFormatDisplay === 'auto' ? 'json' : inputFormatDisplay}
-              placeholder="Enter your JSON, YAML, or TOML data here..."
+              placeholder="Enter your JSON, YAML, TOML, CSV or XML data here..."
               minHeight="384px"
             />
             {validationResult && !validationResult.success && (
@@ -148,7 +149,7 @@ const ConversionForm = ({
               type="file"
               id="file-upload"
               className="hidden"
-              accept=".json,.yaml,.yml,.toml"
+              accept={ACCEPTED_FILES}
               onChange={handleFileUpload}
             />
             <Button
@@ -220,6 +221,16 @@ const ConversionForm = ({
               minHeight="384px"
             />
           </div>
+
+          {conversionError && (
+            <Alert variant="destructive" data-conversion-error>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <span className="font-semibold">Cannot write this as {conversionError.format.toUpperCase()}.</span>{' '}
+                {conversionError.message}
+              </AlertDescription>
+            </Alert>
+          )}
           
           <div className="flex flex-wrap items-center gap-2">
             <Button

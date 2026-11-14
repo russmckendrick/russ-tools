@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
 import { commonSchemas } from '../lib/validation';
+import { CSV_DELIMITERS } from '../lib/csv';
 
 const ConversionSettings = ({ 
   settings, 
@@ -29,7 +30,7 @@ const ConversionSettings = ({
           Settings
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Conversion Settings</DialogTitle>
           <DialogDescription>
@@ -125,6 +126,53 @@ const ConversionSettings = ({
                   onCheckedChange={(checked) => updateSetting('prettifyOutput', checked)}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* CSV and XML Settings */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-title-sm">CSV and XML</CardTitle>
+              <CardDescription className="text-body-sm">
+                How tables and markup are read and written
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="csv-delimiter" className="text-body-sm font-medium">
+                  CSV Delimiter
+                </Label>
+                <Select
+                  value={settings.csvDelimiter ?? 'auto'}
+                  onValueChange={(value) => updateSetting('csvDelimiter', value)}
+                >
+                  <SelectTrigger id="csv-delimiter">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CSV_DELIMITERS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                <Label htmlFor="infer-types" className="text-body-sm font-medium">
+                  Read Numbers and True/False as Values
+                </Label>
+                <Switch
+                  id="infer-types"
+                  checked={settings.inferTypes ?? true}
+                  onCheckedChange={(checked) => updateSetting('inferTypes', checked)}
+                />
+              </div>
+              <p className="text-body-sm text-muted-foreground">
+                CSV and XML hold only text. With this on, 42 and true are read as a number and a boolean; off, every
+                value stays text.
+              </p>
             </CardContent>
           </Card>
 

@@ -37,7 +37,7 @@ documentation states its boundary explicitly.
 | **SSL Certificate Checker** | Security | Inspect the chain, ciphers and expiry for any host. | `/ssl-checker` | [Docs](docs/tools/ssl-checker/) |
 | **Base64 Encoder/Decoder** | Developer | Encode and decode text and files, including URL-safe output. | `/base64` | [Docs](docs/tools/base64/) |
 | **CRON Expression Builder** | Developer | Build and read cron expressions in plain English. | `/cron` | [Docs](docs/tools/cron-builder/) |
-| **Data Converter** | Developer | Convert between JSON, YAML and TOML, with validation. | `/data-converter` | [Docs](docs/tools/data-converter/) |
+| **Data Converter** | Developer | Convert between JSON, YAML, TOML, CSV and XML, with validation. | `/data-converter` | [Docs](docs/tools/data-converter/) |
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](docs/tools/markdown-table-tool/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](docs/tools/buzzword-ipsum/) |
 
