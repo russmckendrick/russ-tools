@@ -3165,7 +3165,10 @@ with `wrangler delete`, at the owner's instruction, and their sources and
 configs removed from the repo. The three hostnames no longer resolve.
 `buzzword-generator` is untouched and answers `/health`.
 
-Noticed and not fixed: the Buzzword Ipsum tool's API panel shows
-`buzzwords.russmckendrick.com`, which does not connect; the worker's route is
-`buzzwords.russ.tools`.
+The Buzzword Ipsum tool's API panel showed `buzzwords.russmckendrick.com`,
+which does not connect, and documented `/api/phrases`, `/api/adjectives` and
+`/api/health`, none of which the worker serves. It now gives
+`buzzwords.russ.tools` and the real routes (`/generate`, `/words`, `/health`)
+with their parameters, each checked against the deployed worker. The rate-limit
+claims were removed: the worker has no rate limiting.
 
