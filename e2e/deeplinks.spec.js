@@ -92,7 +92,7 @@ test.describe('home and shell pages', () => {
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('the catalogue rows sit in two flush columns', async ({ page }) => {
@@ -115,7 +115,7 @@ test.describe('home and shell pages', () => {
       };
     });
 
-    expect(total).toBe(30);
+    expect(total).toBe(33);
     expect(lefts, `row left edges: ${lefts}`).toHaveLength(2);
     expect(widths, `row widths: ${widths}`).toHaveLength(1);
   });
@@ -139,7 +139,7 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('a shared category link arrives filtered', async ({ page }) => {
@@ -222,6 +222,21 @@ test.describe('home and shell pages', () => {
     await input.fill('1794651210123');
     await expect(chips).toHaveCount(1);
     await expect(chips.first()).toHaveAttribute('href', '/timestamp/1794651210123');
+
+    // A URL with a path or query is offered to the URL parser first, with the
+    // seven host tools behind it. The URL rides in the fragment, which is
+    // never sent to the server. A bare host keeps the dispatch it had.
+    await input.fill('https://example.com/pricing?ref=1');
+    await expect(chips).toHaveCount(8);
+    await expect(chips.first()).toHaveText('URL Parser → /url');
+    await expect(chips.first()).toHaveAttribute(
+      'href',
+      '/url#url=https%3A%2F%2Fexample.com%2Fpricing%3Fref%3D1'
+    );
+    await expect(chips.nth(1)).toHaveAttribute('href', '/dns-lookup/example.com');
+    await input.fill('https://example.com/');
+    await expect(chips).toHaveCount(7);
+    await expect(chips.first()).toHaveText('DNS Lookup → /dns-lookup');
 
     // A SKU part number leads, with the encoder kept behind it because the
     // shape test is loose.
@@ -420,7 +435,7 @@ test.describe('the index remembers', () => {
     await expect(group(page, 'Pinned')).toBeHidden();
     await expect(group(page, 'Recent').getByRole('link').first()).toHaveAttribute('href', '/jwt');
     // The catalogue beneath is untouched.
-    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('a tool can be pinned, unpinned and reordered by pinning again', async ({ page }) => {
@@ -460,7 +475,7 @@ test.describe('the index remembers', () => {
     await pin('JWT Decoder/Validator').click();
     await expect(page.locator('#rt-mine')).toBeHidden();
     expect(await stored(page)).toEqual({ pinned: null, recent: null });
-    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('the pin works from the keyboard', async ({ page }) => {
@@ -496,7 +511,7 @@ test.describe('the index remembers', () => {
     await seed(page, { recent: ['base64'] });
     await page.getByRole('button', { name: 'Clear recent tools' }).click();
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.getByRole('radio', { name: 'All 30' })).toBeFocused();
+    await expect(page.getByRole('radio', { name: 'All 33' })).toBeFocused();
   });
 
   test('a stored id the registry no longer has is ignored', async ({ page }) => {
@@ -513,7 +528,7 @@ test.describe('the index remembers', () => {
     // Nothing left to show is the same as nothing stored.
     await seed(page, { pinned: ['network-designer'], recent: ['a-tool-that-never-existed'] });
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
   });
 
   test('damaged storage leaves the index standing', async ({ page }) => {
@@ -524,7 +539,7 @@ test.describe('the index remembers', () => {
     });
     await page.reload();
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
     await expect(page.getByRole('searchbox', { name: 'Filter tools by name' })).toBeVisible();
   });
 
@@ -542,7 +557,7 @@ test.describe('the index remembers', () => {
 
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(33);
     await expect(strip(page).getByRole('link')).toHaveCount(3);
   });
 
@@ -938,6 +953,96 @@ test.describe('param deep links — rewrite + island application', () => {
     await expectRewrite(page, '/timestamp/2022-02-22T19:22:22.000Z', 'Timestamp Converter');
     await expect(page.getByText('ISO 8601 with its own offset.')).toBeVisible();
     await expect(page.getByText('1645557742000', { exact: true })).toBeVisible();
+  });
+
+  test('/url/:input splits an encoded URL, its own escapes intact', async ({ page }) => {
+    // The value is a URL, so it carries every character a path segment
+    // cannot: slashes, a question mark, an ampersand and a hash, plus a %2F
+    // of its own that must arrive still escaped rather than as a slash.
+    const url = 'https://example.com:8443/a%20b?next=%2Fhome&q=one+two#top';
+    await expectRewrite(page, `/url/${encodeURIComponent(url)}`, 'URL Parser & Encoder');
+    await expect(page.getByLabel('URL', { exact: true })).toHaveValue(url);
+    await expect(page.getByLabel('Host')).toHaveValue('example.com');
+    await expect(page.getByLabel('Path')).toHaveValue('/a b');
+    await expect(page.getByLabel('Value of parameter 1')).toHaveValue('/home');
+    await expect(page.getByLabel('Value of parameter 2')).toHaveValue('one two');
+
+    // Editing one part rebuilds the URL and leaves the rest as it was.
+    await page.getByLabel('Value of parameter 2').fill('three & four');
+    await expect(page.getByLabel('URL', { exact: true })).toHaveValue(
+      'https://example.com:8443/a%20b?next=%2Fhome&q=three+%26+four#top'
+    );
+  });
+
+  test('/url reads the fragment the paste panel writes, and flags what is wrong', async ({ page }) => {
+    const url = 'http://admin:hunter2@example.com/cb?access_token=abc&next=%252Fhome';
+    await page.goto(`/url#url=${encodeURIComponent(url)}`);
+    await expect(page.getByLabel('URL', { exact: true })).toHaveValue(url);
+    await expect(page.getByText('A user name and password are in the URL')).toBeVisible();
+    await expect(page.getByText('One parameter is named like a secret')).toBeVisible();
+    await expect(page.getByText(/flagged by name only/)).toBeVisible();
+    await expect(page.getByText('Looks double-encoded')).toBeVisible();
+  });
+
+  test('/regex highlights matches, lists groups and shares its state in the hash', async ({ page }) => {
+    await expectRewrite(page, '/regex', 'Regex Tester');
+    await expect(page.getByText('3 matches.')).toBeVisible();
+    await expect(page.locator('[data-highlight] [data-match]')).toHaveCount(3);
+    await expect(page.getByRole('table', { name: 'Matches' }).getByText('203.0.113.7', { exact: true })).toBeVisible();
+    expect(new URL(page.url()).hash).toBe('');
+
+    await page.getByLabel('Pattern', { exact: true }).fill('(?<octet>\\d+)\\.');
+    await expect(page.getByText('15 matches.')).toBeVisible();
+    await expect(page).toHaveURL(/#config=[A-Za-z0-9_-]+$/);
+
+    // The link restores the pattern, in a fresh page.
+    const shared = page.url();
+    await page.goto('/');
+    await page.goto(shared);
+    await expect(page.getByLabel('Pattern', { exact: true })).toHaveValue('(?<octet>\\d+)\\.');
+    await expect(page.getByText('15 matches.')).toBeVisible();
+  });
+
+  test('/regex stops a catastrophic pattern instead of freezing the tab', async ({ page }) => {
+    await page.goto('/regex');
+    await expect(page.getByText('3 matches.')).toBeVisible();
+    await page.getByLabel('Test text').fill(`${'a'.repeat(40)}!`);
+    await page.getByLabel('Pattern', { exact: true }).fill('(a+)+$');
+    await expect(page.getByText('Stopped after 1 second')).toBeVisible({ timeout: 10_000 });
+
+    // The page is still answering: a sane pattern matches straight away.
+    await page.getByLabel('Pattern', { exact: true }).fill('a+');
+    await expect(page.getByText('1 match.')).toBeVisible();
+    await expect(page.getByText('Stopped after 1 second')).toHaveCount(0);
+  });
+
+  test('/diff opens on a sample and offers side by side only on a wide screen', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expectRewrite(page, '/diff', 'Text Diff');
+    await expect(page.locator('[data-view="unified"] [data-row="added"]')).toHaveCount(5);
+    await expect(page.locator('[data-view="unified"] [data-row="removed"]')).toHaveCount(5);
+    await page.getByRole('tab', { name: 'Side by side' }).click();
+    await expect(page.locator('[data-view="split"]')).toBeVisible();
+
+    // On a phone the same state collapses to the unified view.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator('[data-view="unified"]')).toBeVisible();
+    await expect(page.locator('[data-view="split"]')).toHaveCount(0);
+    await expect(page.getByRole('tab', { name: 'Side by side' })).toBeHidden();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('/diff normalises JSON when both sides are JSON', async ({ page }) => {
+    await page.goto('/diff');
+    await page.getByLabel('Original', { exact: true }).fill('{"b":1,"a":{"d":2,"c":3}}');
+    await page.getByLabel('Changed', { exact: true }).fill('{\n  "a": { "c": 3, "d": 2 },\n  "b": 1\n}');
+    await expect(page.getByRole('switch', { name: 'Normalise JSON before diffing' })).toBeChecked();
+    await expect(page.getByText('Identical')).toBeVisible();
+    await page.getByRole('switch', { name: 'Normalise JSON before diffing' }).click();
+    await expect(page.getByText('Identical')).toHaveCount(0);
   });
 
   test('/cron/:expression seeds the builder', async ({ page }) => {

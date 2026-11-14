@@ -49,6 +49,27 @@ Conditional Access explainer reads: four directory roles Microsoft has added sin
 now resolve to names there (Resource Policy Evaluator, Reader and Administrator, and Entra
 SOC Identity Responder).
 
+### The paste panel offers the URL parser for a URL with a path or query (2026-11-14)
+
+A pasted `http://` or `https://` URL used to be reduced to its host and dispatched as that
+host, whatever else it carried. It still is, but when the URL has a **path or a query** the
+new URL Parser is now offered first, ahead of the tools that read the host.
+
+- `https://example.com/pricing?ref=1` was seven chips, DNS Lookup first. It is now eight,
+  URL Parser first, and **Enter opens the URL parser** where it used to open DNS Lookup.
+- `https://10.0.0.1:8443/admin` was the four IP tools and is now URL Parser and then those four.
+- **Unchanged:** a bare hostname (`example.com`), a URL with neither path nor query
+  (`https://example.com`, `https://example.com/`), a URL with only a fragment, a host with a
+  path but no scheme (`example.com/pricing`), and any scheme other than http and https.
+
+The chip's link is `/url#url=<encoded URL>`, not `/url/<encoded URL>`. Every other chip
+carries its value in the path; this one uses the fragment, as the certificate chip does,
+because a pasted URL can hold a token and a fragment is never sent to the server. The
+`/url/:input` deep link exists and is frozen, for links written by hand.
+
+`src/lib/paste.test.js` (one existing assertion narrowed to the host tools, three added) and
+the paste-panel test in `e2e/deeplinks.spec.js` assert the new behaviour.
+
 ### The index stores what you pin and what you open (2026-11-14)
 
 The shell writes to `localStorage` for the first time since the theme preference. Two keys,
