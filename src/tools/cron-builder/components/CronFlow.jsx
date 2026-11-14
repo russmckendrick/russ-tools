@@ -1,5 +1,6 @@
 import React from 'react';
 import { FlowDiagram } from '@/components/ui/tree-diagram';
+import { daysMatchEither } from '../lib/schedule.js';
 
 const esc = (text) => String(text).replace(/"/g, '#quot;');
 
@@ -10,7 +11,9 @@ const esc = (text) => String(text).replace(/"/g, '#quot;');
  * The day is the part people get wrong, so it is the part worth drawing.
  * When both day-of-month and day-of-week are restricted, cron runs if
  * EITHER matches, not both; the two are drawn side by side for that case and
- * in line otherwise. A field left as `*` matches anything and is drawn
+ * in line otherwise. A field that starts with a star (a stepped star too) does not
+ * count as restricted, which is the Vixie cron rule `lib/schedule.js` uses
+ * for the run times. A field left as `*` matches anything and is drawn
  * quietly.
  *
  * It restates the expression above it and the selectors below.
@@ -20,7 +23,7 @@ const esc = (text) => String(text).replace(/"/g, '#quot;');
 export default function CronFlow({ fields }) {
   const gate = (id, name, value) =>
     `  ${id}{{"${name}<br/>${esc(value === '*' ? 'any' : value)}"}}${value === '*' ? ':::muted' : ''}`;
-  const either = fields.dayOfMonth !== '*' && fields.dayOfWeek !== '*';
+  const either = daysMatchEither(fields.dayOfMonth, fields.dayOfWeek);
 
   const lines = [
     'flowchart LR',

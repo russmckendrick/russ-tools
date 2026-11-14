@@ -24,6 +24,33 @@ Two rules:
 
 ## Landed
 
+### CRON builder: upcoming run times, names, and a validator that reads as you type (2026-11-14)
+
+Under the expression on both tabs the tool now lists the next five run times
+(`lib/schedule.js`, a pure function of the expression and a from-date). Three
+things changed that were pinned or visible before:
+
+- **Month and weekday names validate.** `0 9 * * MON-FRI` used to be "Invalid
+  day of week value"; `validateCronExpression` now reads `JAN`-`DEC` and
+  `SUN`-`SAT` in those two fields, in any case, and the two error strings
+  gained "or JAN-DEC" / "or SUN-SAT". The `parseInt` quirks pinned in
+  `cron.test.js` are untouched, and `looksLikeCron` (the paste sniffer) still
+  refuses names, so prose cannot reach it.
+- **The Expression Validator tab checks what is typed.** It used to report on
+  the builder's expression until **Load** was pressed, so the status under the
+  box could describe a different expression from the one in it. It now reads
+  the box as you type and falls back to the builder's expression, labelled as
+  such, only when the box is empty. **Load** still copies into the builder.
+- **The diagram's either-or rule follows Vixie cron.** `CronFlow` drew
+  "either" whenever both day fields were anything but a bare `*`. A field that
+  starts with `*` (so `*/2`) is unrestricted in Vixie cron and cronie, where
+  both fields must then match, and the diagram and the run times now share
+  that one rule (`daysMatchEither`).
+
+The run-time calculator is stricter than the validator: an expression the
+validator lets through on a `parseInt` tail (`5x * * * *`) gets "run times
+cannot be worked out" instead of a guess.
+
 ### The three lookup workers are retired (2026-11-14)
 
 `ssl.russ.tools`, `whois.russ.tools` and `tenant.russ.tools` no longer exist. The
