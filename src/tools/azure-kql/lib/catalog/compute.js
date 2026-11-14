@@ -1,0 +1,131 @@
+import { count, overTime, rows, top, where } from './shapes.js';
+
+const httpColumns = ['TimeGenerated', 'CsMethod', 'CsHost', 'CsUriStem', 'ScStatus', 'TimeTaken', 'CIp', 'UserAgent'];
+const containerColumns = ['TimeGenerated', 'PodNamespace', 'PodName', 'ContainerName', 'LogLevel', 'LogMessage'];
+const connected = where('State', 'eq', 'Connected');
+
+export const COMPUTE = [
+  {
+    id: 'app-service',
+    name: 'App Service',
+    group: 'Compute',
+    scenarios: [
+      { id: 'http', name: 'HTTP log', table: 'AppServiceHTTPLogs', reads: 'App Service HTTP requests', description: 'Every request the web app served.', output: rows(httpColumns) },
+      { id: 'errors', name: '5xx responses', table: 'AppServiceHTTPLogs', reads: 'App Service HTTP requests', description: 'Requests that returned a 500-range status.', filters: [where('ScStatus', 'gte', '500')], output: rows(httpColumns) },
+      { id: 'slow', name: 'Slowest requests', table: 'AppServiceHTTPLogs', reads: 'App Service HTTP requests', description: 'Requests ordered by time taken, in milliseconds.', output: rows(httpColumns, 'TimeTaken') },
+      {
+        id: 'status-over-time',
+        name: 'Status codes over time',
+        table: 'AppServiceHTTPLogs',
+        reads: 'Requests per status code over time',
+        description: 'Response codes as a time chart.',
+        output: overTime([count('Requests')], ['ScStatus']),
+      },
+      {
+        id: 'top-clients',
+        name: 'Top client addresses',
+        table: 'AppServiceHTTPLogs',
+        reads: 'App Service requests counted by client address',
+        description: 'The addresses sending the most requests.',
+        output: top([count('Requests')], ['CIp']),
+      },
+      { id: 'console', name: 'Console output', table: 'AppServiceConsoleLogs', reads: 'App Service console log lines', description: 'What the app wrote to stdout and stderr.', output: rows(['TimeGenerated', 'Level', 'ResultDescription', 'Host', 'ContainerId']) },
+      { id: 'app-logs', name: 'Application logs', table: 'AppServiceAppLogs', reads: 'App Service application log entries', description: 'Entries written through the application logging provider.', output: rows(['TimeGenerated', 'Level', 'Message', 'ExceptionClass', 'Host']) },
+    ],
+  },
+  {
+    id: 'aks',
+    name: 'Kubernetes (AKS)',
+    group: 'Compute',
+    scenarios: [
+      { id: 'container-logs', name: 'Container logs', table: 'ContainerLogV2', reads: 'Container log lines', description: 'Output from containers, collected by Container insights.', output: rows(containerColumns) },
+      { id: 'stderr', name: 'Container errors (stderr)', table: 'ContainerLogV2', reads: 'Container log lines', description: 'Only what containers wrote to standard error.', filters: [where('LogSource', 'eq', 'stderr')], output: rows(containerColumns) },
+      {
+        id: 'events',
+        name: 'Warning events',
+        table: 'KubeEvents',
+        reads: 'Kubernetes events',
+        description: 'Failed scheduling, back-off, unhealthy probes and similar.',
+        filters: [where('KubeEventType', 'neq', 'Normal')],
+        output: rows(['TimeGenerated', 'Namespace', 'Name', 'ObjectKind', 'Reason', 'Message', 'Count']),
+      },
+      {
+        id: 'restarts',
+        name: 'Container restarts',
+        table: 'KubePodInventory',
+        reads: 'Highest restart count per container',
+        description: 'Containers that keep restarting.',
+        filters: [where('ContainerRestartCount', 'gt', '0')],
+        output: top([['Restarts', 'max(ContainerRestartCount)']], ['Namespace', 'Name', 'ContainerName']),
+      },
+      {
+        id: 'pod-status',
+        name: 'Pods by status',
+        table: 'KubePodInventory',
+        reads: 'Distinct pods counted by namespace and status',
+        description: 'How many pods are in each phase.',
+        output: top([['Pods', 'dcount(Name)']], ['Namespace', 'PodStatus']),
+      },
+      {
+        id: 'audit',
+        name: 'API server audit',
+        table: 'AKSAudit',
+        reads: 'Kubernetes API audit events',
+        description: 'Requests to the Kubernetes API server.',
+        extend: ['Username = tostring(User.username)'],
+        output: rows(['TimeGenerated', 'Verb', 'RequestUri', 'Username', 'UserAgent', 'Stage', 'Level']),
+      },
+      { id: 'nodes', name: 'Nodes not ready', table: 'KubeNodeInventory', reads: 'Node inventory records', description: 'Nodes whose conditions are anything other than plain Ready.', filters: [where('Status', 'neq', 'Ready')], output: rows(['TimeGenerated', 'Computer', 'Status', 'KubeletVersion', 'ClusterName']) },
+      { id: 'control-plane', name: 'Control plane logs', table: 'AKSControlPlane', reads: 'AKS control plane log lines', description: 'Output from the managed control plane components.', output: rows(['TimeGenerated', 'Category', 'Level', 'PodName', 'Message']) },
+    ],
+  },
+  {
+    id: 'azure-virtual-desktop',
+    name: 'Azure Virtual Desktop',
+    group: 'Compute',
+    scenarios: [
+      {
+        id: 'basic',
+        name: 'Connections',
+        table: 'WVDConnections',
+        reads: 'Azure Virtual Desktop connection events',
+        description: 'Connection attempts, one row per state change.',
+        output: rows(['TimeGenerated', 'UserName', 'State', 'SessionHostName', 'ClientOS', 'ClientType', 'ConnectionType', 'ClientSideIPAddress', 'CorrelationId']),
+      },
+      {
+        id: 'errors',
+        name: 'Errors',
+        table: 'WVDErrors',
+        reads: 'Azure Virtual Desktop errors',
+        description: 'Errors raised during connections and feed refreshes.',
+        output: rows(['TimeGenerated', 'UserName', 'CodeSymbolic', 'Message', 'Source', 'ServiceError', 'CorrelationId']),
+      },
+      {
+        id: 'top-errors',
+        name: 'Top errors',
+        table: 'WVDErrors',
+        reads: 'Azure Virtual Desktop errors and affected users, by error code and source',
+        description: 'The errors affecting the most people.',
+        output: top([count('Errors'), ['Users', 'dcount(UserName)']], ['CodeSymbolic', 'Source']),
+      },
+      {
+        id: 'sessions-by-host',
+        name: 'Connections by session host',
+        table: 'WVDConnections',
+        reads: 'Connection events and distinct users per session host',
+        description: 'How load is spread across session hosts.',
+        filters: [connected],
+        output: top([count('Connections'), ['Users', 'dcount(UserName)']], ['SessionHostName']),
+      },
+      {
+        id: 'by-client',
+        name: 'Connections by client',
+        table: 'WVDConnections',
+        reads: 'Connection events counted by client operating system and client type',
+        description: 'What people connect from.',
+        filters: [connected],
+        output: top([count('Connections')], ['ClientOS', 'ClientType']),
+      },
+    ],
+  },
+];
