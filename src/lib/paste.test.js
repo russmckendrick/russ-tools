@@ -69,6 +69,24 @@ describe('suggest', () => {
     expect(first('3333').href).toBe('/bgp-explorer/AS3333');
   });
 
+  it('reads a ten- or thirteen-digit number as a Unix timestamp', () => {
+    expect(first('1794651210')).toMatchObject({ toolId: 'timestamp', href: '/timestamp/1794651210' });
+    expect(ids('1794651210123')).toEqual(['timestamp']);
+    expect(first('1794651210123').href).toBe('/timestamp/1794651210123');
+  });
+
+  it('keeps BGP behind the timestamp when ten digits could still be an AS number', () => {
+    expect(ids('1794651210')).toEqual(['timestamp', 'bgp-explorer']);
+    expect(suggest('4200000001')[1].href).toBe('/bgp-explorer/AS4200000001');
+    expect(ids('9999999999')).toEqual(['timestamp']);
+  });
+
+  it('leaves shorter and longer numbers where they were', () => {
+    expect(ids('179465121')).toEqual(['bgp-explorer']);
+    expect(ids('17946512101')).not.toContain('timestamp');
+    expect(ids('AS1794651210')).toEqual(['bgp-explorer']);
+  });
+
   it('routes a cron expression to the builder', () => {
     expect(first('*/15 * * * *')).toMatchObject({
       toolId: 'cron-builder',
@@ -108,12 +126,13 @@ describe('suggest', () => {
    * The four collisions the ordering exists to resolve. Each of these inputs
    * satisfies more than one detector; the assertion is which one wins.
    */
-  it('offers both Azure RBAC and the licence decoder for a bare GUID', () => {
+  it('offers Azure RBAC and the licence decoder for a bare GUID, with the UUID decoder behind them', () => {
     // Contributor's role definition id. Nothing in the string says whether it
     // names a role or a SKU, so the panel says both rather than guessing.
     expect(ids('b24988ac-6180-42a0-ab88-20f7382dd24c')).toEqual([
       'azure-rbac',
       'm365-licenses',
+      'uuid',
     ]);
     expect(first('b24988ac-6180-42a0-ab88-20f7382dd24c').href).toBe(
       '/azure-rbac/b24988ac-6180-42a0-ab88-20f7382dd24c'
@@ -121,7 +140,11 @@ describe('suggest', () => {
     expect(ids('B24988AC-6180-42A0-AB88-20F7382DD24C')).toEqual([
       'azure-rbac',
       'm365-licenses',
+      'uuid',
     ]);
+    expect(suggest('b24988ac-6180-42a0-ab88-20f7382dd24c')[2].href).toBe(
+      '/uuid/b24988ac-6180-42a0-ab88-20f7382dd24c'
+    );
   });
 
   it('routes a SKU part number to the licence decoder, encoder behind it', () => {
@@ -164,6 +187,7 @@ describe('suggest', () => {
       expect(ids('00000000-0000-0000-0000-000000000000')).toEqual([
         'azure-rbac',
         'm365-licenses',
+        'uuid',
       ]);
       // One character short of a GUID is just text again.
       expect(ids('b24988ac-6180-42a0-ab88-20f7382dd24')).toEqual(['base64']);
@@ -271,7 +295,17 @@ describe('suggest', () => {
    */
   it('only ever links at routes the registry serves', () => {
     const patterns = allRoutes().map((r) => r.path);
-    const inputs = [JWT, '10.0.0.0/22', '10.0.0.1', '*/15 * * * *', 'example.com', 'hello world'];
+    const inputs = [
+      JWT,
+      '10.0.0.0/22',
+      '10.0.0.1',
+      '*/15 * * * *',
+      'example.com',
+      'hello world',
+      'b24988ac-6180-42a0-ab88-20f7382dd24c',
+      '1794651210',
+      '1794651210123',
+    ];
 
     for (const input of inputs) {
       for (const { href } of suggest(input)) {

@@ -35,6 +35,14 @@ const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ASN = /^(?:AS)?\d{1,10}$/i;
 
 /**
+ * A Unix timestamp as it is almost always carried: ten digits of seconds or
+ * thirteen of milliseconds. Ten digits is also a legal 32-bit AS number, so
+ * that branch offers both.
+ */
+const TIMESTAMP = /^(?:\d{10}|\d{13})$/;
+const MAX_ASN = 4294967295;
+
+/**
  * A Microsoft licence code, which is what people actually have: `E3`, `E5`,
  * `F1`, `F3`, `A1`/`A3`/`A5`, `G3`/`G5`, `P1`/`P2`, `BP`. One or two letters
  * and one or two digits, and nothing else on this site reads that shape.
@@ -189,6 +197,23 @@ export function suggest(input) {
     return [tool('cron-builder', 'CRON Builder', '/cron', `/cron/${seg(expression)}`, 'cron expression')];
   }
 
+  /*
+    A bare ten- or thirteen-digit number is a Unix timestamp far more often
+    than it is anything else, so the converter leads. Ten digits can still be
+    a 32-bit AS number (the private range starts at 4200000000), and nothing
+    in the string rules that out, so BGP stays in the list behind it when the
+    value fits. Thirteen digits is no AS number and gets the one chip.
+  */
+  if (TIMESTAMP.test(value)) {
+    const matches = [tool('timestamp', 'Timestamp Converter', '/timestamp', `/timestamp/${value}`, 'Unix timestamp')];
+    if (value.length === 10 && Number(value) <= MAX_ASN) {
+      matches.push(
+        tool('bgp-explorer', 'BGP Explorer', '/bgp-explorer', `/bgp-explorer/AS${value}`, 'autonomous system number')
+      );
+    }
+    return matches;
+  }
+
   if (ASN.test(value)) {
     const asn = value.toUpperCase().startsWith('AS') ? value.toUpperCase() : `AS${value}`;
     return [tool('bgp-explorer', 'BGP Explorer', '/bgp-explorer', `/bgp-explorer/${asn}`, 'autonomous system number')];
@@ -201,11 +226,16 @@ export function suggest(input) {
     id copied out of a Bicep template and a SKU id copied out of a Graph
     response are the same 36 characters. Both are offered; RBAC leads because
     role ids are the ones people paste from something they are editing.
+
+    The UUID decoder comes third. It can read any GUID, which is exactly why
+    it does not lead: it says what kind of identifier this is, where the two
+    above say what it identifies.
   */
   if (GUID.test(value)) {
     return [
       tool('azure-rbac', 'Azure RBAC', '/azure-rbac', `/azure-rbac/${seg(value)}`, 'GUID'),
       tool('m365-licenses', 'M365 Licences', '/m365-licenses', `/m365-licenses/${seg(value)}`, 'GUID'),
+      tool('uuid', 'UUID Decoder', '/uuid', `/uuid/${seg(value)}`, 'GUID'),
     ];
   }
 
