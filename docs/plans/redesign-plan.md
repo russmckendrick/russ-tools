@@ -4001,3 +4001,58 @@ over: both branches had independently written 33 for the tool count in the
 registry and e2e tests, so git merged them without complaint and every one of
 those numbers was two short. The paste panel's GUID order is unchanged beside
 the new URL and domain rules.
+
+### 2026-11-14 — The Conditional Access application ids, checked against Microsoft
+
+The previous entry left a loose end: eight of the 22 GUIDs typed into
+`scripts/refresh-entra-ids.mjs` were in none of the fetched pages. Every row was
+checked against Microsoft Learn and the MicrosoftDocs / microsoftgraph repos.
+
+Five rows were wrong, not merely unlisted. The two `797f4846-ba00-4fd7-ba5e-…`
+ids for Azure management do not exist anywhere Microsoft publishes; the real id
+is `797f4846-ba00-4fd7-ba43-dac1f8f63013`, one application that Microsoft calls
+both Windows Azure Service Management API and Azure Resource Manager. Three
+other ids were real but carried another application's name: `9cdead84-…` is
+Azure Virtual Desktop (not Intune enrolment, which is `d4ebce55-…`), `cf36b471-…`
+is Microsoft Bing Search (the Syndication Partner Portal is `d176f6e7-…`) and
+`66a88757-…` is Office 365 Search Service (Microsoft Forms is `c9a559d2-…`).
+Each id now carries Microsoft's name and each intended application its real id.
+The other four unlisted ids (SharePoint Online, Azure AD Graph, Skype for
+Business Online, Intune) were right and now have a page.
+
+**The list is still typed, but no longer trusted.** A row is
+`[id, label, source, published]`, `source` names a page, and the run exits
+before writing anything unless that page prints the id on the same line as the
+published name. The five old rows fail it. The Dev Box
+Conditional Access page tabulates its ids cleanly and joined `APP_SOURCES`, so
+the Azure management and Azure Virtual Desktop ids are fetched and the lookup
+gained seven applications (288 → 295). Five more pages are cited without being
+merged, because they state an id in prose or in a property description.
+
+Two judgement calls, both recorded in the script:
+
+- **The service principal sign-in table is cited, not merged.** It is the only
+  Learn page that tabulates SharePoint Online's id, but it gives one id to two
+  different applications twice (Azure ESTS Service and Azure HDInsight Cluster
+  API; CPIM Service and Dynamics Lifecycle services), and merging it would
+  publish those pairs as aliases of each other in the lookup.
+- **Six rows rest on `known-guids.json`**, the dictionary in
+  `MicrosoftDocs/entra-docs` that Microsoft's docs tooling uses to recognise
+  GUIDs in Learn content. It is Microsoft-published and states name beside id,
+  but it is a tooling file, not an article. No article states those ids.
+
+`None` stays in the application map. It was dropped at first, because Graph's
+resource reference documents `All`, `Office365` and `MicrosoftAdminPortals` for
+`includeApplications` and not `None`, and then restored: the portal offers None
+as a target, and the Create conditionalAccessPolicy reference gives
+`'includeApplications': 'none'` as its example of an application rule. That
+page is now the row's citation, checked on every refresh like the rest.
+Reserved words resolve whatever their case, since Microsoft writes it both
+ways. Whether a portal export carries `None` was not checked against a tenant;
+the two mistakes are not symmetric, and translating a value that never occurs
+costs nothing. Labels
+that were right about the id but differ from Microsoft's wording (Azure Active
+Directory Graph (retired), Microsoft Office (legacy Office client), Dynamics
+CRM Online, Power BI Service, Office 365 (OfficeHome)) were left as they were.
+
+Logged in `BEHAVIOR_CHANGES.md`.

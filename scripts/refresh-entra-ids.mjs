@@ -10,8 +10,10 @@
  * 1. src/data/microsoft/entra-well-known-ids.json, for the Conditional Access
  *    explainer. An exported policy names its targets by id and nothing else,
  *    so that tool needs a map from id to name: directory role template ids
- *    from the Entra permissions reference, plus the short inline list of
- *    application ids and guest types below.
+ *    from the Entra permissions reference, plus the short list of
+ *    application ids and guest types below. The application list is typed,
+ *    but every row names the Microsoft page it was read from and the run
+ *    fails unless that page still prints the id beside the name.
  *
  * 2. src/data/microsoft/entra-ids.json and its companion entra-id-index.json,
  *    for the Entra ID lookup. Everything in these two is fetched; nothing is
@@ -23,7 +25,7 @@
  *      https://github.com/microsoftgraph/microsoft-graph-docs-contrib/blob/main/concepts/permissions-reference.md
  *    AADSTS sign-in error codes
  *      https://github.com/MicrosoftDocs/entra-docs/blob/main/docs/identity-platform/reference-error-codes.md
- *    First-party application ids, merged from five pages (see APP_SOURCES)
+ *    First-party application ids, merged from six pages (see APP_SOURCES)
  *
  *    There is no single published list of Microsoft's first-party application
  *    ids. The support article that used to carry one now lists four, and the
@@ -32,9 +34,9 @@
  *    docs tabulate, which is a few hundred of several thousand. The lookup
  *    says so rather than implying a miss means "not Microsoft".
  *
- * The inline APPLICATIONS list feeds file 1 only. It predates this script's
- * fetched sources, is not checked against them, and is deliberately kept out
- * of file 2.
+ * The APPLICATIONS list feeds file 1 only. Some of its rows are cited to
+ * prose or to Microsoft's GUID dictionary, not to a table of applications,
+ * so it is deliberately kept out of file 2.
  *
  * Sources are CC-BY-4.0, (c) Microsoft. Output is sorted before writing.
  */
@@ -53,38 +55,121 @@ const HUMAN =
   'https://learn.microsoft.com/entra/identity/role-based-access-control/permissions-reference';
 
 /**
- * Microsoft first-party application ids that show up in Conditional Access
- * `includeApplications` / `excludeApplications`, plus the two reserved values
- * that are not GUIDs at all.
+ * What a Conditional Access policy can name in `includeApplications` and
+ * `excludeApplications`: Graph's reserved words, then first-party application
+ * ids.
+ *
+ * A row is [id, label, source, published]. `source` is a key in APP_SOURCES
+ * or CITED_SOURCES below, and the run fails unless that page prints the id on
+ * the same line as `published`, which is the label when a row has no fourth
+ * cell. A label differs from the published name only to say what a reader
+ * would otherwise have to look up.
+ *
+ * A reserved word has no name to sit beside, so its check is different: the
+ * page must print the word in a code span, or, where a fourth cell is given,
+ * print that text exactly. `None` is the case that needs it. The resource
+ * reference lists `All`, `Office365` and `MicrosoftAdminPortals` and leaves
+ * `None` out, but the Create policy reference gives
+ * `'includeApplications': 'none'` as its example of an application rule, and
+ * the portal offers None as a target. A policy that carries it should read
+ * "No cloud apps", not a bare word.
+ *
+ * Find the Microsoft page before adding a row. An id that no Microsoft page
+ * prints beside its name does not go in. Five rows were wrong here until
+ * November 2026, two of them ids that never existed.
  */
-const APPLICATIONS = {
-  All: 'All cloud apps',
-  None: 'No cloud apps',
-  Office365: 'Office 365 (the app suite target)',
-  MicrosoftAdminPortals: 'Microsoft Admin Portals',
-  '00000002-0000-0ff1-ce00-000000000000': 'Office 365 Exchange Online',
-  '00000003-0000-0ff1-ce00-000000000000': 'Office 365 SharePoint Online',
-  '00000003-0000-0000-c000-000000000000': 'Microsoft Graph',
-  '00000002-0000-0000-c000-000000000000': 'Azure Active Directory Graph (retired)',
-  '797f4846-ba00-4fd7-ba5e-ceb5e5f1a0e0': 'Windows Azure Service Management API',
-  '797f4846-ba00-4fd7-ba5e-ceb5e5f1a0e1': 'Azure Resource Manager',
-  'c44b4083-3bb0-49c1-b47d-974e53cbdf3c': 'Azure Portal',
-  'cf36b471-5b44-428c-9ce7-313bf84528de': 'Microsoft Online Syndication Partner Portal',
-  '00000004-0000-0ff1-ce00-000000000000': 'Skype for Business Online',
-  '00000006-0000-0ff1-ce00-000000000000': 'Microsoft Office 365 Portal',
-  '00000007-0000-0000-c000-000000000000': 'Dynamics CRM Online',
-  '00000009-0000-0000-c000-000000000000': 'Power BI Service',
-  '1fec8e78-bce4-4aaf-ab1b-5451cc387264': 'Microsoft Teams',
-  'd3590ed6-52b3-4102-aeff-aad2292ab01c': 'Microsoft Office (legacy Office client)',
-  '872cd9fa-d31f-45e0-9eab-6e460a02d1f1': 'Visual Studio',
-  '04b07795-8ddb-461a-bbee-02f9e1bf7b46': 'Microsoft Azure CLI',
-  '1950a258-227b-4e31-a9cf-717495945fc2': 'Microsoft Azure PowerShell',
-  '14d82eec-204b-4c2f-b7e8-296a70dab67e': 'Microsoft Graph Command Line Tools',
-  '0000000a-0000-0000-c000-000000000000': 'Microsoft Intune',
-  '9cdead84-a844-4324-93f2-b2e6bb768d07': 'Microsoft Intune Enrolment',
-  '66a88757-258c-4c72-893c-3e8bed4d6899': 'Microsoft Forms',
-  '4765445b-32c6-49b0-83e6-1d93765276ca': 'Office 365 (OfficeHome)',
-};
+const APPLICATIONS = [
+  ['All', 'All cloud apps', 'graph-conditional-access'],
+  ['Office365', 'Office 365 (the app suite target)', 'graph-conditional-access'],
+  ['MicrosoftAdminPortals', 'Microsoft Admin Portals', 'graph-conditional-access'],
+  ['None', 'No cloud apps', 'graph-create-policy', "'includeApplications': 'none'"],
+  ['00000002-0000-0ff1-ce00-000000000000', 'Office 365 Exchange Online', 'power-platform'],
+  ['00000003-0000-0ff1-ce00-000000000000', 'Office 365 SharePoint Online', 'service-principal-sign-ins'],
+  ['00000003-0000-0000-c000-000000000000', 'Microsoft Graph', 'conditional-access'],
+  [
+    '00000002-0000-0000-c000-000000000000',
+    'Azure Active Directory Graph (retired)',
+    'conditional-access',
+    'Windows Azure Active Directory',
+  ],
+  [
+    '797f4846-ba00-4fd7-ba43-dac1f8f63013',
+    'Windows Azure Service Management API (Azure Resource Manager)',
+    'dev-box',
+    'Windows Azure Service Management API',
+  ],
+  ['c44b4083-3bb0-49c1-b47d-974e53cbdf3c', 'Azure Portal', 'power-platform'],
+  ['cf36b471-5b44-428c-9ce7-313bf84528de', 'Microsoft Bing Search', 'known-guids'],
+  ['d176f6e7-38e5-40c9-8a78-3998aab820e7', 'Microsoft Online Syndication Partner Portal', 'known-guids'],
+  ['00000004-0000-0ff1-ce00-000000000000', 'Skype for Business Online', 'known-guids'],
+  ['00000006-0000-0ff1-ce00-000000000000', 'Microsoft Office 365 Portal', 'conditional-access'],
+  ['00000007-0000-0000-c000-000000000000', 'Dynamics CRM Online', 'known-guids'],
+  ['00000009-0000-0000-c000-000000000000', 'Power BI Service', 'known-guids'],
+  ['1fec8e78-bce4-4aaf-ab1b-5451cc387264', 'Microsoft Teams', 'power-platform'],
+  [
+    'd3590ed6-52b3-4102-aeff-aad2292ab01c',
+    'Microsoft Office (legacy Office client)',
+    'power-platform',
+    'Microsoft Office',
+  ],
+  ['872cd9fa-d31f-45e0-9eab-6e460a02d1f1', 'Visual Studio', 'power-platform'],
+  ['04b07795-8ddb-461a-bbee-02f9e1bf7b46', 'Microsoft Azure CLI', 'power-platform'],
+  ['1950a258-227b-4e31-a9cf-717495945fc2', 'Microsoft Azure PowerShell', 'power-platform'],
+  ['14d82eec-204b-4c2f-b7e8-296a70dab67e', 'Microsoft Graph Command Line Tools', 'sign-in-reports'],
+  ['0000000a-0000-0000-c000-000000000000', 'Microsoft Intune', 'intune-co-management'],
+  ['d4ebce55-015a-49b5-a083-c84d1797ae8c', 'Microsoft Intune Enrollment', 'terms-of-use'],
+  ['9cdead84-a844-4324-93f2-b2e6bb768d07', 'Azure Virtual Desktop', 'dev-box'],
+  ['66a88757-258c-4c72-893c-3e8bed4d6899', 'Office 365 Search Service', 'known-guids'],
+  ['c9a559d2-7aab-4f13-a6ed-e7e9c52aec87', 'Microsoft Forms', 'known-guids'],
+  ['4765445b-32c6-49b0-83e6-1d93765276ca', 'Office 365 (OfficeHome)', 'known-guids', 'OfficeHome'],
+];
+
+/**
+ * Pages the list above cites that are not in APP_SOURCES: each states an id
+ * beside a name, but in prose, in a property description or in a table too
+ * unreliable to merge. The service principal sign-in table gives one id to
+ * two different applications twice over, which the lookup would publish as
+ * aliases. `known-guids` is the dictionary Microsoft's own docs tooling uses
+ * to recognise the GUIDs that appear in Learn content.
+ */
+const CITED_SOURCES = [
+  {
+    key: 'graph-conditional-access',
+    title: 'conditionalAccessApplications resource type',
+    raw: 'https://raw.githubusercontent.com/microsoftgraph/microsoft-graph-docs-contrib/main/api-reference/v1.0/resources/conditionalaccessapplications.md',
+    human: 'https://learn.microsoft.com/graph/api/resources/conditionalaccessapplications',
+  },
+  {
+    key: 'graph-create-policy',
+    title: 'Create conditionalAccessPolicy',
+    raw: 'https://raw.githubusercontent.com/microsoftgraph/microsoft-graph-docs-contrib/main/api-reference/v1.0/api/conditionalaccessroot-post-policies.md',
+    human: 'https://learn.microsoft.com/graph/api/conditionalaccessroot-post-policies',
+  },
+  {
+    key: 'service-principal-sign-ins',
+    title: 'Microsoft service principal sign-in logs table',
+    raw: 'https://raw.githubusercontent.com/MicrosoftDocs/entra-docs/main/docs/identity/monitoring-health/reference-service-principal-table.md',
+    human: 'https://learn.microsoft.com/entra/identity/monitoring-health/reference-service-principal-table',
+  },
+  {
+    key: 'terms-of-use',
+    title: 'Microsoft Entra terms of use',
+    raw: 'https://raw.githubusercontent.com/MicrosoftDocs/entra-docs/main/docs/identity/conditional-access/terms-of-use.md',
+    human: 'https://learn.microsoft.com/entra/identity/conditional-access/terms-of-use',
+  },
+  {
+    key: 'intune-co-management',
+    title: 'Troubleshoot co-management: auto-enroll existing Configuration Manager-managed devices into Intune',
+    raw: 'https://raw.githubusercontent.com/MicrosoftDocs/SupportArticles-docs/main/support/mem/intune/comanage-configmgr/troubleshoot-co-management-auto-enrolling.md',
+    human: 'https://learn.microsoft.com/troubleshoot/mem/intune/comanage-configmgr/troubleshoot-co-management-auto-enrolling',
+  },
+  {
+    key: 'known-guids',
+    title: 'Known GUIDs in Learn content (MicrosoftDocs/entra-docs)',
+    raw: 'https://raw.githubusercontent.com/MicrosoftDocs/entra-docs/main/.docutune/dictionaries/known-guids.json',
+    human: 'https://github.com/MicrosoftDocs/entra-docs/blob/main/.docutune/dictionaries/known-guids.json',
+  },
+];
 
 /**
  * Guest and external user types, which CA policies encode as a comma-joined
@@ -133,22 +218,7 @@ if (Object.keys(roles).length < 50) {
 const sortObject = (obj) =>
   Object.fromEntries(Object.entries(obj).sort(([a], [b]) => a.localeCompare(b)));
 
-const data = {
-  source: HUMAN,
-  licence: `CC-BY-4.0, (c) Microsoft. See ${HUMAN}`,
-  generatedAt: new Date().toISOString().slice(0, 10),
-  directoryRoles: sortObject(roles),
-  applications: sortObject(APPLICATIONS),
-  guestOrExternalUserTypes: sortObject(GUEST_TYPES),
-};
-
-mkdirSync(dirname(OUT), { recursive: true });
-writeFileSync(OUT, `${JSON.stringify(data, null, 2)}\n`);
-
-console.log(
-  `Wrote ${Object.keys(roles).length} directory roles, ${Object.keys(APPLICATIONS).length} applications ` +
-    `to src/data/microsoft/entra-well-known-ids.json`
-);
+const generatedAt = new Date().toISOString().slice(0, 10);
 
 /* ---------------------------------------------------------- the lookup dataset */
 
@@ -194,6 +264,12 @@ const APP_SOURCES = [
     title: 'Conditional Access: target resources',
     raw: 'https://raw.githubusercontent.com/MicrosoftDocs/entra-docs/main/docs/identity/conditional-access/concept-conditional-access-cloud-apps.md',
     human: 'https://learn.microsoft.com/entra/identity/conditional-access/concept-conditional-access-cloud-apps',
+  },
+  {
+    key: 'dev-box',
+    title: 'Configure Conditional Access policies for Microsoft Dev Box',
+    raw: 'https://raw.githubusercontent.com/MicrosoftDocs/azure-docs/main/articles/dev-box/how-to-configure-intune-conditional-access-policies.md',
+    human: 'https://learn.microsoft.com/azure/dev-box/how-to-configure-intune-conditional-access-policies',
   },
   {
     key: 'microsoft-365-clients',
@@ -295,6 +371,7 @@ if (permissions.length < 500) {
 /* First-party applications. */
 
 const apps = new Map();
+const sourceText = new Map();
 const addApp = (id, name, source) => {
   const key = id.toLowerCase();
   const clean = name.replace(/\s+/g, ' ').trim();
@@ -308,6 +385,7 @@ const addApp = (id, name, source) => {
 for (const source of APP_SOURCES) {
   console.log(`Fetching ${source.raw}`);
   const text = await fetchText(source.raw);
+  sourceText.set(source.key, text);
   let found = 0;
 
   for (const table of parseTables(text)) {
@@ -344,6 +422,51 @@ addApp(graphApp[1], 'Microsoft Graph', 'graph-permissions');
 
 const applications = [...apps.values()].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
 
+/* The Conditional Access map, once every row of its application list is confirmed. */
+
+for (const source of CITED_SOURCES) {
+  console.log(`Fetching ${source.raw}`);
+  sourceText.set(source.key, await fetchText(source.raw));
+}
+
+const unsupported = APPLICATIONS.filter(([id, label, source, published = label]) => {
+  const text = sourceText.get(source);
+  if (!text) return true;
+  if (!WHOLE_GUID.test(id)) return !text.includes(published === label ? `\`${id}\`` : published);
+  return !text
+    .toLowerCase()
+    .split(/\r?\n/)
+    .some((line) => line.includes(id) && line.includes(published.toLowerCase()));
+});
+
+if (unsupported.length > 0) {
+  console.error(
+    `${unsupported.length} of the application ids are no longer printed beside their name on the page they cite:\n` +
+      unsupported.map(([id, label, source, published = label]) => `  ${id}  "${published}"  (${source})`).join('\n')
+  );
+  process.exit(1);
+}
+
+const humanUrl = new Map([...APP_SOURCES, ...CITED_SOURCES].map((source) => [source.key, source.human]));
+
+const data = {
+  source: HUMAN,
+  licence: `CC-BY-4.0, (c) Microsoft. See ${HUMAN}`,
+  generatedAt,
+  applicationSources: [...new Set(APPLICATIONS.map((row) => humanUrl.get(row[2])))].sort(),
+  directoryRoles: sortObject(roles),
+  applications: sortObject(Object.fromEntries(APPLICATIONS.map(([id, label]) => [id, label]))),
+  guestOrExternalUserTypes: sortObject(GUEST_TYPES),
+};
+
+mkdirSync(dirname(OUT), { recursive: true });
+writeFileSync(OUT, `${JSON.stringify(data, null, 2)}\n`);
+
+console.log(
+  `Wrote ${Object.keys(roles).length} directory roles and ${APPLICATIONS.length} applications, ` +
+    `each confirmed on the page it cites, to src/data/microsoft/entra-well-known-ids.json`
+);
+
 /* AADSTS error codes. */
 
 console.log(`Fetching ${ERRORS_MD}`);
@@ -372,7 +495,7 @@ if (errors.length < 200) {
 
 const lookup = {
   licence: 'CC-BY-4.0, (c) Microsoft. See each source.',
-  generatedAt: data.generatedAt,
+  generatedAt,
   coverage:
     'Applications are the first-party ids Microsoft tabulates in its documentation, not every Microsoft application. Permissions are Microsoft Graph only.',
   sources: {
@@ -396,7 +519,7 @@ writeFileSync(LOOKUP_OUT, stringifyRows(lookup, ['applications', 'permissions', 
  */
 const pack = (ids) => [...new Set(ids)].sort().map((id) => id.replace(/-/g, '')).join('');
 const index = {
-  generatedAt: data.generatedAt,
+  generatedAt,
   application: pack(applications.map((app) => app.id)),
   permission: pack(
     permissions.flatMap((permission) =>
@@ -407,12 +530,7 @@ const index = {
 };
 writeFileSync(INDEX_OUT, `${JSON.stringify(index)}\n`);
 
-const uncorroborated = Object.keys(APPLICATIONS).filter((id) => WHOLE_GUID.test(id) && !apps.has(id.toLowerCase()));
-
 console.log(
   `Wrote ${applications.length} applications, ${permissions.length} Graph permissions, ` +
     `${lookupRoles.length} directory roles and ${errors.length} AADSTS codes to src/data/microsoft/entra-ids.json`
-);
-console.log(
-  `${uncorroborated.length} of the inline application ids are in none of the fetched pages:\n  ${uncorroborated.join('\n  ')}`
 );

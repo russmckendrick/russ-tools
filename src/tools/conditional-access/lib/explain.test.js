@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as explainModule from './explain.js';
 import { explain, who, what, when, demands, humanise, resolve, list, STATES } from './explain.js';
+import wellKnown from '../../../data/microsoft/entra-well-known-ids.json';
 
 const GLOBAL_ADMIN = '62e90394-69f5-4237-9190-012177145e10';
 const GRAPH = '00000003-0000-0000-c000-000000000000';
@@ -106,6 +107,25 @@ describe('what', () => {
     );
     expect(r.include).toEqual(['All cloud apps']);
     expect(r.exclude).toEqual(['Microsoft Graph']);
+  });
+
+  it('reads a policy that targets None as covering no cloud apps', () => {
+    // Against the shipped map, not a fixture: the translation was removed
+    // once on the grounds that Graph's resource reference does not list
+    // `None`, and a policy carrying it then printed the bare word.
+    const targeting = (value) =>
+      what({ conditions: { applications: { includeApplications: [value] } } }, wellKnown).include;
+    expect(targeting('None')).toEqual(['No cloud apps']);
+    // The spelling Microsoft's own Create policy reference uses.
+    expect(targeting('none')).toEqual(['No cloud apps']);
+  });
+
+  it('reads the other reserved words whatever their case', () => {
+    const targeting = (value) =>
+      what({ conditions: { applications: { includeApplications: [value] } } }, wellKnown).include;
+    expect(targeting('All')).toEqual(['All cloud apps']);
+    expect(targeting('all')).toEqual(['All cloud apps']);
+    expect(targeting('office365')).toEqual(['Office 365 (the app suite target)']);
   });
 
   it('surfaces user actions', () => {
