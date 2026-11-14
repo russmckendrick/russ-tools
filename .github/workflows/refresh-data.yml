@@ -4,9 +4,11 @@ name: Refresh data
 # open a pull request with whatever changed. Nothing reaches the site until
 # that pull request is merged.
 #
-# Pull requests opened with the workflow token do not trigger other workflows,
-# so CI would not run on them. This job therefore builds, tests and lints the
-# refreshed tree itself before it opens one, and says so in the body.
+# GitHub does not promise to run other workflows on a pull request opened with
+# the workflow token. CI did run on the first one, which a person started by
+# hand; whether it does on a scheduled run is not established. So this job
+# builds, tests and lints the refreshed tree itself before it opens one, and
+# the result is in the body either way.
 #
 # Needs "Allow GitHub Actions to create and approve pull requests" switched on
 # under Settings > Actions > General.
@@ -98,7 +100,7 @@ jobs:
               echo "**Build, tests or lint failed** on this tree. See [the run]($RUN_URL) before merging."
             fi
             echo
-            echo "CI does not run on pull requests opened by the workflow token, which is why the checks ran in that job instead. Cloudflare Pages still builds a preview."
+            echo "GitHub's own CI may or may not run on a pull request opened by a workflow, so the checks ran inside that job either way. Cloudflare Pages builds a preview regardless."
           } > "$RUNNER_TEMP/body.md"
 
           if [ "$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')" = "0" ]; then
