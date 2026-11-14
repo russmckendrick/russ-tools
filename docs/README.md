@@ -18,7 +18,7 @@ network, cloud and platform work.
 | **Subnet Calculator** | Network | IPv4 and IPv6 subnet details, with a visual split-and-join divide table. | `/subnet-calculator` | [Docs](tools/subnet-calculator/) |
 | **WHOIS Lookup Tool** | Network | Registration and ownership detail for domains and IPs. | `/whois-lookup` | [Docs](tools/whois-lookup/) |
 | **Azure KQL Query Builder** | Azure | Build Log Analytics queries from scenarios with typed filters. | `/azure-kql` | [Docs](tools/azure-kql/) |
-| **Azure RBAC Role Explorer** | Azure | Search 504 built-in Azure roles by name or by the action they grant. | `/azure-rbac` | [Docs](tools/azure-rbac/) |
+| **Azure RBAC Role Explorer** | Azure | Search every built-in Azure role by name or by the action they grant. | `/azure-rbac` | [Docs](tools/azure-rbac/) |
 | **Azure Regions and VM Sizes** | Azure | Look up Azure regions, their pairs and zones, and decode VM size names. | `/azure-regions` | [Docs](tools/azure-regions/) |
 | **Azure Resource Naming Tool** | Azure | Generate and validate names against Microsoft CAF rules. | `/azure-naming` | [Docs](tools/azure-naming/) |
 | **Azure Service Tags** | Azure | Search and compare Microsoft Azure service-tag IP ranges. | `/azure-service-tags` | [Docs](tools/azure-service-tags/) |

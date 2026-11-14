@@ -30,9 +30,9 @@ The **By service plan** tab answers the question Microsoft's own reference page 
 
 ## Where the data comes from
 
-The tool ships Microsoft's published *Product names and service plan identifiers for licensing* reference — 620 SKUs and 796 service plans — normalised into a single JSON file that loads with the page. The date it was generated is shown under the search box.
+The tool ships Microsoft's published *Product names and service plan identifiers for licensing* reference, normalised into a single JSON file that loads with the page. The date it was generated is shown under the search box.
 
-Because the data is bundled, **nothing you type leaves the browser** and the tool works offline. The trade-off is that it is a snapshot: a licence Microsoft announced last week may not be in it yet. Run `pnpm refresh:m365-licenses` to re-pull the source.
+Because the data is bundled, **nothing you type leaves the browser** and the tool works offline. The trade-off is that it is a snapshot, re-pulled from Microsoft's reference weekly: a licence Microsoft announced in the last few days may not be in it yet.
 
 The reference data is © Microsoft and used under CC-BY-4.0.
 

@@ -1,6 +1,6 @@
 # Azure RBAC Role Explorer
 
-Search Azure's 504 built-in RBAC roles by name or by the action they grant, compare two roles, and export a custom role definition — without a subscription, a token, or a `az` login.
+Search Azure's built-in RBAC roles by name or by the action they grant, compare two roles, and export a custom role definition — without a subscription, a token, or a `az` login.
 
 <!-- help:start -->
 
@@ -37,7 +37,7 @@ Treat it as a **ranking, not a verdict**. The catalogue only contains operations
 
 The role definitions are parsed from Microsoft's published built-in roles reference — 19 category pages, each carrying the real ARM definition for every role. The generated date is shown under the search box, and the data ships with the page, so nothing you search for leaves the browser.
 
-Because it is a snapshot, a role added by Microsoft last week may not be present yet. Run `pnpm refresh:azure-rbac` to re-pull. Reference data is © Microsoft and used under CC-BY-4.0.
+It is a snapshot, re-pulled from Microsoft's reference weekly, so a role Microsoft added in the last few days may not be present yet. Reference data is © Microsoft and used under CC-BY-4.0.
 
 ## Troubleshooting
 

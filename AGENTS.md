@@ -204,6 +204,12 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
   home-screen PNGs from `src/shell/SiteMark.astro` and the token layer (Playwright; commits them).
   Run both after changing the mark or the band / accent colours.
 - `pnpm generate:docs` — regenerate the tool tables in `README.md` and `docs/README.md`
+- `pnpm refresh:all` — run every `refresh:*` script (the bundled Microsoft datasets under
+  `src/data/`). `.github/workflows/refresh-data.yml` runs it weekly and opens a pull request
+  with whatever changed; a script that fails leaves its data untouched and the rest carry on.
+  **Never type a count that comes from a refreshed dataset into a manifest, help page or
+  comment** — "504 built-in roles" was wrong within a week of the job existing. Compute it in
+  the tool, where the data is.
 
 > If a bare `pnpm <script>` fails with a `runDepsStatusCheck` / ignored-builds error,
 > run the tool binary directly (`./node_modules/.bin/eslint .`) or `pnpm approve-builds`.

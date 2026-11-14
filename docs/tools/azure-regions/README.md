@@ -65,18 +65,6 @@ Regional availability and prices come from Azure's Resource SKUs and Retail Pric
 
 A handful of rows carry typing mistakes from the source articles (a missing family letter, for example). They are kept as published rather than corrected by hand.
 
-## Data freshness
-
-`pnpm refresh:azure-regions` rewrites both datasets from:
-
-- `https://learn.microsoft.com/en-us/azure/reliability/regions-list` for regions
-- `https://datacenters.microsoft.com/globe/data/geo/regions.json` for region coordinates
-- Natural Earth's 1:110m land outline (`nvkelso/natural-earth-vector`, public domain) for the map
-- the series articles in `MicrosoftDocs/azure-compute-docs` under `articles/virtual-machines/sizes` for sizes
-- `articles/virtual-machines/vm-naming-conventions.md` and `sizes/overview.md` in the same repository for the letter meanings and families
-
-The fetch date of each is shown at the top of the tool. Check it before relying on a figure for a production change.
-
 ## Privacy and saved data
 
 Searches stay in the browser. The tool does not use localStorage and makes no network lookups.
@@ -84,6 +72,13 @@ Searches stay in the browser. The tool does not use localStorage and makes no ne
 <!-- help:end -->
 
 ## Implementation notes
+
+- Data sources, re-pulled by `pnpm refresh:azure-regions` (and weekly by `.github/workflows/refresh-data.yml`):
+  - `https://learn.microsoft.com/en-us/azure/reliability/regions-list` for regions
+  - `https://datacenters.microsoft.com/globe/data/geo/regions.json` for region coordinates
+  - Natural Earth's 1:110m land outline (`nvkelso/natural-earth-vector`, public domain) for the map
+  - the series articles in `MicrosoftDocs/azure-compute-docs` under `articles/virtual-machines/sizes` for sizes
+  - `articles/virtual-machines/vm-naming-conventions.md` and `sizes/overview.md` in the same repository for the letter meanings and families
 
 - `lib/regions.js` and `lib/vmSizes.js` are pure functions over the two JSON files in `src/data/azure/`.
 - `lib/map.js` holds the Equal Earth projection and the zoom and pan arithmetic. The refresh script imports its `project()` to draw the land outline, so the outline and the markers cannot disagree.

@@ -4001,3 +4001,32 @@ over: both branches had independently written 33 for the tool count in the
 registry and e2e tests, so git merged them without complaint and every one of
 those numbers was two short. The paste panel's GUID order is unchanged beside
 the new URL and domain rules.
+
+### 2026-11-14 — A weekly data refresh, and no more typed counts
+
+The owner read the Azure Regions help, which told visitors to run
+`pnpm refresh:azure-regions` and listed repository paths, and asked for that
+section to go and for the data to refresh itself weekly.
+
+`scripts/refresh-all.mjs` (`pnpm refresh:all`) runs every `refresh:*` script
+found in package.json, so a new one needs no registration. A script that
+fails has whatever it wrote under `src/data` put back, and the rest carry on.
+`.github/workflows/refresh-data.yml` runs it on Mondays, regenerates the
+tables and llms files, and if anything changed builds, tests and lints the
+tree and opens (or updates) a pull request on `chore/data-refresh`. It is a
+GitHub Actions schedule and not a Cloudflare Worker because the datasets are
+files in the repository that the static build bundles: a Worker would have to
+commit through the GitHub API to do the same thing, or the tools would have to
+fetch their data at run time, which they deliberately do not.
+
+The help pages for Azure Regions, RBAC, Service Tags and M365 Licences no
+longer mention `pnpm` or repository paths; the regions source list moved to
+that tool's implementation notes. The RBAC manifest said "504 built-in roles"
+in three places; upstream is already at 506, so the count is gone from the
+manifest and the tool reports the real number from the data.
+
+Run locally: all six scripts complete without credentials in under a minute;
+three datasets had changed upstream; build and tests pass on the refreshed
+tree. The failure path was exercised with a script that wrote and then exited
+non-zero. The workflow itself has not run on GitHub.
+
