@@ -8,6 +8,8 @@ import {
   SYMBOLS,
   UPPERCASE,
   buildCharset,
+  enabledClasses,
+  generateFromClasses,
   generatePassword,
   passwordStrength,
 } from './password.js';
@@ -127,12 +129,75 @@ describe('generatePassword', () => {
     expect(first).toHaveLength(8);
   });
 
-  it('KNOWN-BUG: the guaranteed character of a class ignores the exclusions', () => {
-    const password = generatePassword(
-      options({ length: 1, excludeSimilar: true, includeLowercase: false, includeNumbers: false, includeSymbols: false }),
-      () => UPPERCASE.indexOf('O'),
+  it('draws the guaranteed character of a class from what the exclusions leave', () => {
+    const upperOnly = { includeLowercase: false, includeNumbers: false, includeSymbols: false };
+    const password = generatePassword(options({ length: 1, excludeSimilar: true, ...upperOnly }), () =>
+      UPPERCASE.indexOf('O'),
     );
-    expect(password).toBe('O');
+    expect(password).not.toBe('O');
+    expect(SIMILAR_CHARS).not.toContain(password);
+    expect(UPPERCASE).toContain(password);
+  });
+
+  it.each([
+    ['similar characters', { excludeSimilar: true }, SIMILAR_CHARS],
+    ['ambiguous symbols', { excludeAmbiguous: true }, AMBIGUOUS_CHARS],
+    ['both', { excludeSimilar: true, excludeAmbiguous: true }, SIMILAR_CHARS + AMBIGUOUS_CHARS],
+  ])('never emits an excluded character with %s excluded', (name, exclusions, excluded) => {
+    for (const length of [4, 5, 8, 24]) {
+      for (let i = 0; i < 500; i++) {
+        const password = generatePassword(options({ length, ...exclusions }));
+        expect(password).toHaveLength(length);
+        const leaked = [...password].filter((char) => excluded.includes(char));
+        expect(leaked).toEqual([]);
+      }
+    }
+  });
+
+  it('still includes every enabled class when exclusions are on', () => {
+    for (let i = 0; i < 200; i++) {
+      const password = generatePassword(options({ length: 4, excludeSimilar: true, excludeAmbiguous: true }));
+      expect(password).toMatch(/[A-Z]/);
+      expect(password).toMatch(/[a-z]/);
+      expect(password).toMatch(/[0-9]/);
+      expect(password).toMatch(/[^A-Za-z0-9]/);
+    }
+  });
+
+  it('never emits an excluded character with only one class enabled', () => {
+    const classes = ['includeUppercase', 'includeLowercase', 'includeNumbers', 'includeSymbols'];
+    for (const enabled of classes) {
+      const only = Object.fromEntries(classes.map((name) => [name, name === enabled]));
+      for (let i = 0; i < 300; i++) {
+        const password = generatePassword(options({ length: 6, excludeSimilar: true, excludeAmbiguous: true, ...only }));
+        expect([...password].filter((char) => (SIMILAR_CHARS + AMBIGUOUS_CHARS).includes(char))).toEqual([]);
+      }
+    }
+  });
+
+  it('skips the guarantee for a class that filtering has emptied, instead of throwing', () => {
+    const calls = [];
+    const randomInt = (max) => {
+      calls.push(max);
+      return 0;
+    };
+    const password = generateFromClasses(['', 'abc', ''], 4, randomInt);
+    expect(password).toMatch(/^[abc]{4}$/);
+    expect(calls).not.toContain(0);
+
+    for (let i = 0; i < 200; i++) {
+      expect(generateFromClasses(['', 'xyz'], 3)).toMatch(/^[xyz]{3}$/);
+    }
+  });
+
+  it('throws when every class is empty', () => {
+    expect(() => generateFromClasses(['', ''], 8)).toThrow('At least one character type must be selected');
+  });
+
+  it('leaves no class empty with the current character sets, whatever the exclusions', () => {
+    const classes = enabledClasses(options({ excludeSimilar: true, excludeAmbiguous: true }));
+    expect(classes).toHaveLength(4);
+    expect(classes.every((characters) => characters.length > 0)).toBe(true);
   });
 });
 

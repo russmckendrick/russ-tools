@@ -3202,8 +3202,11 @@ proves no word begins another, so "no separator" loses nothing. The licence
 needed one correction to the brief: the list was published under CC BY 3.0
 US, but EFF's copyright page today says CC BY 4.0 International. The notice
 records both; either way it is attribution, which is given. Moving the code
-surfaced a real bug, logged as KNOWN-BUG and not fixed here: the guaranteed
-character of each class ignores the "exclude similar" setting.
+surfaced a real bug: the guaranteed character of each class ignored the
+"exclude similar" and "exclude ambiguous" settings. It was pinned as
+KNOWN-BUG in the feature commit and fixed in the next one on the same branch
+(the guaranteed characters are drawn from the filtered classes, and a class
+that filtering empties has its guarantee skipped).
 
 **JWT: the issuer's published keys.** `lib/issuer.js` does OpenID discovery
 and `lib/signature.js` verifies. The tool's promise is that tokens never
@@ -3230,7 +3233,7 @@ BigInt gotcha turned out to be a live crash, not a caution: any TOML document
 with a whole number failed to convert to JSON or YAML. `toPlainData` fixes
 that for all five outputs.
 
-Verified: `pnpm test` 1439 passing (was 1080), `pnpm lint` 0 errors and the
+Verified: `pnpm test` 1447 passing (was 1080), `pnpm lint` 0 errors and the
 same 11 warnings, `pnpm build`, `PW_PORT=8818 pnpm test:e2e` 90 passing.
 Each tool was driven in a browser at 390px and 1440px in both themes; the
 JWT fetch was exercised against a live issuer (discovery, the cross-host
@@ -3238,4 +3241,4 @@ question, the key set) and against a refusal.
 
 Left for whoever merges the parallel branches: the test and tool counts in
 `AGENTS.md` (other branches add tests and tools too, so they want counting
-once), and the `KNOWN-BUG` above.
+once).

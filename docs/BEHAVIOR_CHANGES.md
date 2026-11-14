@@ -18,19 +18,29 @@ Two rules:
 
 ## Open — captured as KNOWN-BUG, not yet fixed
 
-### password-generator: the guaranteed character ignores the exclusions
-
-Found while moving the generator into `lib/password.js` (2026-11-14) and pinned
-there as `KNOWN-BUG`, not fixed. Each enabled class is guaranteed one character,
-and that character is drawn from the whole class, not from the class with
-**Exclude similar** / **Exclude ambiguous** applied. So a password generated
-with "Exclude similar characters" on can still contain one `l`, `1`, `O` or `0`
-per class (about a 1-in-13 chance for the uppercase slot). The fix is to draw
-the guaranteed characters from the filtered classes.
+*Nothing currently open.*
 
 ---
 
 ## Landed
+
+### Password Generator: the exclusions now hold for every character (2026-11-14)
+
+Each enabled character class is guaranteed one character in a password. That
+character was drawn from the whole class, not from the class with **Exclude
+similar characters** / **Exclude ambiguous symbols** applied, so a password
+generated with an exclusion on could still contain one excluded character per
+class: about a 1-in-13 chance of an `L` or `O` in the uppercase slot, for
+instance. Found while moving the generator into `lib/password.js`, pinned
+there as `KNOWN-BUG`, and fixed in the same branch.
+
+The guaranteed characters are now drawn from the filtered classes
+(`enabledClasses`), and a class that filtering leaves empty has its guarantee
+skipped instead of producing a broken draw. No class can be emptied with the
+current character sets; the guard is for a future set that could. Passwords
+generated with no exclusion on are drawn exactly as before. `password.test.js`
+generates several thousand passwords with each exclusion on and asserts that
+no excluded character appears.
 
 ### Data Converter: CSV and XML, and TOML integers that convert (2026-11-14)
 

@@ -18,20 +18,28 @@ export const DEFAULT_PASSWORD_OPTIONS = {
   excludeAmbiguous: false,
 };
 
-export function buildCharset(options) {
-  let charset = '';
-  if (options.includeUppercase) charset += UPPERCASE;
-  if (options.includeLowercase) charset += LOWERCASE;
-  if (options.includeNumbers) charset += NUMBERS;
-  if (options.includeSymbols) charset += SYMBOLS;
-
+function applyExclusions(characters, options) {
+  let kept = characters;
   if (options.excludeSimilar) {
-    charset = charset.split('').filter((char) => !SIMILAR_CHARS.includes(char)).join('');
+    kept = kept.split('').filter((char) => !SIMILAR_CHARS.includes(char)).join('');
   }
   if (options.excludeAmbiguous) {
-    charset = charset.split('').filter((char) => !AMBIGUOUS_CHARS.includes(char)).join('');
+    kept = kept.split('').filter((char) => !AMBIGUOUS_CHARS.includes(char)).join('');
   }
-  return charset;
+  return kept;
+}
+
+export function enabledClasses(options) {
+  const classes = [];
+  if (options.includeUppercase) classes.push(UPPERCASE);
+  if (options.includeLowercase) classes.push(LOWERCASE);
+  if (options.includeNumbers) classes.push(NUMBERS);
+  if (options.includeSymbols) classes.push(SYMBOLS);
+  return classes.map((characters) => applyExclusions(characters, options));
+}
+
+export function buildCharset(options) {
+  return enabledClasses(options).join('');
 }
 
 export function passwordStrength(options) {
@@ -77,9 +85,8 @@ export function passwordStrength(options) {
   };
 }
 
-export function generatePassword(options, randomInt = secureRandomInt) {
-  const { length, includeUppercase, includeLowercase, includeNumbers, includeSymbols } = options;
-  const charset = buildCharset(options);
+export function generateFromClasses(classes, length, randomInt = secureRandomInt) {
+  const charset = classes.join('');
 
   if (charset.length === 0) {
     throw new Error('At least one character type must be selected');
@@ -88,10 +95,9 @@ export function generatePassword(options, randomInt = secureRandomInt) {
   let password = '';
 
   const requiredChars = [];
-  if (includeUppercase) requiredChars.push(UPPERCASE[randomInt(UPPERCASE.length)]);
-  if (includeLowercase) requiredChars.push(LOWERCASE[randomInt(LOWERCASE.length)]);
-  if (includeNumbers) requiredChars.push(NUMBERS[randomInt(NUMBERS.length)]);
-  if (includeSymbols) requiredChars.push(SYMBOLS[randomInt(SYMBOLS.length)]);
+  for (const characters of classes) {
+    if (characters.length > 0) requiredChars.push(characters[randomInt(characters.length)]);
+  }
 
   for (let i = 0; i < Math.min(requiredChars.length, length); i++) {
     password += requiredChars[i];
@@ -102,4 +108,8 @@ export function generatePassword(options, randomInt = secureRandomInt) {
   }
 
   return secureShuffle(password.split(''), randomInt).join('');
+}
+
+export function generatePassword(options, randomInt = secureRandomInt) {
+  return generateFromClasses(enabledClasses(options), options.length, randomInt);
 }
