@@ -85,7 +85,7 @@ test.describe('home and shell pages', () => {
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(24);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(25);
   });
 
   test('the catalogue rows sit in two flush columns', async ({ page }) => {
@@ -108,7 +108,7 @@ test.describe('home and shell pages', () => {
       };
     });
 
-    expect(total).toBe(24);
+    expect(total).toBe(25);
     expect(lefts, `row left edges: ${lefts}`).toHaveLength(2);
     expect(widths, `row widths: ${widths}`).toHaveLength(1);
   });
@@ -132,17 +132,17 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(24);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(25);
   });
 
   test('a shared category link arrives filtered', async ({ page }) => {
     await page.goto('/#security');
 
-    await expect(page.getByRole('radio', { name: 'Security 4' })).toHaveAttribute(
+    await expect(page.getByRole('radio', { name: 'Security 5' })).toHaveAttribute(
       'aria-checked',
       'true'
     );
-    await expect(page.locator('.rt-card:visible')).toHaveCount(4);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(5);
     // The anchor rides on the first row of the group, so the breadcrumb link
     // every tool page carries still has something to scroll to.
     await expect(page.locator('#security')).toHaveClass(/rt-card/);

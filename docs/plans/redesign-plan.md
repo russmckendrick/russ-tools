@@ -3169,3 +3169,81 @@ Noticed and not fixed: the Buzzword Ipsum tool's API panel shows
 `buzzwords.russmckendrick.com`, which does not connect; the worker's route is
 `buzzwords.russ.tools`.
 
+
+### 2026-11-14 — Certificate & CSR Decoder (24 → 25)
+
+The gap: `ssl-checker` only reads a certificate off a live public host, through
+the API. Nothing read one you already hold. `/cert-decoder` does, entirely in
+the browser: paste or drop PEM (or bare base64, or a DER file) and it decodes
+certificates, a chain, or a PKCS#10 request.
+
+**The parser.** `@peculiar/asn1-schema` + `asn1-x509` + `asn1-csr`, with
+`asn1js` as their peer. Measured by bundling each candidate with esbuild:
+
+| Candidate | min+gzip |
+|---|---|
+| `asn1js` alone (generic tree, everything else by hand) | 17 kB |
+| **`@peculiar/asn1-schema` + x509 + csr** | **26 kB** |
+| `@lapo/asn1js` (ships its whole OID database) | 35 kB |
+| `@peculiar/x509` (adds tsyringe and reflect-metadata) | 48 kB |
+| `pkijs` | 86 kB |
+
+The schema set is the smallest thing that gives typed names, times, general
+names and extensions, and it is maintained (3.0.0 on 2026-10-26). The built
+island chunk is 135 kB, 37.7 kB gzipped, parser and sample included. RSA
+modulus length and the EC curve are read with `asn1js` directly instead of
+adding `asn1-rsa` and `asn1-ecc`. The OID tables (`lib/names.js`) are ours and
+deliberately short: an unknown OID is shown as the OID.
+
+**Shape.** `lib/pem.js` is dependency-free because the index imports it;
+`lib/x509.js` decodes; `lib/chain.js` orders and judges; `lib/decode.js` is the
+one entry point the island and the WebMCP tool (`decode_certificate`) share.
+The chain is ordered by following issuer names to subjects, so a bundle pasted
+root first still reads leaf to root, and a link is broken when the names do
+not match **or** when both key identifiers are present and disagree (the
+renewed or cross-signed CA with the same name, which name matching alone
+passes). Expiry, not-yet-valid, a 30-day warning, a bundle not sent leaf
+first, MD5/SHA-1 signatures and RSA under 2048 bits are findings; a missing
+root is a note, not a fault. **Signatures are not verified** and the page says
+so in the diagram caption, the success finding and the help.
+
+**Fixtures.** `src/tools/cert-decoder/fixtures/` holds a three-certificate
+chain (RSA root, P-384 intermediate, P-256 leaf with every SAN form), an
+unrelated Ed25519 root and an RSA request, made by `generate.sh` beside them
+with the keys thrown away. Every expectation in `x509.test.js` was read off
+`openssl x509 -text`, `-serial` and `-fingerprint`. The chain is also the
+page's **Load sample**, so the leaf runs to 2036. The decoder was also run
+over the live chains of github.com and wikipedia.org (41 SANs) and agreed
+with openssl on subject, issuer, serial, dates and SHA-256.
+
+**The paste panel.** A PEM block on the index dispatches here, and it is
+tested *before* the 2000-character limit because a certificate is the one
+thing pasted there that is legitimately longer. The single-line field strips
+or spaces the newlines, so `splitPem` reads armour with any whitespace or
+none. It travels as `/cert-decoder#pem=c.<base64url>~c.<…>~r.<…>` — in the
+fragment, so the "nothing is uploaded" claim survives the hand-off — and
+`toFragment` cannot carry a private key. **That fragment format is now a link
+people can share, so treat it as frozen.**
+
+**Private keys.** A `PRIVATE KEY` block is recognised, its body dropped at
+once, never decoded, and reported as a warning.
+
+**Phone.** The detail list is ruled rows: label beside value from `sm` up,
+label above value below it. Every token that must not break is its own
+`whitespace-nowrap` span — hex in eight-byte groups with a `<wbr>` between,
+so a fingerprint wraps between bytes and nowhere else — and a value cell
+scrolls inside itself when one token is wider than the screen (a 67-character
+CA-issuers URL). Checked with Playwright at 390 and 1440 in both themes with
+the fixture chain, a broken chain, a request and github.com's real chain:
+`scrollWidth` equals the viewport everywhere, and a walk of every text node
+found no word laid out on two lines.
+
+**Counts that moved because a tool was added:** `registry.test.js` (25 tools,
+45 frozen routes), `e2e/deeplinks.spec.js` (25 cards, "Security 5"),
+AGENTS.md, PRODUCT.md and the workers README. A paramless tool adds no line
+to `_redirects`; `/cert-decoder` and `/cert-decoder/help` are static files.
+
+Noticed and not fixed: the paste panel offers a pasted private key to the
+Base64 encoder like any other text, which puts it in a URL path; and the
+panel's placeholder was already wider than the field at 390px before "PEM"
+was added to it.
