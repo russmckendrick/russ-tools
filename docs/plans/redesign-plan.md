@@ -4085,3 +4085,10 @@ three datasets had changed upstream; build and tests pass on the refreshed
 tree. The failure path was exercised with a script that wrote and then exited
 non-zero. The workflow itself has not run on GitHub.
 
+*Later the same day.* The workflow was merged and run by hand. Every step
+passed and it opened #50 with the three changed datasets, which was merged.
+One claim above and in the workflow was wrong: CI **did** run on that pull
+request, through the ordinary `pull_request` event, although it was opened
+with the workflow token. That run was started by a person; a scheduled one has
+not happened yet, so whether CI runs then is still unknown. The in-job checks
+stay as the guarantee, and the wording now says what was observed.
