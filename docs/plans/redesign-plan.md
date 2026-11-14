@@ -3524,3 +3524,36 @@ deep-link tests. The frozen list is 55 routes.
 Not done: per-region VM availability and prices (authenticated), sovereign
 regions, GPU counts in the size table, permissions of APIs other than Graph,
 and a complete first-party application list (not published).
+
+**A map of the regions, added the same day.** The Regions view now opens on an
+interactive map above the table: a marker per region (filled where there are
+availability zones), a click selects the region, and its pair gets a dashed
+ring and a line. Filtering the list zooms the map to what is left; three
+buttons and a drag do the rest.
+
+It is drawn without a mapping library and without map tiles. A tile server
+would see every visitor's address, which the site promises not to do, and a
+library is most of a megabyte to place fifty dots. Instead `lib/map.js` holds
+an Equal Earth projection and the `viewBox` arithmetic; the refresh script
+imports the same `project()` to turn Natural Earth's 1:110m land outline
+(public domain) into one SVG path, `world-land.json`, 50 kB (19.8 kB gzip) and
+loaded after the island. Markers and coastline therefore cannot disagree.
+
+Coordinates are Microsoft's, from the data file behind its datacentre globe
+(`datacenters.microsoft.com/globe/data/geo/regions.json`), matched by
+programmatic name and then by display name. It places 48 of the 59 regions.
+The other eleven, mostly restricted pairs, are listed under the map by name
+and open from there; none was positioned by hand.
+
+On a phone a world map 350px wide is 150px tall and its markers cannot be
+pressed, so there the frame is a fixed 256px and `minZoom(aspect)` raises the
+floor: the map fills the frame top to bottom, opens on Europe and Africa, and
+pans sideways for the rest. At that floor the drawing only needs horizontal
+drags, so `touch-action` is `pan-y` and the page still scrolls under a thumb;
+it becomes `none` once zoomed in. The zoom buttons sit above the map, not on
+it, after covering Japan in the first attempt. Markers are not tab stops: the
+table under the map is the keyboard route to every region, and 48 extra stops
+before it would be a worse one.
+
+`pnpm test` 1844, `pnpm test:e2e` 107, lint unchanged. Checked at 390px and
+1440px in both themes, including a real drag.

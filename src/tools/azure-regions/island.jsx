@@ -40,6 +40,8 @@ const REGION_TOOL = {
           availabilityZones: entry.zones,
           pairedRegion: pair.kind === 'listed' ? pair.region.name : pair.kind === 'unlisted' ? pair.displayName : null,
           restrictedAccess: entry.restricted,
+          coordinates:
+            entry.latitude == null ? null : { latitude: entry.latitude, longitude: entry.longitude },
         };
       };
       if (region) {

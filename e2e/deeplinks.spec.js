@@ -546,6 +546,24 @@ test.describe('param deep links — rewrite + island application', () => {
     await expect(page.getByText('UK West (ukwest)')).toBeVisible();
   });
 
+  test('the region map frames what the list is filtered to and opens a region', async ({ page }) => {
+    await page.goto('/azure-regions');
+    const map = page.getByRole('group', { name: 'Map of Azure regions' });
+    await expect(map).toBeVisible();
+    const whole = await map.getAttribute('viewBox');
+
+    // Narrowing the list zooms the map, which is also what separates two
+    // markers that sit on top of each other at world scale.
+    await page.locator('#region-query').fill('japan');
+    await expect(map).not.toHaveAttribute('viewBox', whole);
+
+    await map.getByRole('button', { name: /^Japan West \(japanwest\)/ }).click();
+    await expect(page.getByRole('heading', { name: 'Japan West', exact: true })).toBeVisible();
+    await expect(page.getByText('Japan East (japaneast)')).toBeVisible();
+    // The pair is drawn, not just named.
+    await expect(map.locator('line')).toHaveCount(1);
+  });
+
   test('/azure-regions/:query opens a VM size on the sizes tab, decoded', async ({ page }) => {
     // The same param carries a region or a size; the shape decides the tab.
     await expectRewrite(page, '/azure-regions/Standard_D4s_v5', 'Azure Regions and VM Sizes');

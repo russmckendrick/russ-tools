@@ -21,6 +21,17 @@ A link such as `/azure-regions/uksouth` or `/azure-regions/Standard_D4s_v5` open
 - A pair can be named without being in the list. Sweden South is Sweden Central's pair, but it is not a region you can deploy to, so it has no row of its own.
 - **Restricted access** marks regions Microsoft reserves for specific scenarios, such as disaster recovery within a geography.
 
+## The map
+
+The map draws every region Microsoft publishes a position for. A filled marker has availability zones; a hollow one does not.
+
+- Select a marker to open that region. Its paired region gets a dashed ring and a line between the two.
+- Filtering the list zooms the map to what is left, so choosing an area or typing `germany` frames it.
+- Drag to move the map and use the buttons above it to zoom or reset. On a phone the map is taller than the world is wide, so it opens on Europe and Africa and you drag sideways for the rest.
+- Regions with no published position are listed under the map by name and can be opened from there. They are mostly the restricted pairs, such as Norway West and UAE Central.
+
+Marker positions are Microsoft's own, from the data behind its datacentre globe. They mark the metropolitan area a region is named for, not a building. The map is drawn in the browser from a public-domain outline (Natural Earth), so no map tiles are requested and no third party sees your visit.
+
 ## VM sizes
 
 - Search by size or series name. The `Standard_` prefix is optional.
@@ -40,6 +51,7 @@ Selecting a size, or typing a full name, decodes it using Microsoft's naming con
 | Covered | Not covered |
 | --- | --- |
 | Every region in Microsoft's public-cloud regions list | Sovereign clouds (US Government, China) |
+| A map position for the regions Microsoft's globe places | A position for the regions it does not place |
 | Sizes tabulated in Microsoft's VM series articles | Which regions or zones offer a size |
 | Series-level feature support | Prices, quotas and capacity restrictions |
 
@@ -52,6 +64,8 @@ A handful of rows carry typing mistakes from the source articles (a missing fami
 `pnpm refresh:azure-regions` rewrites both datasets from:
 
 - `https://learn.microsoft.com/en-us/azure/reliability/regions-list` for regions
+- `https://datacenters.microsoft.com/globe/data/geo/regions.json` for region coordinates
+- Natural Earth's 1:110m land outline (`nvkelso/natural-earth-vector`, public domain) for the map
 - the series articles in `MicrosoftDocs/azure-compute-docs` under `articles/virtual-machines/sizes` for sizes
 - `articles/virtual-machines/vm-naming-conventions.md` and `sizes/overview.md` in the same repository for the letter meanings and families
 
@@ -66,6 +80,8 @@ Searches stay in the browser. The tool does not use localStorage and makes no ne
 ## Implementation notes
 
 - `lib/regions.js` and `lib/vmSizes.js` are pure functions over the two JSON files in `src/data/azure/`.
+- `lib/map.js` holds the Equal Earth projection and the zoom and pan arithmetic. The refresh script imports its `project()` to draw the land outline, so the outline and the markers cannot disagree.
+- `world-land.json` (about 50 kB) is one pre-projected SVG path, loaded after the island. There is no mapping library.
 - `regions.json` loads with the island; `vm-sizes.json` (about 250 kB) loads when the VM sizes tab is first opened or a deep link names a size.
 - Region short codes come from `src/utils/azure/region-parser.js`, the module the Azure Naming tool already uses, so there is one list.
 - WebMCP tools: `lookup_azure_region` and `lookup_azure_vm_size`.
