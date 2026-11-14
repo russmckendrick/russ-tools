@@ -110,8 +110,11 @@ describe('suggest', () => {
     ]);
   });
 
-  it('reduces a pasted URL to its host', () => {
-    for (const s of suggest('https://example.com/pricing?ref=1')) {
+  it('reduces a pasted URL to its host for every tool that reads a host', () => {
+    const [url, ...hosts] = suggest('https://example.com/pricing?ref=1');
+    expect(url.toolId).toBe('url');
+    expect(hosts).toHaveLength(7);
+    for (const s of hosts) {
       expect(s.href).toContain('example.com');
       expect(s.href).not.toContain('pricing');
     }
@@ -257,6 +260,39 @@ describe('suggest', () => {
 
     it('falls back to base64 for a scheme with no host', () => {
       expect(ids('https://')).toEqual(['base64']);
+    });
+
+    it('offers the URL parser first when the URL has a path or a query', () => {
+      const domains = ids('example.com');
+      expect(ids('https://example.com/pricing')).toEqual(['url', ...domains]);
+      expect(ids('http://example.com?ref=1')).toEqual(['url', ...domains]);
+      expect(ids('HTTPS://example.com/?ref=1')).toEqual(['url', ...domains]);
+      expect(ids('https://10.0.0.1:8443/admin')).toEqual([
+        'url',
+        'subnet-calculator',
+        'whois-lookup',
+        'bgp-explorer',
+        'azure-service-tags',
+      ]);
+      expect(ids('https://localhost:3000/health')).toEqual(['url', 'base64']);
+    });
+
+    it('carries the whole URL in the fragment, which is never sent to the server', () => {
+      const pasted = 'https://example.com/cb?code=abc&state=x y#frag';
+      const chip = first(pasted);
+      expect(chip).toMatchObject({ toolId: 'url', label: 'URL Parser', path: '/url', why: 'URL' });
+      expect(chip.href).toBe(`/url#url=${encodeURIComponent(pasted)}`);
+      expect(chip.href.split('#')[0]).toBe('/url');
+    });
+
+    it('keeps the current dispatch for a bare host, with or without a scheme', () => {
+      const domains = ids('example.com');
+      expect(domains).not.toContain('url');
+      expect(ids('https://example.com')).toEqual(domains);
+      expect(ids('https://example.com/')).toEqual(domains);
+      expect(ids('https://example.com/#section')).toEqual(domains);
+      expect(ids('example.com/pricing')).toEqual(domains);
+      expect(ids('ftp://example.com/file.txt')).toEqual(domains);
     });
   });
 

@@ -35,11 +35,14 @@ network, cloud and platform work.
 | **Data Converter** | Developer | Convert between JSON, YAML, TOML, CSV and XML, with validation. | `/data-converter` | [Docs](tools/data-converter/) |
 | **Hash & HMAC Generator** | Developer | MD5 and SHA digests of text or a file, with HMAC and a compare check. | `/hash` | [Docs](tools/hash/) |
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](tools/markdown-table-tool/) |
+| **Regex Tester** | Developer | Test a regular expression: live highlights, groups, replace and a timeout. | `/regex` | [Docs](tools/regex/) |
+| **Text Diff** | Developer | Compare two texts line by line, with changed words marked. | `/diff` | [Docs](tools/diff/) |
 | **Timestamp Converter** | Developer | Convert Unix epoch seconds, milliseconds and ISO 8601 in any time zone. | `/timestamp` | [Docs](tools/timestamp/) |
+| **URL Parser & Encoder** | Developer | Split a URL into editable parts, and percent-encode or decode text. | `/url` | [Docs](tools/url/) |
 | **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](tools/buzzword-ipsum/) |
 
-28 tools.
+31 tools.
 <!-- TOOLS:END -->
 
 Tools without a linked document work the same way as the rest; nobody has written one up

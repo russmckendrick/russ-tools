@@ -136,7 +136,7 @@ const tool = (toolId, label, path, href, why) => ({ toolId, label, path, href, w
  * @param {string} input
  * @returns {Array<{ toolId: string, label: string, path: string, href: string, why: string }>}
  */
-export function suggest(input) {
+function route(input) {
   if (typeof input !== 'string') return [];
   const raw = input.trim();
   if (!raw) return [];
@@ -289,4 +289,39 @@ export function suggest(input) {
   // The raw paste, not the URL-reduced subject: this is the branch for things
   // that were never a name.
   return [tool('base64', 'Base64 Encoder', '/base64', `/base64/${encodeURIComponent(raw)}`, 'text')];
+}
+
+/**
+ * A whole web address, as opposed to a host that happens to have a scheme in
+ * front of it: `http://` or `https://`, a host, and then a path or a query.
+ * `https://example.com/` has neither, so it stays a hostname.
+ */
+const DETAILED_URL = /^https?:\/\/[^/?#\s]+(?:\/[^?#\s]|\/?\?)/i;
+
+function isDetailedUrl(value) {
+  if (!DETAILED_URL.test(value)) return false;
+  try {
+    return Boolean(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Which tools will take this? `route` answers for the value's shape; a URL
+ * with a path or query is additionally a thing in its own right, so the URL
+ * parser is offered ahead of whatever its host dispatches to.
+ *
+ * The link carries the URL in the fragment, as the certificate link does: a
+ * pasted address can hold a token, and a fragment is never sent to the server.
+ *
+ * @param {string} input
+ * @returns {Array<{ toolId: string, label: string, path: string, href: string, why: string }>}
+ */
+export function suggest(input) {
+  const matches = route(input);
+  if (matches.length === 0) return matches;
+  const raw = input.trim();
+  if (!isDetailedUrl(raw)) return matches;
+  return [tool('url', 'URL Parser', '/url', `/url#url=${encodeURIComponent(raw)}`, 'URL'), ...matches];
 }
