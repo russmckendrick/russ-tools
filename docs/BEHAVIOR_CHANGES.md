@@ -70,6 +70,142 @@ unchanged and Enter still opens DNS Lookup. A URL whose host is an IP address is
 `src/lib/paste.test.js` and the paste-panel and 404 tests in `e2e/deeplinks.spec.js` assert
 the new count.
 
+### The index stores what you pin and what you open (2026-11-14)
+
+The shell writes to `localStorage` for the first time since the theme preference. Two keys,
+both in this browser only and never sent anywhere:
+
+- **`rt:shell:recent`** — a JSON array of tool ids, most recent first, no repeats, capped at
+  twelve. Opening any tool page appends to it, including through a deep link such as
+  `/jwt/:token`. A tool's `/help` page, the index, `/delete` and `/404` do not count.
+- **`rt:shell:pinned`** — a JSON array of tool ids in the order they were pinned. Written only
+  by the pin control on an index row. Unpinning the last one removes the key.
+
+`shell` is not a tool id and cannot become one (`src/shell/yourTools.test.js` asserts it), so
+the two keys never collide with a manifest's `storageKeys`.
+
+What a visitor sees:
+
+- With either list non-empty the index shows a strip between the band and the filter row:
+  pinned tools, then up to six recent ones that are not already pinned. With both empty, or
+  holding only ids the registry no longer has, the page is exactly as it was.
+- Ids are stored, not paths. An id with no manifest is skipped when the strip is drawn and
+  is left in storage, so a retired tool cannot produce a dead link.
+- "Clear" on the strip removes `rt:shell:recent` and leaves the pins.
+- `/delete` lists both keys as one row, "Pinned and recent tools", with its own clear
+  button. **"Clear all tool data" now removes them too**, where before it touched nothing
+  the shell owned. The theme preference is still left alone. The summary line reads
+  "across 2 tools and the index" when that row is present.
+
+There is no opt-out other than clearing: recording a visit is unconditional. Where
+`localStorage` is unavailable nothing is recorded, the strip never appears and the pin
+controls stay hidden.
+
+Every index row gains one tab stop (its pin), so the catalogue is 56 stops by keyboard
+where it was 28.
+
+### The Azure KQL Query Builder is rebuilt (2026-11-14)
+
+| | |
+|---|---|
+| **Where** | `src/tools/azure-kql/` (everything), `src/data/microsoft/azure-monitor-tables.json` |
+| **Pinned by** | `src/tools/azure-kql/lib/*.test.js`, `e2e/deeplinks.spec.js` |
+
+The tool was replaced, not ported, so nearly everything a user sees changed. What
+follows is every difference that a link, a saved entry or a habit could notice.
+
+**Still true.** `/azure-kql`, `/azure-kql/:service` and `/azure-kql/:service/:template`
+resolve, and the four ids the old tool had (`azure-firewall/basic`,
+`azure-firewall/application`, `azure-virtual-desktop/basic`,
+`azure-application-gateway/basic`) open the same table they did. A share link made by
+the old tool still restores its service, template, time range, limit and filters; one
+captured from the old tool before the rebuild is pinned in
+`lib/fixtures/captured-2026-11-14.json` and replayed by a unit test and an e2e test.
+The band button is still called **Share Configuration**.
+
+**The query text is different for the same input.**
+
+- There is no Generate button. The query is rebuilt on every change.
+- `TimeGenerated > ago(24h)` where it was `>=`; `| top N by TimeGenerated desc` where it
+  was `| order by TimeGenerated desc` then `| limit N`.
+- A new session starts at 100 rows, not 1,000. A link or saved entry keeps its own limit.
+- Values are escaped. `bob" or 1==1 //` used to end the string literal; it is now one
+  literal.
+- A value that is not valid for its column no longer blocks the query. That filter is
+  left out, with the reason shown under it, and the rest is built.
+- Columns documented as taking one of a set of values compare with `=~` and `in~`.
+- `azure-virtual-desktop/basic` and `azure-application-gateway/basic` now `project` a
+  set of columns; both used to return every column.
+
+**Two old filters were wrong and are corrected on the way in.**
+
+- The AVD template filtered on `ClientIPAddress`. `WVDConnections` has no such column;
+  the reference has `ClientSideIPAddress`. Old links and saved entries are mapped to it.
+- The AVD "State" list offered `Failed`, which is not a connection state. An old entry
+  carrying it opens with that filter flagged and left out.
+
+**Application Gateway.** The service now opens on `AGWAccessLogs`. The old
+`AzureDiagnostics` query is still there as **Access log (AzureDiagnostics)**, id `basic`.
+With the old tool that template could not generate at all (its own default failed its own
+validation), so no saved query for it can exist; a share link for it restores.
+
+**Open in Portal is gone.** It built a URL in a format Microsoft does not document.
+Every Logs link the portal itself produces needs a workspace resource ID, which this
+tool does not have.
+
+**Favourites, history and templates became two lists.**
+
+- Favourites and custom templates are **Saved**; history is **Recent**.
+- The template editor is removed. A custom template is converted once into a saved KQL
+  query holding what the old generator would have written for it (table, the last 24
+  hours, its aggregation, order, limit and projection). Its custom fields are not
+  carried: they were free-text column names with no schema behind them.
+- A favourite keeps its name, description and tags. A favourite still called
+  `azure-firewall - basic` (the old default) is shown as `Azure Firewall: Network rule
+  log`. Names can be changed; descriptions and tags are shown but can no longer be
+  edited. The old edit dialog deleted the favourite it was editing.
+- Recent records a query when it is copied or downloaded, since nothing is "generated"
+  any more. It still holds 50.
+- Deleting a saved query and clearing Recent can be undone from the notice.
+
+**Storage.** Everything lives in one new slot, `rt:azure-kql:library`. On first load it
+is filled from `rt:azure-kql:store`, `rt:azure-kql:custom-templates` and the older
+`azure-kql-custom-templates`, none of which is written to or removed. The read happens
+once: something saved afterwards by a cached copy of the old tool does not come across.
+The manifest now declares all three namespaced slots, so the Saved data page clears
+`custom-templates` too, which it could not before.
+
+**Share links.** New links use the site codec (`src/core/sharelink.js`, untouched) with a
+`v: 2` payload, and are available in Write KQL as well, carrying the text. Old links
+were plain `btoa` JSON; they are read first as that, and a `+` that a query string
+turned into a space is put back.
+
+**Deep links.** A scenario id the service does not have opens the service's first
+scenario; a service id that does not exist opens the empty page. A legacy custom
+template id in the scenario position opens the saved query it became.
+
+**It opens on a query, and remembers the last one.** A first visit to `/azure-kql` shows
+failed Entra ID sign-ins rather than an empty page, and later visits reopen whatever was
+last being built (a new `rt:azure-kql:last` slot, declared in the manifest). A share link
+or a deep link still wins. A service id that does not exist now opens that default rather
+than nothing.
+
+**One searchable scenario field replaces the service and template selects**, covering 34
+services and 181 scenarios (the old tool had 3 and 4). `/` opens it.
+
+**A query can be reshaped.** Count by up to four columns, or over time, replaces the
+scenario's own output; a filter can be switched off without being removed. Both travel in
+share links and saved queries as optional keys (`group`, and `off` on a filter), so a link
+without them encodes and restores exactly as before.
+
+**Copy says so on the button** instead of raising a notice.
+
+**Also.** Download is named `<service>-<scenario>.kql` with no timestamp. The scenario
+names changed (**Network Rule Query** is **Network rule log**, **Application Rule Query**
+is **Application rule log**), and `e2e/deeplinks.spec.js` was changed to match. A
+`build_kql_query` WebMCP tool is registered. `zustand` and `src/utils/prism-kql.js` had
+no other user and are removed.
+
 ### The paste panel reads timestamps, and a GUID gets a third answer (2026-11-14)
 
 Two inputs to the index's paste panel now dispatch differently, both because of tools that
