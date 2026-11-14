@@ -3379,3 +3379,70 @@ question, the key set) and against a refusal.
 Left for whoever merges the parallel branches: the test and tool counts in
 `AGENTS.md` (other branches add tests and tools too, so they want counting
 once).
+
+### 2026-11-14 — Three developer utilities: Hash & HMAC, UUID / GUID, Timestamp
+
+A gap analysis found the Developer group held four tools and none of the three
+utilities engineers reach for most. All three are added as ordinary manifest
+folders (`hash`, `uuid`, `timestamp`), which takes the registry from 24 to 27
+tools and the frozen route list from 44 to 50 (`/hash/:input`, `/uuid/:value`,
+`/timestamp/:value` and their bare paths). No runtime dependency was added.
+
+**Hash & HMAC (`/hash`).** SHA-1/256/384/512 and HMAC go through WebCrypto. MD5
+is a small incremental implementation in `lib/md5.js`, tested against the RFC
+1321 suite and against `node:crypto` at every length around the block and
+padding boundaries; HMAC-MD5 is built on it. Results update as you type. A file
+is read in 2 MB slices so the page stays responsive and MD5 is fed as it goes,
+but `crypto.subtle.digest` is one-shot, so the whole file still has to be held
+in memory for the SHA family. That is why there is a 512 MB limit, and the help
+page says so instead of implying streaming. The compare field checks a pasted
+digest against all five results in both encodings and, when nothing matches,
+names the algorithm the value is the right length for.
+
+**UUID / GUID (`/uuid`).** v4 from `crypto.randomUUID()`, v7 from a generator
+that is strictly ascending inside one millisecond (a 12-bit sequence in
+`rand_a`, borrowing the next millisecond when it is spent). The page opens with
+one UUID already made. The decoder reads version and variant, the timestamp of
+v1, v6 and v7, and the clock sequence and node of v1 and v6; its cases are the
+examples in RFC 9562. `/uuid/:value` opens the decoder.
+
+**Timestamp (`/timestamp`).** Seconds or milliseconds are chosen by digit count
+and the choice is always stated under the field, with a unit override. Zone
+arithmetic is `Intl.DateTimeFormat` only; `date-fns` (already a dependency)
+parses ISO 8601 and words the relative time. A value with no offset is read in
+the chosen zone, not the device's, so the picker and the note agree. With the
+field empty the result follows the clock.
+
+**Shared surface.** Two components were added to `src/components/ui/` because
+all three tools needed them: `copy-button.jsx` (confirms in place with a tick;
+only a failure toasts, so a page of ten copy buttons does not stack ten toasts)
+and `value-list.jsx` (a ruled description list of named, copyable values).
+
+**Paste panel.** A bare GUID gains a third chip (UUID Decoder, after Azure RBAC
+and M365 Licences), and a bare 10- or 13-digit number is a timestamp. Ten
+digits is also a legal 32-bit AS number, so BGP Explorer stays behind the
+converter for those. Logged in `BEHAVIOR_CHANGES.md`.
+
+**Found by looking, not by lint.** At 390px a braced UUID (38 characters at
+13px mono) was 12px wider than its row and every row grew its own scrollbar;
+the list's type now scales with its container between the `data-sm` and
+`data-md` sizes. `ValueRow` first put the copy button beside the value, which
+wrapped a plain UUID at its last hyphen on a phone; the button now sits on the
+label line there, so the value has the full measure. The decoder also opened
+with a `StatStrip` that restated the rows under it and stacked three tall cells
+on a phone; it was removed.
+
+Checked at 390px and 1440px in both themes. `pnpm test` 1247, `pnpm lint` 0
+errors and 11 warnings, `pnpm build` clean, `pnpm test:e2e` 98 including the
+help matrix and five new deep-link tests.
+
+Not done: hashing files over 512 MB (would need pure-JS SHA to stream), a hex
+or Base64 HMAC key, and UUID v1/v3/v5 generation.
+
+**After taking `main` in.** This branch landed last of the day's wave, behind
+the Subnet Calculator planner, the Certificate & CSR Decoder and the four gaps
+filled in existing tools. The counts above were this branch alone; with
+everything together the registry holds 28 tools and the frozen list 51 routes,
+`pnpm test` is 1732 and `pnpm test:e2e` is 99. The overlaps were all additive:
+the paste panel keeps the PEM rule and gains the GUID third chip and the
+timestamp rule, and the placeholder now names both PEM and timestamp.

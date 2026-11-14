@@ -82,6 +82,15 @@ export const TOOL_ICONS = {
   // base64
   binary:
     '<path d="M6 4v6M18 4v6M14 14v6M18 14v6"/><path d="M10 4h4v6h-4z"/><path d="M6 14h4v6H6z"/>',
+  // hash: the sign itself
+  hash:
+    '<path d="M9.5 4L7.5 20M16.5 4l-2 16M4.5 9h15.5M4 15h15.5"/>',
+  // uuid: a die, because a version 4 is a roll
+  dices:
+    '<path d="M4 4h16v16H4z"/><path d="M8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01"/>',
+  // timestamp: an hourglass, so it is not a second clock beside cron's
+  hourglass:
+    '<path d="M6 3h12M6 21h12"/><path d="M7.5 3v3.5l4.5 5.5 4.5-5.5V3"/><path d="M7.5 21v-3.5l4.5-5.5 4.5 5.5V21"/>',
   // cron-builder
   'calendar-clock':
     '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',

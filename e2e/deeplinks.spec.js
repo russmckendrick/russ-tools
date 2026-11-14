@@ -85,7 +85,7 @@ test.describe('home and shell pages', () => {
     // Back clears the filter instead of leaving the site.
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(25);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
   });
 
   test('the catalogue rows sit in two flush columns', async ({ page }) => {
@@ -108,7 +108,7 @@ test.describe('home and shell pages', () => {
       };
     });
 
-    expect(total).toBe(25);
+    expect(total).toBe(28);
     expect(lefts, `row left edges: ${lefts}`).toHaveLength(2);
     expect(widths, `row widths: ${widths}`).toHaveLength(1);
   });
@@ -132,7 +132,7 @@ test.describe('home and shell pages', () => {
     await expect(page.locator('#rt-status')).toHaveText('No tool matches \u201Czzzz\u201D');
 
     await page.getByRole('button', { name: 'Clear the filter' }).click();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(25);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
   });
 
   test('a shared category link arrives filtered', async ({ page }) => {
@@ -167,9 +167,11 @@ test.describe('home and shell pages', () => {
     await expect(chips.first()).toHaveAttribute('href', '/subnet-calculator/10.0.0.0/22');
 
     // A GUID names either an Azure role definition or a Microsoft 365 SKU,
-    // and nothing in the string says which — so the panel says both.
+    // and nothing in the string says which — so the panel says both. The
+    // UUID decoder sits third: it reads any GUID, but says what kind of
+    // identifier it is rather than what it identifies.
     await input.fill('b24988ac-6180-42a0-ab88-20f7382dd24c');
-    await expect(chips).toHaveCount(2);
+    await expect(chips).toHaveCount(3);
     await expect(chips.first()).toHaveAttribute(
       'href',
       '/azure-rbac/b24988ac-6180-42a0-ab88-20f7382dd24c'
@@ -178,6 +180,20 @@ test.describe('home and shell pages', () => {
       'href',
       '/m365-licenses/b24988ac-6180-42a0-ab88-20f7382dd24c'
     );
+    await expect(chips.nth(2)).toHaveAttribute(
+      'href',
+      '/uuid/b24988ac-6180-42a0-ab88-20f7382dd24c'
+    );
+
+    // Ten digits is a Unix timestamp first and a 32-bit AS number second;
+    // thirteen is only ever a timestamp.
+    await input.fill('1794651210');
+    await expect(chips).toHaveCount(2);
+    await expect(chips.first()).toHaveText('Timestamp Converter \u2192 /timestamp');
+    await expect(chips.first()).toHaveAttribute('href', '/timestamp/1794651210');
+    await input.fill('1794651210123');
+    await expect(chips).toHaveCount(1);
+    await expect(chips.first()).toHaveAttribute('href', '/timestamp/1794651210123');
 
     // A SKU part number leads, with the encoder kept behind it because the
     // shape test is loose.
@@ -513,6 +529,51 @@ test.describe('param deep links — rewrite + island application', () => {
     // offering: the decoder resolves a partial by substring.
     await expectRewrite(page, '/m365-licenses/E3', 'Microsoft 365 License Decoder');
     await expect(page.getByText('E3', { exact: false }).first()).toBeVisible();
+  });
+
+  test('/hash/:input hashes the text in the link', async ({ page }) => {
+    // A space and a literal percent sign: the value must be decoded exactly
+    // once, or the digest is of some other string.
+    await expectRewrite(page, '/hash/hello%20world%20100%25', 'Hash & HMAC Generator');
+    await expect(page.getByLabel('Text', { exact: true })).toHaveValue('hello world 100%');
+    // sha256("hello world 100%")
+    await expect(
+      page.getByText('96ec47ff186bb3901fbff5f42e9081c029434a14815452b644db019739f771f7')
+    ).toBeVisible();
+    await expect(page.getByText('Not for security')).toHaveCount(1);
+  });
+
+  test('/uuid opens with a UUID already generated', async ({ page }) => {
+    await expectRewrite(page, '/uuid', 'UUID / GUID Generator');
+    const rows = page.getByRole('list', { name: 'Generated UUIDs' }).getByRole('listitem');
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first()).toContainText(
+      /[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/
+    );
+  });
+
+  test('/uuid/:value opens the decoder', async ({ page }) => {
+    // The version 7 example from RFC 9562, whose timestamp is known.
+    await expectRewrite(page, '/uuid/017f22e2-79b0-7cc3-98c4-dc0c0c07398f', 'UUID / GUID Generator');
+    await expect(page.getByRole('tab', { name: 'Decode' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByLabel('UUID or GUID')).toHaveValue('017f22e2-79b0-7cc3-98c4-dc0c0c07398f');
+    await expect(page.getByRole('heading', { name: 'Version 7' })).toBeVisible();
+    await expect(page.getByText('2022-02-22T19:22:22.000Z').first()).toBeVisible();
+  });
+
+  test('/timestamp/:value converts epoch seconds and says so', async ({ page }) => {
+    await expectRewrite(page, '/timestamp/1794651210', 'Timestamp Converter');
+    await expect(page.getByLabel('Timestamp or date')).toHaveValue('1794651210');
+    await expect(page.getByText('10 digits: read as seconds.')).toBeVisible();
+    await expect(page.getByText('2026-11-14T10:13:30.000Z', { exact: true })).toBeVisible();
+  });
+
+  test('/timestamp/:value reads an ISO 8601 date, dots and colons intact', async ({ page }) => {
+    // What the UUID decoder links to: the dots must not be mistaken for a
+    // file extension by the Pages layer.
+    await expectRewrite(page, '/timestamp/2022-02-22T19:22:22.000Z', 'Timestamp Converter');
+    await expect(page.getByText('ISO 8601 with its own offset.')).toBeVisible();
+    await expect(page.getByText('1645557742000', { exact: true })).toBeVisible();
   });
 
   test('/cron/:expression seeds the builder', async ({ page }) => {
