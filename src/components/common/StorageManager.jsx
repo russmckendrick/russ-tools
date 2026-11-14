@@ -11,9 +11,12 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { ToolIcon } from '@/components/ui/tool-icon';
-import { TriangleAlert, Trash2, HardDrive } from 'lucide-react';
+import { TriangleAlert, Trash2, HardDrive, Pin } from 'lucide-react';
 import { TOOLS } from '@/tools/registry.mjs';
 import { toolStorageKeys, clearTool } from '@/core/storage.js';
+import { SHELL_STORAGE } from '@/shell/yourTools.js';
+
+const INDEX_MEMORY = { ...SHELL_STORAGE, title: 'Pinned and recent tools', path: '/', site: true };
 
 /**
  * The storage page — what this browser is holding, per tool, and how to
@@ -56,7 +59,7 @@ function sizeOf(key) {
 
 /** Read the whole picture in one pass. Cheap, and always current. */
 function survey() {
-  const tools = TOOLS.map((tool) => {
+  const tools = [...TOOLS, INDEX_MEMORY].map((tool) => {
     const entries = toolStorageKeys(tool)
       .map((key) => ({ key, bytes: sizeOf(key) }))
       .filter((entry) => entry.bytes > 0);
@@ -86,6 +89,13 @@ export default function StorageManager() {
   const stored = state.tools.filter((row) => row.bytes > 0);
   const empty = state.tools.filter((row) => row.bytes === 0);
   const totalBytes = stored.reduce((sum, row) => sum + row.bytes, 0);
+  const toolCount = stored.filter((row) => !row.tool.site).length;
+  const owners = [
+    toolCount > 0 ? `${toolCount} ${toolCount === 1 ? 'tool' : 'tools'}` : null,
+    toolCount < stored.length ? 'the index' : null,
+  ]
+    .filter(Boolean)
+    .join(' and ');
 
   const clearEverything = () => {
     for (const row of state.tools) clearTool(row.tool);
@@ -96,7 +106,7 @@ export default function StorageManager() {
     title: 'Delete all tool data',
     body: `This removes all saved data for every tool — ${formatSize(
       totalBytes
-    )} across ${stored.length} ${stored.length === 1 ? 'tool' : 'tools'}, including saved networks and every lookup history. Site preferences are unaffected. It cannot be undone.`,
+    )} across ${owners}, including saved networks, every lookup history and the tools pinned or recently used on the index. Site preferences are unaffected. It cannot be undone.`,
     run: clearEverything,
   };
 
@@ -105,8 +115,8 @@ export default function StorageManager() {
       <Alert>
         <HardDrive className="h-4 w-4" />
         <AlertDescription>
-          Everything below was saved by a tool in this browser. Clearing it here deletes it
-          permanently — there is no copy on a server to restore from.
+          Everything below was saved in this browser, by a tool or by the index. Clearing it here
+          deletes it permanently — there is no copy on a server to restore from.
         </AlertDescription>
       </Alert>
 
@@ -126,8 +136,7 @@ export default function StorageManager() {
               <div className="min-w-0">
                 <h2 className="text-title-sm">Saved data</h2>
                 <p className="mt-1 text-body-sm text-on-surface-muted">
-                  {formatSize(totalBytes)} across {stored.length}{' '}
-                  {stored.length === 1 ? 'tool' : 'tools'}
+                  {formatSize(totalBytes)} across {owners}
                 </p>
               </div>
               <Button
@@ -145,10 +154,18 @@ export default function StorageManager() {
               <div
                 key={tool.id}
                 className="flex items-center gap-3 rounded-md border border-outline p-3"
-                style={{ '--cat': `var(--color-category-${tool.category})` }}
+                style={{
+                  '--cat': tool.site
+                    ? 'var(--color-primary-text)'
+                    : `var(--color-category-${tool.category})`,
+                }}
               >
                 <span className="shrink-0 text-[var(--cat)]">
-                  <ToolIcon name={tool.icon} size={20} />
+                  {tool.site ? (
+                    <Pin className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <ToolIcon name={tool.icon} size={20} />
+                  )}
                 </span>
                 <div className="min-w-0 flex-1">
                   <a href={tool.path} className="text-body-md font-medium hover:text-[var(--cat)]">

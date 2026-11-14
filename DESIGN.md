@@ -441,6 +441,27 @@ Content). Each is headed by its group glyph on an ink tile, the name and a
 count, over an ink rule, with the tools beneath as ruled rows in two columns.
 Sections are never numbered.
 
+**Your tools.** When the browser holds pinned or recently opened tools, a strip
+sits between the band and the filter row and closes with a hairline. It is two
+labelled rows, Pinned then Recent: a mono uppercase label in a 64px column, then
+the tools as small links (glyph in the accent, name in ink, a hairline box at
+the control radius, so they do not read as the round filter chips). "Clear" is
+ranged right on the Recent row and removes recents only. With nothing stored
+the strip is absent and reserves no space; it never shows an empty state or a
+prompt. It is drawn by an inline script directly after its own markup, so it is
+in place on the first frame and the rows below do not move. The category chips
+and the name filter do not touch it.
+
+Each catalogue row carries a pin at its right end: a sibling of the row link,
+never inside it. It is 32px with the 44px `.rt-tap` target. Where there is a
+pointer it appears with the row's hover or focus; on touch it is always drawn,
+dim. A pinned one is always drawn, filled, in the accent.
+
+On a phone the strip is one line that scrolls sideways, as the filter chips do.
+Any row that scrolls sideways fades over 32px at whichever edge has more behind
+it (`edgeFade.js` sets `data-more-start` / `data-more-end`); a row that fits is
+never masked, so a focus ring is never clipped.
+
 ## Elevation & Depth
 
 Flat. No offset shadows. Overlays that float above the page — dialog, select
