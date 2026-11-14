@@ -420,7 +420,7 @@ test.describe('the index remembers', () => {
     await expect(group(page, 'Pinned')).toBeHidden();
     await expect(group(page, 'Recent').getByRole('link').first()).toHaveAttribute('href', '/jwt');
     // The catalogue beneath is untouched.
-    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
   });
 
   test('a tool can be pinned, unpinned and reordered by pinning again', async ({ page }) => {
@@ -460,7 +460,7 @@ test.describe('the index remembers', () => {
     await pin('JWT Decoder/Validator').click();
     await expect(page.locator('#rt-mine')).toBeHidden();
     expect(await stored(page)).toEqual({ pinned: null, recent: null });
-    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
   });
 
   test('the pin works from the keyboard', async ({ page }) => {
@@ -496,7 +496,7 @@ test.describe('the index remembers', () => {
     await seed(page, { recent: ['base64'] });
     await page.getByRole('button', { name: 'Clear recent tools' }).click();
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.getByRole('radio', { name: 'All 28' })).toBeFocused();
+    await expect(page.getByRole('radio', { name: 'All 30' })).toBeFocused();
   });
 
   test('a stored id the registry no longer has is ignored', async ({ page }) => {
@@ -513,7 +513,7 @@ test.describe('the index remembers', () => {
     // Nothing left to show is the same as nothing stored.
     await seed(page, { pinned: ['network-designer'], recent: ['a-tool-that-never-existed'] });
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
   });
 
   test('damaged storage leaves the index standing', async ({ page }) => {
@@ -524,7 +524,7 @@ test.describe('the index remembers', () => {
     });
     await page.reload();
     await expect(page.locator('#rt-mine')).toBeHidden();
-    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
     await expect(page.getByRole('searchbox', { name: 'Filter tools by name' })).toBeVisible();
   });
 
@@ -542,7 +542,7 @@ test.describe('the index remembers', () => {
 
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('.rt-card:visible')).toHaveCount(28);
+    await expect(page.locator('.rt-card:visible')).toHaveCount(30);
     await expect(strip(page).getByRole('link')).toHaveCount(3);
   });
 
