@@ -1,19 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { loadPrismLanguages } from '@/utils/prismLoader';
-import yaml from 'js-yaml';
-import * as TOML from '@ltd/j-toml';
 import { createToolStorage } from '@/core';
 
 // Import validation utilities
 import {
-  validateJSON,
-  validateYAML,
-  validateTOML,
-  validateWithDetection,
+  validateAs,
+  validateWithPreference,
   validateWithSchema,
   commonSchemas
 } from './lib/validation';
+import { FILE_EXTENSIONS, serialise } from './lib/convert';
 
 // Import components
 import ControlPanel from './components/ControlPanel';
@@ -27,7 +24,9 @@ const DEFAULT_SETTINGS = {
   autoDetectFormat: true,
   prettifyOutput: true,
   enableHistory: true,
-  maxHistoryItems: 50
+  maxHistoryItems: 50,
+  csvDelimiter: 'auto',
+  inferTypes: true
 };
 
 /** Typing pauses this long before the input is re-parsed. */
@@ -44,6 +43,7 @@ const DataConverterTool = () => {
   const [validationResult, setValidationResult] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
   const [detectedFormat, setDetectedFormat] = useState(null);
+  const [conversionError, setConversionError] = useState(null);
 
   // Settings
   const [settings, setSettings] = useState(() => ({
@@ -64,7 +64,7 @@ const DataConverterTool = () => {
 
   // Preload PrismJS languages for better performance
   useEffect(() => {
-    loadPrismLanguages(['json', 'yaml', 'toml']);
+    loadPrismLanguages(['json', 'yaml', 'toml', 'csv', 'xml']);
   }, []);
 
   // Save settings to localStorage
@@ -88,59 +88,44 @@ const DataConverterTool = () => {
       setValidationResult(null);
       setDetectedFormat(null);
       setOutputData('');
+      setConversionError(null);
       return;
     }
 
     if (!settings.enableValidation) return;
 
     const timer = setTimeout(() => {
-      const result = validateWithDetection(inputData);
+      const result = validateWithPreference(inputFormat, inputData, parseOptions);
       setValidationResult(result);
       setDetectedFormat(result.detectedFormat || null);
 
       if (result.success && result.detectedFormat && settings.autoDetectFormat) {
         convertData(result.data, result.detectedFormat, outputFormat, { recordHistory: false });
+      } else if (!result.success) {
+        setConversionError(null);
       }
     }, VALIDATE_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-  }, [inputData, settings.enableValidation, settings.autoDetectFormat, outputFormat]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [inputData, inputFormat, settings.enableValidation, settings.autoDetectFormat, settings.prettifyOutput, settings.csvDelimiter, settings.inferTypes, outputFormat]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Convert data function
+  const parseOptions = { csvDelimiter: settings.csvDelimiter, inferTypes: settings.inferTypes };
+
+  // Convert data function. Returns whether the conversion worked. A refusal
+  // (nested data as CSV, no single root for XML) is shown beside the output
+  // and only toasted when the user pressed Convert, so typing does not
+  // raise a toast per pause.
   const convertData = (data, fromFormat, toFormat, { recordHistory = true } = {}) => {
-    if (!data) return;
+    if (data === null || data === undefined) return false;
 
     try {
-      let converted = '';
-
-      switch (toFormat) {
-        case 'json':
-          converted = settings.prettifyOutput
-            ? JSON.stringify(data, null, 2)
-            : JSON.stringify(data);
-          break;
-
-        case 'yaml':
-          converted = yaml.dump(data, {
-            indent: settings.prettifyOutput ? 2 : 0,
-            lineWidth: -1,
-            noRefs: true,
-            sortKeys: false
-          });
-          break;
-
-        case 'toml':
-          converted = TOML.stringify(data, {
-            indent: settings.prettifyOutput ? 2 : 0,
-            newline: '\n'
-          });
-          break;
-
-        default:
-          throw new Error(`Unsupported output format: ${toFormat}`);
-      }
+      const converted = serialise(data, toFormat, {
+        prettifyOutput: settings.prettifyOutput,
+        csvDelimiter: settings.csvDelimiter
+      });
 
       setOutputData(converted);
+      setConversionError(null);
 
       if (recordHistory && settings.enableHistory) {
         addToHistory({
@@ -153,9 +138,11 @@ const DataConverterTool = () => {
         });
       }
 
+      return true;
     } catch (error) {
-      toast.error(`Conversion failed: ${error.message}`);
+      if (recordHistory) toast.error(`Conversion failed: ${error.message}`);
       setOutputData('');
+      setConversionError({ format: toFormat, message: error.message });
 
       if (recordHistory && settings.enableHistory) {
         addToHistory({
@@ -167,6 +154,8 @@ const DataConverterTool = () => {
           success: false
         });
       }
+
+      return false;
     }
   };
 
@@ -180,23 +169,9 @@ const DataConverterTool = () => {
     setIsConverting(true);
 
     try {
-      let parseResult;
-      const actualInputFormat = inputFormat === 'auto' ? detectedFormat : inputFormat;
-
-      // Parse input based on format
-      switch (actualInputFormat) {
-        case 'json':
-          parseResult = validateJSON(inputData);
-          break;
-        case 'yaml':
-          parseResult = validateYAML(inputData);
-          break;
-        case 'toml':
-          parseResult = validateTOML(inputData);
-          break;
-        default:
-          parseResult = validateWithDetection(inputData);
-      }
+      const chosenFormat = inputFormat === 'auto' ? detectedFormat : inputFormat;
+      const parseResult = validateAs(chosenFormat, inputData, parseOptions);
+      const actualInputFormat = parseResult.detectedFormat || chosenFormat;
 
       if (!parseResult.success) {
         throw new Error(parseResult.errors[0]?.message || 'Failed to parse input data');
@@ -213,8 +188,9 @@ const DataConverterTool = () => {
         }
       }
 
-      convertData(parseResult.data, actualInputFormat, outputFormat);
-      toast.success(`Successfully converted ${actualInputFormat || 'detected format'} to ${outputFormat.toUpperCase()}`);
+      if (convertData(parseResult.data, actualInputFormat, outputFormat)) {
+        toast.success(`Successfully converted ${actualInputFormat || 'detected format'} to ${outputFormat.toUpperCase()}`);
+      }
 
     } catch (error) {
       toast.error(`Conversion failed: ${error.message}`);
@@ -258,15 +234,8 @@ const DataConverterTool = () => {
   const handleFileUpload = (file) => {
     // Auto-detect format from file extension
     const extension = file.name.toLowerCase().split('.').pop();
-    const formatMap = {
-      'json': 'json',
-      'yaml': 'yaml',
-      'yml': 'yaml',
-      'toml': 'toml'
-    };
-
-    if (formatMap[extension]) {
-      setInputFormat(formatMap[extension]);
+    if (FILE_EXTENSIONS[extension]) {
+      setInputFormat(FILE_EXTENSIONS[extension]);
     }
   };
 
@@ -276,6 +245,7 @@ const DataConverterTool = () => {
     setOutputData('');
     setValidationResult(null);
     setDetectedFormat(null);
+    setConversionError(null);
     toast.success('Data cleared');
   };
 
@@ -310,6 +280,7 @@ const DataConverterTool = () => {
         onClear={handleClear}
         onFileUpload={handleFileUpload}
         validationResult={validationResult}
+        conversionError={conversionError}
       />
 
       {(validationResult || detectedFormat) && (

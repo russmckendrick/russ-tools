@@ -73,6 +73,9 @@ export const TOOL_ICONS = {
   // password-generator
   'key-round':
     '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M13.5 9.5l2 2"/>',
+  // cert-decoder: a certificate with its seal and ribbon
+  'file-badge':
+    '<path d="M12.5 17H3V4h18v6.5"/><path d="M7 8.5h7M7 12h3.5"/><circle cx="17" cy="14" r="3.2"/><path d="M15 16.6V21l2-1.4 2 1.4v-4.4"/>',
   // ssl-checker
   'shield-check':
     '<path d="M12 3l7 3v5c0 5-3 8-7 10c-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',

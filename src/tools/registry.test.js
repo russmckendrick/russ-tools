@@ -17,8 +17,8 @@ import { extractHelpMarkdown } from '../lib/helpMarkdown.js';
  */
 
 describe('manifest contract', () => {
-  it('registers all twenty-seven tools', () => {
-    expect(TOOLS).toHaveLength(27);
+  it('registers all twenty-eight tools', () => {
+    expect(TOOLS).toHaveLength(28);
   });
 
   it.each(TOOLS.map((t) => [t.id, t]))('%s has a well-formed manifest', (id, tool) => {
@@ -112,6 +112,7 @@ describe('frozen contract #1 — deep links', () => {
     '/bgp-explorer',
     '/bgp-explorer/:resource',
     '/buzzword-ipsum',
+    '/cert-decoder',
     '/cidr-workbench',
     '/cidr-workbench/:input',
     '/conditional-access',
@@ -158,7 +159,7 @@ describe('frozen contract #1 — deep links', () => {
   it('still carries every route the SPA served', () => {
     // Guards the list itself: a deletion here is a broken bookmark, and is
     // never what someone meant to do.
-    expect(routerPaths.length).toBe(50);
+    expect(routerPaths.length).toBe(51);
   });
 
   it('serves every one of them', () => {

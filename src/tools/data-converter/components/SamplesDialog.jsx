@@ -3,7 +3,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye } from 'lucide-react';
-import { JSON_SAMPLES, YAML_SAMPLES, TOML_SAMPLES } from '../samples';
+import { JSON_SAMPLES, YAML_SAMPLES, TOML_SAMPLES, CSV_SAMPLES, XML_SAMPLES } from '../samples';
+
+const SAMPLE_SETS = {
+  json: JSON_SAMPLES,
+  yaml: YAML_SAMPLES,
+  toml: TOML_SAMPLES,
+  csv: CSV_SAMPLES,
+  xml: XML_SAMPLES,
+};
 
 const SamplesDialog = ({ 
   isOpen, 
@@ -11,21 +19,9 @@ const SamplesDialog = ({
   onLoadSample 
 }) => {
   const loadSample = (format, key) => {
-    let samples;
-    switch (format) {
-      case 'json':
-        samples = JSON_SAMPLES;
-        break;
-      case 'yaml':
-        samples = YAML_SAMPLES;
-        break;
-      case 'toml':
-        samples = TOML_SAMPLES;
-        break;
-      default:
-        return;
-    }
-    
+    const samples = SAMPLE_SETS[format];
+    if (!samples) return;
+
     const sample = samples[key];
     if (sample) {
       onLoadSample(sample.data, format);
@@ -69,6 +65,8 @@ const SamplesDialog = ({
             <TabsTrigger value="json">JSON</TabsTrigger>
             <TabsTrigger value="yaml">YAML</TabsTrigger>
             <TabsTrigger value="toml">TOML</TabsTrigger>
+            <TabsTrigger value="csv">CSV</TabsTrigger>
+            <TabsTrigger value="xml">XML</TabsTrigger>
           </TabsList>
           
           <TabsContent value="json" className="space-y-2 mt-4">
@@ -81,6 +79,14 @@ const SamplesDialog = ({
           
           <TabsContent value="toml" className="space-y-2 mt-4">
             {renderSampleButtons(TOML_SAMPLES, 'toml')}
+          </TabsContent>
+
+          <TabsContent value="csv" className="space-y-2 mt-4">
+            {renderSampleButtons(CSV_SAMPLES, 'csv')}
+          </TabsContent>
+
+          <TabsContent value="xml" className="space-y-2 mt-4">
+            {renderSampleButtons(XML_SAMPLES, 'xml')}
           </TabsContent>
         </Tabs>
       </DialogContent>

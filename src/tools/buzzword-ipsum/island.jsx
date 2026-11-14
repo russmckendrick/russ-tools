@@ -185,73 +185,91 @@ const BuzzwordIpsumTool = () => {
               <div className="space-y-2">
                 <h4 className="font-semibold">Base URL</h4>
                 <div className="p-3 bg-muted rounded-md font-mono text-data-md">
-                  https://buzzwords.russmckendrick.com
+                  https://buzzwords.russ.tools
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <h4 className="font-semibold">Endpoints</h4>
-                
+
                 <div className="space-y-3">
                   <div>
-                    <p className="font-medium">Generate Phrases</p>
-                    <div className="p-2 bg-muted rounded text-data-md font-mono">
-                      GET /api/phrases?count={'{count}'}
+                    <p className="font-medium">Generate text</p>
+                    <div className="p-2 bg-muted rounded text-data-md font-mono [overflow-wrap:anywhere]">
+                      GET /generate?type={'{type}'}&count={'{count}'}
                     </div>
-                    <p className="text-body-sm text-muted-foreground">Returns an array of buzzword phrases</p>
+                    <p className="text-body-sm text-muted-foreground">
+                      Returns phrases, sentences or paragraphs, or single words of one kind. Also accepts POST with the same fields as JSON.
+                    </p>
                   </div>
-                  
+
                   <div>
-                    <p className="font-medium">Generate Adjectives</p>
-                    <div className="p-2 bg-muted rounded text-data-md font-mono">
-                      GET /api/adjectives?count={'{count}'}
+                    <p className="font-medium">Word lists</p>
+                    <div className="p-2 bg-muted rounded text-data-md font-mono [overflow-wrap:anywhere]">
+                      GET /words?type={'{type}'}&count={'{count}'}
                     </div>
-                    <p className="text-body-sm text-muted-foreground">Returns an array of corporate adjectives</p>
+                    <p className="text-body-sm text-muted-foreground">Returns raw words from the lists the generator draws on</p>
                   </div>
-                  
+
                   <div>
-                    <p className="font-medium">Health Check</p>
+                    <p className="font-medium">Health check</p>
                     <div className="p-2 bg-muted rounded text-data-md font-mono">
-                      GET /api/health
+                      GET /health
                     </div>
-                    <p className="text-body-sm text-muted-foreground">Returns API status and version</p>
+                    <p className="text-body-sm text-muted-foreground">Returns API status, version and word counts</p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="font-semibold">Parameters</h4>
                 <ul className="text-body-sm space-y-1">
-                  <li><code className="bg-muted px-1 rounded">count</code> (optional): Number of items to generate (1-100, default: 10)</li>
+                  <li>
+                    <code className="bg-muted px-1 rounded">type</code> on <code className="bg-muted px-1 rounded">/generate</code>:{' '}
+                    <code className="bg-muted px-1 rounded">phrase</code> (default), <code className="bg-muted px-1 rounded">sentences</code>,{' '}
+                    <code className="bg-muted px-1 rounded">paragraphs</code>, <code className="bg-muted px-1 rounded">adverbs</code>,{' '}
+                    <code className="bg-muted px-1 rounded">adjectives</code>, <code className="bg-muted px-1 rounded">nouns</code> or{' '}
+                    <code className="bg-muted px-1 rounded">verbs</code>
+                  </li>
+                  <li>
+                    <code className="bg-muted px-1 rounded">count</code> on <code className="bg-muted px-1 rounded">/generate</code>: 1 to 50, default 1
+                  </li>
+                  <li>
+                    <code className="bg-muted px-1 rounded">type</code> on <code className="bg-muted px-1 rounded">/words</code>: optional;{' '}
+                    <code className="bg-muted px-1 rounded">adverbs</code>, <code className="bg-muted px-1 rounded">adjectives</code>,{' '}
+                    <code className="bg-muted px-1 rounded">nouns</code> or <code className="bg-muted px-1 rounded">verbs</code>
+                  </li>
+                  <li>
+                    <code className="bg-muted px-1 rounded">count</code> on <code className="bg-muted px-1 rounded">/words</code>: 1 to 100, default 10
+                  </li>
                 </ul>
               </div>
-              
+
               <div className="space-y-2">
-                <h4 className="font-semibold">Rate Limiting</h4>
-                <p className="text-body-sm text-muted-foreground">The API is rate limited to prevent abuse:</p>
-                <ul className="text-body-sm space-y-1">
-                  <li>• 100 requests per minute per IP address</li>
-                  <li>• Protected by Cloudflare's DDoS protection</li>
-                  <li>• Rate limit headers included in responses</li>
-                </ul>
+                <h4 className="font-semibold">Caching</h4>
+                <p className="text-body-sm text-muted-foreground">
+                  Responses are cacheable for five minutes, so repeating a request inside that window may return the same text.
+                </p>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="font-semibold">Example Response</h4>
-                <div className="p-3 bg-muted rounded-md font-mono text-data-sm">
-{`{
+                <div className="p-3 bg-muted rounded-md font-mono text-data-sm whitespace-pre-wrap [overflow-wrap:anywhere]">
+{`GET /generate?type=phrase&count=2
+
+{
   "success": true,
+  "timestamp": "2026-11-14T10:11:33.672Z",
+  "type": "phrases",
+  "count": 2,
   "data": [
-    "synergistic paradigm",
-    "dynamic optimization",
-    "strategic innovation"
-  ],
-  "count": 3,
-  "timestamp": "2024-01-01T12:00:00Z"
+    "edge-computed exploit high standards alerting mechanisms",
+    "seamlessly orchestrate scalable delivery pipelines"
+  ]
 }`}
                 </div>
               </div>
-              
+
               <p className="text-body-sm text-muted-foreground">
                 This API is provided free of charge for development and testing purposes.
               </p>

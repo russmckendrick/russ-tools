@@ -73,7 +73,7 @@ than generic textbook implementations.
 
 ## Capabilities and Constraints
 
-- 24 tools, each one folder under `src/tools/<id>/` with a `manifest.mjs` that
+- 25 tools, each one folder under `src/tools/<id>/` with a `manifest.mjs` that
   declares path, category, icon, deep-link params, storage keys and SEO. Everything else —
   the page, the index card, the sitemap entry, the redirects, the Open Graph card, the
   `/delete` listing — is derived from it.

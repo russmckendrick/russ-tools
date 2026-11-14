@@ -25,20 +25,21 @@ network, cloud and platform work.
 | **Microsoft 365 License Decoder** | Microsoft | Turn licence GUIDs and SKU part numbers into names and service plans. | `/m365-licenses` | [Docs](tools/m365-licenses/) |
 | **Microsoft Portals (GDAP)** | Microsoft | Deep links into 91 Microsoft portals, scoped to a tenant. | `/microsoft-portals` | [Docs](tools/microsoft-portals/) |
 | **Microsoft Tenant Lookup** | Microsoft | Discover the Microsoft tenant behind any domain. | `/tenant-lookup` | [Docs](tools/tenant-lookup/) |
+| **Certificate & CSR Decoder** | Security | Decode PEM certificates, chains and CSRs without uploading them. | `/cert-decoder` | [Docs](tools/cert-decoder/) |
 | **DNSSEC & Delegation Checker** | Security | Verify DS/DNSKEY links and inspect a domain delegation. | `/dnssec-checker` | [Docs](tools/dnssec-checker/) |
 | **JWT Decoder/Validator** | Security | Decode and validate tokens without them leaving the tab. | `/jwt` | [Docs](tools/jwt/) |
 | **Password Generator** | Security | Cryptographically random passwords, generated on-device. | `/password-generator` | [Docs](tools/password-generator/) |
 | **SSL Certificate Checker** | Security | Inspect the chain, ciphers and expiry for any host. | `/ssl-checker` | [Docs](tools/ssl-checker/) |
 | **Base64 Encoder/Decoder** | Developer | Encode and decode text and files, including URL-safe output. | `/base64` | [Docs](tools/base64/) |
 | **CRON Expression Builder** | Developer | Build and read cron expressions in plain English. | `/cron` | [Docs](tools/cron-builder/) |
-| **Data Converter** | Developer | Convert between JSON, YAML and TOML, with validation. | `/data-converter` | [Docs](tools/data-converter/) |
+| **Data Converter** | Developer | Convert between JSON, YAML, TOML, CSV and XML, with validation. | `/data-converter` | [Docs](tools/data-converter/) |
 | **Hash & HMAC Generator** | Developer | MD5 and SHA digests of text or a file, with HMAC and a compare check. | `/hash` | [Docs](tools/hash/) |
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](tools/markdown-table-tool/) |
 | **Timestamp Converter** | Developer | Convert Unix epoch seconds, milliseconds and ISO 8601 in any time zone. | `/timestamp` | [Docs](tools/timestamp/) |
 | **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](tools/buzzword-ipsum/) |
 
-27 tools.
+28 tools.
 <!-- TOOLS:END -->
 
 Tools without a linked document work the same way as the rest; nobody has written one up

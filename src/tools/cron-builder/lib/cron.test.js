@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { looksLikeCron, validateCronExpression } from './cron.js';
+import { looksLikeCron, normaliseCronNames, validateCronExpression } from './cron.js';
 
 /**
  * `validateCronExpression` was module-private inside `island.jsx` and had no
@@ -29,8 +29,8 @@ describe('validateCronExpression', () => {
     ['60 * * * *', 'Invalid minute value (0-59)'],
     ['* 24 * * *', 'Invalid hour value (0-23)'],
     ['* * 32 * *', 'Invalid day of month value (1-31 or L)'],
-    ['* * * 13 *', 'Invalid month value (1-12)'],
-    ['* * * * 8', 'Invalid day of week value (0-7)'],
+    ['* * * 13 *', 'Invalid month value (1-12 or JAN-DEC)'],
+    ['* * * * 8', 'Invalid day of week value (0-7 or SUN-SAT)'],
   ])('rejects %s', (expression, error) => {
     expect(validateCronExpression(expression)).toEqual({ valid: false, error });
   });
@@ -56,6 +56,32 @@ describe('validateCronExpression', () => {
     it('bounds-checks a step base but not the step itself', () => {
       expect(validateCronExpression('*/99 * * * *').valid).toBe(true);
     });
+  });
+});
+
+describe('month and weekday names', () => {
+  it.each([
+    ['0 9 * * MON-FRI', '0 9 * * 1-5'],
+    ['0 0 1 JAN,jul *', '0 0 1 1,7 *'],
+    ['*/5 * * Dec sun', '*/5 * * 12 0'],
+    ['0 0 L * *', '0 0 L * *'],
+  ])('reads %s as %s', (expression, numeric) => {
+    expect(normaliseCronNames(expression)).toBe(numeric);
+    expect(validateCronExpression(expression)).toEqual({ valid: true });
+  });
+
+  it('leaves names alone outside the month and weekday fields', () => {
+    expect(validateCronExpression('MON * * * *').valid).toBe(false);
+    expect(validateCronExpression('* * JAN * *').valid).toBe(false);
+  });
+
+  it('rejects a word that is not a name', () => {
+    expect(validateCronExpression('* * * FOO *').valid).toBe(false);
+    expect(validateCronExpression('* * * * FUN').valid).toBe(false);
+  });
+
+  it('keeps names out of the paste sniffer', () => {
+    expect(looksLikeCron('0 9 * * MON-FRI')).toBe(false);
   });
 });
 

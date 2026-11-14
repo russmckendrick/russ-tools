@@ -3165,10 +3165,220 @@ with `wrangler delete`, at the owner's instruction, and their sources and
 configs removed from the repo. The three hostnames no longer resolve.
 `buzzword-generator` is untouched and answers `/health`.
 
-Noticed and not fixed: the Buzzword Ipsum tool's API panel shows
-`buzzwords.russmckendrick.com`, which does not connect; the worker's route is
-`buzzwords.russ.tools`.
+The Buzzword Ipsum tool's API panel showed `buzzwords.russmckendrick.com`,
+which does not connect, and documented `/api/phrases`, `/api/adjectives` and
+`/api/health`, none of which the worker serves. It now gives
+`buzzwords.russ.tools` and the real routes (`/generate`, `/words`, `/health`)
+with their parameters, each checked against the deployed worker. The rate-limit
+claims were removed: the worker has no rate limiting.
 
+### 2026-11-14 — The Subnet Calculator plans by size
+
+The manifest has listed `vlsm calculator` as a keyword since the tool replaced
+the Network Designer, and a gap analysis found nothing behind it: there was no
+way to say "500, 120, 60 and 2 hosts" and be handed the subnets. The Divide
+panel now has **Plan by size**.
+
+- **The allocator is `lib/plan.js`, and it returns splits.** `planSubnets` sorts
+  the requirements largest first and walks one cursor from the start of the
+  parent. Because the sizes are descending powers of two the cursor is always
+  aligned for the next block, so there is no search. The answer is the set of
+  ancestor keys to split, which is the state `lib/divide.js` already holds. The
+  tree, the table and the share link show a plan without knowing one was made,
+  and splitting or joining by hand afterwards just works. The test replays every
+  plan through `leaves` and `pruneSplits`.
+- **Two hosts is a `/31`.** The brief was "usable = size minus 2, with /31 and /32
+  as the tool already does", and `ipv4Details` calls a `/31` two usable hosts. That
+  makes a `/30` unreachable by host count (2 fits a `/31`, 3 needs a `/29`), so a
+  line may give a prefix instead: `link /30`. The same syntax is the whole of the
+  IPv6 input.
+- **Names are the only new state.** `names` is a map of leaf key to label, set by
+  a plan, shown as a Label column and on the block in the tree, and added to the
+  share payload only when a current leaf has one. An unnamed divide therefore
+  encodes to the bytes it always did; the island test pins that against the
+  captured `e2e` fixture, which was not edited. Names arrive from a URL, so they go
+  through `cleanName` on the way in, CSV cells that a spreadsheet would run as a
+  formula are quoted, and Pele was checked to escape label text before names were
+  put in the diagram.
+- **The planner is a disclosure, not a tab.** A "By hand / By size" tab pair would
+  have one empty panel. The button sits beside Copy share link and opens the list
+  above the tree. The list is a textarea, one requirement per line, because a
+  column pasted from a spreadsheet is the common case and five small inputs on a
+  phone is not.
+- **Export** is `lib/planExport.js`: Download CSV and Copy as Markdown under the
+  table, for every row of the divide as it stands.
+- **`plan_subnets`** is the second WebMCP tool, in `lib/planTool.js`. Its result
+  has no BigInt in it (totals are digit strings) and carries a share URL that
+  reopens the plan. `parseInput` and the root derivation moved to `lib/parse.js`
+  so the island and the tool share them.
+
+Checked in Chromium at 390px and 1440px in both themes with a five-line plan in
+a `/22` (12 blocks, 23 nodes). At 390px the tree holds at the 85% floor and
+scrolls inside its panel, opening centred; the page does not scroll sideways.
+
+A plan is a set of binary splits, so every allocation leaves the unused
+siblings on its path as free blocks: three IPv6 lines ending in a `/127` inside
+a `/48` make 80 rows. That is past the 32 blocks `SplitTree` draws, and it used
+to return nothing; it now says how many blocks there are and that the table has
+them.
+
+Noticed and not changed: the table indents each row 16px per level, and a plan
+ending in a `/31` is nine levels deep, so on a phone the deepest rows start
+with the subnet off to the right until the table is scrolled. The indent
+predates this work.
+
+
+### 2026-11-14 — Certificate & CSR Decoder (24 → 25)
+
+The gap: `ssl-checker` only reads a certificate off a live public host, through
+the API. Nothing read one you already hold. `/cert-decoder` does, entirely in
+the browser: paste or drop PEM (or bare base64, or a DER file) and it decodes
+certificates, a chain, or a PKCS#10 request.
+
+**The parser.** `@peculiar/asn1-schema` + `asn1-x509` + `asn1-csr`, with
+`asn1js` as their peer. Measured by bundling each candidate with esbuild:
+
+| Candidate | min+gzip |
+|---|---|
+| `asn1js` alone (generic tree, everything else by hand) | 17 kB |
+| **`@peculiar/asn1-schema` + x509 + csr** | **26 kB** |
+| `@lapo/asn1js` (ships its whole OID database) | 35 kB |
+| `@peculiar/x509` (adds tsyringe and reflect-metadata) | 48 kB |
+| `pkijs` | 86 kB |
+
+The schema set is the smallest thing that gives typed names, times, general
+names and extensions, and it is maintained (3.0.0 on 2026-10-26). The built
+island chunk is 135 kB, 37.7 kB gzipped, parser and sample included. RSA
+modulus length and the EC curve are read with `asn1js` directly instead of
+adding `asn1-rsa` and `asn1-ecc`. The OID tables (`lib/names.js`) are ours and
+deliberately short: an unknown OID is shown as the OID.
+
+**Shape.** `lib/pem.js` is dependency-free because the index imports it;
+`lib/x509.js` decodes; `lib/chain.js` orders and judges; `lib/decode.js` is the
+one entry point the island and the WebMCP tool (`decode_certificate`) share.
+The chain is ordered by following issuer names to subjects, so a bundle pasted
+root first still reads leaf to root, and a link is broken when the names do
+not match **or** when both key identifiers are present and disagree (the
+renewed or cross-signed CA with the same name, which name matching alone
+passes). Expiry, not-yet-valid, a 30-day warning, a bundle not sent leaf
+first, MD5/SHA-1 signatures and RSA under 2048 bits are findings; a missing
+root is a note, not a fault. **Signatures are not verified** and the page says
+so in the diagram caption, the success finding and the help.
+
+**Fixtures.** `src/tools/cert-decoder/fixtures/` holds a three-certificate
+chain (RSA root, P-384 intermediate, P-256 leaf with every SAN form), an
+unrelated Ed25519 root and an RSA request, made by `generate.sh` beside them
+with the keys thrown away. Every expectation in `x509.test.js` was read off
+`openssl x509 -text`, `-serial` and `-fingerprint`. The chain is also the
+page's **Load sample**, so the leaf runs to 2036. The decoder was also run
+over the live chains of github.com and wikipedia.org (41 SANs) and agreed
+with openssl on subject, issuer, serial, dates and SHA-256.
+
+**The paste panel.** A PEM block on the index dispatches here, and it is
+tested *before* the 2000-character limit because a certificate is the one
+thing pasted there that is legitimately longer. The single-line field strips
+or spaces the newlines, so `splitPem` reads armour with any whitespace or
+none. It travels as `/cert-decoder#pem=c.<base64url>~c.<…>~r.<…>` — in the
+fragment, so the "nothing is uploaded" claim survives the hand-off — and
+`toFragment` cannot carry a private key. **That fragment format is now a link
+people can share, so treat it as frozen.**
+
+**Private keys.** A `PRIVATE KEY` block is recognised, its body dropped at
+once, never decoded, and reported as a warning.
+
+**Phone.** The detail list is ruled rows: label beside value from `sm` up,
+label above value below it. Every token that must not break is its own
+`whitespace-nowrap` span — hex in eight-byte groups with a `<wbr>` between,
+so a fingerprint wraps between bytes and nowhere else — and a value cell
+scrolls inside itself when one token is wider than the screen (a 67-character
+CA-issuers URL). Checked with Playwright at 390 and 1440 in both themes with
+the fixture chain, a broken chain, a request and github.com's real chain:
+`scrollWidth` equals the viewport everywhere, and a walk of every text node
+found no word laid out on two lines.
+
+**Counts that moved because a tool was added:** `registry.test.js` (25 tools,
+45 frozen routes), `e2e/deeplinks.spec.js` (25 cards, "Security 5"),
+AGENTS.md, PRODUCT.md and the workers README. A paramless tool adds no line
+to `_redirects`; `/cert-decoder` and `/cert-decoder/help` are static files.
+
+Noticed and not fixed: the paste panel offers a pasted private key to the
+Base64 encoder like any other text, which puts it in a URL path; and the
+panel's placeholder was already wider than the field at 390px before "PEM"
+was added to it.
+
+### 2026-11-14 — Four gaps filled inside existing tools
+
+A review listed things the existing tools could not do. Four of them lived
+inside tools that already exist, and each landed as one commit on
+`feat/tool-gaps` with its logic in the tool's `lib/`, tests, a help-page
+update and a `BEHAVIOR_CHANGES.md` entry. No package was added.
+
+**CRON: upcoming run times.** `lib/schedule.js` is a pure function of
+(expression, from-date): it expands each field to the set of values it
+allows, then walks month, day, hour and minute in turn, in UTC, and stops
+five years out. `0 0 30 2 *` therefore answers "never runs" at once
+instead of scanning 2.6 million minutes. Both tabs show the next
+five runs in local time with UTC beside each and the wait until the first.
+Two decisions were not in the brief. The schedule is read against UTC by
+default with a "This device" switch, because cron has no timezone and a list
+of times is only true for one clock. And "restricted" follows Vixie cron: a
+field that starts with `*` (so `*/2`) is not restricted, which changed what
+`CronFlow` draws for that case so the diagram and the list cannot disagree.
+The validator now reads `JAN`-`DEC` and `SUN`-`SAT`, and the Validator tab
+checks what is typed rather than the builder's expression.
+
+**Password Generator: passphrases.** The island had no `lib/`; generation
+and the strength maths moved out verbatim into `random.js`, `password.js`
+and `strength.js` and were pinned before anything was added. Passphrase mode
+draws from the EFF large wordlist with the same rejection-sampled
+`crypto.getRandomValues` helper, and its entropy is `words * log2(7776)`
+(plus `log2(10)` for an appended digit), never the character-pool sum. The
+list is committed byte for byte (SHA-256 in `public/licenses/`), loaded by
+dynamic import, and checked on load to be 7,776 different words. A test also
+proves no word begins another, so "no separator" loses nothing. The licence
+needed one correction to the brief: the list was published under CC BY 3.0
+US, but EFF's copyright page today says CC BY 4.0 International. The notice
+records both; either way it is attribution, which is given. Moving the code
+surfaced a real bug: the guaranteed character of each class ignored the
+"exclude similar" and "exclude ambiguous" settings. It was pinned as
+KNOWN-BUG in the feature commit and fixed in the next one on the same branch
+(the guaranteed characters are drawn from the filtered classes, and a class
+that filtering empties has its guarantee skipped).
+
+**JWT: the issuer's published keys.** `lib/issuer.js` does OpenID discovery
+and `lib/signature.js` verifies. The tool's promise is that tokens never
+leave the tab, so the feature was built around what could be said truthfully
+before the button is pressed: two GETs, no credentials, no referrer,
+redirects refused, the token in neither. One thing could not be promised in
+advance, that both requests go to the issuer's own host, because `jwks_uri`
+is the issuer's choice (Google's is on `www.googleapis.com`). So the second
+request is made automatically only when the host matches; otherwise the tool
+stops, names the host and asks. Verification switched from `jwtVerify` to
+`compactVerify` so an expired token with a good signature is "verified"
+beside "expired", and the diagram's Signature step now has three honest
+states. The old code reported an unsigned token as verified.
+
+**Data Converter: CSV and XML.** CSV is a small state-machine parser in the
+tool (the markdown table tool's parser splits on newlines first and is
+pinned as it is, so nothing was lifted into `core/`). Quoting carries the
+types: text that looks like a number is written quoted and a quoted cell is
+never inferred, which makes JSON to CSV to JSON exact. XML uses `DOMParser`
+and `XMLSerializer` with the `@name` / `#text` / repeated-siblings mapping.
+One step past the brief: a top-level list is written as `<rows><row>`
+rather than refused, because otherwise CSV could never become XML. The
+BigInt gotcha turned out to be a live crash, not a caution: any TOML document
+with a whole number failed to convert to JSON or YAML. `toPlainData` fixes
+that for all five outputs.
+
+Verified: `pnpm test` 1447 passing (was 1080), `pnpm lint` 0 errors and the
+same 11 warnings, `pnpm build`, `PW_PORT=8818 pnpm test:e2e` 90 passing.
+Each tool was driven in a browser at 390px and 1440px in both themes; the
+JWT fetch was exercised against a live issuer (discovery, the cross-host
+question, the key set) and against a refusal.
+
+Left for whoever merges the parallel branches: the test and tool counts in
+`AGENTS.md` (other branches add tests and tools too, so they want counting
+once).
 
 ### 2026-11-14 — Three developer utilities: Hash & HMAC, UUID / GUID, Timestamp
 
@@ -3228,3 +3438,11 @@ help matrix and five new deep-link tests.
 
 Not done: hashing files over 512 MB (would need pure-JS SHA to stream), a hex
 or Base64 HMAC key, and UUID v1/v3/v5 generation.
+
+**After taking `main` in.** This branch landed last of the day's wave, behind
+the Subnet Calculator planner, the Certificate & CSR Decoder and the four gaps
+filled in existing tools. The counts above were this branch alone; with
+everything together the registry holds 28 tools and the frozen list 51 routes,
+`pnpm test` is 1732 and `pnpm test:e2e` is 99. The overlaps were all additive:
+the paste panel keeps the PEM rule and gains the GUID third chip and the
+timestamp rule, and the placeholder now names both PEM and timestamp.

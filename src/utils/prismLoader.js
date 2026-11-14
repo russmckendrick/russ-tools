@@ -29,6 +29,12 @@ export const loadPrismLanguages = async (languages) => {
         case 'toml':
           await import('prismjs/components/prism-toml');
           break;
+        case 'csv':
+          await import('prismjs/components/prism-csv');
+          break;
+        case 'xml':
+          await import('prismjs/components/prism-markup');
+          break;
         case 'hcl':
           await import('prismjs/components/prism-hcl');
           break;

@@ -40,6 +40,162 @@ did not exist before.
 `src/lib/paste.test.js` and the paste-panel test in `e2e/deeplinks.spec.js` assert the new
 lists.
 
+### Password Generator: the exclusions now hold for every character (2026-11-14)
+
+Each enabled character class is guaranteed one character in a password. That
+character was drawn from the whole class, not from the class with **Exclude
+similar characters** / **Exclude ambiguous symbols** applied, so a password
+generated with an exclusion on could still contain one excluded character per
+class: about a 1-in-13 chance of an `L` or `O` in the uppercase slot, for
+instance. Found while moving the generator into `lib/password.js`, pinned
+there as `KNOWN-BUG`, and fixed in the same branch.
+
+The guaranteed characters are now drawn from the filtered classes
+(`enabledClasses`), and a class that filtering leaves empty has its guarantee
+skipped instead of producing a broken draw. No class can be emptied with the
+current character sets; the guard is for a future set that could. Passwords
+generated with no exclusion on are drawn exactly as before. `password.test.js`
+generates several thousand passwords with each exclusion on and asserts that
+no excluded character appears.
+
+### Data Converter: CSV and XML, and TOML integers that convert (2026-11-14)
+
+CSV and XML are input and output formats beside JSON, YAML and TOML
+(`lib/csv.js`, `lib/xml.js`; the mappings are in the tool's help). What
+changed for input that worked, or failed, before:
+
+- **Auto Detect has two new answers.** Text starting with `<` is XML, and if
+  it is not well formed it reports XML errors; it used to be accepted as one
+  long YAML string. A consistent table with a plausible header row (two or
+  more columns, two or more rows) is CSV; it also used to be a YAML string.
+  A YAML mapping or list, TOML, and a single line of prose are detected as
+  before, and `convert.test.js` pins those.
+- **A chosen input format is honoured as you type.** The live path ignored
+  the format select and always auto-detected. It now tries the chosen format
+  first and falls back to detection only when that fails, which is what lets
+  a single-column CSV be read as CSV. Input that parsed before still parses
+  to the same thing.
+- **TOML with integers converts to JSON and YAML.** `@ltd/j-toml` returns
+  integers as `BigInt`, which `JSON.stringify` and `js-yaml` both throw on,
+  so any TOML document with a whole number failed with "Conversion failed:
+  Do not know how to serialize a BigInt". `toPlainData` now turns them into
+  numbers (or text, past 2^53) on the way to JSON, YAML, CSV and XML. TOML to
+  TOML keeps them as integers.
+- **A refused conversion is shown, not toasted on every pause.** When input
+  parses but cannot be written in the output format, the reason is drawn
+  under the output editor. The live path used to raise a "Conversion failed"
+  toast each time typing paused; only the **Convert** button toasts now, and
+  it no longer follows a failure with "Successfully converted".
+- **Two settings were added** to the stored settings object, with defaults:
+  `csvDelimiter: 'auto'` and `inferTypes: true`. Existing saved settings are
+  read as before and gain the defaults.
+
+One deliberate step past the stated XML mapping: a top-level list, which has
+no root name, is written as `<rows><row>...</row></rows>` instead of being
+refused, so CSV converts to XML and back. Any other document without a
+single root is refused with a message.
+
+### JWT: verify against the issuer's published keys, and an honest signature state (2026-11-14)
+
+**The tool can now make network requests, on a button press only.** For an
+RS, PS or ES token whose `iss` is an `https` address, **Fetch issuer keys**
+GETs `<iss>/.well-known/openid-configuration` and then the `jwks_uri` it
+names, picks the key by `kid`, and verifies with `jose`. The token is not
+sent; the requests carry no credentials and no referrer, refuse redirects,
+and a `jwks_uri` on a different host from the issuer needs a second, explicit
+press. A CORS or network failure names the address and points at the paste
+route. The manifest's "No data sent to servers" / "100% client-side
+processing" features were reworded to what is now true: the token never
+leaves the browser.
+
+Changed behaviour in the existing validation, all in `lib/signature.js`:
+
+- **The key box also takes a JWKS** (`{"keys": [...]}`), searched by `kid`.
+- **Validation re-runs when anything changes.** It used to run only when the
+  token changed, so pasting the key after the token did nothing until the
+  token was edited.
+- **The signature and the time claims are separate.** Verification used
+  `jwtVerify`, which also enforces `exp` and `nbf`, so a correctly signed but
+  expired token read "Signature validation failed". It now uses
+  `compactVerify`: that token is "verified", and the diagram's Time claims
+  step still says "expired".
+- **Three states, from the real result.** The diagram's Signature step read
+  "verified" for an unsigned (`alg: none`) token, because "no validation
+  required" was returned as valid, and "invalid" for an HMAC token that was
+  never tested. It now reads **verified**, **failed** or **not checked**:
+  unsigned, HMAC, no key, an unreadable key and a missing `kid` are all "not
+  checked", and only a signature that was tested and did not match is
+  "failed". The old "waiting for a key" label is folded into "not checked".
+
+### Password Generator: a passphrase mode, and the maths moved to `lib/` (2026-11-14)
+
+A **Password / Passphrase** switch sits above the settings. Passphrase mode
+draws 3 to 10 words (5 by default) from the EFF large wordlist with the same
+`crypto.getRandomValues` helper, joined by a chosen separator, optionally
+capitalised and with one digit appended. Its entropy is
+`words * log2(7776)` plus `log2(10)` for the digit, shown through the same
+Security Analysis panel, whose second figure is now labelled **Word List**
+in that mode and **Character Pool** otherwise.
+
+Password mode is unchanged: the generation and strength code moved verbatim
+from `island.jsx` into `lib/` and is now pinned by tests, quirks included.
+Visible differences are wording only: headings, buttons, toasts and the
+download file follow the mode ("Generate Passphrases",
+`passphrases_<date>.txt`), and the download header reports the length of the
+values in the file, not the current slider position.
+
+The page still opens on Password with one result drawn, and still stores
+nothing: the mode and the passphrase settings are forgotten on reload. The
+word list (`data/eff_large_wordlist.txt`, 109 kB, unmodified) is a dynamic
+import, so it is fetched from the site the first time Passphrase is opened
+and never in password mode.
+
+### CRON builder: upcoming run times, names, and a validator that reads as you type (2026-11-14)
+
+Under the expression on both tabs the tool now lists the next five run times
+(`lib/schedule.js`, a pure function of the expression and a from-date). Three
+things changed that were pinned or visible before:
+
+- **Month and weekday names validate.** `0 9 * * MON-FRI` used to be "Invalid
+  day of week value"; `validateCronExpression` now reads `JAN`-`DEC` and
+  `SUN`-`SAT` in those two fields, in any case, and the two error strings
+  gained "or JAN-DEC" / "or SUN-SAT". The `parseInt` quirks pinned in
+  `cron.test.js` are untouched, and `looksLikeCron` (the paste sniffer) still
+  refuses names, so prose cannot reach it.
+- **The Expression Validator tab checks what is typed.** It used to report on
+  the builder's expression until **Load** was pressed, so the status under the
+  box could describe a different expression from the one in it. It now reads
+  the box as you type and falls back to the builder's expression, labelled as
+  such, only when the box is empty. **Load** still copies into the builder.
+- **The diagram's either-or rule follows Vixie cron.** `CronFlow` drew
+  "either" whenever both day fields were anything but a bare `*`. A field that
+  starts with `*` (so `*/2`) is unrestricted in Vixie cron and cronie, where
+  both fields must then match, and the diagram and the run times now share
+  that one rule (`daysMatchEither`).
+
+The run-time calculator is stricter than the validator: an expression the
+validator lets through on a `parseInt` tail (`5x * * * *`) gets "run times
+cannot be worked out" instead of a guess.
+
+### The Subnet Calculator plans by size, and its share links can carry names (2026-11-14)
+
+The Divide panel gained **Plan by size**: a list of host counts (IPv4) or prefix
+lengths (IPv6) is allocated largest first out of the calculated network and
+written as ordinary splits. Three things changed that a user or a fixture can see:
+
+- The share payload has an optional fourth key, `names` (`{ "<cidr>": "<label>" }`),
+  written only when a current leaf has a label. A divide with no labels encodes to
+  the same bytes as before, and a link without `names` restores as before; both are
+  pinned in the island test against the fixture `e2e/deeplinks.spec.js` captured.
+  The codec in `src/core/sharelink.js` is untouched. Names are cleaned on the way in
+  (control characters and angle brackets dropped, 32 characters at most).
+- The divide table shows a **Label** column while any row is labelled, and has
+  **Download CSV** and **Copy as Markdown** under it.
+- A second WebMCP tool, `plan_subnets`, registers beside `calculate_subnet`.
+
+Two hosts are given a `/31` and one a `/32`, matching what the details panel already
+calls usable. A `/30` is asked for by prefix (`link /30`).
+
 ### The three lookup workers are retired (2026-11-14)
 
 `ssl.russ.tools`, `whois.russ.tools` and `tenant.russ.tools` no longer exist. The
