@@ -48,12 +48,18 @@ Selecting a size, or typing a full name, decodes it using Microsoft's naming con
 
 ## What is and is not covered
 
-| Covered | Not covered |
-| --- | --- |
-| Every region in Microsoft's public-cloud regions list | Sovereign clouds (US Government, China) |
-| A map position for the regions Microsoft's globe places | A position for the regions it does not place |
-| Sizes tabulated in Microsoft's VM series articles | Which regions or zones offer a size |
-| Series-level feature support | Prices, quotas and capacity restrictions |
+Covered:
+
+- Every region in Microsoft's public-cloud regions list.
+- A map position for the regions Microsoft's globe places.
+- The sizes tabulated in Microsoft's VM series articles, with series-level feature support.
+
+Not covered:
+
+- Sovereign clouds (US Government, China).
+- A map position for the regions the globe does not place.
+- Which regions or zones offer a size.
+- Prices, quotas and capacity restrictions.
 
 Regional availability and prices come from Azure's Resource SKUs and Retail Prices APIs. The first needs a signed-in subscription, so this tool does not attempt it. Use `az vm list-skus --location <region>` for a definitive answer.
 

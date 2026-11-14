@@ -14,12 +14,10 @@ A link such as `/entra-ids/00000003-0000-0000-c000-000000000000` opens straight 
 
 ## What it identifies
 
-| Kind | What you get |
-| --- | --- |
-| First-party application | The application (client) ID, the name, other names Microsoft uses for the same ID, and the page that lists it |
-| Microsoft Graph permission | The delegated scope ID and the application role ID, each with its display text, whether admin consent is required, and what it grants |
-| Directory role | The role template ID, what the role can do, and whether Microsoft marks it privileged |
-| Sign-in error code | The AADSTS code, its error name where Microsoft gives one, and its meaning |
+- **First-party application**: the application (client) ID, the name, other names Microsoft uses for the same ID, and the page that lists it.
+- **Microsoft Graph permission**: the delegated scope ID and the application role ID, each with its display text, whether admin consent is required, and what it grants.
+- **Directory role**: the role template ID, what the role can do, and whether Microsoft marks it privileged.
+- **Sign-in error code**: the AADSTS code, its error name where Microsoft gives one, and its meaning.
 
 Use the tabs to restrict the search to one kind, or leave it on **All**.
 
