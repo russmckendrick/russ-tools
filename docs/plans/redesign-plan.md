@@ -3559,6 +3559,9 @@ valid filter, a custom range, a time chart, saving, renaming, deleting, copying,
 and opening the captured old share link and an old store with a favourite, a history
 entry and a custom template.
 
+After `main` moved again (PR 39, three more tools) it was merged in once more and the
+checks re-run: 2251 unit tests, 0 lint errors and 6 warnings, a clean build, 102 e2e.
+
 Not verified: no query was run against a real Log Analytics workspace. Names are from
 Microsoft Learn; data in a given workspace depends on its diagnostic settings. The phone
 checks were an emulated 390px touch viewport, not a handset.
