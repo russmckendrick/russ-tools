@@ -43,11 +43,14 @@ documentation states its boundary explicitly.
 | **Data Converter** | Developer | Convert between JSON, YAML, TOML, CSV and XML, with validation. | `/data-converter` | [Docs](docs/tools/data-converter/) |
 | **Hash & HMAC Generator** | Developer | MD5 and SHA digests of text or a file, with HMAC and a compare check. | `/hash` | [Docs](docs/tools/hash/) |
 | **Markdown Table Tool** | Developer | Build, format and re-align Markdown tables from CSV or scratch. | `/markdown-table-tool` | [Docs](docs/tools/markdown-table-tool/) |
+| **Regex Tester** | Developer | Test a regular expression: live highlights, groups, replace and a timeout. | `/regex` | [Docs](docs/tools/regex/) |
+| **Text Diff** | Developer | Compare two texts line by line, with changed words marked. | `/diff` | [Docs](docs/tools/diff/) |
 | **Timestamp Converter** | Developer | Convert Unix epoch seconds, milliseconds and ISO 8601 in any time zone. | `/timestamp` | [Docs](docs/tools/timestamp/) |
+| **URL Parser & Encoder** | Developer | Split a URL into editable parts, and percent-encode or decode text. | `/url` | [Docs](docs/tools/url/) |
 | **UUID / GUID Generator** | Developer | Generate v4 and v7 UUIDs in bulk, or decode one you already have. | `/uuid` | [Docs](docs/tools/uuid/) |
 | **Buzzword Ipsum** | Content | Corporate filler text, for when real words will not do. | `/buzzword-ipsum` | [Docs](docs/tools/buzzword-ipsum/) |
 
-30 tools.
+33 tools.
 <!-- TOOLS:END -->
 
 ## Quick start

@@ -17,8 +17,8 @@ import { extractHelpMarkdown } from '../lib/helpMarkdown.js';
  */
 
 describe('manifest contract', () => {
-  it('registers all thirty tools', () => {
-    expect(TOOLS).toHaveLength(30);
+  it('registers all thirty-three tools', () => {
+    expect(TOOLS).toHaveLength(33);
   });
 
   it.each(TOOLS.map((t) => [t.id, t]))('%s has a well-formed manifest', (id, tool) => {
@@ -119,6 +119,7 @@ describe('frozen contract #1 — deep links', () => {
     '/cron',
     '/cron/:expression',
     '/data-converter',
+    '/diff',
     '/dns-lookup',
     '/dns-lookup/:domain',
     '/dnssec-checker',
@@ -138,6 +139,7 @@ describe('frozen contract #1 — deep links', () => {
     '/microsoft-portals/:domain',
     '/network-designer',
     '/password-generator',
+    '/regex',
     '/saml',
     '/ssl-checker',
     '/ssl-checker/:domain',
@@ -148,6 +150,8 @@ describe('frozen contract #1 — deep links', () => {
     '/tenant-lookup/:domain',
     '/timestamp',
     '/timestamp/:value',
+    '/url',
+    '/url/:input',
     '/uuid',
     '/uuid/:value',
     '/whois-lookup',
@@ -162,7 +166,7 @@ describe('frozen contract #1 — deep links', () => {
   it('still carries every route the SPA served', () => {
     // Guards the list itself: a deletion here is a broken bookmark, and is
     // never what someone meant to do.
-    expect(routerPaths.length).toBe(54);
+    expect(routerPaths.length).toBe(58);
   });
 
   it('serves every one of them', () => {

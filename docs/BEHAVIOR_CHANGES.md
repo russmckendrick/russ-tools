@@ -60,15 +60,52 @@ boundary.
 
 ### The paste panel offers the headers checker for a domain or a URL (2026-11-14)
 
-A bare hostname pasted into the index's paste panel used to offer seven tools and now
-offers eight: HTTP Headers sits sixth, after SSL Checker and before Tenant Lookup. A pasted
-`http://` or `https://` URL gets the same eight, reduced to its host as before; the chip
-for the headers checker is labelled as reading a URL. The order of the other seven is
-unchanged and Enter still opens DNS Lookup. A URL whose host is an IP address is unchanged
-(the four address tools), because the checker refuses IP literals.
+This entry is read after the URL parser entry below it, which landed first.
+
+- **A bare hostname** (`example.com`) used to offer seven tools and now offers eight: HTTP
+  Headers sits sixth, after SSL Checker and before Tenant Lookup. The order of the other
+  seven is unchanged and **Enter still opens DNS Lookup**.
+- **A web address with no path or query** (`https://example.com`, `https://example.com/`,
+  or one with only a fragment) used to dispatch exactly as the bare hostname. It now offers
+  the same eight with **HTTP Headers first**, and Enter opens the headers checker where it
+  used to open DNS Lookup. Someone who typed the scheme is talking about a site, and the
+  checker is the one tool in the list that reads a web address as one.
+- **A web address with a path or query** (`https://example.com/pricing?ref=1`) was eight
+  chips, URL Parser first. It is now nine: **URL Parser first, HTTP Headers second**, then
+  the seven other host tools. Enter still opens the URL parser. The order is deliberate:
+  the parser only reads the string, while the checker sends the host to the site's server,
+  which requests it. The step that touches nothing comes first.
+- **Unchanged:** a host with a path but no scheme (`example.com/pricing`), any scheme other
+  than http and https, and a URL whose host is an IP address (the URL parser when it has a
+  path, then the four address tools), because the checker refuses IP literals.
+
+The headers chip links to `/http-headers/<host>`. It is handed the host alone, like every
+other host tool, so a path or query is not carried into the link; the checker therefore
+looks at the site's root, not the pasted page.
 
 `src/lib/paste.test.js` and the paste-panel and 404 tests in `e2e/deeplinks.spec.js` assert
-the new count.
+the new counts and orders.
+
+### The paste panel offers the URL parser for a URL with a path or query (2026-11-14)
+
+A pasted `http://` or `https://` URL used to be reduced to its host and dispatched as that
+host, whatever else it carried. It still is, but when the URL has a **path or a query** the
+new URL Parser is now offered first, ahead of the tools that read the host.
+
+- `https://example.com/pricing?ref=1` was seven chips, DNS Lookup first. It is now eight,
+  URL Parser first, and **Enter opens the URL parser** where it used to open DNS Lookup.
+- `https://10.0.0.1:8443/admin` was the four IP tools and is now URL Parser and then those four.
+- **Unchanged:** a bare hostname (`example.com`), a URL with neither path nor query
+  (`https://example.com`, `https://example.com/`), a URL with only a fragment, a host with a
+  path but no scheme (`example.com/pricing`), and any scheme other than http and https.
+
+The chip's link is `/url#url=<encoded URL>`, not `/url/<encoded URL>`. Every other chip
+carries its value in the path; this one uses the fragment, as the certificate chip does,
+because a pasted URL can hold a token and a fragment is never sent to the server. The
+`/url/:input` deep link exists and is frozen, for links written by hand.
+
+`src/lib/paste.test.js` (one existing assertion narrowed to the host tools, three added) and
+the paste-panel test in `e2e/deeplinks.spec.js` assert the new behaviour.
 
 ### The index stores what you pin and what you open (2026-11-14)
 

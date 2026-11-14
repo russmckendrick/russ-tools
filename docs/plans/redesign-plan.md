@@ -3649,6 +3649,109 @@ registry is still 28 tools, so the catalogue counts in the new e2e cases stand.
 With both together `pnpm test` is 2288, `pnpm test:e2e` is 115 and `pnpm lint`
 is 0 errors and 6 warnings.
 
+### 2026-11-14 — Three more developer tools: URL, Regex, Text Diff (28 → 31)
+
+Part of the second wave from the same review. Three new folders under
+`src/tools/`, each the shape of `hash/`, `uuid/` and `timestamp/`: manifest,
+island, `lib/` with tests, an island test, a help README and a WebMCP tool.
+No dependency was added.
+
+**URL Parser & Encoder** (`/url`, `/url/:input`). `lib/url.js` splits with the
+RFC 3986 pattern rather than `new URL`, because the checks need the text as it
+was written and `URL` normalises it away. Each part is kept twice, raw and
+decoded, and **only the part that is edited is re-encoded**, so pasting a URL
+and changing one parameter does not rewrite the rest of it. The path keeps
+`%2F`, `%3F`, `%23` and `%25` escaped, since decoding those changes where the
+path ends. `+` is read as a space only when the query uses one. Checks:
+credentials (naming the real host), secret-looking parameter names, plain
+http carrying either, double-encoding, characters that must be encoded, a
+stray `%`, escapes that are not UTF-8, an unencoded inner URL, plus notes for
+brackets, non-ASCII, repeated names, a default port and an IDN host. The
+secret check is by name only and says so in the finding itself. `URL` does the
+punycode encoding; `lib/punycode.js` is an RFC 3492 decoder (no browser API
+goes that way), tested against the platform encoder.
+
+One thing worth knowing: `useParams` hands back a URL whose own `%2F` has
+become a slash. The segment arrives as `%252F`, and react-router appears to
+decode it twice (once for the path, once for the param); the island test
+caught it. The island
+reads the raw segment off `useLocation().pathname` and decodes it once. The
+e2e deep-link test carries a `%2F` to pin this through the Pages layer.
+
+**Regex Tester** (`/regex`). The browser's own `RegExp`, and the page says the
+flavour is ECMAScript and what that lacks. Matching runs in a module Worker
+(`lib/regex.worker.js`, the repo's first) driven by `lib/runner.js`: a job
+that has not answered after one second has its worker terminated and reports
+a timeout, and a newer job supersedes one in flight. The clock starts when
+the worker says it has loaded, so a slow first fetch is not a false timeout.
+With no `Worker` at all (jsdom) it runs in place and flags the result
+`unprotected`; a worker that fails to start is an error, never a silent
+main-thread run. Highlighting is a transparent textarea over a mirrored
+backdrop in one CSS grid cell, so the two wrap identically with no scroll
+syncing; the backdrop copies the 16px touch font rule. Group names come from
+scanning the pattern source, checked against the real group count. Eight
+library patterns (IPv4, IPv6, IPv4 CIDR, MAC, GUID, FQDN, email, ISO 8601),
+each anchored and each tested line by line against its own good and bad
+samples, which are also the sample text it loads. State is shared as
+`#config=` using `compressConfig` from `src/core/sharelink.js` unchanged, with
+a captured link pinned in the tests. The hash is written only after the first
+edit, and not at all past 6,000 characters.
+
+**Text Diff** (`/diff`). `lib/myers.js` is Myers' algorithm in its
+linear-space form (bidirectional search for a split point, then recursion),
+written here rather than imported. A fuzz test checks 400 random pairs against
+an LCS table for both validity and minimality. A budget on the search depth
+keeps two large unrelated texts from hanging: past it the region is emitted
+whole and the result is flagged, and the page says so. Hard caps of 1,000,000
+characters and 20,000 lines a side refuse with a message. Changed lines are
+paired by similarity before word-level highlighting, so a line inserted beside
+a changed one does not knock the pairing out of step; pairs with little in
+common are left unmarked. A last line with no final newline is a different
+line from the same text with one, which is what makes the copied unified diff
+apply: 199 random cases were fed to `patch` and all reproduced the changed
+text. "Normalise JSON" appears only when both sides parse as an object or
+array. Side by side is offered from 768px; below it the view is unified.
+
+**Paste panel.** An `http(s)` URL with a path or query now offers the URL
+parser first, with the host's tools behind it. The link uses the fragment
+(`/url#url=`), as the certificate chip does, so a pasted URL is not sent to
+the server. A bare host is unchanged. Logged in `BEHAVIOR_CHANGES.md`. The
+change is a wrapper round the old `suggest` (now `route`), so the routing
+branches other sessions are editing are untouched.
+
+**Icons.** `link` (an address bar holding `://`), `regex` (`.*`) and `diff`
+(two panes, a minus and a plus). The dnssec glyph is already a chain, so the
+URL tool could not be one.
+
+**Found by looking.** The match table was 28px wider than its panel at 390px;
+cell padding now steps down on a phone and it fits. The diff collapsed two
+unchanged lines into a "2 unchanged lines" row, which saved nothing; a run is
+now collapsed only when it hides four or more.
+
+Each tool was driven in Chromium at 390px (touch) and 1440px in both themes:
+eleven scenes, no sideways page scroll, no console errors. `pnpm test` 2011,
+`pnpm lint` 0 errors and 11 warnings, `pnpm build` clean, `pnpm test:e2e` 108
+including the help matrix and six new tests, one of which runs `(a+)+$`
+against a real worker and then shows the page still answers.
+
+Not verified: Safari and Firefox (Chromium only), and a real phone. Not done:
+a hex view of non-UTF-8 escapes, regex flavours other than the browser's, and
+a diff of more than two texts or of files dropped onto the page.
+
+**After taking `main` in.** The Azure KQL rebuild (PR 42) and the dependency
+updates (PR 43) landed first. Only the two append-only logs conflicted and
+both sides were kept. The counts above were this branch alone; on the merged
+tree `pnpm test` is 2530, `pnpm lint` is 0 errors and 6 warnings, the build is
+clean and `pnpm test:e2e` is 111. The generated README tables were unchanged.
+
+**And again, behind the index's memory (PR 44).** The same two logs and the
+counts in `AGENTS.md` conflicted; every entry kept. Six catalogue counts in
+that branch's new index tests said 28 and now say 31. The three new rows carry
+the pin control like every other row, and pinning and opening them fills the
+"Your tools" strip, checked at 390px and 1440px. On this tree `pnpm test` is
+2567, `pnpm lint` is 0 errors and 6 warnings, the build is clean and
+`pnpm test:e2e` is 124.
+
 ### 2026-11-14 — HTTP Security Headers and SAML Decoder (28 → 30)
 
 Two security tools from the 2026-11-14 gap review. One needs a server and one must not
@@ -3739,3 +3842,26 @@ because both sides append: this log, `BEHAVIOR_CHANGES.md` and the count lines i
 "All 28"; they now count 30. With everything together the registry holds 30 tools and
 the frozen list 54 routes, `pnpm test` is 2702, `pnpm test:e2e` is 135 and `pnpm lint`
 is 0 errors and 6 warnings.
+
+**After taking `main` in again.** The URL parser, regex tester and text diff landed
+just ahead (28 → 31), so with these two the registry holds 33 tools and the frozen list
+58 routes. Eight files conflicted. Five were the usual ones: this log,
+`BEHAVIOR_CHANGES.md`, the count lines in `AGENTS.md` and the two generated README tables
+(regenerated, not merged by hand). `registry.test.js` and nine catalogue counts in
+`e2e/deeplinks.spec.js` were recounted to 33.
+
+The one real overlap was the paste panel, where both branches had a rule for a pasted
+`http(s)://` URL. The order was decided, not left to whichever merged last:
+
+- a URL with a path or query: **URL Parser, then HTTP Headers**, then the seven other host
+  tools. The parser only reads the string; the checker sends the host to the site's server
+  and requests it. Enter should take the step that touches nothing.
+- a bare origin (`https://example.com`): nothing for the parser to take apart, so **HTTP
+  Headers leads** and DNS Lookup follows. This changes what Enter opens for that input,
+  which is logged in the ledger.
+- a bare hostname with no scheme: unchanged, DNS Lookup first and the headers checker
+  sixth of eight.
+
+The headers chip still carries the host alone, so a pasted page URL checks the site's
+root. `pnpm test` is 2982, `pnpm test:e2e` is 144, `pnpm lint` is 0 errors and 6 warnings,
+and the build is clean.

@@ -136,7 +136,7 @@ const tool = (toolId, label, path, href, why) => ({ toolId, label, path, href, w
  * @param {string} input
  * @returns {Array<{ toolId: string, label: string, path: string, href: string, why: string }>}
  */
-export function suggest(input) {
+function route(input) {
   if (typeof input !== 'string') return [];
   const raw = input.trim();
   if (!raw) return [];
@@ -271,18 +271,24 @@ export function suggest(input) {
   if (isHostname(value)) {
     // Ordered by how little each one presumes: general DNS answers first,
     // then focused mail and DNSSEC analysis, registration, TLS, the response
-    // headers and Microsoft. The headers checker reads a pasted http(s) URL
-    // as readily as a bare name; like the rest it is handed the host alone,
-    // so a path or query string is never carried into a link.
+    // headers and Microsoft.
+    //
+    // A paste that starts `http://` or `https://` is a web address rather
+    // than a name, and the headers checker is the one tool here that reads a
+    // web address as one, so it moves to the front and the other seven keep
+    // their order behind it. Like them it is handed the host alone: a path or
+    // query string is never carried into a link.
     const host = cleanHostname(value);
     const isWebUrl = /^https?:\/\//i.test(raw);
+    const headers = tool('http-headers', 'HTTP Headers', '/http-headers', `/http-headers/${seg(host)}`, isWebUrl ? 'URL' : 'domain');
     return [
+      ...(isWebUrl ? [headers] : []),
       tool('dns-lookup', 'DNS Lookup', '/dns-lookup', `/dns-lookup/${seg(host)}`, 'domain'),
       tool('email-dns-analyser', 'Email DNS', '/email-dns-analyser', `/email-dns-analyser/${seg(host)}`, 'domain'),
       tool('dnssec-checker', 'DNSSEC Checker', '/dnssec-checker', `/dnssec-checker/${seg(host)}`, 'domain'),
       tool('whois-lookup', 'WHOIS Lookup', '/whois-lookup', `/whois-lookup/${seg(host)}`, 'domain'),
       tool('ssl-checker', 'SSL Checker', '/ssl-checker', `/ssl-checker/${seg(host)}`, 'domain'),
-      tool('http-headers', 'HTTP Headers', '/http-headers', `/http-headers/${seg(host)}`, isWebUrl ? 'URL' : 'domain'),
+      ...(isWebUrl ? [] : [headers]),
       tool('tenant-lookup', 'Tenant Lookup', '/tenant-lookup', `/tenant-lookup/${seg(host)}`, 'domain'),
       tool('microsoft-portals', 'Microsoft Portals', '/microsoft-portals', `/microsoft-portals/${seg(host)}`, 'domain'),
     ];
@@ -294,4 +300,44 @@ export function suggest(input) {
   // The raw paste, not the URL-reduced subject: this is the branch for things
   // that were never a name.
   return [tool('base64', 'Base64 Encoder', '/base64', `/base64/${encodeURIComponent(raw)}`, 'text')];
+}
+
+/**
+ * A whole web address, as opposed to a host that happens to have a scheme in
+ * front of it: `http://` or `https://`, a host, and then a path or a query.
+ * `https://example.com/` has neither, so it stays a hostname.
+ */
+const DETAILED_URL = /^https?:\/\/[^/?#\s]+(?:\/[^?#\s]|\/?\?)/i;
+
+function isDetailedUrl(value) {
+  if (!DETAILED_URL.test(value)) return false;
+  try {
+    return Boolean(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Which tools will take this? `route` answers for the value's shape; a URL
+ * with a path or query is additionally a thing in its own right, so the URL
+ * parser is offered ahead of whatever its host dispatches to.
+ *
+ * That puts the parser before the headers checker, which `route` leads with
+ * for any http(s) address. The order is deliberate: the parser only reads the
+ * string, while the checker sends the host to the site's server and requests
+ * it, so Enter on a pasted link takes the step that touches nothing first.
+ *
+ * The link carries the URL in the fragment, as the certificate link does: a
+ * pasted address can hold a token, and a fragment is never sent to the server.
+ *
+ * @param {string} input
+ * @returns {Array<{ toolId: string, label: string, path: string, href: string, why: string }>}
+ */
+export function suggest(input) {
+  const matches = route(input);
+  if (matches.length === 0) return matches;
+  const raw = input.trim();
+  if (!isDetailedUrl(raw)) return matches;
+  return [tool('url', 'URL Parser', '/url', `/url#url=${encodeURIComponent(raw)}`, 'URL'), ...matches];
 }
