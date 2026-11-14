@@ -133,7 +133,7 @@ or if any pair drops below its WCAG floor — it has caught five real contrast f
 
 A prior version of this file misdescribed the codebase. Corrected facts:
 
-- There are **28 tools** (2026-11-14). Don't take a count from prose anywhere — the generated tables
+- There are **31 tools** (2026-11-14). Don't take a count from prose anywhere — the generated tables
   in the READMEs are the only inventory that is checked (`src/tools/docs.test.js`).
 - Theming is a **pre-paint inline script** in `BaseLayout.astro` reading `vite-ui-theme`
   from localStorage, plus `src/shell/appearance-controls.js`. There is no React theme
@@ -175,11 +175,11 @@ lockfile is `pnpm-lock.yaml`. A stale, gitignored `package-lock.json` may linger
   stable contract and an unpinned upgrade would fail the drift test on an untouched file.
   It reads only `colors`, `typography`, `rounded` and `spacing`; `borderWidth`, `shadow`,
   `motion` and `components` are documentation, transcribed by hand into `globals.css`.
-- `pnpm test` — Vitest (1732 tests; **keep these green**) · `pnpm test:watch` to iterate.
+- `pnpm test` — Vitest (2011 tests; **keep these green**) · `pnpm test:watch` to iterate.
   The count dropped from ~1000 when the palettes were retired: `tokens.contrast.test.js`
   ran its pair list over 12 palette/mode combinations and now runs it over 2. It measures
   *more* roles than before, against fewer themes.
-- `pnpm test:e2e` — Playwright deep-link, help and API matrix (99 tests) against
+- `pnpm test:e2e` — Playwright deep-link, help and API matrix (108 tests) against
   `wrangler pages dev`. It reuses whatever is already listening on :8788, so a stale
   server gets tested instead of the build — `PW_PORT=8798 pnpm test:e2e` moves it.
 - `pnpm lint` — ESLint. **0 errors, and CI blocks on that.** 11 warnings remain
