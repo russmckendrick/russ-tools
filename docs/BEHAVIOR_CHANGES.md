@@ -24,6 +24,18 @@ Two rules:
 
 ## Landed
 
+### The three lookup workers are retired (2026-11-14)
+
+`ssl.russ.tools`, `whois.russ.tools` and `tenant.russ.tools` no longer exist. The
+`ssl-checker`, `whois-lookup` and `microsoft-tenant-lookup` workers were deleted from
+Cloudflare after `/api/ssl`, `/api/whois` and `/api/tenant` were confirmed on the live site
+(tenant ID through Microsoft Graph, a full SSL Labs grade, a live WHOIS record, and a 403 to
+a cross-origin call), and their sources and configs were removed from the repository.
+
+Anything outside this repository that called those hostnames now fails to resolve them. A
+page that was loaded before the cutover and never reloaded will show failed lookups until
+it is refreshed. `buzzword-generator` on `buzzwords.russ.tools` was not touched.
+
 ### The mobile and desktop refinement pass (2026-11-14)
 
 A full review of every page at 390px and 1440px. Most of it is layout and is

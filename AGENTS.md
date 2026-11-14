@@ -223,8 +223,8 @@ three standalone workers, whose query parameters and JSON bodies they keep exact
   are optional: each lookup degrades to its unauthenticated sources without them.
   `SSL_LABS_EMAIL` is SSL Labs' credential, sent as an `email` header on `analyze` and
   `getEndpointData`; it must be an address registered with SSL Labs, and it is never
-  logged. The legacy `cloudflare-worker/ssl.js` reads it and never sends it — don't copy
-  that back.
+  logged. The retired `ssl-checker` worker read it and never sent it — don't copy that
+  back.
 - **Do not add a `wrangler.toml` with `pages_build_output_dir`.** It would become the
   source of truth and lock the dashboard's settings for the same fields.
 - **The contract is tested by replay.** `src/test/functions/` rebuilds each upstream's
@@ -233,9 +233,11 @@ three standalone workers, whose query parameters and JSON bodies they keep exact
   `apiSource` strings still say "Cloudflare Worker", the tenant lookup's
   `openid_configuration` URLs are wrong and never match, and the SSL 500 body carries
   `stack`. Changing any of them is a contract change — log it in `BEHAVIOR_CHANGES.md`.
-- **The old workers are still deployed and still in `cloudflare-worker/`** until the owner
-  retires them; don't edit or delete them. `cloudflare-worker/buzzwords.js` is a separate
-  public API and is not part of any of this.
+- **The three lookup workers are gone.** `ssl-checker`, `whois-lookup` and
+  `microsoft-tenant-lookup` were deleted from Cloudflare on 2026-11-14, along with
+  `ssl.russ.tools`, `whois.russ.tools` and `tenant.russ.tools`, and their sources and
+  configs were removed from the repo. `cloudflare-worker/` now holds only `buzzwords.js`,
+  a separate public API that is not part of any of this.
 
 Full reference: `docs/cloudflare-workers/README.md`.
 
