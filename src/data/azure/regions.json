@@ -1,7 +1,7 @@
 {
   "source": "https://learn.microsoft.com/en-us/azure/reliability/regions-list",
   "licence": "CC-BY-4.0, (c) Microsoft. See https://learn.microsoft.com/en-us/azure/reliability/regions-list",
-  "generatedAt": "2026-11-14",
+  "generatedAt": "2026-11-16",
   "coverage": "Azure public cloud regions. Sovereign clouds (US Government, China) are not included.",
   "coordinatesSource": "https://datacenters.microsoft.com/globe/explore",
   "regions": [
