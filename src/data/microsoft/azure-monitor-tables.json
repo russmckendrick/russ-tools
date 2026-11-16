@@ -1,7 +1,7 @@
 {
   "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/",
   "licence": "CC-BY-4.0 (MicrosoftDocs/azure-monitor-docs)",
-  "fetched": "2026-11-14",
+  "fetched": "2026-11-16",
   "tables": {
     "AADManagedIdentitySignInLogs": {
       "AADTenantId": "string",

@@ -1,7 +1,7 @@
 {
   "source": "https://learn.microsoft.com/entra/identity/role-based-access-control/permissions-reference",
   "licence": "CC-BY-4.0, (c) Microsoft. See https://learn.microsoft.com/entra/identity/role-based-access-control/permissions-reference",
-  "generatedAt": "2026-11-14",
+  "generatedAt": "2026-11-16",
   "applicationSources": [
     "https://github.com/MicrosoftDocs/entra-docs/blob/main/.docutune/dictionaries/known-guids.json",
     "https://learn.microsoft.com/azure/dev-box/how-to-configure-intune-conditional-access-policies",
